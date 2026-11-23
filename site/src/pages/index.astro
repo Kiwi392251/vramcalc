@@ -1,0 +1,396 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import StatusBadge from '../components/StatusBadge.astro';
+import rawPagesData from '../data/pages_data.json';
+import type { PageEntry } from '../types/vram';
+
+const entries = rawPagesData as PageEntry[];
+
+const totalCount = entries.length;
+const smoothCount = entries.filter((e) => e.default_result.status === 'Smooth').length;
+const partialCount = entries.filter((e) => e.default_result.status === 'Partial Offload').length;
+
+const uniqueModels = Array.from(
+  new Map(entries.map((e) => [e.model.id, e.model])).values()
+).sort((a, b) => a.name.localeCompare(b.name));
+
+const uniqueHardware = Array.from(
+  new Map(entries.map((e) => [e.hardware.id, e.hardware])).values()
+);
+const nvidiaHardware = uniqueHardware
+  .filter((h) => h.vendor === 'NVIDIA')
+  .sort((a, b) => a.name.localeCompare(b.name));
+const appleHardware = uniqueHardware
+  .filter((h) => h.vendor === 'Apple')
+  .sort((a, b) => a.name.localeCompare(b.name));
+
+const uniqueModelCount = uniqueModels.length;
+const uniqueHwCount = uniqueHardware.length;
+---
+
+<BaseLayout
+  title="VRAMCalc.me — Local AI Model VRAM & Speed Calculator"
+  description="Check whether DeepSeek-R1, Qwen2.5-Coder, and Llama-3.3 run smoothly on Apple Silicon M1–M4 or NVIDIA RTX 30/40/50 GPUs. Interactive VRAM, KV cache, and tokens/s benchmarks."
+  canonicalPath="/"
+  totalPages={totalCount}
+>
+  <section class="border-b border-slate-200 bg-white">
+    <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
+      <div class="max-w-3xl">
+        <h1 class="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
+          Local AI Model VRAM &amp; Inference Speed Matrix
+        </h1>
+        <p class="mt-3 text-base leading-relaxed text-slate-600">
+          Pick your open-weight model and GPU or Apple Silicon Mac to see exact Q4_K_M / Q8_0 / FP16 memory
+          footprints, KV-cache limits, offload layer counts, and realistic <span class="font-mono text-slate-900">tokens/sec</span> throughput.
+        </p>
+      </div>
+
+      <dl class="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+        <div class="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+          <dt class="text-xs font-medium text-slate-500">Benchmarked Pairings</dt>
+          <dd class="mt-1 font-mono text-2xl font-bold text-slate-950 tabular-nums">{totalCount}</dd>
+        </div>
+        <div class="rounded-xl border border-emerald-200/80 bg-emerald-50/50 px-4 py-3">
+          <dt class="text-xs font-medium text-emerald-800">Smooth (Full GPU)</dt>
+          <dd class="mt-1 font-mono text-2xl font-bold text-emerald-900 tabular-nums">{smoothCount}</dd>
+        </div>
+        <div class="rounded-xl border border-amber-200/80 bg-amber-50/50 px-4 py-3">
+          <dt class="text-xs font-medium text-amber-800">Partial Offload</dt>
+          <dd class="mt-1 font-mono text-2xl font-bold text-amber-900 tabular-nums">{partialCount}</dd>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+          <dt class="text-xs font-medium text-slate-500">Models × Hardware</dt>
+          <dd class="mt-1 font-mono text-2xl font-bold text-slate-950 tabular-nums">
+            {uniqueModelCount} × {uniqueHwCount}
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- Filter Controls + Compatibility Matrix -->
+  <section class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5">
+      <div class="grid gap-3 md:grid-cols-12 md:items-end">
+        <div class="md:col-span-4">
+          <label for="filter-model" class="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Filter by Model
+          </label>
+          <select
+            id="filter-model"
+            class="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus:border-blue-600 focus:outline-none"
+          >
+            <option value="all">All Models ({uniqueModelCount})</option>
+            {uniqueModels.map((m) => (
+              <option value={m.id}>{m.name} ({m.params_b}B)</option>
+            ))}
+          </select>
+        </div>
+
+        <div class="md:col-span-4">
+          <label for="filter-hardware" class="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Filter by Hardware
+          </label>
+          <select
+            id="filter-hardware"
+            class="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus:border-blue-600 focus:outline-none"
+          >
+            <option value="all">All Hardware ({uniqueHwCount})</option>
+            {nvidiaHardware.length > 0 && (
+              <optgroup label="NVIDIA GeForce RTX">
+                {nvidiaHardware.map((h) => (
+                  <option value={h.id}>{h.name}</option>
+                ))}
+              </optgroup>
+            )}
+            {appleHardware.length > 0 && (
+              <optgroup label="Apple Silicon Unified">
+                {appleHardware.map((h) => (
+                  <option value={h.id}>{h.name}</option>
+                ))}
+              </optgroup>
+            )}
+          </select>
+        </div>
+
+        <div class="md:col-span-4">
+          <label for="filter-search" class="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Quick Search
+          </label>
+          <input
+            id="filter-search"
+            type="search"
+            placeholder="e.g. 4090, M4 Pro, DeepSeek, Qwen..."
+            class="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3.5">
+        <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Filter by status">
+          {(['all', 'Smooth', 'Partial Offload', 'OOM'] as const).map((st) => {
+            const btnClass =
+              st === 'all'
+                ? 'rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-900 bg-slate-900 text-white'
+                : 'rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100';
+            return (
+              <button
+                type="button"
+                data-status-btn={st}
+                class={btnClass}
+              >
+                {st === 'all' ? 'All Statuses' : st}
+              </button>
+            );
+          })}
+        </div>
+
+        <div class="flex items-center gap-3 text-xs text-slate-600">
+          <span id="filter-count" class="font-mono tabular-nums">
+            Showing {totalCount} of {totalCount} configurations
+          </span>
+          <button
+            id="filter-reset"
+            type="button"
+            class="hidden font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards Grid -->
+    <div id="cards-grid" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {entries.map((entry) => {
+        const res = entry.default_result;
+        const usable = entry.hardware.usable_vram_gb;
+        const fillPct = Math.min(100, Math.round((res.total_vram_gb / usable) * 100));
+        const barColor =
+          res.status === 'Smooth'
+            ? 'bg-emerald-500'
+            : res.status === 'Partial Offload'
+              ? 'bg-amber-500'
+              : 'bg-rose-500';
+        const tpsDisplay = res.status === 'OOM' ? 'OOM' : `${res.est_tps.toFixed(1)} tok/s`;
+        const fillStyle = `width: ${fillPct}%`;
+        const fillBarClass = `h-full rounded-full ${barColor}`;
+        const detailHref = `/can-i-run/${entry.slug}/`;
+        const searchIndex = [
+          entry.model.name,
+          entry.model.short_name,
+          entry.model.family,
+          entry.hardware.name,
+          entry.hardware.short_name,
+          entry.hardware.vendor,
+          entry.hardware.series,
+          res.status,
+        ]
+          .join(' ')
+          .toLowerCase();
+
+        return (
+          <article
+            data-card
+            data-model={entry.model.id}
+            data-hardware={entry.hardware.id}
+            data-status={res.status}
+            data-search={searchIndex}
+            class="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:border-blue-300 hover:shadow-md"
+          >
+            <div>
+              <div class="flex items-center justify-between gap-2">
+                <StatusBadge status={res.status} />
+                <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-600">
+                  {entry.hardware.backend} · {entry.hardware.bandwidth_gbps} GB/s
+                </span>
+              </div>
+
+              <h2 class="mt-3.5 text-base font-bold tracking-tight text-slate-950 group-hover:text-blue-600 transition-colors">
+                <a href={detailHref} class="focus:outline-none">
+                  {entry.model.short_name}
+                  <span class="block text-sm font-semibold text-slate-600">
+                    on {entry.hardware.name}
+                  </span>
+                </a>
+              </h2>
+
+              <p class="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-600">
+                {entry.verdict_summary}
+              </p>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-slate-100">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-slate-500">VRAM ({entry.default_quant} @ 8K)</span>
+                <span class="font-mono font-semibold text-slate-900 tabular-nums">
+                  {res.total_vram_gb.toFixed(1)} / {usable} GB
+                </span>
+              </div>
+              <div class="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                <div class={fillBarClass} style={fillStyle}></div>
+              </div>
+
+              <div class="mt-3.5 flex items-center justify-between">
+                <div class="flex items-baseline gap-1.5">
+                  <span class="font-mono text-lg font-bold text-slate-950 tabular-nums">
+                    {tpsDisplay}
+                  </span>
+                  <span class="text-[11px] text-slate-500 tabular-nums">
+                    ({res.gpu_layers_fit}/{res.total_layers} layers)
+                  </span>
+                </div>
+
+                <a
+                  href={detailHref}
+                  class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800"
+                >
+                  Open Calc
+                  <span aria-hidden="true">-&gt;</span>
+                </a>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+
+    <!-- Empty Filter State -->
+    <div
+      id="empty-state"
+      class="mt-8 hidden rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center"
+    >
+      <p class="text-base font-semibold text-slate-900">No matching Model × Hardware benchmarks</p>
+      <p class="mt-1 text-sm text-slate-500">
+        Try clearing your search query or switching the status / hardware filters.
+      </p>
+      <button
+        id="empty-reset-btn"
+        type="button"
+        class="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 cursor-pointer"
+      >
+        Reset All Filters
+      </button>
+    </div>
+  </section>
+
+  <!-- Estimation Formula & Methodology -->
+  <section id="methodology" class="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+      <h2 class="text-lg font-bold tracking-tight text-slate-950">
+        How VRAMCalc.me Estimates Memory &amp; Tokens/sec
+      </h2>
+      <div class="mt-4 grid gap-6 text-sm leading-relaxed text-slate-600 md:grid-cols-3">
+        <div>
+          <h3 class="font-semibold text-slate-900">1. GGUF Weight Footprint</h3>
+          <p class="mt-1.5">
+            Model weights scale with bits-per-weight (<span class="font-mono text-xs text-slate-800">Q4_K_M ≈ 4.85 bpw</span>,
+            <span class="font-mono text-xs text-slate-800">Q8_0 ≈ 8.50 bpw</span>,
+            <span class="font-mono text-xs text-slate-800">FP16 = 16.0 bpw</span>), plus a 0.5–2.0 GB CUDA or Metal compute graph buffer.
+          </p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-slate-900">2. GQA KV-Cache Scaling</h3>
+          <p class="mt-1.5">
+            Context memory is computed from exact model geometry:
+            <span class="font-mono text-xs text-slate-800">2 × layers × kv_heads × head_dim × tokens × 2 bytes</span>
+            for default FP16 KV cache, explaining why 70B models grow faster per 4K tokens than 7B–14B models.
+          </p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-slate-900">3. Bandwidth-Bound Decode Speed</h3>
+          <p class="mt-1.5">
+            Autoregressive LLM generation is memory-bandwidth limited. Smooth GPU runs divide effective memory bandwidth
+            (CUDA ~78% / Metal ~74% efficiency) by active weights + KV reads; PCIe CPU offload incurs ~35 GB/s host RAM bottlenecks.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+  (function () {
+    const modelSelect = document.getElementById('filter-model');
+    const hwSelect = document.getElementById('filter-hardware');
+    const searchInput = document.getElementById('filter-search');
+    const statusButtons = Array.from(document.querySelectorAll('[data-status-btn]'));
+    const cards = Array.from(document.querySelectorAll('[data-card]'));
+    const countEl = document.getElementById('filter-count');
+    const resetBtn = document.getElementById('filter-reset');
+    const emptyState = document.getElementById('empty-state');
+    const emptyResetBtn = document.getElementById('empty-reset-btn');
+    const cardsGrid = document.getElementById('cards-grid');
+
+    let selectedStatus = 'all';
+    const total = cards.length;
+
+    function applyFilters() {
+      const mVal = modelSelect ? modelSelect.value : 'all';
+      const hVal = hwSelect ? hwSelect.value : 'all';
+      const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+      let visible = 0;
+      cards.forEach((card) => {
+        const matchModel = mVal === 'all' || card.getAttribute('data-model') === mVal;
+        const matchHw = hVal === 'all' || card.getAttribute('data-hardware') === hVal;
+        const matchStatus = selectedStatus === 'all' || card.getAttribute('data-status') === selectedStatus;
+        const searchBlob = card.getAttribute('data-search') || '';
+        const matchQuery = !query || searchBlob.includes(query);
+
+        const show = matchModel && matchHw && matchStatus && matchQuery;
+        card.classList.toggle('hidden', !show);
+        if (show) visible += 1;
+      });
+
+      if (countEl) {
+        countEl.textContent = `Showing ${visible} of ${total} configurations`;
+      }
+
+      const isFiltered = mVal !== 'all' || hVal !== 'all' || selectedStatus !== 'all' || query.length > 0;
+      if (resetBtn) resetBtn.classList.toggle('hidden', !isFiltered);
+      if (emptyState) emptyState.classList.toggle('hidden', visible > 0);
+      if (cardsGrid) cardsGrid.classList.toggle('hidden', visible === 0);
+    }
+
+    function resetAll() {
+      if (modelSelect) modelSelect.value = 'all';
+      if (hwSelect) hwSelect.value = 'all';
+      if (searchInput) searchInput.value = '';
+      selectedStatus = 'all';
+      statusButtons.forEach((b) => {
+        const active = b.getAttribute('data-status-btn') === 'all';
+        b.classList.toggle('border-slate-900', active);
+        b.classList.toggle('bg-slate-900', active);
+        b.classList.toggle('text-white', active);
+        b.classList.toggle('border-slate-200', !active);
+        b.classList.toggle('bg-slate-50', !active);
+        b.classList.toggle('text-slate-700', !active);
+      });
+      applyFilters();
+    }
+
+    if (modelSelect) modelSelect.addEventListener('change', applyFilters);
+    if (hwSelect) hwSelect.addEventListener('change', applyFilters);
+    if (searchInput) searchInput.addEventListener('input', applyFilters);
+    if (resetBtn) resetBtn.addEventListener('click', resetAll);
+    if (emptyResetBtn) emptyResetBtn.addEventListener('click', resetAll);
+
+    statusButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        selectedStatus = btn.getAttribute('data-status-btn') || 'all';
+        statusButtons.forEach((b) => {
+          const active = b === btn;
+          b.classList.toggle('border-slate-900', active);
+          b.classList.toggle('bg-slate-900', active);
+          b.classList.toggle('text-white', active);
+          b.classList.toggle('border-slate-200', !active);
+          b.classList.toggle('bg-slate-50', !active);
+          b.classList.toggle('text-slate-700', !active);
+        });
+        applyFilters();
+      });
+    });
+  })();
+</script>

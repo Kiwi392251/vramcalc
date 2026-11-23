@@ -1,0 +1,36 @@
+---
+import type { CompatStatus } from '../types/vram';
+
+interface Props {
+  status: CompatStatus;
+  size?: 'sm' | 'md';
+  id?: string;
+}
+
+const { status, size = 'sm', id } = Astro.props;
+
+const paletteMap: Record<CompatStatus, { badge: string; dot: string }> = {
+  Smooth: {
+    badge: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+    dot: 'bg-emerald-600',
+  },
+  'Partial Offload': {
+    badge: 'border-amber-200 bg-amber-50 text-amber-800',
+    dot: 'bg-amber-500',
+  },
+  OOM: {
+    badge: 'border-rose-200 bg-rose-50 text-rose-800',
+    dot: 'bg-rose-600',
+  },
+};
+
+const sizeClass = size === 'md' ? 'px-3 py-1 text-xs' : 'px-2.5 py-0.5 text-[11px]';
+const style = paletteMap[status];
+const badgeClass = `inline-flex items-center gap-1.5 rounded-full border font-semibold tracking-tight whitespace-nowrap ${sizeClass} ${style.badge}`;
+const dotClass = `h-1.5 w-1.5 rounded-full ${style.dot}`;
+---
+
+<span id={id} class={badgeClass}>
+  <span class={dotClass} aria-hidden="true"></span>
+  <span data-status-label>{status}</span>
+</span>

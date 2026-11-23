@@ -1,0 +1,895 @@
+[
+  {
+    "slug": "deepseek-r1-32b-on-apple-m4-pro-48gb",
+    "title": "Can I Run DeepSeek-R1 32B on M4 Pro 48GB? VRAM & Speed Calculator",
+    "meta_description": "Smooth: DeepSeek-R1-Distill-Qwen-32B Q4_K_M needs 22.88 GB at 8K context on Apple M4 Pro (48GB Unified) (37.4 GB usable, ~9.7 tok/s). Interactive VRAM calculator & CLI commands.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "deepseek-r1-32b",
+      "name": "DeepSeek-R1-Distill-Qwen-32B",
+      "short_name": "DeepSeek-R1 32B",
+      "family": "DeepSeek-R1",
+      "params_b": 32.8,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 64,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "deepseek-r1:32b",
+      "hf_repo": "bartowski/DeepSeek-R1-Distill-Qwen-32B-GGUF",
+      "gguf_file_q4": "DeepSeek-R1-Distill-Qwen-32B-Q4_K_M.gguf",
+      "release_year": 2025,
+      "use_cases": [
+        "Deep STEM reasoning",
+        "Complex debugging",
+        "Code verification"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m4-pro-48gb",
+      "name": "Apple M4 Pro (48GB Unified)",
+      "short_name": "M4 Pro 48GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M4",
+      "vram_gb": 48.0,
+      "usable_vram_gb": 37.4,
+      "bandwidth_gbps": 273.0,
+      "memory_type": "LPDDR5X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 2399
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 19.88,
+      "kv_cache_gb": 2.0,
+      "overhead_gb": 0.99,
+      "total_vram_gb": 22.88,
+      "status": "Smooth",
+      "est_tps": 9.7,
+      "gpu_layers_fit": 64,
+      "total_layers": 64,
+      "gpu_fraction": 1.0
+    },
+    "verdict_summary": "Apple M4 Pro with 48GB unified memory smoothly runs DeepSeek-R1-Distill-Qwen-32B up to Q6_K at 8K context, delivering ~9.7 tok/s at Q4_K_M and scaling cleanly all the way to 64K context.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 19.88,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 22.88,
+        "est_tps": 9.7,
+        "status": "Smooth",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (14.5 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 23.37,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 26.36,
+        "est_tps": 8.4,
+        "status": "Smooth",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Sweet spot: higher fidelity with 11.0 GB headroom."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 27.06,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 30.05,
+        "est_tps": 7.3,
+        "status": "Smooth",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": true,
+        "notes": "Sweet spot: higher fidelity with 7.3 GB headroom."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 34.85,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 37.84,
+        "est_tps": 3.2,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 63,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Exceeds safe macOS wired ceiling; risks swap thrashing under load."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 65.6,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 68.59,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 33,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 68.59 GB vs 37.4 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run deepseek-r1:32b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=32768 ollama run deepseek-r1:32b",
+      "llama_cli": "llama-cli -hf bartowski/DeepSeek-R1-Distill-Qwen-32B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf bartowski/DeepSeek-R1-Distill-Qwen-32B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 32768,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 1.0,
+      "max_smooth_context_q4": 65536,
+      "bottleneck_summary": "Unlike 24 GB discrete GPUs, the 48 GB M4 Pro (37.4 GB macOS Metal wired budget by default) has plenty of headroom at Q4_K_M: 19.88 GB weights plus 0.99 GB runtime buffer leave 16.53 GB for KV cache—enough for a full 64K FP16 context (16.00 GB KV) without overflowing. The real limiter is the 273 GB/s unified memory bandwidth, capping speed around ~9.7 tok/s at Q4_K_M.",
+      "key_points": [
+        "DeepSeek-R1 32B Q4_K_M reaches 64K context (16.00 GB FP16 KV cache) at 36.87 GB total, inside the 37.4 GB wired ceiling.",
+        "Q6_K (27.06 GB weights, 30.05 GB total at 8K) runs smoothly at ~7.3 tok/s with room up to 32K context using Q8_0 KV.",
+        "Q8_0 (34.85 GB weights, 37.84 GB total at 8K) slightly exceeds the default 37.4 GB wired limit, risking swap pressure (~3.2 tok/s).",
+        "Prompt prefill on 32K+ codebases takes longer than NVIDIA Tensor Cores, though Metal Flash Attention helps."
+      ],
+      "optimization_tips": [
+        "Choose Q6_K for coding/math fidelity (~7.3 tok/s) or Q4_K_M for ~9.7 tok/s reading speed and 64K context.",
+        "Enable OLLAMA_FLASH_ATTENTION=1 and OLLAMA_KV_CACHE_TYPE=q8_0 to halve the 1.00 GB per 4K KV growth.",
+        "Raise sysctl iogpu.wired_limit_mb=40960 only when experimenting with Q8_0 at 8K–16K context."
+      ]
+    },
+    "faq": [
+      {
+        "question": "How fast does DeepSeek-R1 32B run on a MacBook Pro M4 Pro 48GB?",
+        "answer": "At Q4_K_M with 8K context, expect roughly 9.7 tokens/sec driven by the M4 Pro's 273 GB/s LPDDR5X memory bandwidth—comfortable reading speed even during long reasoning chains."
+      },
+      {
+        "question": "Should I run Q4_K_M, Q6_K, or Q8_0 on M4 Pro 48GB?",
+        "answer": "Pick Q4_K_M when speed and 32K–64K context matter most (~9.7 tok/s), or Q6_K (~7.3 tok/s) for higher precision at 8K–16K. Avoid Q8_0 unless you raise macOS's default wired GPU limit."
+      },
+      {
+        "question": "Can M4 Pro 48GB handle 64K context on DeepSeek-R1 32B?",
+        "answer": "Yes. At Q4_K_M, a full 64K FP16 KV cache adds 16.00 GB for a 36.87 GB total footprint, fitting just under macOS's default 37.4 GB wired GPU ceiling."
+      },
+      {
+        "question": "Why does macOS reserve ~10.6 GB out of 48 GB unified memory?",
+        "answer": "By default macOS caps GPU wired allocations around 75–78% of system RAM so macOS windowing, IDEs, and background apps do not starve or trigger kernel panics."
+      }
+    ],
+    "related_slugs": [
+      "deepseek-r1-32b-on-rtx-4090-24gb"
+    ]
+  },
+  {
+    "slug": "deepseek-r1-32b-on-rtx-4090-24gb",
+    "title": "Can I Run DeepSeek-R1 32B on RTX 4090 24GB? VRAM & Speed Calculator",
+    "meta_description": "Smooth: DeepSeek-R1-Distill-Qwen-32B Q4_K_M needs 22.88 GB at 8K context on NVIDIA RTX 4090 (24GB) (23.5 GB usable, ~37.6 tok/s). Interactive VRAM calculator & CLI commands.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "deepseek-r1-32b",
+      "name": "DeepSeek-R1-Distill-Qwen-32B",
+      "short_name": "DeepSeek-R1 32B",
+      "family": "DeepSeek-R1",
+      "params_b": 32.8,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 64,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "deepseek-r1:32b",
+      "hf_repo": "bartowski/DeepSeek-R1-Distill-Qwen-32B-GGUF",
+      "gguf_file_q4": "DeepSeek-R1-Distill-Qwen-32B-Q4_K_M.gguf",
+      "release_year": 2025,
+      "use_cases": [
+        "Deep STEM reasoning",
+        "Complex debugging",
+        "Code verification"
+      ]
+    },
+    "hardware": {
+      "id": "rtx-4090-24gb",
+      "name": "NVIDIA RTX 4090 (24GB)",
+      "short_name": "RTX 4090 24GB",
+      "vendor": "NVIDIA",
+      "series": "RTX 40 Series",
+      "vram_gb": 24.0,
+      "usable_vram_gb": 23.5,
+      "bandwidth_gbps": 1008.0,
+      "memory_type": "GDDR6X",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 1599
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 19.88,
+      "kv_cache_gb": 2.0,
+      "overhead_gb": 0.99,
+      "total_vram_gb": 22.88,
+      "status": "Smooth",
+      "est_tps": 37.6,
+      "gpu_layers_fit": 64,
+      "total_layers": 64,
+      "gpu_fraction": 1.0
+    },
+    "verdict_summary": "DeepSeek-R1-Distill-Qwen-32B at Q4_K_M (19.88 GB weights) fits inside the RTX 4090's 23.5 GB usable GDDR6X budget at 8K context (22.88 GB total), hitting ~37.6 tok/s with zero CPU spill.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 19.88,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 22.88,
+        "est_tps": 37.6,
+        "status": "Smooth",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": true,
+        "notes": "Fits 100% in CUDA memory (0.6 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 23.37,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 26.36,
+        "est_tps": 9.2,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 56,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 56/64 layers on GPU; remaining layers spill to system RAM over PCIe."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 27.06,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 30.05,
+        "est_tps": 4.7,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 48,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 48/64 layers on GPU; remaining layers spill to system RAM over PCIe."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 34.85,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 37.84,
+        "est_tps": 2.3,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 37,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 37/64 layers on GPU; remaining layers spill to system RAM over PCIe."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 65.6,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 68.59,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 20,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 68.59 GB vs 23.5 GB usable CUDA memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run deepseek-r1:32b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=8192 ollama run deepseek-r1:32b",
+      "llama_cli": "llama-cli -hf bartowski/DeepSeek-R1-Distill-Qwen-32B-GGUF:Q4_K_M \\\n  -ngl 99 -c 8192 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf bartowski/DeepSeek-R1-Distill-Qwen-32B-GGUF:Q4_K_M \\\n  -ngl 99 -c 8192 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 8192,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 1.0,
+      "max_smooth_context_q4": 8192,
+      "bottleneck_summary": "At Q4_K_M with 8K FP16 context, weights (19.88 GB), KV cache (2.00 GB), and the 0.99 GB CUDA workspace buffer consume 22.88 GB, leaving just 0.62 GB of headroom before hitting 23.5 GB. Because DeepSeek-R1 32B's 64 layers consume 1.00 GB per 4K tokens in FP16 KV cache, pushing context to 16K (4.00 GB KV) immediately overflows 24 GB VRAM unless KV cache quantization is enabled.",
+      "key_points": [
+        "FP16 KV cache grows at 1.00 GB per 4K tokens (2.00 GB at 8K, 4.00 GB at 16K, 8.00 GB at 32K).",
+        "Max Smooth context with default FP16 KV cache is 8,192 tokens; 12K+ spills layers onto system RAM over PCIe.",
+        "Enabling --cache-type-k q8_0 --cache-type-v q8_0 cuts KV cache VRAM in half (~0.50 GB per 4K), stretching Q4_K_M cleanly to 16K–24K.",
+        "DeepSeek-R1 emits verbose <think> chains before answering, so monitor context length on multi-file prompts."
+      ],
+      "optimization_tips": [
+        "Pass -fa on --cache-type-k q8_0 --cache-type-v q8_0 in llama.cpp to unlock 16K+ context inside 24 GB VRAM.",
+        "Close browser hardware acceleration or desktop GPU monitors if free VRAM dips below 23.0 GB on Windows/Linux.",
+        "Stick to Q4_K_M; Q5_K_M (23.37 GB weights alone) overflows 24 GB immediately and drops speed below 6 tok/s."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can an RTX 4090 24GB run DeepSeek-R1 32B without spilling to system RAM?",
+        "answer": "Yes, in Q4_K_M quantization (19.88 GB weights). At 8K context with FP16 KV cache, total VRAM usage is 22.88 GB out of 23.5 GB usable GDDR6X, keeping all 64 transformer layers on GPU at ~37.6 tok/s."
+      },
+      {
+        "question": "What happens if I try Q5_K_M or Q6_K of DeepSeek-R1 32B on the RTX 4090?",
+        "answer": "Q5_K_M weights alone require 23.37 GB (26.36 GB total at 8K), forcing ~10 layers onto system RAM over PCIe and cutting throughput down to ~5–6 tok/s."
+      },
+      {
+        "question": "How can I reach 16K+ context on RTX 4090 for long DeepSeek-R1 thinking blocks?",
+        "answer": "Set OLLAMA_FLASH_ATTENTION=1 and OLLAMA_KV_CACHE_TYPE=q8_0 (or -fa on --cache-type-k q8_0 --cache-type-v q8_0 in llama.cpp). Cutting KV memory in half keeps 16K context inside 23.5 GB."
+      },
+      {
+        "question": "Is RTX 4090 faster than an Apple M4 Pro 48GB for DeepSeek-R1 32B?",
+        "answer": "Yes for decode speed: the RTX 4090's 1,008 GB/s GDDR6X bus achieves ~37.6 tok/s in Q4_K_M, nearly 4x faster than M4 Pro (273 GB/s, ~9.7 tok/s), though M4 Pro can hold 64K context smoothly."
+      }
+    ],
+    "related_slugs": [
+      "deepseek-r1-32b-on-apple-m4-pro-48gb"
+    ]
+  },
+  {
+    "slug": "qwen2.5-coder-32b-on-rtx-4060-ti-16gb",
+    "title": "Can I Run Qwen2.5-Coder 32B on RTX 4060 Ti 16GB? VRAM & Speed Calculator",
+    "meta_description": "Partial Offload: Qwen2.5-Coder-32B-Instruct Q4_K_M needs 22.88 GB at 8K context on NVIDIA RTX 4060 Ti (16GB) (15.5 GB usable, ~3.7 tok/s). Interactive VRAM calculator & CLI commands.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "qwen2.5-coder-32b",
+      "name": "Qwen2.5-Coder-32B-Instruct",
+      "short_name": "Qwen2.5-Coder 32B",
+      "family": "Qwen2.5-Coder",
+      "params_b": 32.8,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 64,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "qwen2.5-coder:32b",
+      "hf_repo": "bartowski/Qwen2.5-Coder-32B-Instruct-GGUF",
+      "gguf_file_q4": "Qwen2.5-Coder-32B-Instruct-Q4_K_M.gguf",
+      "release_year": 2024,
+      "use_cases": [
+        "Full-repo code review",
+        "Agentic coding",
+        "SQL & architecture generation"
+      ]
+    },
+    "hardware": {
+      "id": "rtx-4060-ti-16gb",
+      "name": "NVIDIA RTX 4060 Ti (16GB)",
+      "short_name": "RTX 4060 Ti 16GB",
+      "vendor": "NVIDIA",
+      "series": "RTX 40 Series",
+      "vram_gb": 16.0,
+      "usable_vram_gb": 15.5,
+      "bandwidth_gbps": 288.0,
+      "memory_type": "GDDR6",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 499
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 19.88,
+      "kv_cache_gb": 2.0,
+      "overhead_gb": 0.99,
+      "total_vram_gb": 22.88,
+      "status": "Partial Offload",
+      "est_tps": 3.7,
+      "gpu_layers_fit": 40,
+      "total_layers": 64,
+      "gpu_fraction": 0.629
+    },
+    "verdict_summary": "Partial Offload only: Qwen2.5-Coder-32B Q4_K_M needs 22.88 GB at 8K context, exceeding the RTX 4060 Ti's 15.5 GB usable VRAM and forcing ~24 of 64 layers over PCIe (~3.7 tok/s).",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 19.88,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 22.88,
+        "est_tps": 3.7,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 40,
+        "total_layers": 64,
+        "recommended": true,
+        "notes": "Fits 40/64 layers on GPU; remaining layers spill to system RAM over PCIe."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 23.37,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 26.36,
+        "est_tps": 2.7,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 34,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 34/64 layers on GPU; remaining layers spill to system RAM over PCIe."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 27.06,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 30.05,
+        "est_tps": 2.1,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 29,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 29/64 layers on GPU; remaining layers spill to system RAM over PCIe."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 34.85,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 37.84,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 22,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 37.84 GB vs 15.5 GB usable CUDA memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 65.6,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 68.59,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 12,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 68.59 GB vs 15.5 GB usable CUDA memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen2.5-coder:32b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=4096 ollama run qwen2.5-coder:32b",
+      "llama_cli": "llama-cli -hf bartowski/Qwen2.5-Coder-32B-Instruct-GGUF:Q4_K_M \\\n  -ngl 43 -c 4096 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf bartowski/Qwen2.5-Coder-32B-Instruct-GGUF:Q4_K_M \\\n  -ngl 43 -c 4096 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 4096,
+      "recommended_ngl": 43
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 1.0,
+      "max_smooth_context_q4": 0,
+      "bottleneck_summary": "The RTX 4060 Ti 16GB sits below the ~20 GB threshold required for 32B Q4_K_M weights. With 15.5 GB usable VRAM and 2.99 GB consumed by 8K KV cache + CUDA runtime buffers, only 12.51 GB remains for weights (~40 of 64 layers). The remaining 24 layers execute on CPU and system DDR4/DDR5 RAM, turning the ~35 GB/s host memory bus into the dominant bottleneck.",
+      "key_points": [
+        "Each 4K of FP16 context consumes 1.00 GB of precious VRAM, directly evicting ~3.2 GPU layers.",
+        "Every layer offloaded to system RAM incurs ~8x lower bandwidth (35 GB/s CPU vs 288 GB/s GDDR6).",
+        "Q6_K (30.05 GB) drops GPU residency below 50% (~2.1 tok/s), while Q8_0 hits practical OOM.",
+        "Make sure your desktop PC has at least 32 GB of dual-channel DDR4/DDR5 RAM before attempting Partial Offload."
+      ],
+      "optimization_tips": [
+        "Cap context at 4K–8K and enable Q8_0 KV cache (`--cache-type-k q8_0 --cache-type-v q8_0`) so 43+ layers stay on GPU.",
+        "Pin `-ngl 40` explicitly in llama.cpp and pass `-t <physical_cores>` (not hyperthreads) for optimal CPU layer speed.",
+        "For interactive IDE coding on RTX 4060 Ti 16GB, Qwen2.5-Coder-14B (Q6_K or Q5_K_M) fits 100% in VRAM at 15–20 tok/s."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can an RTX 4060 Ti 16GB run Qwen2.5-Coder-32B at all?",
+        "answer": "Yes, via Partial Offload in Q4_K_M (~40/64 layers on GPU and ~24 layers in system RAM). Expect ~3.7 tok/s at 8K context if your host PC has at least 32 GB of dual-channel RAM."
+      },
+      {
+        "question": "Why is Qwen2.5-Coder-32B slow on the RTX 4060 Ti 16GB?",
+        "answer": "Because ~7.37 GB of weights must be streamed from system RAM across the CPU memory controller (~35 GB/s) on every single generated token, overshadowing the 288 GB/s GPU memory."
+      },
+      {
+        "question": "How many GPU layers (-ngl) should I set for Qwen2.5-Coder-32B on 16GB VRAM?",
+        "answer": "Start with -ngl 40 at 8K context (or -ngl 43 at 4K context with Q8_0 KV cache). If CUDA reports an out-of-memory allocation error, step -ngl down by 2 layers until stable."
+      },
+      {
+        "question": "Is Qwen2.5-Coder-14B better than 32B on an RTX 4060 Ti 16GB?",
+        "answer": "For daily interactive coding, yes: Qwen2.5-Coder-14B Q6_K fits completely in 16 GB VRAM with zero CPU offload, generating tokens 4x faster while supporting 16K–32K context."
+      }
+    ],
+    "related_slugs": [
+      "qwen2.5-coder-32b-on-rtx-5090-32gb"
+    ]
+  },
+  {
+    "slug": "qwen2.5-coder-32b-on-rtx-5090-32gb",
+    "title": "Can I Run Qwen2.5-Coder 32B on RTX 5090 32GB? VRAM & Speed Calculator",
+    "meta_description": "Smooth: Qwen2.5-Coder-32B-Instruct Q4_K_M needs 22.88 GB at 8K context on NVIDIA RTX 5090 (32GB) (31.5 GB usable, ~66.9 tok/s). Interactive VRAM calculator & CLI commands.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "qwen2.5-coder-32b",
+      "name": "Qwen2.5-Coder-32B-Instruct",
+      "short_name": "Qwen2.5-Coder 32B",
+      "family": "Qwen2.5-Coder",
+      "params_b": 32.8,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 64,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "qwen2.5-coder:32b",
+      "hf_repo": "bartowski/Qwen2.5-Coder-32B-Instruct-GGUF",
+      "gguf_file_q4": "Qwen2.5-Coder-32B-Instruct-Q4_K_M.gguf",
+      "release_year": 2024,
+      "use_cases": [
+        "Full-repo code review",
+        "Agentic coding",
+        "SQL & architecture generation"
+      ]
+    },
+    "hardware": {
+      "id": "rtx-5090-32gb",
+      "name": "NVIDIA RTX 5090 (32GB)",
+      "short_name": "RTX 5090 32GB",
+      "vendor": "NVIDIA",
+      "series": "RTX 50 Series",
+      "vram_gb": 32.0,
+      "usable_vram_gb": 31.5,
+      "bandwidth_gbps": 1792.0,
+      "memory_type": "GDDR7",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 1999
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 19.88,
+      "kv_cache_gb": 2.0,
+      "overhead_gb": 0.99,
+      "total_vram_gb": 22.88,
+      "status": "Smooth",
+      "est_tps": 66.9,
+      "gpu_layers_fit": 64,
+      "total_layers": 64,
+      "gpu_fraction": 1.0
+    },
+    "verdict_summary": "The RTX 5090 (32GB GDDR7, 1,792 GB/s) is an unmatched single-GPU workstation for Qwen2.5-Coder-32B, running Q4_K_M at ~66.9 tok/s (32K smooth context) or fitting Q6_K entirely in VRAM at ~50.5 tok/s.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 19.88,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 22.88,
+        "est_tps": 66.9,
+        "status": "Smooth",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in CUDA memory (8.6 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 23.37,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 26.36,
+        "est_tps": 58.1,
+        "status": "Smooth",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Sweet spot: higher fidelity with 5.1 GB headroom."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 27.06,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 30.05,
+        "est_tps": 50.5,
+        "status": "Smooth",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": true,
+        "notes": "Sweet spot: higher fidelity with 1.4 GB headroom."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 34.85,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 37.84,
+        "est_tps": 5.0,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 52,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 52/64 layers on GPU; remaining layers spill to system RAM over PCIe."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 65.6,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 68.59,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 27,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 68.59 GB vs 31.5 GB usable CUDA memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen2.5-coder:32b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=32768 ollama run qwen2.5-coder:32b",
+      "llama_cli": "llama-cli -hf bartowski/Qwen2.5-Coder-32B-Instruct-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf bartowski/Qwen2.5-Coder-32B-Instruct-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 32768,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 1.0,
+      "max_smooth_context_q4": 32768,
+      "bottleneck_summary": "With 31.5 GB of usable GDDR7 VRAM and a 1,792 GB/s memory bus, Qwen2.5-Coder-32B runs effortlessly at Q4_K_M (19.88 GB weights), leaving 10.63 GB for KV cache—enough for 32K native FP16 context (28.87 GB total). Pushing to 64K FP16 context (16.00 GB KV) reaches 36.87 GB and requires Q8_0 KV quantization.",
+      "key_points": [
+        "Q4_K_M + 32K FP16 KV cache totals 28.87 GB, keeping 100% of layers and context on GDDR7.",
+        "Q6_K (27.06 GB weights, 30.05 GB total at 8K) fits smoothly in 32 GB VRAM and streams at ~50.5 tok/s.",
+        "1,792 GB/s bandwidth eliminates the memory-wall bottleneck typical of 32B dense coding models.",
+        "Q8_0 (34.85 GB weights, 37.84 GB total at 8K) exceeds 32 GB VRAM and spills 11 layers onto PCIe (~5.0 tok/s)."
+      ],
+      "optimization_tips": [
+        "Run Q6_K at 8K–12K for peak coding accuracy (~50.5 tok/s), or Q4_K_M for 32K–64K multi-file diffs.",
+        "Enable -fa on --cache-type-k q8_0 --cache-type-v q8_0 to fit a full 64K context at Q4_K_M inside 31.5 GB.",
+        "Expose llama-server on localhost:8080 as a fast local OpenAI-compatible backend for Cursor, Cline, or Continue."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can the RTX 5090 32GB run Qwen2.5-Coder-32B in Q8_0?",
+        "answer": "Not without CPU spill. Q8_0 requires 37.84 GB at 8K context, forcing ~11 of 64 layers onto system RAM (~5.0 tok/s). Use Q6_K (30.05 GB total) for near-lossless quality fully inside 32 GB GDDR7."
+      },
+      {
+        "question": "How many tokens per second does Qwen2.5-Coder-32B get on an RTX 5090?",
+        "answer": "Driven by 1,792 GB/s GDDR7 bandwidth, Q4_K_M hits ~66.9 tok/s at 8K context, while Q6_K still streams at ~50.5 tok/s—faster than most cloud API responses."
+      },
+      {
+        "question": "Can I run a 64K context window for multi-file coding on RTX 5090?",
+        "answer": "At native FP16 KV cache, 32K context fits cleanly (28.87 GB total). To reach 64K on Q4_K_M without PCIe spill, enable Flash Attention with Q8_0 KV cache quantization (~8 GB KV instead of 16 GB)."
+      },
+      {
+        "question": "Should developers pick Q4_K_M or Q6_K on RTX 5090 for coding agents?",
+        "answer": "Use Q6_K for architectural reasoning and complex edits under 12K context, and switch to Q4_K_M when feeding 32K–64K multi-file diffs or needing ~67 tok/s autocomplete."
+      }
+    ],
+    "related_slugs": [
+      "qwen2.5-coder-32b-on-rtx-4060-ti-16gb"
+    ]
+  },
+  {
+    "slug": "llama-3.3-70b-on-rtx-3060-12gb",
+    "title": "Can I Run Llama-3.3 70B on RTX 3060 12GB? VRAM & Speed Calculator",
+    "meta_description": "OOM: Llama-3.3-70B-Instruct Q4_K_M needs 46.86 GB at 8K context on NVIDIA RTX 3060 (12GB) (11.5 GB usable, ~0.0 tok/s). Interactive VRAM calculator & CLI commands.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "llama-3.3-70b",
+      "name": "Llama-3.3-70B-Instruct",
+      "short_name": "Llama-3.3 70B",
+      "family": "Llama-3.3",
+      "params_b": 70.6,
+      "architecture": "Llama-3 (Dense)",
+      "num_layers": 80,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "llama3.3:70b",
+      "hf_repo": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+      "gguf_file_q4": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+      "release_year": 2024,
+      "use_cases": [
+        "General-purpose flagship assistant",
+        "Long-document synthesis",
+        "Structured JSON & tool calling"
+      ]
+    },
+    "hardware": {
+      "id": "rtx-3060-12gb",
+      "name": "NVIDIA RTX 3060 (12GB)",
+      "short_name": "RTX 3060 12GB",
+      "vendor": "NVIDIA",
+      "series": "RTX 30 Series",
+      "vram_gb": 12.0,
+      "usable_vram_gb": 11.5,
+      "bandwidth_gbps": 360.0,
+      "memory_type": "GDDR6",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 329
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 42.8,
+      "kv_cache_gb": 2.5,
+      "overhead_gb": 1.56,
+      "total_vram_gb": 46.86,
+      "status": "OOM",
+      "est_tps": 0.0,
+      "gpu_layers_fit": 13,
+      "total_layers": 80,
+      "gpu_fraction": 0.174
+    },
+    "verdict_summary": "Out of Memory (OOM): Llama-3.3-70B Q4_K_M needs 46.86 GB at 8K context—over 4x the RTX 3060's 11.5 GB usable VRAM. Only ~13 of 80 layers (17.4%) fit on GPU, making inference impractical.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 42.8,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 46.86,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 13,
+        "total_layers": 80,
+        "recommended": true,
+        "notes": "Requires 46.86 GB vs 11.5 GB usable CUDA memory; too large to run practically."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 50.3,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 54.36,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 11,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 54.36 GB vs 11.5 GB usable CUDA memory; too large to run practically."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 58.24,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 62.3,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 10,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 62.3 GB vs 11.5 GB usable CUDA memory; too large to run practically."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 75.01,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 79.07,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 7,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 79.07 GB vs 11.5 GB usable CUDA memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 141.2,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 145.26,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 4,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 145.26 GB vs 11.5 GB usable CUDA memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run llama3.3:70b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=4096 ollama run llama3.3:70b",
+      "llama_cli": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-cli -hf bartowski/Llama-3.3-70B-Instruct-GGUF:Q4_K_M \\\n  -ngl 16 -c 4096 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-server -hf bartowski/Llama-3.3-70B-Instruct-GGUF:Q4_K_M \\\n  -ngl 16 -c 4096 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 4096,
+      "recommended_ngl": 16
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 1.25,
+      "max_smooth_context_q4": 0,
+      "bottleneck_summary": "Llama-3.3-70B packs 70.6B parameters across 80 layers, totaling 42.80 GB in Q4_K_M weights alone. Adding 8K FP16 KV cache (2.50 GB) and runtime overhead (1.56 GB) pushes the total to 46.86 GB. Subtracting KV cache and runtime buffers leaves just 7.44 GB on an RTX 3060 12GB—barely enough for 13 of 80 layers (17.4%), forcing over 35 GB of weights onto slow host RAM.",
+      "key_points": [
+        "Over 35.3 GB of weights must reside in system RAM (requiring 64 GB host RAM to avoid OS disk swap).",
+        "CPU-bound execution on 67 offloaded layers drops generation below ~1.5 tok/s even on fast DDR5 systems.",
+        "Each 4K of FP16 context consumes 1.25 GB of VRAM, quickly eating the RTX 3060's remaining capacity.",
+        "Even extreme 2-bit quants (IQ2_XXS, ~20 GB) still exceed 12 GB VRAM by a wide margin."
+      ],
+      "optimization_tips": [
+        "Switch to Llama-3.1-8B-Instruct (Q8_0) or DeepSeek-R1-Distill-Qwen-14B (Q4_K_M), which fit inside 12 GB VRAM.",
+        "If you must test 70B locally with an RTX 3060, ensure 64 GB system RAM and try IQ2_XS with -ngl 22 for batch runs.",
+        "For smooth 70B inference, step up to dual RTX 3090 (48 GB total VRAM) or an Apple Mac Studio with 64 GB+ RAM."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can an RTX 3060 12GB run Llama-3.3-70B?",
+        "answer": "Practically no (OOM for GPU residency). Q4_K_M requires 46.86 GB at 8K context, so only ~17.4% (13/80 layers) fits on the RTX 3060, forcing almost all inference onto your CPU and system RAM."
+      },
+      {
+        "question": "How much system RAM would I need to CPU-offload Llama-3.3-70B alongside an RTX 3060?",
+        "answer": "You need at least 64 GB of dual-channel DDR4/DDR5 system RAM just to hold the remaining 35+ GB of weights plus OS overhead without crashing or thrashing an NVMe pagefile."
+      },
+      {
+        "question": "What is the largest Llama or Qwen model that runs smoothly on an RTX 3060 12GB?",
+        "answer": "14B-class models (like DeepSeek-R1-Distill-Qwen-14B or Qwen2.5-Coder-14B) at Q4_K_M (~10.7 GB total at 4K–8K context) fit 100% in 12 GB VRAM and run smoothly around 23–26 tok/s."
+      },
+      {
+        "question": "What hardware is needed to run Llama-3.3-70B smoothly at 8K+ context?",
+        "answer": "You need over 47 GB of usable GPU/unified memory—for example an Apple M1/M2/M3/M4 Max 64GB, or dual 24 GB NVIDIA GPUs (2x RTX 3090 or 2x RTX 4090)."
+      }
+    ],
+    "related_slugs": []
+  }
+]
