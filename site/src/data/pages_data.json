@@ -891,5 +891,4601 @@
       }
     ],
     "related_slugs": []
+  },
+  {
+    "slug": "deepseek-r1-1.5b-on-apple-m1-8gb",
+    "title": "DeepSeek-R1 1.5B on Apple M1 8GB: Smooth at 49.4 tok/s & 64K Context",
+    "meta_description": "Smooth: DeepSeek-R1-Distill-Qwen-1.5B Q4_K_M uses just 1.65 GB at 8K context on Apple M1 8GB (6.0 GB usable) and reaches ~49.4 tok/s. Full quant & CLI guide.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "deepseek-r1-1.5b",
+      "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+      "short_name": "DeepSeek-R1 1.5B",
+      "family": "DeepSeek-R1",
+      "params_b": 1.5,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 28,
+      "num_kv_heads": 2,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "deepseek-r1:1.5b",
+      "hf_repo": "bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF",
+      "gguf_file_q4": "DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf",
+      "release_year": 2025,
+      "use_cases": [
+        "Edge reasoning",
+        "Fast math scratchpad",
+        "Ultrabook offline assistant"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-8gb",
+      "name": "Apple M1 (8GB Unified)",
+      "short_name": "M1 8GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 8.0,
+      "usable_vram_gb": 6.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 999
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 0.91,
+      "kv_cache_gb": 0.22,
+      "overhead_gb": 0.52,
+      "total_vram_gb": 1.65,
+      "status": "Smooth",
+      "est_tps": 49.4,
+      "gpu_layers_fit": 28,
+      "total_layers": 28,
+      "gpu_fraction": 1.0
+    },
+    "verdict_summary": "DeepSeek-R1-Distill-Qwen-1.5B flies on an 8GB Apple M1: Q4_K_M needs just 1.65 GB at 8K context for ~49.4 tok/s, and even Q8_0 (2.33 GB) or FP16 (3.74 GB) fits inside the 6.0 GB Metal ceiling.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 0.91,
+        "kv_cache_8k_gb": 0.22,
+        "overhead_gb": 0.52,
+        "total_vram_8k_gb": 1.65,
+        "est_tps": 49.4,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (4.3 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 1.07,
+        "kv_cache_8k_gb": 0.22,
+        "overhead_gb": 0.52,
+        "total_vram_8k_gb": 1.81,
+        "est_tps": 43.3,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Sweet spot: higher fidelity with 4.2 GB headroom."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 1.24,
+        "kv_cache_8k_gb": 0.22,
+        "overhead_gb": 0.52,
+        "total_vram_8k_gb": 1.98,
+        "est_tps": 37.9,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Sweet spot: higher fidelity with 4.0 GB headroom."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 1.59,
+        "kv_cache_8k_gb": 0.22,
+        "overhead_gb": 0.52,
+        "total_vram_8k_gb": 2.33,
+        "est_tps": 30.3,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": true,
+        "notes": "Near-BF16 precision; fits cleanly with 3.7 GB left."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 3.0,
+        "kv_cache_8k_gb": 0.22,
+        "overhead_gb": 0.52,
+        "total_vram_8k_gb": 3.74,
+        "est_tps": 17.1,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Unquantized FP16; 2.3 GB headroom remaining."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run deepseek-r1:1.5b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=32768 ollama run deepseek-r1:1.5b",
+      "llama_cli": "llama-cli -hf bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 32768,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.11,
+      "max_smooth_context_q4": 65536,
+      "bottleneck_summary": "Thanks to its compact 1.5B parameter count and 2-head GQA geometry (0.11 GB per 4K FP16 KV tokens), DeepSeek-R1 1.5B faces zero memory pressure on an 8GB M1 MacBook Air or Mac mini. At 64K context on Q4_K_M, total allocation reaches only 3.18 GB—leaving nearly half of the 6.0 GB wired GPU pool free, so decode speed scales cleanly with the M1's 68 GB/s LPDDR4X memory bus.",
+      "key_points": [
+        "Q4_K_M weights (0.91 GB) plus 8K KV cache (0.22 GB) and 0.52 GB Metal buffer total 1.65 GB at ~49.4 tok/s.",
+        "Q8_0 is recommended for higher math/reasoning fidelity at 2.33 GB total and ~30.3 tok/s across all 28 layers.",
+        "Even unquantized FP16 (3.74 GB at 8K, 5.27 GB at 64K) remains 100% GPU-resident within the 6.0 GB budget.",
+        "At 64K context with Q4_K_M (3.18 GB), throughput holds steady at ~28.2 tok/s without triggering macOS swap."
+      ],
+      "optimization_tips": [
+        "Use Q8_0 instead of Q4_K_M on M1 8GB: at 1.5B scale, 8-bit quantization preserves chain-of-thought math accuracy while staying at ~30.3 tok/s.",
+        "Enable OLLAMA_FLASH_ATTENTION=1 and OLLAMA_NUM_CTX=32768 so long <think> traces never truncate mid-proof.",
+        "Fanless M1 MacBook Air units handle sustained 1.5B inference well, though long 32K prefill bursts may warm the chassis slightly."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can an 8GB M1 MacBook Air run DeepSeek-R1 1.5B smoothly alongside Safari and VS Code?",
+        "answer": "Yes. Q4_K_M takes only 1.65 GB at 8K context (and Q8_0 takes 2.33 GB), leaving plenty of unified RAM for macOS, browser tabs, and an IDE without heavy swap pressure."
+      },
+      {
+        "question": "Should I pick Q4_K_M or Q8_0 for DeepSeek-R1 1.5B on M1 8GB?",
+        "answer": "Pick Q8_0 whenever possible. Small 1.5B models lose noticeable reasoning precision under 4-bit quantization, and Q8_0 still streams at a brisk ~30.3 tok/s inside just 2.33 GB."
+      },
+      {
+        "question": "What is the maximum context length I can use on M1 8GB with DeepSeek-R1 1.5B?",
+        "answer": "All the way to 64K context cleanly: Q4_K_M uses 3.18 GB at 64K (~28.2 tok/s), and even FP16 fits 64K at 5.27 GB under the 6.0 GB Metal wired limit."
+      },
+      {
+        "question": "How much faster is DeepSeek-R1 1.5B on M1 Pro 16GB compared to base M1 8GB?",
+        "answer": "Base M1 (68 GB/s) hits ~49.4 tok/s at Q4_K_M 8K, whereas M1 Pro (200 GB/s) nearly triples decode speed to ~145.3 tok/s thanks to its wider LPDDR5 memory bus."
+      }
+    ],
+    "related_slugs": [
+      "deepseek-r1-1.5b-on-apple-m1-16gb",
+      "deepseek-r1-1.5b-on-apple-m1-pro-16gb",
+      "deepseek-r1-7b-on-apple-m1-8gb",
+      "deepseek-r1-14b-on-apple-m1-8gb",
+      "deepseek-r1-32b-on-apple-m1-8gb",
+      "deepseek-r1-70b-on-apple-m1-8gb"
+    ]
+  },
+  {
+    "slug": "deepseek-r1-7b-on-apple-m1-8gb",
+    "title": "DeepSeek-R1 7B on Apple M1 8GB: Fits in Q4_K_M at 10.4 tok/s (8K Limit)",
+    "meta_description": "Smooth up to 8K: DeepSeek-R1-Distill-Qwen-7B Q4_K_M needs 5.66 GB on Apple M1 8GB (6.0 GB usable) at ~10.4 tok/s. Higher quants or 16K+ trigger swap.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "deepseek-r1-7b",
+      "name": "DeepSeek-R1-Distill-Qwen-7B",
+      "short_name": "DeepSeek-R1 7B",
+      "family": "DeepSeek-R1",
+      "params_b": 7.6,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 28,
+      "num_kv_heads": 4,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "deepseek-r1:7b",
+      "hf_repo": "bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF",
+      "gguf_file_q4": "DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf",
+      "release_year": 2025,
+      "use_cases": [
+        "Chain-of-thought reasoning",
+        "Local math & logic",
+        "8GB-12GB GPU workstations"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-8gb",
+      "name": "Apple M1 (8GB Unified)",
+      "short_name": "M1 8GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 8.0,
+      "usable_vram_gb": 6.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 999
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 4.61,
+      "kv_cache_gb": 0.44,
+      "overhead_gb": 0.61,
+      "total_vram_gb": 5.66,
+      "status": "Smooth",
+      "est_tps": 10.4,
+      "gpu_layers_fit": 28,
+      "total_layers": 28,
+      "gpu_fraction": 1.0
+    },
+    "verdict_summary": "DeepSeek-R1-Distill-Qwen-7B fits inside an 8GB Apple M1 in Q4_K_M up to 8K context (5.66 GB / 6.0 GB usable) at ~10.4 tok/s, but leaves almost no headroom for Q5_K_M or 16K+ contexts.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 4.61,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 5.66,
+        "est_tps": 10.4,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": true,
+        "notes": "Fits 100% in Metal memory (0.3 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 5.42,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 6.47,
+        "est_tps": 5.0,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 25,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Exceeds safe macOS wired ceiling; risks swap thrashing under load."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 6.27,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 7.32,
+        "est_tps": 4.3,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 22,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Exceeds safe macOS wired ceiling; risks swap thrashing under load."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 8.07,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 9.13,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 17,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Requires 9.13 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 15.2,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 16.25,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 9,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Requires 16.25 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run deepseek-r1:7b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=8192 ollama run deepseek-r1:7b",
+      "llama_cli": "llama-cli -hf bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF:Q4_K_M \\\n  -ngl 99 -c 8192 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF:Q4_K_M \\\n  -ngl 99 -c 8192 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 8192,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.22,
+      "max_smooth_context_q4": 8192,
+      "bottleneck_summary": "With 4.61 GB in Q4_K_M weights and 0.61 GB Metal buffer overhead, an 8GB M1 (6.0 GB wired GPU ceiling) only has ~0.78 GB left for KV cache. Because the 7B model's 4-head GQA cache adds 0.22 GB per 4K tokens, 8K context (5.66 GB total) fits smoothly, whereas 16K context (6.10 GB) crosses into Partial Offload and halves speed to ~5.5 tok/s.",
+      "key_points": [
+        "Q4_K_M at 4K (5.44 GB, ~10.7 tok/s) and 8K (5.66 GB, ~10.4 tok/s) keeps all 28 layers resident in Metal memory.",
+        "Stepping up to Q5_K_M (6.47 GB) or Q6_K (7.32 GB) exceeds the 6.0 GB safe limit, dropping throughput to ~5.0 and ~4.3 tok/s.",
+        "Q8_0 (9.13 GB) and FP16 (16.25 GB) exceed physical 8GB unified RAM and fail with OOM.",
+        "At 68 GB/s memory bandwidth, M1 matches comfortable reading pace (~10.4 tok/s) when background macOS memory stays light."
+      ],
+      "optimization_tips": [
+        "Keep context capped at 4K–8K in Ollama (`OLLAMA_NUM_CTX=8192`) and enable `OLLAMA_KV_CACHE_TYPE=q8_0` to preserve free RAM.",
+        "Quit memory-heavy Electron apps (Slack, extra Chrome tabs, Docker) before launching so macOS does not compress wired pages.",
+        "Never use Q5_K_M on an 8GB M1 for 7B models—the tiny quality gain costs 50% of your decode speed via swap pressure."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can an 8GB M1 Mac run DeepSeek-R1 7B without swapping?",
+        "answer": "Yes, strictly in Q4_K_M with context at or below 8K tokens (5.66 GB total vs 6.0 GB usable). Close heavy browser tabs to keep all 28 layers wired in Metal memory at ~10.4 tok/s."
+      },
+      {
+        "question": "Why does DeepSeek-R1 7B drop to ~5.5 tok/s at 16K context on M1 8GB?",
+        "answer": "At 16K FP16 KV cache (0.88 GB), total memory rises to 6.10 GB and crosses macOS's 6.0 GB wired GPU budget, triggering Partial Offload and memory compression."
+      },
+      {
+        "question": "Is Q4_K_M or Q5_K_M better for DeepSeek-R1 7B on M1 8GB?",
+        "answer": "Stick to Q4_K_M. While Q5_K_M needs 6.47 GB (just over the 6.0 GB limit), it spills 3 of 28 layers out of the wired pool and drops speed from ~10.4 tok/s down to ~5.0 tok/s."
+      },
+      {
+        "question": "What should I switch to if 8K context feels too short on M1 8GB?",
+        "answer": "Either enable `--cache-type-k q8_0 --cache-type-v q8_0` in llama.cpp to squeeze 12K–16K into 6.0 GB, or drop down to DeepSeek-R1 1.5B Q8_0 for effortless 32K–64K context at ~30 tok/s."
+      }
+    ],
+    "related_slugs": [
+      "deepseek-r1-7b-on-apple-m1-16gb",
+      "deepseek-r1-1.5b-on-apple-m1-8gb",
+      "deepseek-r1-14b-on-apple-m1-8gb",
+      "deepseek-r1-32b-on-apple-m1-8gb",
+      "deepseek-r1-70b-on-apple-m1-8gb",
+      "qwen2.5-coder-7b-on-apple-m1-8gb"
+    ]
+  },
+  {
+    "slug": "deepseek-r1-14b-on-apple-m1-8gb",
+    "title": "DeepSeek-R1 14B on Apple M1 8GB: OOM (Needs 11.19 GB vs 6.0 GB)",
+    "meta_description": "OOM on 8GB Mac: DeepSeek-R1-Distill-Qwen-14B Q4_K_M requires 11.19 GB at 8K context, exceeding Apple M1 8GB physical RAM. See exact breakdown & 7B alternatives.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "deepseek-r1-14b",
+      "name": "DeepSeek-R1-Distill-Qwen-14B",
+      "short_name": "DeepSeek-R1 14B",
+      "family": "DeepSeek-R1",
+      "params_b": 14.8,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 48,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "deepseek-r1:14b",
+      "hf_repo": "bartowski/DeepSeek-R1-Distill-Qwen-14B-GGUF",
+      "gguf_file_q4": "DeepSeek-R1-Distill-Qwen-14B-Q4_K_M.gguf",
+      "release_year": 2025,
+      "use_cases": [
+        "Mid-size reasoning",
+        "Algorithmic problem solving",
+        "16GB GPU sweet spot"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-8gb",
+      "name": "Apple M1 (8GB Unified)",
+      "short_name": "M1 8GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 8.0,
+      "usable_vram_gb": 6.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 999
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 8.97,
+      "kv_cache_gb": 1.5,
+      "overhead_gb": 0.72,
+      "total_vram_gb": 11.19,
+      "status": "OOM",
+      "est_tps": 0.0,
+      "gpu_layers_fit": 20,
+      "total_layers": 48,
+      "gpu_fraction": 0.421
+    },
+    "verdict_summary": "Out of Memory (OOM): DeepSeek-R1-Distill-Qwen-14B Q4_K_M needs 11.19 GB at 8K context—exceeding the M1 8GB Mac's total physical RAM and fitting only 20 of 48 layers in the 6.0 GB wired budget.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 8.97,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 11.19,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 20,
+        "total_layers": 48,
+        "recommended": true,
+        "notes": "Requires 11.19 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 10.55,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 12.77,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 17,
+        "total_layers": 48,
+        "recommended": false,
+        "notes": "Requires 12.77 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 12.21,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 14.43,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 14,
+        "total_layers": 48,
+        "recommended": false,
+        "notes": "Requires 14.43 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 15.73,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 17.95,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 11,
+        "total_layers": 48,
+        "recommended": false,
+        "notes": "Requires 17.95 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 29.6,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 31.82,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 6,
+        "total_layers": 48,
+        "recommended": false,
+        "notes": "Requires 31.82 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run deepseek-r1:14b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=4096 ollama run deepseek-r1:14b",
+      "llama_cli": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-cli -hf bartowski/DeepSeek-R1-Distill-Qwen-14B-GGUF:Q4_K_M \\\n  -ngl 24 -c 4096 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-server -hf bartowski/DeepSeek-R1-Distill-Qwen-14B-GGUF:Q4_K_M \\\n  -ngl 24 -c 4096 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 4096,
+      "recommended_ngl": 24
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.75,
+      "max_smooth_context_q4": 0,
+      "bottleneck_summary": "Even the Q4_K_M model weights alone occupy 8.97 GB before allocating the 0.72 GB Metal buffer or 1.50 GB of 8K KV cache (0.75 GB per 4K across 48 layers). Because total demand hits 10.44 GB at 4K and 11.19 GB at 8K against an 8GB unified pool, macOS immediately spills onto SSD swap and stalls.",
+      "key_points": [
+        "Q4_K_M requires 11.19 GB at 8K context—nearly 1.9x the M1 8GB's 6.0 GB usable GPU pool and 40% above physical RAM.",
+        "Even at 4K context (10.44 GB), only ~20–24 of 48 layers fit inside Metal memory before SSD swap thrashing begins.",
+        "Every 4K of FP16 context adds 0.75 GB because the 14B architecture doubles KV heads (8) and deepens to 48 layers.",
+        "Running 14B models on an 8GB Mac wears the internal SSD with heavy swap writes at under 1 tok/s."
+      ],
+      "optimization_tips": [
+        "Run DeepSeek-R1-Distill-Qwen-7B (Q4_K_M) instead: it needs 5.66 GB at 8K and runs smoothly at ~10.4 tok/s on M1 8GB.",
+        "Use DeepSeek-R1 1.5B (Q8_0, 2.33 GB) when you need long 32K+ chain-of-thought reasoning traces.",
+        "To run DeepSeek-R1 14B smoothly at 8K context on Apple Silicon, you need at least a 16GB unified-memory Mac (11.19 GB / 12.0 GB)."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can an 8GB M1 MacBook Air or Mac mini run DeepSeek-R1 14B?",
+        "answer": "No, not practically. Q4_K_M needs 10.44 GB at 4K context and 11.19 GB at 8K context, exceeding the entire 8 GB physical memory of the machine and causing severe SSD swap thrashing."
+      },
+      {
+        "question": "Would a 2-bit or 3-bit quant (IQ2_XS / Q2_K) make DeepSeek-R1 14B work on M1 8GB?",
+        "answer": "While a 2-bit quant shrinks weights to ~5.2 GB, adding KV cache and macOS overhead still crowds 8 GB RAM, and 2-bit quantization severely degrades reasoning quality compared to DeepSeek-R1 7B at Q4_K_M."
+      },
+      {
+        "question": "What is the largest DeepSeek-R1 model that runs smoothly on an Apple M1 8GB?",
+        "answer": "DeepSeek-R1-Distill-Qwen-7B at Q4_K_M (5.66 GB at 8K context, ~10.4 tok/s) is the largest model in the family that runs fully inside an 8GB M1 Mac."
+      },
+      {
+        "question": "How much unified memory do I need for DeepSeek-R1 14B on Apple Silicon?",
+        "answer": "A 16GB M1/M2/M3/M4 Mac (12.0 GB usable GPU budget) fits DeepSeek-R1 14B Q4_K_M at 4K–8K context (11.19 GB), while 24GB+ gives comfortable headroom for 16K–32K context or Q6_K."
+      }
+    ],
+    "related_slugs": [
+      "deepseek-r1-14b-on-apple-m1-16gb",
+      "deepseek-r1-1.5b-on-apple-m1-8gb",
+      "deepseek-r1-7b-on-apple-m1-8gb",
+      "deepseek-r1-32b-on-apple-m1-8gb",
+      "deepseek-r1-70b-on-apple-m1-8gb",
+      "qwen2.5-coder-7b-on-apple-m1-8gb"
+    ]
+  },
+  {
+    "slug": "deepseek-r1-32b-on-apple-m1-8gb",
+    "title": "DeepSeek-R1 32B on Apple M1 8GB: Hard OOM (22.88 GB Required)",
+    "meta_description": "OOM: DeepSeek-R1-Distill-Qwen-32B Q4_K_M needs 22.88 GB at 8K context—nearly 3x an Apple M1 8GB Mac's total RAM. Check memory gaps & M1-friendly alternatives.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "deepseek-r1-32b",
+      "name": "DeepSeek-R1-Distill-Qwen-32B",
+      "short_name": "DeepSeek-R1 32B",
+      "family": "DeepSeek-R1",
+      "params_b": 32.8,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 64,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "deepseek-r1:32b",
+      "hf_repo": "bartowski/DeepSeek-R1-Distill-Qwen-32B-GGUF",
+      "gguf_file_q4": "DeepSeek-R1-Distill-Qwen-32B-Q4_K_M.gguf",
+      "release_year": 2025,
+      "use_cases": [
+        "Deep STEM reasoning",
+        "Complex debugging",
+        "Code verification"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-8gb",
+      "name": "Apple M1 (8GB Unified)",
+      "short_name": "M1 8GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 8.0,
+      "usable_vram_gb": 6.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 999
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 19.88,
+      "kv_cache_gb": 2.0,
+      "overhead_gb": 0.99,
+      "total_vram_gb": 22.88,
+      "status": "OOM",
+      "est_tps": 0.0,
+      "gpu_layers_fit": 9,
+      "total_layers": 64,
+      "gpu_fraction": 0.151
+    },
+    "verdict_summary": "Hard Out of Memory (OOM): DeepSeek-R1-Distill-Qwen-32B Q4_K_M requires 22.88 GB at 8K context, exceeding an 8GB Apple M1's entire 8.0 GB RAM by nearly 3x with only 9 of 64 layers fitting in Metal.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 19.88,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 22.88,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 9,
+        "total_layers": 64,
+        "recommended": true,
+        "notes": "Requires 22.88 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 23.37,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 26.36,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 8,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 26.36 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 27.06,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 30.05,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 7,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 30.05 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 34.85,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 37.84,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 5,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 37.84 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 65.6,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 68.59,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 2,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 68.59 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run deepseek-r1:32b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=4096 ollama run deepseek-r1:32b",
+      "llama_cli": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-cli -hf bartowski/DeepSeek-R1-Distill-Qwen-32B-GGUF:Q4_K_M \\\n  -ngl 12 -c 4096 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-server -hf bartowski/DeepSeek-R1-Distill-Qwen-32B-GGUF:Q4_K_M \\\n  -ngl 12 -c 4096 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 4096,
+      "recommended_ngl": 12
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 1.0,
+      "max_smooth_context_q4": 0,
+      "bottleneck_summary": "DeepSeek-R1 32B packs 32.8B parameters across 64 layers, putting Q4_K_M weights alone at 19.88 GB plus 0.99 GB runtime buffer and 1.00 GB per 4K FP16 KV cache. Against an 8GB M1's 6.0 GB GPU budget, only 9 layers can stay resident, making local execution impossible without catastrophic SSD paging.",
+      "key_points": [
+        "Q4_K_M at 8K needs 22.88 GB—leaving a 16.88 GB deficit above the M1 8GB's 6.0 GB wired GPU ceiling.",
+        "Even at minimum 4K context, total memory stands at 21.88 GB, allowing barely 12 of 64 layers into Metal.",
+        "Higher quants scale far past laptop limits: Q6_K hits 30.05 GB and Q8_0 requires 37.84 GB at 8K.",
+        "Attempting to force 32B on 8GB RAM causes Ollama or llama.cpp to fail allocation or lock up macOS."
+      ],
+      "optimization_tips": [
+        "Downsize to DeepSeek-R1 7B Q4_K_M (5.66 GB, ~10.4 tok/s) for 8K reasoning inside 8GB unified memory.",
+        "For 32B-class DeepSeek-R1 on a Mac, upgrade to at least a 32GB M1/M2 Pro (24.0 GB usable) or 36GB M3 Pro.",
+        "For faster 32B decode alongside 64K context, look at an Apple M4 Pro 48GB (~9.7 tok/s) or RTX 4090 24GB (~37.6 tok/s)."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Why does DeepSeek-R1 32B fail to load on an 8GB M1 Mac?",
+        "answer": "Its Q4_K_M weights alone weigh 19.88 GB—more than double the Mac's 8 GB physical memory—so macOS cannot wire the tensors into Metal without exhausting RAM and swap."
+      },
+      {
+        "question": "How much unified memory does Apple Silicon need to run DeepSeek-R1 32B smoothly?",
+        "answer": "At least 32GB unified memory (24.0 GB wired limit) for 8K Q4_K_M (22.88 GB), or 48GB+ (like M4 Pro 48GB) if you want Q6_K quality or 32K–64K context headroom."
+      },
+      {
+        "question": "What DeepSeek-R1 model should I run instead on my 8GB M1?",
+        "answer": "Run DeepSeek-R1 7B Q4_K_M (5.66 GB, ~10.4 tok/s) for best reasoning per gigabyte, or DeepSeek-R1 1.5B Q8_0 (2.33 GB, ~30.3 tok/s) for ultra-fast responses and long context."
+      },
+      {
+        "question": "Can external USB4/Thunderbolt storage serve as swap for DeepSeek-R1 32B on M1 8GB?",
+        "answer": "No. SSD swap runs orders of magnitude slower than unified LPDDR4X memory (~68 GB/s), dropping generation to less than 0.2 tok/s and causing severe system freezes."
+      }
+    ],
+    "related_slugs": [
+      "deepseek-r1-32b-on-apple-m1-16gb",
+      "deepseek-r1-32b-on-apple-m4-pro-48gb",
+      "deepseek-r1-32b-on-rtx-4090-24gb",
+      "deepseek-r1-1.5b-on-apple-m1-8gb",
+      "deepseek-r1-7b-on-apple-m1-8gb",
+      "deepseek-r1-14b-on-apple-m1-8gb"
+    ]
+  },
+  {
+    "slug": "deepseek-r1-70b-on-apple-m1-8gb",
+    "title": "DeepSeek-R1 70B on Apple M1 8GB: OOM (46.86 GB vs 6.0 GB Usable)",
+    "meta_description": "Hard OOM: DeepSeek-R1-Distill-Llama-70B Q4_K_M requires 46.86 GB at 8K context on Apple M1 8GB, nearly 8x the 6.0 GB wired limit. View memory breakdown & upgrades.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "deepseek-r1-70b",
+      "name": "DeepSeek-R1-Distill-Llama-70B",
+      "short_name": "DeepSeek-R1 70B",
+      "family": "DeepSeek-R1",
+      "params_b": 70.6,
+      "architecture": "Llama-3 (Dense)",
+      "num_layers": 80,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "deepseek-r1:70b",
+      "hf_repo": "bartowski/DeepSeek-R1-Distill-Llama-70B-GGUF",
+      "gguf_file_q4": "DeepSeek-R1-Distill-Llama-70B-Q4_K_M.gguf",
+      "release_year": 2025,
+      "use_cases": [
+        "Frontier-class local reasoning",
+        "Research synthesis",
+        "High-memory Mac Studio / multi-GPU"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-8gb",
+      "name": "Apple M1 (8GB Unified)",
+      "short_name": "M1 8GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 8.0,
+      "usable_vram_gb": 6.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 999
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 42.8,
+      "kv_cache_gb": 2.5,
+      "overhead_gb": 1.56,
+      "total_vram_gb": 46.86,
+      "status": "OOM",
+      "est_tps": 0.0,
+      "gpu_layers_fit": 3,
+      "total_layers": 80,
+      "gpu_fraction": 0.045
+    },
+    "verdict_summary": "Severe OOM: DeepSeek-R1-Distill-Llama-70B Q4_K_M demands 46.86 GB at 8K context—almost 8x the Apple M1 8GB's 6.0 GB Metal budget, fitting only 3 of 80 layers.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 42.8,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 46.86,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 3,
+        "total_layers": 80,
+        "recommended": true,
+        "notes": "Requires 46.86 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 50.3,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 54.36,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 3,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 54.36 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 58.24,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 62.3,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 2,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 62.3 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 75.01,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 79.07,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 2,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 79.07 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 141.2,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 145.26,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 1,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 145.26 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run deepseek-r1:70b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=4096 ollama run deepseek-r1:70b",
+      "llama_cli": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-cli -hf bartowski/DeepSeek-R1-Distill-Llama-70B-GGUF:Q4_K_M \\\n  -ngl 5 -c 4096 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-server -hf bartowski/DeepSeek-R1-Distill-Llama-70B-GGUF:Q4_K_M \\\n  -ngl 5 -c 4096 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 4096,
+      "recommended_ngl": 5
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 1.25,
+      "max_smooth_context_q4": 0,
+      "bottleneck_summary": "Built on Llama-3 70.6B with 80 transformer layers, DeepSeek-R1 70B weighs 42.80 GB in Q4_K_M before adding 2.50 GB for 8K KV cache and 1.56 GB of runtime buffers. An 8GB M1 Mac falls over 40 GB short of the minimum threshold, placing this pairing solidly in the cloud-API or Mac Studio territory.",
+      "key_points": [
+        "Q4_K_M at 8K (46.86 GB) exceeds the M1 8GB's 6.0 GB usable GPU budget by 40.86 GB.",
+        "Every 4K of context adds 1.25 GB of FP16 KV cache across 80 layers, pushing 32K context to 54.36 GB.",
+        "At Q4_K_M 8K, barely 3 of 80 layers fit in wired Metal memory; Q8_0 balloons to 79.07 GB.",
+        "Even if loaded into swap, 68 GB/s memory bandwidth plus NVMe thrashing makes generation unviable."
+      ],
+      "optimization_tips": [
+        "Use DeepSeek-R1 7B Q4_K_M (5.66 GB, ~10.4 tok/s) as the maximum practical local reasoning model on 8GB M1.",
+        "To run 70B locally on Apple Silicon, target a 64GB M1/M2/M3/M4 Max (49.9 GB usable) or 128GB+ Mac Studio.",
+        "Consider remote inference APIs or a Linux dual-GPU server (2× RTX 3090/4090 = 48 GB VRAM) for 70B workloads."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Is there any way to run DeepSeek-R1 70B on an 8GB M1 Mac?",
+        "answer": "No. Even Q4_K_M weighs 42.80 GB (46.86 GB total at 8K), nearly six times the physical 8 GB RAM of the machine."
+      },
+      {
+        "question": "How much Mac unified memory is required for DeepSeek-R1 70B?",
+        "answer": "You need at least a 64GB Apple Silicon Mac (49.9 GB usable Metal budget) to fit Q4_K_M at 4K–8K context (46.86 GB), or 96GB–128GB for comfortable 32K–64K contexts and Q6_K/Q8_0."
+      },
+      {
+        "question": "Why does 8K KV cache on DeepSeek-R1 70B take 2.50 GB while 7B takes only 0.44 GB?",
+        "answer": "DeepSeek-R1 70B uses 80 layers and 8 KV heads per layer (1.25 GB per 4K tokens), whereas the 7B model uses 28 layers and 4 KV heads (0.22 GB per 4K tokens)."
+      },
+      {
+        "question": "Which local DeepSeek-R1 model performs best on Apple M1 8GB?",
+        "answer": "DeepSeek-R1 7B Q4_K_M (5.66 GB, ~10.4 tok/s) gives the strongest reasoning accuracy that fits completely inside 8GB unified memory."
+      }
+    ],
+    "related_slugs": [
+      "deepseek-r1-70b-on-apple-m1-16gb",
+      "deepseek-r1-1.5b-on-apple-m1-8gb",
+      "deepseek-r1-7b-on-apple-m1-8gb",
+      "deepseek-r1-14b-on-apple-m1-8gb",
+      "deepseek-r1-32b-on-apple-m1-8gb",
+      "qwen2.5-coder-7b-on-apple-m1-8gb"
+    ]
+  },
+  {
+    "slug": "qwen2.5-coder-7b-on-apple-m1-8gb",
+    "title": "Qwen2.5-Coder 7B on Apple M1 8GB: Smooth Coding at 10.4 tok/s (8K)",
+    "meta_description": "Smooth up to 8K: Qwen2.5-Coder-7B-Instruct Q4_K_M uses 5.66 GB on Apple M1 8GB (6.0 GB usable) at ~10.4 tok/s. See IDE copilot setup & 16K swap limits.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "qwen2.5-coder-7b",
+      "name": "Qwen2.5-Coder-7B-Instruct",
+      "short_name": "Qwen2.5-Coder 7B",
+      "family": "Qwen2.5-Coder",
+      "params_b": 7.6,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 28,
+      "num_kv_heads": 4,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "qwen2.5-coder:7b",
+      "hf_repo": "bartowski/Qwen2.5-Coder-7B-Instruct-GGUF",
+      "gguf_file_q4": "Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf",
+      "release_year": 2024,
+      "use_cases": [
+        "IDE autocomplete",
+        "Fast FIM snippets",
+        "Low-latency local copilot"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-8gb",
+      "name": "Apple M1 (8GB Unified)",
+      "short_name": "M1 8GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 8.0,
+      "usable_vram_gb": 6.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 999
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 4.61,
+      "kv_cache_gb": 0.44,
+      "overhead_gb": 0.61,
+      "total_vram_gb": 5.66,
+      "status": "Smooth",
+      "est_tps": 10.4,
+      "gpu_layers_fit": 28,
+      "total_layers": 28,
+      "gpu_fraction": 1.0
+    },
+    "verdict_summary": "Qwen2.5-Coder-7B-Instruct runs smoothly on an 8GB Apple M1 in Q4_K_M up to 8K context (5.66 GB / 6.0 GB) at ~10.4 tok/s, making it the flagship local coding assistant for entry-level M1 Macs.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 4.61,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 5.66,
+        "est_tps": 10.4,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": true,
+        "notes": "Fits 100% in Metal memory (0.3 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 5.42,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 6.47,
+        "est_tps": 5.0,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 25,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Exceeds safe macOS wired ceiling; risks swap thrashing under load."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 6.27,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 7.32,
+        "est_tps": 4.3,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 22,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Exceeds safe macOS wired ceiling; risks swap thrashing under load."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 8.07,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 9.13,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 17,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Requires 9.13 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 15.2,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 16.25,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 9,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Requires 16.25 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen2.5-coder:7b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=8192 ollama run qwen2.5-coder:7b",
+      "llama_cli": "llama-cli -hf bartowski/Qwen2.5-Coder-7B-Instruct-GGUF:Q4_K_M \\\n  -ngl 99 -c 8192 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf bartowski/Qwen2.5-Coder-7B-Instruct-GGUF:Q4_K_M \\\n  -ngl 99 -c 8192 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 8192,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.22,
+      "max_smooth_context_q4": 8192,
+      "bottleneck_summary": "With 4.61 GB Q4_K_M weights and 0.61 GB Metal runtime overhead, Qwen2.5-Coder 7B leaves just 0.78 GB below the 6.0 GB wired ceiling on an 8GB M1. Its lightweight 0.22 GB per 4K KV footprint lets 4K (5.44 GB) and 8K (5.66 GB) stay 100% GPU-resident, whereas 16K context (6.10 GB) crosses into Partial Offload (~5.5 tok/s).",
+      "key_points": [
+        "Q4_K_M fits all 28 layers in Metal at 4K (~10.7 tok/s) and 8K (~10.4 tok/s) with zero CPU/SSD spill.",
+        "Q5_K_M (6.47 GB) and Q6_K (7.32 GB) trigger Partial Offload on 8GB Macs, cutting throughput down to ~5.0 and ~4.3 tok/s.",
+        "Q8_0 (9.13 GB) and FP16 (16.25 GB) exceed 8GB physical unified RAM and result in OOM.",
+        "68 GB/s memory bandwidth yields ~10.4 tok/s—fast enough for inline function edits, single-file diffs, and SQL queries."
+      ],
+      "optimization_tips": [
+        "Use `OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0` with an 8K context cap for VS Code Continue/Cline extensions.",
+        "Trim attached files in IDE chat to stay within 4K–8K tokens; exceeding 8K on FP16 KV cache immediately halves speed.",
+        "Keep Chrome/Docker memory lean while coding locally—ideally under 2.0 GB active app RAM outside Ollama."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Is Qwen2.5-Coder 7B good enough for local VS Code autocomplete on M1 8GB?",
+        "answer": "For single-file Q&A, refactoring snippets, and SQL/Python helpers at Q4_K_M (~10.4 tok/s), yes. For sub-second keystroke FIM autocomplete, the M1's 68 GB/s bus is slower than an RTX GPU (~60+ tok/s)."
+      },
+      {
+        "question": "Why does 16K context slow Qwen2.5-Coder 7B down on an 8GB M1?",
+        "answer": "At 16K context, FP16 KV cache rises from 0.44 GB to 0.88 GB, pushing total allocation to 6.10 GB—just over the 6.0 GB wired GPU cap—causing Partial Offload and dropping speed from ~10.4 to ~5.5 tok/s."
+      },
+      {
+        "question": "Can I run Qwen2.5-Coder 7B Q5_K_M or Q6_K on M1 8GB?",
+        "answer": "Only with Partial Offload: Q5_K_M uses 6.47 GB (25/28 layers wired) at ~5.0 tok/s, while Q6_K uses 7.32 GB (22/28 layers) at ~4.3 tok/s. Q4_K_M is strongly recommended instead."
+      },
+      {
+        "question": "How much faster is Qwen2.5-Coder 7B on a 16GB M1 vs 8GB M1?",
+        "answer": "Both share the same 68 GB/s bandwidth, so Q4_K_M decode speed stays ~10.4 tok/s, but the 16GB M1 unlocks Q8_0 (9.13 GB, ~6.2 tok/s) and up to 64K context smoothly."
+      }
+    ],
+    "related_slugs": [
+      "qwen2.5-coder-7b-on-apple-m1-16gb",
+      "deepseek-r1-1.5b-on-apple-m1-8gb",
+      "deepseek-r1-7b-on-apple-m1-8gb",
+      "deepseek-r1-14b-on-apple-m1-8gb",
+      "deepseek-r1-32b-on-apple-m1-8gb",
+      "deepseek-r1-70b-on-apple-m1-8gb"
+    ]
+  },
+  {
+    "slug": "qwen2.5-coder-14b-on-apple-m1-8gb",
+    "title": "Qwen2.5-Coder 14B on Apple M1 8GB: OOM (11.19 GB Needed vs 6.0 GB)",
+    "meta_description": "OOM on M1 8GB: Qwen2.5-Coder-14B-Instruct Q4_K_M needs 11.19 GB at 8K context, exceeding 8GB physical RAM. See exact memory gap & 7B Smooth setup.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "qwen2.5-coder-14b",
+      "name": "Qwen2.5-Coder-14B-Instruct",
+      "short_name": "Qwen2.5-Coder 14B",
+      "family": "Qwen2.5-Coder",
+      "params_b": 14.8,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 48,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "qwen2.5-coder:14b",
+      "hf_repo": "bartowski/Qwen2.5-Coder-14B-Instruct-GGUF",
+      "gguf_file_q4": "Qwen2.5-Coder-14B-Instruct-Q4_K_M.gguf",
+      "release_year": 2024,
+      "use_cases": [
+        "Multi-file refactoring",
+        "Unit test generation",
+        "16GB GPU coding agent"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-8gb",
+      "name": "Apple M1 (8GB Unified)",
+      "short_name": "M1 8GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 8.0,
+      "usable_vram_gb": 6.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 999
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 8.97,
+      "kv_cache_gb": 1.5,
+      "overhead_gb": 0.72,
+      "total_vram_gb": 11.19,
+      "status": "OOM",
+      "est_tps": 0.0,
+      "gpu_layers_fit": 20,
+      "total_layers": 48,
+      "gpu_fraction": 0.421
+    },
+    "verdict_summary": "Out of Memory (OOM): Qwen2.5-Coder-14B-Instruct Q4_K_M requires 11.19 GB at 8K context—exceeding an 8GB Apple M1's physical memory and leaving only 20 of 48 layers inside the 6.0 GB wired pool.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 8.97,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 11.19,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 20,
+        "total_layers": 48,
+        "recommended": true,
+        "notes": "Requires 11.19 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 10.55,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 12.77,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 17,
+        "total_layers": 48,
+        "recommended": false,
+        "notes": "Requires 12.77 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 12.21,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 14.43,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 14,
+        "total_layers": 48,
+        "recommended": false,
+        "notes": "Requires 14.43 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 15.73,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 17.95,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 11,
+        "total_layers": 48,
+        "recommended": false,
+        "notes": "Requires 17.95 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 29.6,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 31.82,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 6,
+        "total_layers": 48,
+        "recommended": false,
+        "notes": "Requires 31.82 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen2.5-coder:14b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=4096 ollama run qwen2.5-coder:14b",
+      "llama_cli": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-cli -hf bartowski/Qwen2.5-Coder-14B-Instruct-GGUF:Q4_K_M \\\n  -ngl 24 -c 4096 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-server -hf bartowski/Qwen2.5-Coder-14B-Instruct-GGUF:Q4_K_M \\\n  -ngl 24 -c 4096 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 4096,
+      "recommended_ngl": 24
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.75,
+      "max_smooth_context_q4": 0,
+      "bottleneck_summary": "Qwen2.5-Coder 14B weighs 8.97 GB in Q4_K_M alone before factoring in 0.72 GB of Metal runtime overhead and 0.75 GB per 4K tokens of FP16 KV cache (48 layers, 8 KV heads). Because even a 4K context window needs 10.44 GB, an 8GB M1 cannot keep the model in RAM and hits immediate OOM/swap deadlock.",
+      "key_points": [
+        "Q4_K_M at 8K (11.19 GB) overshoots the 6.0 GB Metal wired budget by 5.19 GB and exceeds total 8 GB system RAM.",
+        "At 4K context (10.44 GB), less than half of the 48 transformer layers (24/48) fit inside the GPU budget.",
+        "Q5_K_M climbs to 12.77 GB and Q8_0 hits 17.95 GB, putting higher quants strictly out of reach on 8GB hardware.",
+        "Heavy macOS swap activity freezes your IDE and degrades SSD endurance without usable token throughput."
+      ],
+      "optimization_tips": [
+        "Switch to Qwen2.5-Coder-7B-Instruct (Q4_K_M, 5.66 GB at 8K), which runs 100% smoothly at ~10.4 tok/s on M1 8GB.",
+        "If you specifically need Qwen2.5-Coder 14B, step up to at least a 16GB Apple Silicon Mac (11.19 GB / 12.0 GB usable) or a 12GB+ RTX GPU.",
+        "Use Continue or Cursor against a hosted endpoint for repo-wide 14B/32B refactoring while keeping 7B local for offline coding."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can I run Qwen2.5-Coder 14B in Ollama on an 8GB M1 Mac?",
+        "answer": "No. Ollama's default Q4_K_M build needs 10.44–11.19 GB total memory, which exceeds 8 GB RAM and either fails to allocate or thrashes macOS SSD swap."
+      },
+      {
+        "question": "Does Qwen2.5-Coder 7B work on M1 8GB instead of 14B?",
+        "answer": "Yes. Qwen2.5-Coder 7B Q4_K_M requires 5.66 GB at 8K context and fits cleanly inside the 6.0 GB usable Metal pool at ~10.4 tok/s."
+      },
+      {
+        "question": "Will 16GB M1 run Qwen2.5-Coder 14B smoothly?",
+        "answer": "Yes at 4K–8K context: a 16GB M1 provides 12.0 GB usable Metal memory, fitting Q4_K_M (11.19 GB at 8K) at ~5.2 tok/s."
+      },
+      {
+        "question": "Why does 14B grow context memory over 3x faster than 7B?",
+        "answer": "Qwen2.5-Coder 14B has 48 layers and 8 KV heads (0.75 GB per 4K), whereas the 7B model has 28 layers and 4 KV heads (0.22 GB per 4K)."
+      }
+    ],
+    "related_slugs": [
+      "qwen2.5-coder-14b-on-apple-m1-16gb",
+      "deepseek-r1-1.5b-on-apple-m1-8gb",
+      "deepseek-r1-7b-on-apple-m1-8gb",
+      "deepseek-r1-14b-on-apple-m1-8gb",
+      "deepseek-r1-32b-on-apple-m1-8gb",
+      "deepseek-r1-70b-on-apple-m1-8gb"
+    ]
+  },
+  {
+    "slug": "qwen2.5-coder-32b-on-apple-m1-8gb",
+    "title": "Qwen2.5-Coder 32B on Apple M1 8GB: OOM (22.88 GB Required)",
+    "meta_description": "OOM: Qwen2.5-Coder-32B-Instruct Q4_K_M needs 22.88 GB at 8K context on Apple M1 8GB (only 9/64 layers fit). Compare 7B local options & 32GB+ upgrades.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "qwen2.5-coder-32b",
+      "name": "Qwen2.5-Coder-32B-Instruct",
+      "short_name": "Qwen2.5-Coder 32B",
+      "family": "Qwen2.5-Coder",
+      "params_b": 32.8,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 64,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "qwen2.5-coder:32b",
+      "hf_repo": "bartowski/Qwen2.5-Coder-32B-Instruct-GGUF",
+      "gguf_file_q4": "Qwen2.5-Coder-32B-Instruct-Q4_K_M.gguf",
+      "release_year": 2024,
+      "use_cases": [
+        "Full-repo code review",
+        "Agentic coding",
+        "SQL & architecture generation"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-8gb",
+      "name": "Apple M1 (8GB Unified)",
+      "short_name": "M1 8GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 8.0,
+      "usable_vram_gb": 6.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 999
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 19.88,
+      "kv_cache_gb": 2.0,
+      "overhead_gb": 0.99,
+      "total_vram_gb": 22.88,
+      "status": "OOM",
+      "est_tps": 0.0,
+      "gpu_layers_fit": 9,
+      "total_layers": 64,
+      "gpu_fraction": 0.151
+    },
+    "verdict_summary": "Out of Memory (OOM): Qwen2.5-Coder-32B-Instruct Q4_K_M requires 22.88 GB at 8K context, nearly quadruple the 8GB M1's 6.0 GB wired ceiling with only 9 of 64 layers fitting in Metal.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 19.88,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 22.88,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 9,
+        "total_layers": 64,
+        "recommended": true,
+        "notes": "Requires 22.88 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 23.37,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 26.36,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 8,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 26.36 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 27.06,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 30.05,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 7,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 30.05 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 34.85,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 37.84,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 5,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 37.84 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 65.6,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 68.59,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 2,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 68.59 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen2.5-coder:32b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=4096 ollama run qwen2.5-coder:32b",
+      "llama_cli": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-cli -hf bartowski/Qwen2.5-Coder-32B-Instruct-GGUF:Q4_K_M \\\n  -ngl 12 -c 4096 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-server -hf bartowski/Qwen2.5-Coder-32B-Instruct-GGUF:Q4_K_M \\\n  -ngl 12 -c 4096 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 4096,
+      "recommended_ngl": 12
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 1.0,
+      "max_smooth_context_q4": 0,
+      "bottleneck_summary": "Designed for multi-file repo editing, Qwen2.5-Coder 32B packs 19.88 GB of Q4_K_M weights plus 0.99 GB runtime overhead and 1.00 GB per 4K FP16 KV cache across 64 layers. An 8GB M1 Mac has barely a quarter of the required capacity, making local execution impossible.",
+      "key_points": [
+        "Q4_K_M at 8K (22.88 GB) exceeds the 6.0 GB wired GPU ceiling by 16.88 GB and total 8 GB RAM by 14.88 GB.",
+        "At 4K context (21.88 GB), just 12 of 64 layers fit inside the GPU budget; Q6_K jumps to 30.05 GB.",
+        "Even if an aggressive quant existed, 68 GB/s memory bandwidth would cap 32B decode speed under 3 tok/s.",
+        "MacOS aggressively kills or stalls processes that try to allocate ~20 GB of wired tensors on an 8GB host."
+      ],
+      "optimization_tips": [
+        "Run Qwen2.5-Coder-7B-Instruct Q4_K_M (5.66 GB, ~10.4 tok/s) for reliable offline coding on an 8GB M1.",
+        "To run Qwen2.5-Coder 32B locally, move to a 32GB+ Apple Silicon Mac (36GB M3 Pro / 48GB M4 Pro) or RTX 4090 / RTX 5090.",
+        "On an RTX 4060 Ti 16GB desktop, Qwen2.5-Coder 32B can Partial Offload at ~3.7 tok/s, unlike an 8GB laptop."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can an 8GB M1 MacBook run Qwen2.5-Coder 32B?",
+        "answer": "No. Q4_K_M needs 21.88 GB even at 4K context (22.88 GB at 8K), nearly triple the total 8 GB unified memory on the laptop."
+      },
+      {
+        "question": "What coding model works best on an Apple M1 8GB?",
+        "answer": "Qwen2.5-Coder-7B-Instruct Q4_K_M (5.66 GB at 8K context, ~10.4 tok/s) fits 100% in Metal memory and delivers strong single-file coding assistance."
+      },
+      {
+        "question": "What Mac specs do I need for Qwen2.5-Coder 32B?",
+        "answer": "Minimum 32GB unified memory (M1/M2 Pro 32GB has 24.0 GB usable for 8K Q4_K_M at 22.88 GB), or 48GB–64GB if you want 32K–64K multi-file repo context."
+      },
+      {
+        "question": "How fast does Qwen2.5-Coder 32B run on dedicated GPUs like RTX 5090?",
+        "answer": "With 1,792 GB/s GDDR7 bandwidth, an RTX 5090 32GB runs Qwen2.5-Coder 32B Q4_K_M at ~66.9 tok/s and Q6_K at ~50.5 tok/s."
+      }
+    ],
+    "related_slugs": [
+      "qwen2.5-coder-32b-on-apple-m1-16gb",
+      "qwen2.5-coder-32b-on-rtx-4060-ti-16gb",
+      "qwen2.5-coder-32b-on-rtx-5090-32gb",
+      "deepseek-r1-1.5b-on-apple-m1-8gb",
+      "deepseek-r1-7b-on-apple-m1-8gb",
+      "deepseek-r1-14b-on-apple-m1-8gb"
+    ]
+  },
+  {
+    "slug": "llama-3.3-70b-on-apple-m1-8gb",
+    "title": "Llama-3.3 70B on Apple M1 8GB: OOM (46.86 GB vs 6.0 GB Usable)",
+    "meta_description": "Hard OOM: Llama-3.3-70B-Instruct Q4_K_M requires 46.86 GB at 8K context on Apple M1 8GB, nearly 8x the 6.0 GB wired limit. See 8B & 64GB Mac alternatives.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "llama-3.3-70b",
+      "name": "Llama-3.3-70B-Instruct",
+      "short_name": "Llama-3.3 70B",
+      "family": "Llama-3.3",
+      "params_b": 70.6,
+      "architecture": "Llama-3 (Dense)",
+      "num_layers": 80,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "llama3.3:70b",
+      "hf_repo": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+      "gguf_file_q4": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+      "release_year": 2024,
+      "use_cases": [
+        "General-purpose flagship assistant",
+        "Long-document synthesis",
+        "Structured JSON & tool calling"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-8gb",
+      "name": "Apple M1 (8GB Unified)",
+      "short_name": "M1 8GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 8.0,
+      "usable_vram_gb": 6.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 999
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 42.8,
+      "kv_cache_gb": 2.5,
+      "overhead_gb": 1.56,
+      "total_vram_gb": 46.86,
+      "status": "OOM",
+      "est_tps": 0.0,
+      "gpu_layers_fit": 3,
+      "total_layers": 80,
+      "gpu_fraction": 0.045
+    },
+    "verdict_summary": "Hard Out of Memory (OOM): Llama-3.3-70B-Instruct Q4_K_M requires 46.86 GB at 8K context—almost 8x the 8GB M1's 6.0 GB Metal budget, leaving room for just 3 of 80 layers.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 42.8,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 46.86,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 3,
+        "total_layers": 80,
+        "recommended": true,
+        "notes": "Requires 46.86 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 50.3,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 54.36,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 3,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 54.36 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 58.24,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 62.3,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 2,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 62.3 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 75.01,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 79.07,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 2,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 79.07 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 141.2,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 145.26,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 1,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 145.26 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run llama3.3:70b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=4096 ollama run llama3.3:70b",
+      "llama_cli": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-cli -hf bartowski/Llama-3.3-70B-Instruct-GGUF:Q4_K_M \\\n  -ngl 5 -c 4096 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-server -hf bartowski/Llama-3.3-70B-Instruct-GGUF:Q4_K_M \\\n  -ngl 5 -c 4096 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 4096,
+      "recommended_ngl": 5
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 1.25,
+      "max_smooth_context_q4": 0,
+      "bottleneck_summary": "With 70.6B parameters and 80 layers, Llama-3.3 70B demands 42.80 GB for Q4_K_M weights alone, plus 1.56 GB of runtime overhead and 2.50 GB for 8K FP16 KV cache. On an 8GB M1 MacBook, only 3–5 layers can occupy wired memory, making local execution physically impossible.",
+      "key_points": [
+        "Q4_K_M needs 45.61 GB at 4K and 46.86 GB at 8K—over 40 GB beyond the M1 8GB's 6.0 GB wired pool.",
+        "80-layer KV cache expands at 1.25 GB per 4K tokens, pushing 64K context to 64.36 GB even at Q4_K_M.",
+        "Q8_0 (79.07 GB) and FP16 (145.26 GB) require Mac Studio Ultra or multi-GPU enterprise nodes.",
+        "Only ~4% of the model (3/80 layers) fits in the 8GB M1's Metal budget at 8K context."
+      ],
+      "optimization_tips": [
+        "Run Llama-3.1-8B-Instruct Q4_K_M at 4K context (5.97 GB, ~9.9 tok/s) for a smooth Llama experience on 8GB M1.",
+        "To run Llama-3.3 70B smoothly on Apple Silicon, choose a 64GB Max (49.9 GB usable) or 128GB+ Mac Studio.",
+        "Avoid attempting extreme 1-bit/2-bit quants on 8GB RAM; 70B still exceeds 18 GB even at IQ2_XXS."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can an 8GB M1 Mac run Llama-3.3 70B at all?",
+        "answer": "No. Q4_K_M takes 46.86 GB at 8K context (45.61 GB at 4K), which is nearly 6x larger than the entire 8 GB unified memory inside the laptop."
+      },
+      {
+        "question": "What Llama model actually works on an Apple M1 8GB?",
+        "answer": "Llama-3.1-8B-Instruct in Q4_K_M fits smoothly at 4K context (5.97 GB, ~9.9 tok/s) and runs via Partial Offload at 8K context (6.47 GB, ~5.2 tok/s)."
+      },
+      {
+        "question": "What Apple Silicon Mac do I need to run Llama-3.3 70B locally?",
+        "answer": "A 64GB Max Mac (M1/M2/M3/M4 Max, 49.9 GB usable) fits Q4_K_M at 4K–8K context (46.86 GB), while 96GB–192GB systems handle 32K–64K context or Q6_K/Q8_0 effortlessly."
+      },
+      {
+        "question": "Can a single consumer RTX GPU run Llama-3.3 70B smoothly?",
+        "answer": "No single consumer GeForce card (even the 32GB RTX 5090) fits 46.86 GB in VRAM; you need dual 24 GB GPUs (2× RTX 3090 or 2× RTX 4090) or a 64GB+ unified-memory Mac."
+      }
+    ],
+    "related_slugs": [
+      "llama-3.3-70b-on-apple-m1-16gb",
+      "llama-3.3-70b-on-rtx-3060-12gb",
+      "deepseek-r1-1.5b-on-apple-m1-8gb",
+      "deepseek-r1-7b-on-apple-m1-8gb",
+      "deepseek-r1-14b-on-apple-m1-8gb",
+      "deepseek-r1-32b-on-apple-m1-8gb"
+    ]
+  },
+  {
+    "slug": "llama-3.1-8b-on-apple-m1-8gb",
+    "title": "Llama-3.1 8B on Apple M1 8GB: Partial Offload at 8K, Smooth at 4K",
+    "meta_description": "Partial Offload at 8K (6.47 GB, ~5.2 tok/s) but Smooth at 4K (5.97 GB, ~9.9 tok/s) on Apple M1 8GB! Exact KV-cache threshold & Ollama tuning flags.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "llama-3.1-8b",
+      "name": "Llama-3.1-8B-Instruct",
+      "short_name": "Llama-3.1 8B",
+      "family": "Llama-3.1",
+      "params_b": 8.0,
+      "architecture": "Llama-3 (Dense)",
+      "num_layers": 32,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "llama3.1:8b",
+      "hf_repo": "bartowski/Meta-Llama-3.1-8B-Instruct-GGUF",
+      "gguf_file_q4": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+      "release_year": 2024,
+      "use_cases": [
+        "Fast local chat",
+        "Summarization",
+        "8GB-12GB GPU baseline"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-8gb",
+      "name": "Apple M1 (8GB Unified)",
+      "short_name": "M1 8GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 8.0,
+      "usable_vram_gb": 6.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 999
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 4.85,
+      "kv_cache_gb": 1.0,
+      "overhead_gb": 0.62,
+      "total_vram_gb": 6.47,
+      "status": "Partial Offload",
+      "est_tps": 5.2,
+      "gpu_layers_fit": 28,
+      "total_layers": 32,
+      "gpu_fraction": 0.903
+    },
+    "verdict_summary": "Borderline Partial Offload at 8K context (6.47 GB vs 6.0 GB usable, ~5.2 tok/s), but dropping context to 4K (5.97 GB) flips Llama-3.1-8B-Instruct into Smooth full-Metal execution at ~9.9 tok/s.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 4.85,
+        "kv_cache_8k_gb": 1.0,
+        "overhead_gb": 0.62,
+        "total_vram_8k_gb": 6.47,
+        "est_tps": 5.2,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 28,
+        "total_layers": 32,
+        "recommended": true,
+        "notes": "Exceeds safe macOS wired ceiling; risks swap thrashing under load."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 5.7,
+        "kv_cache_8k_gb": 1.0,
+        "overhead_gb": 0.62,
+        "total_vram_8k_gb": 7.32,
+        "est_tps": 4.5,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 24,
+        "total_layers": 32,
+        "recommended": false,
+        "notes": "Exceeds safe macOS wired ceiling; risks swap thrashing under load."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 6.6,
+        "kv_cache_8k_gb": 1.0,
+        "overhead_gb": 0.62,
+        "total_vram_8k_gb": 8.22,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 21,
+        "total_layers": 32,
+        "recommended": false,
+        "notes": "Requires 8.22 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 8.5,
+        "kv_cache_8k_gb": 1.0,
+        "overhead_gb": 0.62,
+        "total_vram_8k_gb": 10.12,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 16,
+        "total_layers": 32,
+        "recommended": false,
+        "notes": "Requires 10.12 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 16.0,
+        "kv_cache_8k_gb": 1.0,
+        "overhead_gb": 0.62,
+        "total_vram_8k_gb": 17.62,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 8,
+        "total_layers": 32,
+        "recommended": false,
+        "notes": "Requires 17.62 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run llama3.1:8b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=4096 ollama run llama3.1:8b",
+      "llama_cli": "llama-cli -hf bartowski/Meta-Llama-3.1-8B-Instruct-GGUF:Q4_K_M \\\n  -ngl 32 -c 4096 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf bartowski/Meta-Llama-3.1-8B-Instruct-GGUF:Q4_K_M \\\n  -ngl 32 -c 4096 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 4096,
+      "recommended_ngl": 32
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.5,
+      "max_smooth_context_q4": 4096,
+      "bottleneck_summary": "Llama-3.1-8B sits right on the knife-edge of an 8GB M1 Mac's 6.0 GB wired GPU ceiling. Q4_K_M weights (4.85 GB) plus the 0.62 GB Metal buffer total 5.47 GB, leaving only 0.53 GB for KV cache: 4K FP16 context (0.50 GB) fits cleanly at 5.97 GB, while 8K context (1.00 GB) pushes total RAM to 6.47 GB and forces swap pressure.",
+      "key_points": [
+        "At 4K context, Q4_K_M stays Smooth at 5.97 GB and ~9.9 tok/s with all 32 layers resident in Metal.",
+        "At 8K context, Q4_K_M crosses to 6.47 GB (Partial Offload, 28/32 layers wired), slashing speed to ~5.2 tok/s.",
+        "At 16K+ context (7.47 GB), Llama-3.1 8B hits OOM on 8GB M1 because its 8-head GQA cache adds 0.50 GB per 4K tokens.",
+        "Q5_K_M (7.32 GB at 8K) drops to ~4.5 tok/s, while Q6_K (8.22 GB) and Q8_0 (10.12 GB) fail with OOM."
+      ],
+      "optimization_tips": [
+        "Pin context to 4,096 tokens (`-c 4096` or `OLLAMA_NUM_CTX=4096`) to stay under 6.0 GB and nearly double speed to ~9.9 tok/s.",
+        "Enable `OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0` to shrink 8K KV cache from 1.00 GB to ~0.50 GB, keeping 8K Smooth (~5.97 GB).",
+        "Close every non-essential macOS app before launching, or consider Q4_0 / IQ4_XS (~4.4 GB weights) for extra safety margin."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Why does Llama-3.1 8B feel fast at 4K context on M1 8GB but slow down at 8K?",
+        "answer": "At 4K FP16 context, total memory is 5.97 GB—just inside macOS's 6.0 GB wired GPU cap (~9.9 tok/s). At 8K, KV cache doubles to 1.00 GB (6.47 GB total), triggering Partial Offload and dropping speed to ~5.2 tok/s."
+      },
+      {
+        "question": "How can I run Llama-3.1 8B at 8K context smoothly on an 8GB M1?",
+        "answer": "Turn on Flash Attention and Q8_0 KV cache quantization (`OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0`). That halves the 8K KV footprint from 1.00 GB to ~0.50 GB, keeping total usage under 6.0 GB."
+      },
+      {
+        "question": "Can an 8GB M1 run Llama-3.1 8B in Q5_K_M or Q8_0?",
+        "answer": "Q5_K_M (7.32 GB at 8K) only runs via strained Partial Offload (~4.5 tok/s), while Q6_K (8.22 GB) and Q8_0 (10.12 GB) exceed 8GB physical RAM and trigger OOM."
+      },
+      {
+        "question": "Why does Llama-3.1 8B use more memory than DeepSeek-R1 7B on M1 8GB?",
+        "answer": "Llama-3.1 8B has slightly more parameters (8.0B vs 7.6B), 32 layers instead of 28, and 8 KV heads instead of 4, doubling KV cache growth from 0.22 GB to 0.50 GB per 4K tokens."
+      }
+    ],
+    "related_slugs": [
+      "llama-3.1-8b-on-apple-m1-16gb",
+      "deepseek-r1-1.5b-on-apple-m1-8gb",
+      "deepseek-r1-7b-on-apple-m1-8gb",
+      "deepseek-r1-14b-on-apple-m1-8gb",
+      "deepseek-r1-32b-on-apple-m1-8gb",
+      "deepseek-r1-70b-on-apple-m1-8gb"
+    ]
+  },
+  {
+    "slug": "qwen2.5-72b-on-apple-m1-8gb",
+    "title": "Qwen2.5 72B on Apple M1 8GB: OOM (48.16 GB vs 6.0 GB Usable)",
+    "meta_description": "Hard OOM: Qwen2.5-72B-Instruct Q4_K_M requires 48.16 GB at 8K context on Apple M1 8GB—8x its wired GPU pool. Compare 7B local options & 64GB+ upgrades.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "qwen2.5-72b",
+      "name": "Qwen2.5-72B-Instruct",
+      "short_name": "Qwen2.5 72B",
+      "family": "Qwen2.5",
+      "params_b": 72.7,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 80,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "qwen2.5:72b",
+      "hf_repo": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+      "gguf_file_q4": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+      "release_year": 2024,
+      "use_cases": [
+        "Multilingual enterprise chat",
+        "RAG over large docs",
+        "High-memory workstations"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-8gb",
+      "name": "Apple M1 (8GB Unified)",
+      "short_name": "M1 8GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 8.0,
+      "usable_vram_gb": 6.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 999
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 44.07,
+      "kv_cache_gb": 2.5,
+      "overhead_gb": 1.59,
+      "total_vram_gb": 48.16,
+      "status": "OOM",
+      "est_tps": 0.0,
+      "gpu_layers_fit": 3,
+      "total_layers": 80,
+      "gpu_fraction": 0.043
+    },
+    "verdict_summary": "Hard Out of Memory (OOM): Qwen2.5-72B-Instruct Q4_K_M requires 48.16 GB at 8K context, exceeding an 8GB Apple M1's 6.0 GB wired GPU ceiling by more than 8x with only 3 of 80 layers fitting.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 44.07,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.59,
+        "total_vram_8k_gb": 48.16,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 3,
+        "total_layers": 80,
+        "recommended": true,
+        "notes": "Requires 48.16 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 51.8,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.59,
+        "total_vram_8k_gb": 55.89,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 2,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 55.89 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 59.98,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.59,
+        "total_vram_8k_gb": 64.07,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 2,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 64.07 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 77.24,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.59,
+        "total_vram_8k_gb": 81.33,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 1,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 81.33 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 145.4,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.59,
+        "total_vram_8k_gb": 149.49,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 1,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 149.49 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen2.5:72b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=4096 ollama run qwen2.5:72b",
+      "llama_cli": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-cli -hf bartowski/Qwen2.5-72B-Instruct-GGUF:Q4_K_M \\\n  -ngl 5 -c 4096 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-server -hf bartowski/Qwen2.5-72B-Instruct-GGUF:Q4_K_M \\\n  -ngl 5 -c 4096 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 4096,
+      "recommended_ngl": 5
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 1.25,
+      "max_smooth_context_q4": 0,
+      "bottleneck_summary": "At 72.7B parameters across 80 layers, Qwen2.5 72B's Q4_K_M weights alone consume 44.07 GB before 1.59 GB of runtime buffers and 2.50 GB of 8K KV cache. Because total memory starts at 46.91 GB at 4K and climbs by 1.25 GB per 4K tokens, an 8GB M1 lacks the physical memory to even load the weights.",
+      "key_points": [
+        "Q4_K_M at 8K (48.16 GB) is 42.16 GB above the 6.0 GB usable GPU budget on M1 8GB.",
+        "Even at minimum 4K context (46.91 GB), only 3 of 80 layers fit inside wired Metal memory.",
+        "Higher quants escalate rapidly: Q5_K_M needs 55.89 GB, Q6_K needs 64.07 GB, and Q8_0 needs 81.33 GB.",
+        "FP16 weights alone weigh 145.40 GB (149.49 GB total at 8K), requiring enterprise multi-GPU servers."
+      ],
+      "optimization_tips": [
+        "Run Qwen2.5-Coder-7B (5.66 GB, ~10.4 tok/s) or DeepSeek-R1-Distill-Qwen-7B for local Qwen2.5 workloads on 8GB M1.",
+        "A 64GB M1/M2/M3/M4 Max (49.9 GB usable) is the entry point for running Qwen2.5 72B Q4_K_M at 4K–8K context.",
+        "For 32K+ RAG over long documents with Qwen2.5 72B, target a 128GB M3/M4 Max or 192GB Mac Studio Ultra."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can I run Qwen2.5 72B on an 8GB M1 MacBook?",
+        "answer": "No. Q4_K_M weights alone are 44.07 GB (48.16 GB total at 8K), six times larger than the Mac's total 8 GB RAM."
+      },
+      {
+        "question": "How much unified memory is needed for Qwen2.5 72B on Apple Silicon?",
+        "answer": "At least 64GB unified memory (49.9 GB usable) for Q4_K_M at 4K–8K context (48.16 GB), or 128GB for 32K–64K context and Q5_K_M/Q6_K quality."
+      },
+      {
+        "question": "Why does Qwen2.5 72B need slightly more VRAM than Llama-3.3 70B?",
+        "answer": "Qwen2.5 72B has 72.7B parameters vs 70.6B on Llama-3.3 70B, adding ~1.27 GB in Q4_K_M weights (48.16 GB vs 46.86 GB total at 8K context)."
+      },
+      {
+        "question": "Which Qwen2.5 model runs cleanly on Apple M1 8GB?",
+        "answer": "7B Qwen2.5 variants (such as Qwen2.5-Coder 7B or DeepSeek-R1-Distill-Qwen 7B) fit in 5.66 GB at 8K context and run smoothly around ~10.4 tok/s."
+      }
+    ],
+    "related_slugs": [
+      "qwen2.5-72b-on-apple-m1-16gb",
+      "deepseek-r1-1.5b-on-apple-m1-8gb",
+      "deepseek-r1-7b-on-apple-m1-8gb",
+      "deepseek-r1-14b-on-apple-m1-8gb",
+      "deepseek-r1-32b-on-apple-m1-8gb",
+      "deepseek-r1-70b-on-apple-m1-8gb"
+    ]
+  },
+  {
+    "slug": "mistral-small-24b-on-apple-m1-8gb",
+    "title": "Mistral Small 24B on Apple M1 8GB: OOM (16.66 GB Required)",
+    "meta_description": "OOM on M1 8GB: Mistral-Small-24B-Instruct-2501 Q4_K_M requires 16.66 GB at 8K context vs 6.0 GB usable. See memory gap & 7B/8B alternatives.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "mistral-small-24b",
+      "name": "Mistral-Small-24B-Instruct-2501",
+      "short_name": "Mistral Small 24B",
+      "family": "Mistral",
+      "params_b": 24.0,
+      "architecture": "Mistral (Dense)",
+      "num_layers": 40,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 32768,
+      "ollama_tag": "mistral-small:24b",
+      "hf_repo": "bartowski/Mistral-Small-24B-Instruct-2501-GGUF",
+      "gguf_file_q4": "Mistral-Small-24B-Instruct-2501-Q4_K_M.gguf",
+      "release_year": 2025,
+      "use_cases": [
+        "Low-latency 24GB GPU reasoning",
+        "Function calling",
+        "European language fluency"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-8gb",
+      "name": "Apple M1 (8GB Unified)",
+      "short_name": "M1 8GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 8.0,
+      "usable_vram_gb": 6.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 999
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 14.55,
+      "kv_cache_gb": 1.25,
+      "overhead_gb": 0.86,
+      "total_vram_gb": 16.66,
+      "status": "OOM",
+      "est_tps": 0.0,
+      "gpu_layers_fit": 10,
+      "total_layers": 40,
+      "gpu_fraction": 0.267
+    },
+    "verdict_summary": "Out of Memory (OOM): Mistral-Small-24B-Instruct-2501 Q4_K_M requires 16.66 GB at 8K context—more than double an 8GB M1 Mac's total RAM, fitting just 10 of 40 layers in Metal.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 14.55,
+        "kv_cache_8k_gb": 1.25,
+        "overhead_gb": 0.86,
+        "total_vram_8k_gb": 16.66,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 10,
+        "total_layers": 40,
+        "recommended": true,
+        "notes": "Requires 16.66 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 17.1,
+        "kv_cache_8k_gb": 1.25,
+        "overhead_gb": 0.86,
+        "total_vram_8k_gb": 19.21,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 9,
+        "total_layers": 40,
+        "recommended": false,
+        "notes": "Requires 19.21 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 19.8,
+        "kv_cache_8k_gb": 1.25,
+        "overhead_gb": 0.86,
+        "total_vram_8k_gb": 21.91,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 7,
+        "total_layers": 40,
+        "recommended": false,
+        "notes": "Requires 21.91 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 25.5,
+        "kv_cache_8k_gb": 1.25,
+        "overhead_gb": 0.86,
+        "total_vram_8k_gb": 27.61,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 6,
+        "total_layers": 40,
+        "recommended": false,
+        "notes": "Requires 27.61 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 48.0,
+        "kv_cache_8k_gb": 1.25,
+        "overhead_gb": 0.86,
+        "total_vram_8k_gb": 50.11,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 3,
+        "total_layers": 40,
+        "recommended": false,
+        "notes": "Requires 50.11 GB vs 6.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run mistral-small:24b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=4096 ollama run mistral-small:24b",
+      "llama_cli": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-cli -hf bartowski/Mistral-Small-24B-Instruct-2501-GGUF:Q4_K_M \\\n  -ngl 12 -c 4096 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-server -hf bartowski/Mistral-Small-24B-Instruct-2501-GGUF:Q4_K_M \\\n  -ngl 12 -c 4096 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 4096,
+      "recommended_ngl": 12
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.62,
+      "max_smooth_context_q4": 0,
+      "bottleneck_summary": "Mistral Small 24B packs 24.0B parameters into 40 layers (14.55 GB Q4_K_M weights, 0.86 GB overhead, and 0.62 GB per 4K FP16 KV tokens). Even at 4K context it requires 16.04 GB—more than double the 8GB M1's entire system RAM and nearly triple its 6.0 GB wired GPU ceiling.",
+      "key_points": [
+        "Q4_K_M at 8K needs 16.66 GB, overshooting the 6.0 GB usable GPU budget by 10.66 GB (only 10/40 layers fit).",
+        "Higher quants scale well past 8GB machines: Q5_K_M needs 19.21 GB, Q6_K needs 21.91 GB, and Q8_0 needs 27.61 GB.",
+        "Unlike 128K models, Mistral Small 24B caps natively at 32K context (20.41 GB total at Q4_K_M).",
+        "Attempting to force a 24B GGUF onto 8GB unified RAM forces severe SSD swap stalls and kernel memory warnings."
+      ],
+      "optimization_tips": [
+        "Use Llama-3.1 8B (4K Smooth at 5.97 GB, ~9.9 tok/s) or Qwen2.5-Coder 7B (8K Smooth at 5.66 GB, ~10.4 tok/s) on 8GB M1.",
+        "To run Mistral Small 24B smoothly in Q4_K_M, upgrade to a 24GB+ Mac (18.0 GB usable, e.g., M2/M4 24GB) or 24GB RTX 3090/4090.",
+        "Note that even a 16GB M1 (12.0 GB usable) hits OOM on Mistral Small 24B—you need at least 24GB system/VRAM."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can an 8GB M1 Mac run Mistral Small 24B?",
+        "answer": "No. Q4_K_M requires 16.04 GB at 4K context and 16.66 GB at 8K, over twice the physical 8 GB RAM of the machine."
+      },
+      {
+        "question": "How much unified RAM or VRAM do I need for Mistral Small 24B?",
+        "answer": "At least 24GB unified memory on Apple Silicon (18.0 GB usable covers 16.66 GB at 8K) or a 24GB discrete GPU like an RTX 3090 or RTX 4090 (23.5 GB usable covers up to 32K context)."
+      },
+      {
+        "question": "What happens if I only have 16GB RAM for Mistral Small 24B?",
+        "answer": "16GB Macs (12.0 GB usable) and 16GB GPUs (15.5 GB usable) still fall short of Q4_K_M's 16.66 GB at 8K, hitting OOM or heavy PCIe/swap offload."
+      },
+      {
+        "question": "Which model offers the best chat & tool-calling quality on M1 8GB instead?",
+        "answer": "Llama-3.1-8B-Instruct at 4K context (5.97 GB, ~9.9 tok/s) or DeepSeek-R1 7B at 8K (5.66 GB, ~10.4 tok/s) stay 100% resident in 8GB unified memory."
+      }
+    ],
+    "related_slugs": [
+      "mistral-small-24b-on-apple-m1-16gb",
+      "deepseek-r1-1.5b-on-apple-m1-8gb",
+      "deepseek-r1-7b-on-apple-m1-8gb",
+      "deepseek-r1-14b-on-apple-m1-8gb",
+      "deepseek-r1-32b-on-apple-m1-8gb",
+      "deepseek-r1-70b-on-apple-m1-8gb"
+    ]
+  },
+  {
+    "slug": "deepseek-r1-1.5b-on-apple-m1-16gb",
+    "title": "DeepSeek-R1 1.5B on Apple M1 16GB: Smooth in FP16 & 64K Context",
+    "meta_description": "Smooth across every quant: DeepSeek-R1 1.5B uses 1.65 GB (Q4_K_M, ~49.4 tok/s) or 3.74 GB (FP16, ~17.1 tok/s) on Apple M1 16GB. 64K context & CLI flags.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "deepseek-r1-1.5b",
+      "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+      "short_name": "DeepSeek-R1 1.5B",
+      "family": "DeepSeek-R1",
+      "params_b": 1.5,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 28,
+      "num_kv_heads": 2,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "deepseek-r1:1.5b",
+      "hf_repo": "bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF",
+      "gguf_file_q4": "DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf",
+      "release_year": 2025,
+      "use_cases": [
+        "Edge reasoning",
+        "Fast math scratchpad",
+        "Ultrabook offline assistant"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-16gb",
+      "name": "Apple M1 (16GB Unified)",
+      "short_name": "M1 16GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 16.0,
+      "usable_vram_gb": 12.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 1199
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 0.91,
+      "kv_cache_gb": 0.22,
+      "overhead_gb": 0.52,
+      "total_vram_gb": 1.65,
+      "status": "Smooth",
+      "est_tps": 49.4,
+      "gpu_layers_fit": 28,
+      "total_layers": 28,
+      "gpu_fraction": 1.0
+    },
+    "verdict_summary": "Effortless Smooth execution across every precision: on a 16GB Apple M1 (12.0 GB usable), DeepSeek-R1 1.5B hits ~49.4 tok/s in Q4_K_M (1.65 GB) and fits even full FP16 at 64K context (5.27 GB).",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 0.91,
+        "kv_cache_8k_gb": 0.22,
+        "overhead_gb": 0.52,
+        "total_vram_8k_gb": 1.65,
+        "est_tps": 49.4,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (10.3 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 1.07,
+        "kv_cache_8k_gb": 0.22,
+        "overhead_gb": 0.52,
+        "total_vram_8k_gb": 1.81,
+        "est_tps": 43.3,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Sweet spot: higher fidelity with 10.2 GB headroom."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 1.24,
+        "kv_cache_8k_gb": 0.22,
+        "overhead_gb": 0.52,
+        "total_vram_8k_gb": 1.98,
+        "est_tps": 37.9,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Sweet spot: higher fidelity with 10.0 GB headroom."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 1.59,
+        "kv_cache_8k_gb": 0.22,
+        "overhead_gb": 0.52,
+        "total_vram_8k_gb": 2.33,
+        "est_tps": 30.3,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": true,
+        "notes": "Near-BF16 precision; fits cleanly with 9.7 GB left."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 3.0,
+        "kv_cache_8k_gb": 0.22,
+        "overhead_gb": 0.52,
+        "total_vram_8k_gb": 3.74,
+        "est_tps": 17.1,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Unquantized FP16; 8.3 GB headroom remaining."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run deepseek-r1:1.5b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=32768 ollama run deepseek-r1:1.5b",
+      "llama_cli": "llama-cli -hf bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 32768,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.11,
+      "max_smooth_context_q4": 65536,
+      "bottleneck_summary": "With 12.0 GB of usable Metal memory, a 16GB M1 Mac gives DeepSeek-R1 1.5B nearly 5x the capacity needed even for Q8_0 at 8K (2.33 GB). Its 0.11 GB per 4K KV footprint means context length is virtually free, leaving the M1's 68 GB/s memory bus as the sole factor determining token speed.",
+      "key_points": [
+        "Q4_K_M runs at ~49.4 tok/s (8K, 1.65 GB) and still holds ~28.2 tok/s at massive 64K context (3.18 GB).",
+        "Q8_0 is recommended at 2.33 GB total and ~30.3 tok/s, eliminating 4-bit quantization loss on math proofs.",
+        "Unquantized FP16 fits smoothly at 3.74 GB (8K, ~17.1 tok/s) and 5.27 GB (64K) with over 6.7 GB to spare.",
+        "Unlike the 8GB M1, you can run 1.5B at Q8_0/FP16 alongside Docker, Xcode, and browser workspaces comfortably."
+      ],
+      "optimization_tips": [
+        "Choose Q8_0 (2.33 GB, ~30.3 tok/s) for the cleanest reasoning quality without sacrificing interactive speed.",
+        "Set `OLLAMA_NUM_CTX=32768` or `65536` (`-c 65536`) to keep long reasoning traces and document pastes in memory.",
+        "If you want stronger reasoning quality and do not mind ~5–10 tok/s, your 16GB M1 also handles DeepSeek-R1 7B Q8_0 and 14B Q4_K_M."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Should I run DeepSeek-R1 1.5B or 7B on a 16GB Apple M1?",
+        "answer": "Run 1.5B (Q8_0, ~30.3 tok/s) when you want instant speed, tiny RAM footprint, and 64K context; step up to DeepSeek-R1 7B (Q4_K_M ~10.4 tok/s or Q8_0 ~6.2 tok/s) when reasoning accuracy matters more than speed."
+      },
+      {
+        "question": "Can M1 16GB run DeepSeek-R1 1.5B in full FP16 at 64K context?",
+        "answer": "Yes. FP16 at 64K context totals only 5.27 GB—leaving nearly 6.7 GB of headroom under the 12.0 GB Metal cap."
+      },
+      {
+        "question": "Why does 1.5B only run at ~49.4 tok/s on M1 16GB when M1 Pro hits ~145 tok/s?",
+        "answer": "Both M1 8GB and M1 16GB share a 68 GB/s LPDDR4X memory bus, whereas M1 Pro widens the bus to 200 GB/s—tripling memory-bandwidth-bound decode speed."
+      },
+      {
+        "question": "Will running DeepSeek-R1 1.5B trigger macOS swap on a 16GB M1?",
+        "answer": "No. Even at Q8_0 with 32K context (~3.0 GB), over 12 GB of physical RAM remains available for macOS and apps."
+      }
+    ],
+    "related_slugs": [
+      "deepseek-r1-1.5b-on-apple-m1-8gb",
+      "deepseek-r1-1.5b-on-apple-m1-pro-16gb",
+      "deepseek-r1-7b-on-apple-m1-16gb",
+      "deepseek-r1-14b-on-apple-m1-16gb",
+      "deepseek-r1-32b-on-apple-m1-16gb",
+      "deepseek-r1-70b-on-apple-m1-16gb"
+    ]
+  },
+  {
+    "slug": "deepseek-r1-7b-on-apple-m1-16gb",
+    "title": "DeepSeek-R1 7B on Apple M1 16GB: Smooth up to Q8_0 & 64K Context",
+    "meta_description": "Smooth on M1 16GB: DeepSeek-R1 7B fits 100% in Metal from Q4_K_M (5.66 GB, ~10.4 tok/s) up to Q8_0 (9.13 GB, ~6.2 tok/s) and 64K context. Full benchmarks.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "deepseek-r1-7b",
+      "name": "DeepSeek-R1-Distill-Qwen-7B",
+      "short_name": "DeepSeek-R1 7B",
+      "family": "DeepSeek-R1",
+      "params_b": 7.6,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 28,
+      "num_kv_heads": 4,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "deepseek-r1:7b",
+      "hf_repo": "bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF",
+      "gguf_file_q4": "DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf",
+      "release_year": 2025,
+      "use_cases": [
+        "Chain-of-thought reasoning",
+        "Local math & logic",
+        "8GB-12GB GPU workstations"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-16gb",
+      "name": "Apple M1 (16GB Unified)",
+      "short_name": "M1 16GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 16.0,
+      "usable_vram_gb": 12.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 1199
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 4.61,
+      "kv_cache_gb": 0.44,
+      "overhead_gb": 0.61,
+      "total_vram_gb": 5.66,
+      "status": "Smooth",
+      "est_tps": 10.4,
+      "gpu_layers_fit": 28,
+      "total_layers": 28,
+      "gpu_fraction": 1.0
+    },
+    "verdict_summary": "Smooth across all 4-bit to 8-bit quants: on Apple M1 16GB (12.0 GB usable), DeepSeek-R1 7B runs Q4_K_M at ~10.4 tok/s (scaling to 64K context) and cleanly accommodates Q8_0 at 9.13 GB (~6.2 tok/s).",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 4.61,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 5.66,
+        "est_tps": 10.4,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (6.3 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 5.42,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 6.47,
+        "est_tps": 9.1,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Sweet spot: higher fidelity with 5.5 GB headroom."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 6.27,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 7.32,
+        "est_tps": 7.9,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Sweet spot: higher fidelity with 4.7 GB headroom."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 8.07,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 9.13,
+        "est_tps": 6.2,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": true,
+        "notes": "Near-BF16 precision; fits cleanly with 2.9 GB left."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 15.2,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 16.25,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 20,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Requires 16.25 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run deepseek-r1:7b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=32768 ollama run deepseek-r1:7b",
+      "llama_cli": "llama-cli -hf bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 32768,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.22,
+      "max_smooth_context_q4": 65536,
+      "bottleneck_summary": "Doubling unified memory from 8GB to 16GB transforms DeepSeek-R1 7B's usability: the 12.0 GB wired pool easily absorbs Q4_K_M even at 64K context (8.72 GB total, ~7.9 tok/s) as well as Q8_0 at 8K–16K context. Only unquantized FP16 (16.25 GB) overflows; real-world speed is bound purely by the 68 GB/s bus.",
+      "key_points": [
+        "Q4_K_M fits 100% in Metal from 4K (5.44 GB, ~10.7 tok/s) all the way to 64K context (8.72 GB, ~7.9 tok/s).",
+        "Q5_K_M (6.47 GB, ~9.1 tok/s), Q6_K (7.32 GB, ~7.9 tok/s), and Q8_0 (9.13 GB, ~6.2 tok/s) all stay Smooth at 8K.",
+        "FP16 (16.25 GB at 8K) exceeds the 12.0 GB Metal cap, fitting 20 of 28 layers and hitting OOM.",
+        "0.22 GB per 4K FP16 KV cache keeps long reasoning prompts remarkably affordable in unified memory."
+      ],
+      "optimization_tips": [
+        "Pick Q4_K_M (~10.4 tok/s) for crisp reading speed and 32K–64K context, or Q6_K (~7.9 tok/s) for higher math fidelity with 16K+ headroom.",
+        "Enable `OLLAMA_FLASH_ATTENTION=1` and `OLLAMA_KV_CACHE_TYPE=q8_0` if pairing Q8_0 with 32K+ context.",
+        "On 16GB M1, DeepSeek-R1 7B leaves enough free RAM for everyday Safari, terminal, and editor workflows."
+      ]
+    },
+    "faq": [
+      {
+        "question": "What is the best quantization for DeepSeek-R1 7B on a 16GB M1 Mac?",
+        "answer": "Q4_K_M (5.66 GB, ~10.4 tok/s) offers the best speed and up to 64K context, while Q6_K (7.32 GB, ~7.9 tok/s) or Q8_0 (9.13 GB, ~6.2 tok/s) provides extra precision if you prefer quality over reading speed."
+      },
+      {
+        "question": "Can M1 16GB run DeepSeek-R1 7B at 64K context without swapping?",
+        "answer": "Yes, in Q4_K_M. At 64K context, total VRAM reaches 8.72 GB out of 12.0 GB usable Metal memory (~7.9 tok/s)."
+      },
+      {
+        "question": "Is DeepSeek-R1 7B or 14B better on an Apple M1 16GB?",
+        "answer": "DeepSeek-R1 7B runs twice as fast (~10.4 tok/s vs ~5.2 tok/s on 14B) and supports 64K context, whereas 14B Q4_K_M tops out at 8K context (11.19 GB) with very tight headroom."
+      },
+      {
+        "question": "Why does FP16 of DeepSeek-R1 7B fail on M1 16GB?",
+        "answer": "FP16 weights alone weigh 15.20 GB (16.25 GB total at 8K), exceeding both the 12.0 GB wired GPU cap and 16 GB total system RAM once macOS is loaded."
+      }
+    ],
+    "related_slugs": [
+      "deepseek-r1-7b-on-apple-m1-8gb",
+      "deepseek-r1-1.5b-on-apple-m1-16gb",
+      "deepseek-r1-14b-on-apple-m1-16gb",
+      "deepseek-r1-32b-on-apple-m1-16gb",
+      "deepseek-r1-70b-on-apple-m1-16gb",
+      "qwen2.5-coder-7b-on-apple-m1-16gb"
+    ]
+  },
+  {
+    "slug": "deepseek-r1-14b-on-apple-m1-16gb",
+    "title": "DeepSeek-R1 14B on Apple M1 16GB: Smooth Q4_K_M at 5.2 tok/s (8K Max)",
+    "meta_description": "Smooth at 8K: DeepSeek-R1 14B Q4_K_M uses 11.19 GB on Apple M1 16GB (12.0 GB usable) at ~5.2 tok/s. 16K context & Q5_K_M hit swap limits.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "deepseek-r1-14b",
+      "name": "DeepSeek-R1-Distill-Qwen-14B",
+      "short_name": "DeepSeek-R1 14B",
+      "family": "DeepSeek-R1",
+      "params_b": 14.8,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 48,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "deepseek-r1:14b",
+      "hf_repo": "bartowski/DeepSeek-R1-Distill-Qwen-14B-GGUF",
+      "gguf_file_q4": "DeepSeek-R1-Distill-Qwen-14B-Q4_K_M.gguf",
+      "release_year": 2025,
+      "use_cases": [
+        "Mid-size reasoning",
+        "Algorithmic problem solving",
+        "16GB GPU sweet spot"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-16gb",
+      "name": "Apple M1 (16GB Unified)",
+      "short_name": "M1 16GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 16.0,
+      "usable_vram_gb": 12.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 1199
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 8.97,
+      "kv_cache_gb": 1.5,
+      "overhead_gb": 0.72,
+      "total_vram_gb": 11.19,
+      "status": "Smooth",
+      "est_tps": 5.2,
+      "gpu_layers_fit": 48,
+      "total_layers": 48,
+      "gpu_fraction": 1.0
+    },
+    "verdict_summary": "Just fits smoothly at 8K context: DeepSeek-R1-Distill-Qwen-14B Q4_K_M consumes 11.19 GB of a 16GB Apple M1's 12.0 GB usable budget (~5.2 tok/s), leaving only 0.81 GB headroom before Partial Offload.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 8.97,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 11.19,
+        "est_tps": 5.2,
+        "status": "Smooth",
+        "gpu_layers_fit": 48,
+        "total_layers": 48,
+        "recommended": true,
+        "notes": "Fits 100% in Metal memory (0.8 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 10.55,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 12.77,
+        "est_tps": 2.5,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 44,
+        "total_layers": 48,
+        "recommended": false,
+        "notes": "Exceeds safe macOS wired ceiling; risks swap thrashing under load."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 12.21,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 14.43,
+        "est_tps": 2.2,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 38,
+        "total_layers": 48,
+        "recommended": false,
+        "notes": "Exceeds safe macOS wired ceiling; risks swap thrashing under load."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 15.73,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 17.95,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 29,
+        "total_layers": 48,
+        "recommended": false,
+        "notes": "Requires 17.95 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 29.6,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 31.82,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 15,
+        "total_layers": 48,
+        "recommended": false,
+        "notes": "Requires 31.82 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run deepseek-r1:14b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=8192 ollama run deepseek-r1:14b",
+      "llama_cli": "llama-cli -hf bartowski/DeepSeek-R1-Distill-Qwen-14B-GGUF:Q4_K_M \\\n  -ngl 99 -c 8192 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf bartowski/DeepSeek-R1-Distill-Qwen-14B-GGUF:Q4_K_M \\\n  -ngl 99 -c 8192 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 8192,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.75,
+      "max_smooth_context_q4": 8192,
+      "bottleneck_summary": "With 8.97 GB Q4_K_M weights and 0.72 GB Metal overhead, a 16GB M1 Mac (12.0 GB wired limit) holds just 2.31 GB in reserve for KV cache. Because 14B's 48 layers consume 0.75 GB per 4K FP16 tokens, 8K context (11.19 GB) is Smooth, while 16K context (12.69 GB) crosses into Partial Offload (~2.6 tok/s).",
+      "key_points": [
+        "Q4_K_M keeps all 48 layers wired at 4K (10.44 GB, ~5.4 tok/s) and 8K (11.19 GB, ~5.2 tok/s).",
+        "16K FP16 context (12.69 GB) spills past 12.0 GB into Partial Offload (~2.6 tok/s), and 32K (15.69 GB) hits OOM.",
+        "Q5_K_M (12.77 GB) and Q6_K (14.43 GB) drop into slow Partial Offload (~2.5 and ~2.2 tok/s); Q8_0 (17.95 GB) OOMs.",
+        "68 GB/s memory bandwidth limits 14B Q4_K_M to ~5.2 tok/s—slow but steady for deliberate, single-prompt reasoning."
+      ],
+      "optimization_tips": [
+        "Enable `OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0` to halve the 0.75 GB/4K KV growth and fit 16K cleanly under 12.0 GB.",
+        "Quit browsers, IDEs, and VMs before running 14B on a 16GB M1 so macOS keeps all 11.19 GB in RAM without compressing pages.",
+        "If ~5.2 tok/s feels sluggish for daily chat, switch to DeepSeek-R1 7B Q4_K_M (~10.4 tok/s) for 2x faster output."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can a 16GB M1 MacBook Pro or Air run DeepSeek-R1 14B smoothly?",
+        "answer": "Yes, in Q4_K_M up to 8K context (11.19 GB out of 12.0 GB usable Metal memory) at ~5.2 tok/s, provided other memory-heavy apps are closed."
+      },
+      {
+        "question": "What happens if I set 16K or 32K context on DeepSeek-R1 14B with M1 16GB?",
+        "answer": "At 16K FP16 context (12.69 GB), macOS enters Partial Offload and halves speed to ~2.6 tok/s; at 32K (15.69 GB), it runs out of usable memory."
+      },
+      {
+        "question": "How can I squeeze 16K context into M1 16GB for DeepSeek-R1 14B?",
+        "answer": "Use Q8_0 KV cache quantization (`OLLAMA_KV_CACHE_TYPE=q8_0` or `--cache-type-k q8_0 --cache-type-v q8_0` in llama.cpp), which drops 16K KV cache from 3.00 GB to ~1.50 GB."
+      },
+      {
+        "question": "Why is DeepSeek-R1 14B ~5.2 tok/s on M1 16GB when M1 8GB fails completely?",
+        "answer": "The 16GB M1 doubles the macOS wired GPU limit from 6.0 GB to 12.0 GB, allowing all 48 layers (8.97 GB weights) to stay resident in unified memory instead of thrashing SSD swap."
+      }
+    ],
+    "related_slugs": [
+      "deepseek-r1-14b-on-apple-m1-8gb",
+      "deepseek-r1-1.5b-on-apple-m1-16gb",
+      "deepseek-r1-7b-on-apple-m1-16gb",
+      "deepseek-r1-32b-on-apple-m1-16gb",
+      "deepseek-r1-70b-on-apple-m1-16gb",
+      "qwen2.5-coder-7b-on-apple-m1-16gb"
+    ]
+  },
+  {
+    "slug": "deepseek-r1-32b-on-apple-m1-16gb",
+    "title": "DeepSeek-R1 32B on Apple M1 16GB: OOM (22.88 GB vs 12.0 GB Usable)",
+    "meta_description": "OOM on M1 16GB: DeepSeek-R1-Distill-Qwen-32B Q4_K_M needs 22.88 GB at 8K context (10.88 GB over limit). Compare 14B Smooth setup & 32GB+ upgrades.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "deepseek-r1-32b",
+      "name": "DeepSeek-R1-Distill-Qwen-32B",
+      "short_name": "DeepSeek-R1 32B",
+      "family": "DeepSeek-R1",
+      "params_b": 32.8,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 64,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "deepseek-r1:32b",
+      "hf_repo": "bartowski/DeepSeek-R1-Distill-Qwen-32B-GGUF",
+      "gguf_file_q4": "DeepSeek-R1-Distill-Qwen-32B-Q4_K_M.gguf",
+      "release_year": 2025,
+      "use_cases": [
+        "Deep STEM reasoning",
+        "Complex debugging",
+        "Code verification"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-16gb",
+      "name": "Apple M1 (16GB Unified)",
+      "short_name": "M1 16GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 16.0,
+      "usable_vram_gb": 12.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 1199
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 19.88,
+      "kv_cache_gb": 2.0,
+      "overhead_gb": 0.99,
+      "total_vram_gb": 22.88,
+      "status": "OOM",
+      "est_tps": 0.0,
+      "gpu_layers_fit": 28,
+      "total_layers": 64,
+      "gpu_fraction": 0.453
+    },
+    "verdict_summary": "Out of Memory (OOM): DeepSeek-R1-Distill-Qwen-32B Q4_K_M requires 22.88 GB at 8K context, exceeding a 16GB M1 Mac's 12.0 GB wired GPU ceiling and total 16 GB RAM with only 28 of 64 layers fitting.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 19.88,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 22.88,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 28,
+        "total_layers": 64,
+        "recommended": true,
+        "notes": "Requires 22.88 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 23.37,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 26.36,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 24,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 26.36 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 27.06,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 30.05,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 21,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 30.05 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 34.85,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 37.84,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 16,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 37.84 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 65.6,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 68.59,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 8,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 68.59 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run deepseek-r1:32b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=4096 ollama run deepseek-r1:32b",
+      "llama_cli": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-cli -hf bartowski/DeepSeek-R1-Distill-Qwen-32B-GGUF:Q4_K_M \\\n  -ngl 32 -c 4096 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-server -hf bartowski/DeepSeek-R1-Distill-Qwen-32B-GGUF:Q4_K_M \\\n  -ngl 32 -c 4096 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 4096,
+      "recommended_ngl": 32
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 1.0,
+      "max_smooth_context_q4": 0,
+      "bottleneck_summary": "Even before context allocation, DeepSeek-R1 32B's Q4_K_M weights alone weigh 19.88 GB—nearly 4 GB above the laptop's entire 16 GB physical RAM and 7.88 GB above the 12.0 GB Metal ceiling. Adding 8K KV cache (2.00 GB) and 0.99 GB overhead pushes total demand to 22.88 GB, triggering unavoidable OOM.",
+      "key_points": [
+        "Q4_K_M requires 21.88 GB at 4K and 22.88 GB at 8K—nearly double the 12.0 GB usable GPU budget on M1 16GB.",
+        "Only 28 of 64 layers fit within Metal memory; Q6_K reaches 30.05 GB and Q8_0 requires 37.84 GB.",
+        "macOS cannot swap 10+ GB of active transformer weights per generated token without freezing at <0.3 tok/s.",
+        "64-layer KV cache consumes 1.00 GB per 4K tokens, rapidly widening the deficit at 16K (24.88 GB) and 32K (28.88 GB)."
+      ],
+      "optimization_tips": [
+        "Run DeepSeek-R1 14B Q4_K_M (11.19 GB at 8K, ~5.2 tok/s) for maximum reasoning capacity on a 16GB M1.",
+        "Pick DeepSeek-R1 7B Q4_K_M (5.66 GB, ~10.4 tok/s) if you need 16K–64K context or snappy everyday speed.",
+        "To run DeepSeek-R1 32B smoothly, upgrade to a 32GB+ Mac (M1/M2 Pro 32GB, M4 Pro 48GB) or a 24GB RTX 3090/4090."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can a 16GB M1 MacBook Pro run DeepSeek-R1 32B in Q4_K_M?",
+        "answer": "No. Q4_K_M weights alone are 19.88 GB (22.88 GB total at 8K), exceeding the 16 GB physical RAM and 12.0 GB Metal wired limit."
+      },
+      {
+        "question": "Could raising `iogpu.wired_limit_mb` let DeepSeek-R1 32B run on M1 16GB?",
+        "answer": "No. Even if you raised the sysctl limit to 14–15 GB, 22.88 GB still exceeds the 16 GB physical RAM chip soldered onto the M1 SoC."
+      },
+      {
+        "question": "What is the largest DeepSeek-R1 model that runs smoothly on Apple M1 16GB?",
+        "answer": "DeepSeek-R1-Distill-Qwen-14B at Q4_K_M fits smoothly up to 8K context (11.19 GB / 12.0 GB usable) at ~5.2 tok/s."
+      },
+      {
+        "question": "How much unified memory is needed for DeepSeek-R1 32B on Apple Silicon?",
+        "answer": "Minimum 32GB unified memory (24.0 GB usable covers 22.88 GB at 8K), though 48GB–64GB (e.g. M4 Pro 48GB) is ideal for Q6_K quality and 32K–64K context."
+      }
+    ],
+    "related_slugs": [
+      "deepseek-r1-32b-on-apple-m1-8gb",
+      "deepseek-r1-32b-on-apple-m4-pro-48gb",
+      "deepseek-r1-32b-on-rtx-4090-24gb",
+      "deepseek-r1-1.5b-on-apple-m1-16gb",
+      "deepseek-r1-7b-on-apple-m1-16gb",
+      "deepseek-r1-14b-on-apple-m1-16gb"
+    ]
+  },
+  {
+    "slug": "deepseek-r1-70b-on-apple-m1-16gb",
+    "title": "DeepSeek-R1 70B on Apple M1 16GB: OOM (46.86 GB vs 12.0 GB Usable)",
+    "meta_description": "Hard OOM: DeepSeek-R1-Distill-Llama-70B Q4_K_M requires 46.86 GB at 8K context on Apple M1 16GB—nearly 4x its 12.0 GB Metal cap. Check 14B & 64GB+ options.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "deepseek-r1-70b",
+      "name": "DeepSeek-R1-Distill-Llama-70B",
+      "short_name": "DeepSeek-R1 70B",
+      "family": "DeepSeek-R1",
+      "params_b": 70.6,
+      "architecture": "Llama-3 (Dense)",
+      "num_layers": 80,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "deepseek-r1:70b",
+      "hf_repo": "bartowski/DeepSeek-R1-Distill-Llama-70B-GGUF",
+      "gguf_file_q4": "DeepSeek-R1-Distill-Llama-70B-Q4_K_M.gguf",
+      "release_year": 2025,
+      "use_cases": [
+        "Frontier-class local reasoning",
+        "Research synthesis",
+        "High-memory Mac Studio / multi-GPU"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-16gb",
+      "name": "Apple M1 (16GB Unified)",
+      "short_name": "M1 16GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 16.0,
+      "usable_vram_gb": 12.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 1199
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 42.8,
+      "kv_cache_gb": 2.5,
+      "overhead_gb": 1.56,
+      "total_vram_gb": 46.86,
+      "status": "OOM",
+      "est_tps": 0.0,
+      "gpu_layers_fit": 14,
+      "total_layers": 80,
+      "gpu_fraction": 0.186
+    },
+    "verdict_summary": "Severe OOM: DeepSeek-R1-Distill-Llama-70B Q4_K_M demands 46.86 GB at 8K context—almost 4x a 16GB M1 Mac's 12.0 GB wired GPU budget, fitting only 14 of 80 layers.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 42.8,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 46.86,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 14,
+        "total_layers": 80,
+        "recommended": true,
+        "notes": "Requires 46.86 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 50.3,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 54.36,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 12,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 54.36 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 58.24,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 62.3,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 10,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 62.3 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 75.01,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 79.07,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 8,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 79.07 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 141.2,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 145.26,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 4,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 145.26 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run deepseek-r1:70b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=4096 ollama run deepseek-r1:70b",
+      "llama_cli": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-cli -hf bartowski/DeepSeek-R1-Distill-Llama-70B-GGUF:Q4_K_M \\\n  -ngl 17 -c 4096 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-server -hf bartowski/DeepSeek-R1-Distill-Llama-70B-GGUF:Q4_K_M \\\n  -ngl 17 -c 4096 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 4096,
+      "recommended_ngl": 17
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 1.25,
+      "max_smooth_context_q4": 0,
+      "bottleneck_summary": "DeepSeek-R1 70B's Q4_K_M weights alone take 42.80 GB across 80 layers, before adding 1.56 GB runtime buffers and 2.50 GB for 8K FP16 KV cache. Against 12.0 GB of usable Metal memory on a 16GB M1, less than one-fifth of the model fits, making local execution unworkable.",
+      "key_points": [
+        "Q4_K_M at 8K (46.86 GB) overshoots the 12.0 GB wired budget by 34.86 GB and total 16 GB RAM by 30.86 GB.",
+        "Even at minimum 4K context (45.61 GB), only 17 of 80 layers fit inside the 12.0 GB Metal cap.",
+        "80-layer GQA context expands by 1.25 GB per 4K tokens, pushing 64K context to 64.36 GB at Q4_K_M.",
+        "Higher precisions (Q6_K at 62.30 GB, Q8_0 at 79.07 GB) require dedicated high-RAM workstation hardware."
+      ],
+      "optimization_tips": [
+        "Run DeepSeek-R1 14B Q4_K_M (11.19 GB at 8K, ~5.2 tok/s) or 7B Q8_0 (9.13 GB, ~6.2 tok/s) on your 16GB M1.",
+        "Upgrade to a 64GB Max Mac (49.9 GB usable) for 8K Q4_K_M 70B inference, or 128GB+ for long context.",
+        "Offload 70B reasoning prompts to a cloud endpoint or remote dual-24GB GPU server rather than swapping a 16GB laptop."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can an M1 16GB MacBook run DeepSeek-R1 70B?",
+        "answer": "No. Even Q4_K_M requires 46.86 GB at 8K context (45.61 GB at 4K), nearly triple the laptop's 16 GB RAM."
+      },
+      {
+        "question": "How many layers of DeepSeek-R1 70B fit inside a 16GB M1?",
+        "answer": "At 8K context in Q4_K_M, only 14 of 80 layers (~17.5%) fit inside the 12.0 GB wired GPU pool, leaving more than 34 GB short."
+      },
+      {
+        "question": "What DeepSeek-R1 model runs fastest vs smartest on M1 16GB?",
+        "answer": "DeepSeek-R1 1.5B Q8_0 runs fastest (~30.3 tok/s, 2.33 GB), 7B Q4_K_M gives balanced speed (~10.4 tok/s, 5.66 GB), and 14B Q4_K_M maximizes intelligence at 8K (~5.2 tok/s, 11.19 GB)."
+      },
+      {
+        "question": "What Apple Silicon hardware can run DeepSeek-R1 70B smoothly?",
+        "answer": "An Apple M1/M2/M3/M4 Max with 64GB unified memory (49.9 GB usable) handles 70B Q4_K_M at 4K–8K context; 128GB Max or 192GB Ultra handles 32K–64K context easily."
+      }
+    ],
+    "related_slugs": [
+      "deepseek-r1-70b-on-apple-m1-8gb",
+      "deepseek-r1-1.5b-on-apple-m1-16gb",
+      "deepseek-r1-7b-on-apple-m1-16gb",
+      "deepseek-r1-14b-on-apple-m1-16gb",
+      "deepseek-r1-32b-on-apple-m1-16gb",
+      "qwen2.5-coder-7b-on-apple-m1-16gb"
+    ]
+  },
+  {
+    "slug": "qwen2.5-coder-7b-on-apple-m1-16gb",
+    "title": "Qwen2.5-Coder 7B on Apple M1 16GB: Smooth up to Q8_0 & 64K Context",
+    "meta_description": "Smooth on M1 16GB: Qwen2.5-Coder 7B runs Q4_K_M (5.66 GB, ~10.4 tok/s) up to 64K context and fits Q8_0 cleanly (9.13 GB, ~6.2 tok/s). IDE setup & CLI commands.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "qwen2.5-coder-7b",
+      "name": "Qwen2.5-Coder-7B-Instruct",
+      "short_name": "Qwen2.5-Coder 7B",
+      "family": "Qwen2.5-Coder",
+      "params_b": 7.6,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 28,
+      "num_kv_heads": 4,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "qwen2.5-coder:7b",
+      "hf_repo": "bartowski/Qwen2.5-Coder-7B-Instruct-GGUF",
+      "gguf_file_q4": "Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf",
+      "release_year": 2024,
+      "use_cases": [
+        "IDE autocomplete",
+        "Fast FIM snippets",
+        "Low-latency local copilot"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-16gb",
+      "name": "Apple M1 (16GB Unified)",
+      "short_name": "M1 16GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 16.0,
+      "usable_vram_gb": 12.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 1199
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 4.61,
+      "kv_cache_gb": 0.44,
+      "overhead_gb": 0.61,
+      "total_vram_gb": 5.66,
+      "status": "Smooth",
+      "est_tps": 10.4,
+      "gpu_layers_fit": 28,
+      "total_layers": 28,
+      "gpu_fraction": 1.0
+    },
+    "verdict_summary": "Ideal local coding fit on Apple M1 16GB (12.0 GB usable): Qwen2.5-Coder-7B-Instruct runs Q4_K_M at ~10.4 tok/s with 64K context support, and steps all the way up to Q8_0 (9.13 GB, ~6.2 tok/s) smoothly.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 4.61,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 5.66,
+        "est_tps": 10.4,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (6.3 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 5.42,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 6.47,
+        "est_tps": 9.1,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Sweet spot: higher fidelity with 5.5 GB headroom."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 6.27,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 7.32,
+        "est_tps": 7.9,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Sweet spot: higher fidelity with 4.7 GB headroom."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 8.07,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 9.13,
+        "est_tps": 6.2,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": true,
+        "notes": "Near-BF16 precision; fits cleanly with 2.9 GB left."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 15.2,
+        "kv_cache_8k_gb": 0.44,
+        "overhead_gb": 0.61,
+        "total_vram_8k_gb": 16.25,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 20,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Requires 16.25 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen2.5-coder:7b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=32768 ollama run qwen2.5-coder:7b",
+      "llama_cli": "llama-cli -hf bartowski/Qwen2.5-Coder-7B-Instruct-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf bartowski/Qwen2.5-Coder-7B-Instruct-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 32768,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.22,
+      "max_smooth_context_q4": 65536,
+      "bottleneck_summary": "Unlike 8GB Macs capped at 8K context, a 16GB M1 unlocks Qwen2.5-Coder 7B's full long-context coding potential: 64K FP16 KV cache on Q4_K_M uses just 8.72 GB out of 12.0 GB usable Metal memory. You can also load Q5_K_M, Q6_K, or Q8_0 cleanly at 8K–16K context, with throughput set by the M1's 68 GB/s bus.",
+      "key_points": [
+        "Q4_K_M stays 100% resident from 4K (5.44 GB, ~10.7 tok/s) up to 64K context (8.72 GB, ~7.9 tok/s).",
+        "Q5_K_M (6.47 GB, ~9.1 tok/s), Q6_K (7.32 GB, ~7.9 tok/s), and Q8_0 (9.13 GB, ~6.2 tok/s) all run Smooth at 8K.",
+        "FP16 (16.25 GB at 8K) overflows the 12.0 GB wired GPU pool and hits OOM.",
+        "At 0.22 GB per 4K tokens, multi-file context expansion barely impacts VRAM until you exceed 32K–64K."
+      ],
+      "optimization_tips": [
+        "Pick Q4_K_M (~10.4 tok/s) when feeding 16K–32K multi-file diffs in Continue or Cline; use Q6_K (~7.9 tok/s) for tighter code synthesis.",
+        "Enable `OLLAMA_FLASH_ATTENTION=1` and `OLLAMA_KV_CACHE_TYPE=q8_0` to speed up long repository prompt prefill.",
+        "Compare against Qwen2.5-Coder 14B Q4_K_M (11.19 GB, ~5.2 tok/s): 7B runs twice as fast with 64K context headroom."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can I run Qwen2.5-Coder 7B at 32K or 64K context on a 16GB M1?",
+        "answer": "Yes. In Q4_K_M, 32K context uses 6.97 GB (~9.2 tok/s) and 64K context uses 8.72 GB (~7.9 tok/s)—both comfortably below the 12.0 GB wired Metal limit."
+      },
+      {
+        "question": "Should I run Q4_K_M, Q6_K, or Q8_0 for Qwen2.5-Coder 7B on M1 16GB?",
+        "answer": "Q4_K_M gives the fastest ~10.4 tok/s coding loop and 64K context; Q6_K (7.32 GB, ~7.9 tok/s) is a great precision upgrade with 16K+ room; Q8_0 (9.13 GB, ~6.2 tok/s) works well for shorter 8K prompts."
+      },
+      {
+        "question": "How does Qwen2.5-Coder 7B compare to 14B on M1 16GB?",
+        "answer": "7B generates code at ~10.4 tok/s vs ~5.2 tok/s on 14B and supports 64K context cleanly, while 14B tops out at 8K context (11.19 GB) with minimal room for an open IDE."
+      },
+      {
+        "question": "Why does FP16 fail on M1 16GB for Qwen2.5-Coder 7B?",
+        "answer": "FP16 weights are 15.20 GB (16.25 GB total at 8K), exceeding the 12.0 GB macOS wired GPU limit and leaving no memory for macOS itself."
+      }
+    ],
+    "related_slugs": [
+      "qwen2.5-coder-7b-on-apple-m1-8gb",
+      "deepseek-r1-1.5b-on-apple-m1-16gb",
+      "deepseek-r1-7b-on-apple-m1-16gb",
+      "deepseek-r1-14b-on-apple-m1-16gb",
+      "deepseek-r1-32b-on-apple-m1-16gb",
+      "deepseek-r1-70b-on-apple-m1-16gb"
+    ]
+  },
+  {
+    "slug": "qwen2.5-coder-14b-on-apple-m1-16gb",
+    "title": "Qwen2.5-Coder 14B on Apple M1 16GB: Fits at 8K Q4_K_M (~5.2 tok/s)",
+    "meta_description": "Smooth up to 8K: Qwen2.5-Coder 14B Q4_K_M uses 11.19 GB on Apple M1 16GB (12.0 GB usable) at ~5.2 tok/s. Learn how to avoid 16K swap & tune KV cache.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "qwen2.5-coder-14b",
+      "name": "Qwen2.5-Coder-14B-Instruct",
+      "short_name": "Qwen2.5-Coder 14B",
+      "family": "Qwen2.5-Coder",
+      "params_b": 14.8,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 48,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "qwen2.5-coder:14b",
+      "hf_repo": "bartowski/Qwen2.5-Coder-14B-Instruct-GGUF",
+      "gguf_file_q4": "Qwen2.5-Coder-14B-Instruct-Q4_K_M.gguf",
+      "release_year": 2024,
+      "use_cases": [
+        "Multi-file refactoring",
+        "Unit test generation",
+        "16GB GPU coding agent"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-16gb",
+      "name": "Apple M1 (16GB Unified)",
+      "short_name": "M1 16GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 16.0,
+      "usable_vram_gb": 12.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 1199
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 8.97,
+      "kv_cache_gb": 1.5,
+      "overhead_gb": 0.72,
+      "total_vram_gb": 11.19,
+      "status": "Smooth",
+      "est_tps": 5.2,
+      "gpu_layers_fit": 48,
+      "total_layers": 48,
+      "gpu_fraction": 1.0
+    },
+    "verdict_summary": "Fits smoothly up to 8K context in Q4_K_M: Qwen2.5-Coder-14B-Instruct consumes 11.19 GB of an M1 16GB's 12.0 GB usable Metal budget (~5.2 tok/s), though 16K context or Q5_K_M triggers swap slowdown.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 8.97,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 11.19,
+        "est_tps": 5.2,
+        "status": "Smooth",
+        "gpu_layers_fit": 48,
+        "total_layers": 48,
+        "recommended": true,
+        "notes": "Fits 100% in Metal memory (0.8 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 10.55,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 12.77,
+        "est_tps": 2.5,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 44,
+        "total_layers": 48,
+        "recommended": false,
+        "notes": "Exceeds safe macOS wired ceiling; risks swap thrashing under load."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 12.21,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 14.43,
+        "est_tps": 2.2,
+        "status": "Partial Offload",
+        "gpu_layers_fit": 38,
+        "total_layers": 48,
+        "recommended": false,
+        "notes": "Exceeds safe macOS wired ceiling; risks swap thrashing under load."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 15.73,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 17.95,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 29,
+        "total_layers": 48,
+        "recommended": false,
+        "notes": "Requires 17.95 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 29.6,
+        "kv_cache_8k_gb": 1.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 31.82,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 15,
+        "total_layers": 48,
+        "recommended": false,
+        "notes": "Requires 31.82 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen2.5-coder:14b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=8192 ollama run qwen2.5-coder:14b",
+      "llama_cli": "llama-cli -hf bartowski/Qwen2.5-Coder-14B-Instruct-GGUF:Q4_K_M \\\n  -ngl 99 -c 8192 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf bartowski/Qwen2.5-Coder-14B-Instruct-GGUF:Q4_K_M \\\n  -ngl 99 -c 8192 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 8192,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.75,
+      "max_smooth_context_q4": 8192,
+      "bottleneck_summary": "Qwen2.5-Coder 14B fills nearly the entire wired pool of a 16GB M1 Mac: 8.97 GB weights plus 0.72 GB runtime overhead leave 2.31 GB for KV cache. At 0.75 GB per 4K FP16 tokens, 8K context (11.19 GB) stays Smooth, while 16K context (12.69 GB) crosses into Partial Offload (~2.6 tok/s) alongside your code editor.",
+      "key_points": [
+        "Q4_K_M runs Smooth with all 48 layers wired at 4K (10.44 GB, ~5.4 tok/s) and 8K (11.19 GB, ~5.2 tok/s).",
+        "16K FP16 context (12.69 GB) drops to ~2.6 tok/s via Partial Offload; 32K+ hits OOM.",
+        "Q5_K_M (12.77 GB) and Q6_K (14.43 GB) spill out of the 12.0 GB wired limit; Q8_0 (17.95 GB) OOMs.",
+        "Because IDEs (VS Code/JetBrains) also allocate 1–2 GB RAM, 8K Q4_K_M runs tight on a 16GB workstation."
+      ],
+      "optimization_tips": [
+        "Turn on `OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0` to halve KV growth from 0.75 GB to ~0.38 GB per 4K, freeing RAM for your IDE.",
+        "Cap context at 8,192 tokens (`-c 8192`) unless KV quantization is enabled.",
+        "If ~5.2 tok/s and 8K limits bottleneck your daily coding loop, run Qwen2.5-Coder 7B Q6_K (7.32 GB, ~7.9 tok/s) or Q4_K_M (~10.4 tok/s)."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can I use Qwen2.5-Coder 14B on a 16GB M1 while running VS Code?",
+        "answer": "Yes at Q4_K_M with 4K–8K context (10.44–11.19 GB), though memory will be tight. Close heavy browser tabs and enable Q8_0 KV cache quantization for extra headroom."
+      },
+      {
+        "question": "Why does Qwen2.5-Coder 14B drop to ~2.6 tok/s at 16K context on M1 16GB?",
+        "answer": "16K FP16 KV cache reaches 3.00 GB, lifting total memory to 12.69 GB—above the 12.0 GB wired GPU ceiling—so 4 layers spill and memory pressure halves throughput."
+      },
+      {
+        "question": "Should I run Qwen2.5-Coder 14B Q4_K_M or 7B Q6_K on M1 16GB?",
+        "answer": "Pick 14B Q4_K_M (~5.2 tok/s) for complex single-file architecture/SQL problems under 8K tokens; pick 7B Q6_K (~7.9 tok/s) or Q4_K_M (~10.4 tok/s) for faster iteration and 16K–64K multi-file context."
+      },
+      {
+        "question": "What Mac memory spec runs Qwen2.5-Coder 14B comfortably with 32K context?",
+        "answer": "A 24GB Mac (18.0 GB usable, such as M2/M4 24GB) easily holds Q4_K_M at 32K context (15.69 GB) with room to spare for your IDE."
+      }
+    ],
+    "related_slugs": [
+      "qwen2.5-coder-14b-on-apple-m1-8gb",
+      "deepseek-r1-1.5b-on-apple-m1-16gb",
+      "deepseek-r1-7b-on-apple-m1-16gb",
+      "deepseek-r1-14b-on-apple-m1-16gb",
+      "deepseek-r1-32b-on-apple-m1-16gb",
+      "deepseek-r1-70b-on-apple-m1-16gb"
+    ]
+  },
+  {
+    "slug": "qwen2.5-coder-32b-on-apple-m1-16gb",
+    "title": "Qwen2.5-Coder 32B on Apple M1 16GB: OOM (22.88 GB vs 12.0 GB Usable)",
+    "meta_description": "OOM on M1 16GB: Qwen2.5-Coder-32B-Instruct Q4_K_M needs 22.88 GB at 8K context (only 28/64 layers fit). Compare 14B/7B options & 32GB+ Mac specs.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "qwen2.5-coder-32b",
+      "name": "Qwen2.5-Coder-32B-Instruct",
+      "short_name": "Qwen2.5-Coder 32B",
+      "family": "Qwen2.5-Coder",
+      "params_b": 32.8,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 64,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "qwen2.5-coder:32b",
+      "hf_repo": "bartowski/Qwen2.5-Coder-32B-Instruct-GGUF",
+      "gguf_file_q4": "Qwen2.5-Coder-32B-Instruct-Q4_K_M.gguf",
+      "release_year": 2024,
+      "use_cases": [
+        "Full-repo code review",
+        "Agentic coding",
+        "SQL & architecture generation"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-16gb",
+      "name": "Apple M1 (16GB Unified)",
+      "short_name": "M1 16GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 16.0,
+      "usable_vram_gb": 12.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 1199
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 19.88,
+      "kv_cache_gb": 2.0,
+      "overhead_gb": 0.99,
+      "total_vram_gb": 22.88,
+      "status": "OOM",
+      "est_tps": 0.0,
+      "gpu_layers_fit": 28,
+      "total_layers": 64,
+      "gpu_fraction": 0.453
+    },
+    "verdict_summary": "Out of Memory (OOM): Qwen2.5-Coder-32B-Instruct Q4_K_M requires 22.88 GB at 8K context, overflowing a 16GB M1's 12.0 GB Metal ceiling and physical 16 GB RAM with only 28 of 64 layers fitting.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 19.88,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 22.88,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 28,
+        "total_layers": 64,
+        "recommended": true,
+        "notes": "Requires 22.88 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 23.37,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 26.36,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 24,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 26.36 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 27.06,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 30.05,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 21,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 30.05 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 34.85,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 37.84,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 16,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 37.84 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 65.6,
+        "kv_cache_8k_gb": 2.0,
+        "overhead_gb": 0.99,
+        "total_vram_8k_gb": 68.59,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 8,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Requires 68.59 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen2.5-coder:32b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=4096 ollama run qwen2.5-coder:32b",
+      "llama_cli": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-cli -hf bartowski/Qwen2.5-Coder-32B-Instruct-GGUF:Q4_K_M \\\n  -ngl 32 -c 4096 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-server -hf bartowski/Qwen2.5-Coder-32B-Instruct-GGUF:Q4_K_M \\\n  -ngl 32 -c 4096 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 4096,
+      "recommended_ngl": 32
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 1.0,
+      "max_smooth_context_q4": 0,
+      "bottleneck_summary": "At 19.88 GB for Q4_K_M weights alone, Qwen2.5-Coder 32B already exceeds the total 16 GB unified memory inside an M1 MacBook before adding 0.99 GB Metal buffers or 1.00 GB per 4K FP16 KV tokens. Because total demand hits 21.88 GB at 4K and 22.88 GB at 8K, local GPU residency is impossible.",
+      "key_points": [
+        "Q4_K_M at 8K (22.88 GB) leaves a 10.88 GB deficit past the 12.0 GB usable Metal budget on M1 16GB.",
+        "Even at minimum 4K context (21.88 GB), only 32 of 64 layers fit inside the 12.0 GB wired cap.",
+        "Q5_K_M (26.36 GB), Q6_K (30.05 GB), and Q8_0 (37.84 GB) require 36GB–48GB+ systems.",
+        "Forcing 32B on 16GB RAM triggers immediate allocation failures or crippling SSD swap thrashing."
+      ],
+      "optimization_tips": [
+        "Drop to Qwen2.5-Coder 14B Q4_K_M (11.19 GB at 8K, ~5.2 tok/s) for the smartest model that fits in 16GB.",
+        "Use Qwen2.5-Coder 7B Q4_K_M (5.66 GB, ~10.4 tok/s) if you need 32K–64K multi-file coding context.",
+        "Upgrade to a 32GB M1/M2 Pro (24.0 GB usable) for 8K 32B Q4_K_M, or 48GB+ (M4 Pro 48GB) for 32K–64K context."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can a 16GB M1 Mac run Qwen2.5-Coder 32B locally?",
+        "answer": "No. Q4_K_M weights are 19.88 GB (22.88 GB total at 8K), exceeding the laptop's entire 16 GB physical RAM and 12.0 GB wired GPU ceiling."
+      },
+      {
+        "question": "What is the best local alternative to Qwen2.5-Coder 32B on M1 16GB?",
+        "answer": "Use Qwen2.5-Coder 14B Q4_K_M (11.19 GB, ~5.2 tok/s) for 8K problem solving, or Qwen2.5-Coder 7B Q6_K (7.32 GB, ~7.9 tok/s) for brisk multi-file editing."
+      },
+      {
+        "question": "Does an RTX 4060 Ti 16GB run Qwen2.5-Coder 32B better than M1 16GB?",
+        "answer": "Yes, because a desktop PC with an RTX 4060 Ti 16GB (15.5 GB VRAM) can spill the remaining 24 layers into 32GB+ of system DDR4/DDR5 RAM (~3.7 tok/s), whereas a 16GB Mac has no separate RAM pool."
+      },
+      {
+        "question": "How much unified memory is needed for Qwen2.5-Coder 32B on Apple Silicon?",
+        "answer": "At least 32GB unified memory (24.0 GB usable covers 8K Q4_K_M at 22.88 GB), or 48GB+ for 32K–64K repository contexts."
+      }
+    ],
+    "related_slugs": [
+      "qwen2.5-coder-32b-on-apple-m1-8gb",
+      "qwen2.5-coder-32b-on-rtx-4060-ti-16gb",
+      "qwen2.5-coder-32b-on-rtx-5090-32gb",
+      "deepseek-r1-1.5b-on-apple-m1-16gb",
+      "deepseek-r1-7b-on-apple-m1-16gb",
+      "deepseek-r1-14b-on-apple-m1-16gb"
+    ]
+  },
+  {
+    "slug": "llama-3.3-70b-on-apple-m1-16gb",
+    "title": "Llama-3.3 70B on Apple M1 16GB: OOM (46.86 GB vs 12.0 GB Usable)",
+    "meta_description": "Hard OOM: Llama-3.3-70B-Instruct Q4_K_M requires 46.86 GB at 8K context on Apple M1 16GB—nearly 4x its 12.0 GB Metal cap. See Llama-3.1 8B & 64GB Mac options.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "llama-3.3-70b",
+      "name": "Llama-3.3-70B-Instruct",
+      "short_name": "Llama-3.3 70B",
+      "family": "Llama-3.3",
+      "params_b": 70.6,
+      "architecture": "Llama-3 (Dense)",
+      "num_layers": 80,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "llama3.3:70b",
+      "hf_repo": "bartowski/Llama-3.3-70B-Instruct-GGUF",
+      "gguf_file_q4": "Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+      "release_year": 2024,
+      "use_cases": [
+        "General-purpose flagship assistant",
+        "Long-document synthesis",
+        "Structured JSON & tool calling"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-16gb",
+      "name": "Apple M1 (16GB Unified)",
+      "short_name": "M1 16GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 16.0,
+      "usable_vram_gb": 12.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 1199
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 42.8,
+      "kv_cache_gb": 2.5,
+      "overhead_gb": 1.56,
+      "total_vram_gb": 46.86,
+      "status": "OOM",
+      "est_tps": 0.0,
+      "gpu_layers_fit": 14,
+      "total_layers": 80,
+      "gpu_fraction": 0.186
+    },
+    "verdict_summary": "Severe OOM: Llama-3.3-70B-Instruct Q4_K_M requires 46.86 GB at 8K context—almost 4x a 16GB Apple M1's 12.0 GB Metal ceiling, accommodating only 14 of 80 layers.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 42.8,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 46.86,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 14,
+        "total_layers": 80,
+        "recommended": true,
+        "notes": "Requires 46.86 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 50.3,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 54.36,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 12,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 54.36 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 58.24,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 62.3,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 10,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 62.3 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 75.01,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 79.07,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 8,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 79.07 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 141.2,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.56,
+        "total_vram_8k_gb": 145.26,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 4,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 145.26 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run llama3.3:70b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=4096 ollama run llama3.3:70b",
+      "llama_cli": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-cli -hf bartowski/Llama-3.3-70B-Instruct-GGUF:Q4_K_M \\\n  -ngl 17 -c 4096 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-server -hf bartowski/Llama-3.3-70B-Instruct-GGUF:Q4_K_M \\\n  -ngl 17 -c 4096 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 4096,
+      "recommended_ngl": 17
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 1.25,
+      "max_smooth_context_q4": 0,
+      "bottleneck_summary": "Llama-3.3 70B requires 42.80 GB just to load Q4_K_M weights into memory, plus 1.56 GB runtime overhead and 1.25 GB per 4K FP16 context across 80 layers. On a 16GB M1 Mac (12.0 GB usable), over 34 GB of deficit makes local execution impossible.",
+      "key_points": [
+        "Q4_K_M demands 45.61 GB at 4K and 46.86 GB at 8K—exceeding the 12.0 GB wired GPU limit by 34.86 GB.",
+        "Only 14 of 80 layers (at 8K) fit inside Metal memory; Q6_K reaches 62.30 GB and Q8_0 hits 79.07 GB.",
+        "Even if swapped to NVMe, 80-layer weight streaming at 68 GB/s + disk latency drops under 0.1 tok/s.",
+        "Each 4K of context consumes 1.25 GB of FP16 KV cache, pushing 64K Q4_K_M to 64.36 GB."
+      ],
+      "optimization_tips": [
+        "Use Llama-3.1-8B-Instruct on your 16GB M1 instead: it runs Smooth up to Q8_0 (10.12 GB) and up to 48K context in Q4_K_M.",
+        "If you need 70B-class reasoning on Apple Silicon, target a 64GB Max Mac (49.9 GB usable) or 128GB+ Mac Studio.",
+        "Avoid wasting SSD write cycles trying to swap 45+ GB GGUF files on a 16GB MacBook."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can a 16GB M1 Mac run Llama-3.3 70B?",
+        "answer": "No. Q4_K_M takes 46.86 GB at 8K context—nearly three times the entire 16 GB unified memory of the machine."
+      },
+      {
+        "question": "What is the best Llama model for a 16GB M1 Mac?",
+        "answer": "Llama-3.1-8B-Instruct fits completely in Metal memory at Q4_K_M (6.47 GB, ~9.4 tok/s, up to 48K context) and even Q8_0 (10.12 GB, ~5.7 tok/s)."
+      },
+      {
+        "question": "How much Apple Silicon RAM is needed to run Llama-3.3 70B cleanly?",
+        "answer": "Minimum 64GB unified memory (49.9 GB usable) for Q4_K_M at 4K–8K context (46.86 GB), or 96GB–128GB Max/Ultra for 32K–64K contexts and Q6_K."
+      },
+      {
+        "question": "Why does 8K KV cache take 2.50 GB on Llama-3.3 70B?",
+        "answer": "Its 80 transformer layers with 8 KV heads allocate 1.25 GB per 4,096 FP16 tokens, totaling 2.50 GB at 8K."
+      }
+    ],
+    "related_slugs": [
+      "llama-3.3-70b-on-apple-m1-8gb",
+      "llama-3.3-70b-on-rtx-3060-12gb",
+      "deepseek-r1-1.5b-on-apple-m1-16gb",
+      "deepseek-r1-7b-on-apple-m1-16gb",
+      "deepseek-r1-14b-on-apple-m1-16gb",
+      "deepseek-r1-32b-on-apple-m1-16gb"
+    ]
+  },
+  {
+    "slug": "llama-3.1-8b-on-apple-m1-16gb",
+    "title": "Llama-3.1 8B on Apple M1 16GB: Smooth up to Q8_0 & 48K Context",
+    "meta_description": "Smooth on M1 16GB: Llama-3.1-8B-Instruct runs Q4_K_M at ~9.4 tok/s (6.47 GB @ 8K, Smooth up to 48K) and fits Q8_0 at 10.12 GB (~5.7 tok/s). Full guide.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "llama-3.1-8b",
+      "name": "Llama-3.1-8B-Instruct",
+      "short_name": "Llama-3.1 8B",
+      "family": "Llama-3.1",
+      "params_b": 8.0,
+      "architecture": "Llama-3 (Dense)",
+      "num_layers": 32,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "llama3.1:8b",
+      "hf_repo": "bartowski/Meta-Llama-3.1-8B-Instruct-GGUF",
+      "gguf_file_q4": "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+      "release_year": 2024,
+      "use_cases": [
+        "Fast local chat",
+        "Summarization",
+        "8GB-12GB GPU baseline"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-16gb",
+      "name": "Apple M1 (16GB Unified)",
+      "short_name": "M1 16GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 16.0,
+      "usable_vram_gb": 12.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 1199
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 4.85,
+      "kv_cache_gb": 1.0,
+      "overhead_gb": 0.62,
+      "total_vram_gb": 6.47,
+      "status": "Smooth",
+      "est_tps": 9.4,
+      "gpu_layers_fit": 32,
+      "total_layers": 32,
+      "gpu_fraction": 1.0
+    },
+    "verdict_summary": "Rock-solid Smooth fit on Apple M1 16GB (12.0 GB usable): Llama-3.1-8B-Instruct runs Q4_K_M at ~9.4 tok/s up to 48K context and supports full Q8_0 at 10.12 GB (~5.7 tok/s) with zero swap.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 4.85,
+        "kv_cache_8k_gb": 1.0,
+        "overhead_gb": 0.62,
+        "total_vram_8k_gb": 6.47,
+        "est_tps": 9.4,
+        "status": "Smooth",
+        "gpu_layers_fit": 32,
+        "total_layers": 32,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (5.5 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 5.7,
+        "kv_cache_8k_gb": 1.0,
+        "overhead_gb": 0.62,
+        "total_vram_8k_gb": 7.32,
+        "est_tps": 8.2,
+        "status": "Smooth",
+        "gpu_layers_fit": 32,
+        "total_layers": 32,
+        "recommended": false,
+        "notes": "Sweet spot: higher fidelity with 4.7 GB headroom."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 6.6,
+        "kv_cache_8k_gb": 1.0,
+        "overhead_gb": 0.62,
+        "total_vram_8k_gb": 8.22,
+        "est_tps": 7.2,
+        "status": "Smooth",
+        "gpu_layers_fit": 32,
+        "total_layers": 32,
+        "recommended": false,
+        "notes": "Sweet spot: higher fidelity with 3.8 GB headroom."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 8.5,
+        "kv_cache_8k_gb": 1.0,
+        "overhead_gb": 0.62,
+        "total_vram_8k_gb": 10.12,
+        "est_tps": 5.7,
+        "status": "Smooth",
+        "gpu_layers_fit": 32,
+        "total_layers": 32,
+        "recommended": true,
+        "notes": "Near-BF16 precision; fits cleanly with 1.9 GB left."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 16.0,
+        "kv_cache_8k_gb": 1.0,
+        "overhead_gb": 0.62,
+        "total_vram_8k_gb": 17.62,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 20,
+        "total_layers": 32,
+        "recommended": false,
+        "notes": "Requires 17.62 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run llama3.1:8b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=32768 ollama run llama3.1:8b",
+      "llama_cli": "llama-cli -hf bartowski/Meta-Llama-3.1-8B-Instruct-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf bartowski/Meta-Llama-3.1-8B-Instruct-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 32768,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.5,
+      "max_smooth_context_q4": 49152,
+      "bottleneck_summary": "Whereas an 8GB M1 hits Partial Offload on Llama-3.1 8B at 8K context, the 16GB M1's 12.0 GB wired ceiling unlocks effortless GPU residency across Q4_K_M, Q5_K_M, Q6_K, and Q8_0. Its 8-head GQA cache adds 0.50 GB per 4K tokens, making 32K Q4_K_M (9.47 GB) Smooth and capping native FP16 KV at 48K before 64K (13.47 GB) spills.",
+      "key_points": [
+        "Q4_K_M runs Smooth at 4K (5.97 GB, ~9.9 tok/s), 8K (6.47 GB, ~9.4 tok/s), 16K (7.47 GB, ~8.6 tok/s), and 32K (9.47 GB, ~7.3 tok/s).",
+        "Max Smooth context at Q4_K_M is 48K (49,152 tokens); pushing to 64K FP16 (13.47 GB) triggers Partial Offload (~3.1 tok/s).",
+        "Q5_K_M (7.32 GB, ~8.2 tok/s), Q6_K (8.22 GB, ~7.2 tok/s), and Q8_0 (10.12 GB, ~5.7 tok/s) all keep 32/32 layers in Metal at 8K.",
+        "FP16 (17.62 GB at 8K) exceeds physical 16 GB RAM and results in OOM."
+      ],
+      "optimization_tips": [
+        "Use Q4_K_M (~9.4 tok/s) for daily chat and 16K–48K document summaries, or Q6_K (~7.2 tok/s) for sharper instruction following at 8K–16K.",
+        "Enable `OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0` to stretch Q4_K_M all the way to 64K without crossing 12.0 GB.",
+        "Because Q4_K_M leaves ~5.5 GB free inside Metal (and ~9.5 GB total RAM), you can run Llama-3.1 8B comfortably alongside heavy work apps."
+      ]
+    },
+    "faq": [
+      {
+        "question": "How fast does Llama-3.1 8B run on a 16GB Apple M1?",
+        "answer": "In Q4_K_M at 8K context, expect ~9.4 tok/s driven by the M1's 68 GB/s memory bandwidth (~9.9 tok/s at 4K, ~7.3 tok/s at 32K)."
+      },
+      {
+        "question": "Can a 16GB M1 run Llama-3.1 8B at 64K context?",
+        "answer": "With default FP16 KV cache, 48K is the max Smooth ceiling; 64K totals 13.47 GB and drops to ~3.1 tok/s. Turn on Q8_0 KV quantization (`OLLAMA_KV_CACHE_TYPE=q8_0`) to fit 64K smoothly under 12.0 GB."
+      },
+      {
+        "question": "Is Q8_0 worth running for Llama-3.1 8B on M1 16GB?",
+        "answer": "Q8_0 fits cleanly at 8K (10.12 GB, ~5.7 tok/s), though most users prefer Q4_K_M (~9.4 tok/s) or Q5_K_M (~8.2 tok/s) for significantly snappier output and bigger context headroom."
+      },
+      {
+        "question": "How big an upgrade is M1 16GB over M1 8GB for Llama-3.1 8B?",
+        "answer": "Massive: M1 8GB caps Llama-3.1 8B at 4K context before Partial Offload hits at 8K (~5.2 tok/s), whereas M1 16GB keeps 8K–48K Smooth at up to ~9.4 tok/s."
+      }
+    ],
+    "related_slugs": [
+      "llama-3.1-8b-on-apple-m1-8gb",
+      "deepseek-r1-1.5b-on-apple-m1-16gb",
+      "deepseek-r1-7b-on-apple-m1-16gb",
+      "deepseek-r1-14b-on-apple-m1-16gb",
+      "deepseek-r1-32b-on-apple-m1-16gb",
+      "deepseek-r1-70b-on-apple-m1-16gb"
+    ]
+  },
+  {
+    "slug": "qwen2.5-72b-on-apple-m1-16gb",
+    "title": "Qwen2.5 72B on Apple M1 16GB: OOM (48.16 GB vs 12.0 GB Usable)",
+    "meta_description": "Hard OOM: Qwen2.5-72B-Instruct Q4_K_M needs 48.16 GB at 8K context on Apple M1 16GB—4x its 12.0 GB Metal limit. View 14B/7B Smooth alternatives.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "qwen2.5-72b",
+      "name": "Qwen2.5-72B-Instruct",
+      "short_name": "Qwen2.5 72B",
+      "family": "Qwen2.5",
+      "params_b": 72.7,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 80,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "qwen2.5:72b",
+      "hf_repo": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+      "gguf_file_q4": "Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+      "release_year": 2024,
+      "use_cases": [
+        "Multilingual enterprise chat",
+        "RAG over large docs",
+        "High-memory workstations"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-16gb",
+      "name": "Apple M1 (16GB Unified)",
+      "short_name": "M1 16GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 16.0,
+      "usable_vram_gb": 12.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 1199
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 44.07,
+      "kv_cache_gb": 2.5,
+      "overhead_gb": 1.59,
+      "total_vram_gb": 48.16,
+      "status": "OOM",
+      "est_tps": 0.0,
+      "gpu_layers_fit": 14,
+      "total_layers": 80,
+      "gpu_fraction": 0.179
+    },
+    "verdict_summary": "Severe OOM: Qwen2.5-72B-Instruct Q4_K_M requires 48.16 GB at 8K context—more than 4x a 16GB M1 Mac's 12.0 GB wired GPU pool, with only 14 of 80 layers fitting.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 44.07,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.59,
+        "total_vram_8k_gb": 48.16,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 14,
+        "total_layers": 80,
+        "recommended": true,
+        "notes": "Requires 48.16 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 51.8,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.59,
+        "total_vram_8k_gb": 55.89,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 12,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 55.89 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 59.98,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.59,
+        "total_vram_8k_gb": 64.07,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 10,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 64.07 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 77.24,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.59,
+        "total_vram_8k_gb": 81.33,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 8,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 81.33 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 145.4,
+        "kv_cache_8k_gb": 2.5,
+        "overhead_gb": 1.59,
+        "total_vram_8k_gb": 149.49,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 4,
+        "total_layers": 80,
+        "recommended": false,
+        "notes": "Requires 149.49 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen2.5:72b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=4096 ollama run qwen2.5:72b",
+      "llama_cli": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-cli -hf bartowski/Qwen2.5-72B-Instruct-GGUF:Q4_K_M \\\n  -ngl 16 -c 4096 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-server -hf bartowski/Qwen2.5-72B-Instruct-GGUF:Q4_K_M \\\n  -ngl 16 -c 4096 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 4096,
+      "recommended_ngl": 16
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 1.25,
+      "max_smooth_context_q4": 0,
+      "bottleneck_summary": "With 72.7B parameters spanning 80 transformer layers, Qwen2.5 72B weighs 44.07 GB in Q4_K_M alone before adding 1.59 GB runtime overhead and 2.50 GB of 8K KV cache. On a 16GB M1 (12.0 GB usable), this creates a 36.16 GB shortfall that makes local deployment impossible.",
+      "key_points": [
+        "Q4_K_M requires 46.91 GB at 4K and 48.16 GB at 8K—nearly triple the laptop's entire 16 GB physical RAM.",
+        "At 8K context, only 14 of 80 layers fit in the 12.0 GB Metal cap; Q8_0 surges to 81.33 GB.",
+        "Each 4K tokens of FP16 context consumes 1.25 GB, bringing 32K Q4_K_M to 55.66 GB.",
+        "Attempting to load 72B GGUFs on a 16GB MacBook results in immediate OOM aborts or extreme swap stalls."
+      ],
+      "optimization_tips": [
+        "Run Qwen2.5-Coder 14B Q4_K_M (11.19 GB at 8K, ~5.2 tok/s) or 7B Q6_K (7.32 GB, ~7.9 tok/s) on your 16GB M1.",
+        "To deploy Qwen2.5 72B locally on macOS, upgrade to at least a 64GB Max Mac (49.9 GB usable) for 4K–8K Q4_K_M.",
+        "For 32K+ context or Q6_K quality on Qwen2.5 72B, look at a 128GB Max or 192GB Mac Studio Ultra."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can a 16GB M1 MacBook run Qwen2.5 72B?",
+        "answer": "No. Q4_K_M needs 48.16 GB at 8K context (46.91 GB at 4K), far exceeding the 16 GB unified memory limit."
+      },
+      {
+        "question": "How much unified RAM is needed to run Qwen2.5 72B on a Mac?",
+        "answer": "At least 64GB (49.9 GB usable) to fit Q4_K_M at 4K–8K context (48.16 GB), or 128GB–192GB for 32K–64K context and higher quants."
+      },
+      {
+        "question": "Which Qwen2.5 size fits comfortably on Apple M1 16GB?",
+        "answer": "Qwen2.5 7B runs Smooth up to Q8_0 and 64K context (~10.4 tok/s at Q4_K_M), while 14B fits Smooth in Q4_K_M up to 8K context (11.19 GB, ~5.2 tok/s)."
+      },
+      {
+        "question": "Would Q2_K quantization let Qwen2.5 72B run on M1 16GB?",
+        "answer": "No. Even extreme 2-bit quants (~24–27 GB) remain well over both the 12.0 GB wired limit and 16 GB system RAM."
+      }
+    ],
+    "related_slugs": [
+      "qwen2.5-72b-on-apple-m1-8gb",
+      "deepseek-r1-1.5b-on-apple-m1-16gb",
+      "deepseek-r1-7b-on-apple-m1-16gb",
+      "deepseek-r1-14b-on-apple-m1-16gb",
+      "deepseek-r1-32b-on-apple-m1-16gb",
+      "deepseek-r1-70b-on-apple-m1-16gb"
+    ]
+  },
+  {
+    "slug": "mistral-small-24b-on-apple-m1-16gb",
+    "title": "Mistral Small 24B on Apple M1 16GB: OOM (16.66 GB vs 12.0 GB Usable)",
+    "meta_description": "OOM on M1 16GB: Mistral-Small-24B-Instruct-2501 Q4_K_M needs 16.66 GB at 8K context (4.66 GB over 12.0 GB cap). Compare 14B Smooth & 24GB+ Mac options.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "mistral-small-24b",
+      "name": "Mistral-Small-24B-Instruct-2501",
+      "short_name": "Mistral Small 24B",
+      "family": "Mistral",
+      "params_b": 24.0,
+      "architecture": "Mistral (Dense)",
+      "num_layers": 40,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 32768,
+      "ollama_tag": "mistral-small:24b",
+      "hf_repo": "bartowski/Mistral-Small-24B-Instruct-2501-GGUF",
+      "gguf_file_q4": "Mistral-Small-24B-Instruct-2501-Q4_K_M.gguf",
+      "release_year": 2025,
+      "use_cases": [
+        "Low-latency 24GB GPU reasoning",
+        "Function calling",
+        "European language fluency"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-16gb",
+      "name": "Apple M1 (16GB Unified)",
+      "short_name": "M1 16GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 16.0,
+      "usable_vram_gb": 12.0,
+      "bandwidth_gbps": 68.0,
+      "memory_type": "LPDDR4X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 1199
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 14.55,
+      "kv_cache_gb": 1.25,
+      "overhead_gb": 0.86,
+      "total_vram_gb": 16.66,
+      "status": "OOM",
+      "est_tps": 0.0,
+      "gpu_layers_fit": 27,
+      "total_layers": 40,
+      "gpu_fraction": 0.68
+    },
+    "verdict_summary": "Out of Memory (OOM): Mistral-Small-24B-Instruct-2501 Q4_K_M requires 16.66 GB at 8K context—exceeding a 16GB M1 Mac's 12.0 GB Metal budget and 16 GB physical RAM with 27 of 40 layers fitting.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 14.55,
+        "kv_cache_8k_gb": 1.25,
+        "overhead_gb": 0.86,
+        "total_vram_8k_gb": 16.66,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 27,
+        "total_layers": 40,
+        "recommended": true,
+        "notes": "Requires 16.66 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 17.1,
+        "kv_cache_8k_gb": 1.25,
+        "overhead_gb": 0.86,
+        "total_vram_8k_gb": 19.21,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 23,
+        "total_layers": 40,
+        "recommended": false,
+        "notes": "Requires 19.21 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 19.8,
+        "kv_cache_8k_gb": 1.25,
+        "overhead_gb": 0.86,
+        "total_vram_8k_gb": 21.91,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 19,
+        "total_layers": 40,
+        "recommended": false,
+        "notes": "Requires 21.91 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 25.5,
+        "kv_cache_8k_gb": 1.25,
+        "overhead_gb": 0.86,
+        "total_vram_8k_gb": 27.61,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 15,
+        "total_layers": 40,
+        "recommended": false,
+        "notes": "Requires 27.61 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 48.0,
+        "kv_cache_8k_gb": 1.25,
+        "overhead_gb": 0.86,
+        "total_vram_8k_gb": 50.11,
+        "est_tps": 0.0,
+        "status": "OOM",
+        "gpu_layers_fit": 8,
+        "total_layers": 40,
+        "recommended": false,
+        "notes": "Requires 50.11 GB vs 12.0 GB usable Metal memory; too large to run practically."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run mistral-small:24b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=4096 ollama run mistral-small:24b",
+      "llama_cli": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-cli -hf bartowski/Mistral-Small-24B-Instruct-2501-GGUF:Q4_K_M \\\n  -ngl 28 -c 4096 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "# Warning: Q4_K_M exceeds usable VRAM; use a smaller model or Q2_K/IQ3_XS\nllama-server -hf bartowski/Mistral-Small-24B-Instruct-2501-GGUF:Q4_K_M \\\n  -ngl 28 -c 4096 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 4096,
+      "recommended_ngl": 28
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.62,
+      "max_smooth_context_q4": 0,
+      "bottleneck_summary": "Mistral Small 24B sits awkwardly just above 16GB hardware limits: Q4_K_M weights alone take 14.55 GB, and adding 0.86 GB runtime buffers plus 0.62 GB per 4K FP16 KV tokens pushes 4K context to 16.04 GB and 8K to 16.66 GB—exceeding both the 12.0 GB wired cap and the 16 GB physical pool.",
+      "key_points": [
+        "Q4_K_M needs 16.04 GB at 4K and 16.66 GB at 8K, overshooting M1 16GB's 12.0 GB usable GPU budget by 4.66 GB.",
+        "Only 27 of 40 layers fit inside the 12.0 GB Metal pool at 8K; Q5_K_M climbs to 19.21 GB and Q8_0 hits 27.61 GB.",
+        "Even with Mistral Small 24B's 32K context ceiling, Q4_K_M 32K totals 20.41 GB—far outside 16GB laptops.",
+        "On macOS, forcing 16+ GB of model tensors onto a 16GB MacBook triggers severe swap thrashing and OOM kills."
+      ],
+      "optimization_tips": [
+        "Choose a 14B model (Qwen2.5-Coder 14B or DeepSeek-R1 14B at 11.19 GB, ~5.2 tok/s) or Llama-3.1 8B (~9.4 tok/s) on M1 16GB.",
+        "To run Mistral Small 24B smoothly in Q4_K_M, upgrade to a 24GB Mac (18.0 GB usable) or a 24GB GPU like the RTX 3090/4090.",
+        "Even a 16GB discrete GPU like RTX 4080/5080 (15.5 GB usable) spills layers over PCIe for 24B Q4_K_M—24GB is the true floor."
+      ]
+    },
+    "faq": [
+      {
+        "question": "Can a 16GB M1 MacBook Pro run Mistral Small 24B at Q4_K_M?",
+        "answer": "No. Q4_K_M weights (14.55 GB) plus KV cache and Metal buffers reach 16.04–16.66 GB, exceeding both the 12.0 GB wired cap and total 16 GB physical RAM."
+      },
+      {
+        "question": "Why does Mistral Small 24B miss 16GB Macs so closely?",
+        "answer": "24B at 4.85 bpw is already 14.55 GB before KV cache and macOS reservations (~4 GB), so 24GB unified memory (18.0 GB usable) is the minimum Mac tier for smooth Q4_K_M."
+      },
+      {
+        "question": "Could a 3-bit quant (Q3_K_M) fit Mistral Small 24B on a 16GB M1?",
+        "answer": "A 3-bit quant shrinks weights near ~11 GB, leaving minimal headroom at 4K context while degrading accuracy below what a Smooth 14B Q4_K_M or 8B Q6_K/Q8_0 delivers."
+      },
+      {
+        "question": "What are the best Smooth models to run instead on M1 16GB?",
+        "answer": "Llama-3.1-8B-Instruct (6.47 GB at 8K, ~9.4 tok/s) for general chat/tool calling, or DeepSeek-R1 14B (11.19 GB at 8K, ~5.2 tok/s) for heavier reasoning."
+      }
+    ],
+    "related_slugs": [
+      "mistral-small-24b-on-apple-m1-8gb",
+      "deepseek-r1-1.5b-on-apple-m1-16gb",
+      "deepseek-r1-7b-on-apple-m1-16gb",
+      "deepseek-r1-14b-on-apple-m1-16gb",
+      "deepseek-r1-32b-on-apple-m1-16gb",
+      "deepseek-r1-70b-on-apple-m1-16gb"
+    ]
+  },
+  {
+    "slug": "deepseek-r1-1.5b-on-apple-m1-pro-16gb",
+    "title": "DeepSeek-R1 1.5B on Apple M1 Pro 16GB: Blazing 145.3 tok/s (64K Smooth)",
+    "meta_description": "Smooth & blazing fast: DeepSeek-R1 1.5B hits ~145.3 tok/s (Q4_K_M, 1.65 GB) and ~89.2 tok/s (Q8_0, 2.33 GB) on Apple M1 Pro 16GB (200 GB/s). CLI setup.",
+    "updated_at": "2026-11-23",
+    "model": {
+      "id": "deepseek-r1-1.5b",
+      "name": "DeepSeek-R1-Distill-Qwen-1.5B",
+      "short_name": "DeepSeek-R1 1.5B",
+      "family": "DeepSeek-R1",
+      "params_b": 1.5,
+      "architecture": "Qwen2 (Dense)",
+      "num_layers": 28,
+      "num_kv_heads": 2,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "deepseek-r1:1.5b",
+      "hf_repo": "bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF",
+      "gguf_file_q4": "DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf",
+      "release_year": 2025,
+      "use_cases": [
+        "Edge reasoning",
+        "Fast math scratchpad",
+        "Ultrabook offline assistant"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m1-pro-16gb",
+      "name": "Apple M1 Pro (16GB Unified)",
+      "short_name": "M1 Pro 16GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M1",
+      "vram_gb": 16.0,
+      "usable_vram_gb": 12.0,
+      "bandwidth_gbps": 200.0,
+      "memory_type": "LPDDR5 Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 1999
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "context_tokens": 8192,
+      "weights_gb": 0.91,
+      "kv_cache_gb": 0.22,
+      "overhead_gb": 0.52,
+      "total_vram_gb": 1.65,
+      "status": "Smooth",
+      "est_tps": 145.3,
+      "gpu_layers_fit": 28,
+      "total_layers": 28,
+      "gpu_fraction": 1.0
+    },
+    "verdict_summary": "Blazing fast on Apple M1 Pro 16GB (200 GB/s): DeepSeek-R1-Distill-Qwen-1.5B achieves ~145.3 tok/s in Q4_K_M (1.65 GB), ~89.2 tok/s in Q8_0 (2.33 GB), and fits full FP16 at 64K context smoothly.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "label": "4.85 bpw · Balanced 4-bit",
+        "bits_per_weight": 4.85,
+        "weights_gb": 0.91,
+        "kv_cache_8k_gb": 0.22,
+        "overhead_gb": 0.52,
+        "total_vram_8k_gb": 1.65,
+        "est_tps": 145.3,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (10.3 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "label": "5.70 bpw · Higher-precision 5-bit",
+        "bits_per_weight": 5.7,
+        "weights_gb": 1.07,
+        "kv_cache_8k_gb": 0.22,
+        "overhead_gb": 0.52,
+        "total_vram_8k_gb": 1.81,
+        "est_tps": 127.3,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Sweet spot: higher fidelity with 10.2 GB headroom."
+      },
+      {
+        "quant": "Q6_K",
+        "label": "6.60 bpw · Near-lossless 6-bit",
+        "bits_per_weight": 6.6,
+        "weights_gb": 1.24,
+        "kv_cache_8k_gb": 0.22,
+        "overhead_gb": 0.52,
+        "total_vram_8k_gb": 1.98,
+        "est_tps": 111.4,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Sweet spot: higher fidelity with 10.0 GB headroom."
+      },
+      {
+        "quant": "Q8_0",
+        "label": "8.50 bpw · 8-bit integer",
+        "bits_per_weight": 8.5,
+        "weights_gb": 1.59,
+        "kv_cache_8k_gb": 0.22,
+        "overhead_gb": 0.52,
+        "total_vram_8k_gb": 2.33,
+        "est_tps": 89.2,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": true,
+        "notes": "Near-BF16 precision; fits cleanly with 9.7 GB left."
+      },
+      {
+        "quant": "FP16",
+        "label": "16.0 bpw · Full half-precision",
+        "bits_per_weight": 16.0,
+        "weights_gb": 3.0,
+        "kv_cache_8k_gb": 0.22,
+        "overhead_gb": 0.52,
+        "total_vram_8k_gb": 3.74,
+        "est_tps": 50.2,
+        "status": "Smooth",
+        "gpu_layers_fit": 28,
+        "total_layers": 28,
+        "recommended": false,
+        "notes": "Unquantized FP16; 8.3 GB headroom remaining."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run deepseek-r1:1.5b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=32768 ollama run deepseek-r1:1.5b",
+      "llama_cli": "llama-cli -hf bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --host 127.0.0.1 --port 8080",
+      "recommended_ctx": 32768,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.11,
+      "max_smooth_context_q4": 65536,
+      "bottleneck_summary": "Thanks to M1 Pro's 200 GB/s LPDDR5 bus—nearly triple the base M1's 68 GB/s—DeepSeek-R1 1.5B streams faster than you can blink while consuming a fraction of the 12.0 GB wired GPU pool. Even at 64K context on Q4_K_M (3.18 GB), throughput holds at ~82.9 tok/s because the 2-head GQA cache grows by only 0.11 GB per 4K.",
+      "key_points": [
+        "Q4_K_M hits ~153.5 tok/s at 4K (1.54 GB), ~145.3 tok/s at 8K (1.65 GB), and ~82.9 tok/s at 64K (3.18 GB).",
+        "Q8_0 is the recommended sweet spot: 2.33 GB at 8K with ~89.2 tok/s—zero 4-bit quantization loss at instant speed.",
+        "Unquantized FP16 fits 100% in Metal (3.74 GB at 8K, ~50.2 tok/s; 5.27 GB at 64K) with over 6.7 GB free.",
+        "All 28 layers stay resident across every quantization tier, turning long <think> reasoning blocks into sub-second waits."
+      ],
+      "optimization_tips": [
+        "Run Q8_0 (2.33 GB, ~89.2 tok/s) or FP16 (3.74 GB, ~50.2 tok/s) on M1 Pro 16GB—there is zero reason to compromise quality with Q4_K_M.",
+        "Set `OLLAMA_FLASH_ATTENTION=1 OLLAMA_NUM_CTX=32768` (`-c 32768`) for effortless long-chain reasoning at ~109.9 tok/s (Q4_K_M).",
+        "Need stronger STEM reasoning while staying fast? M1 Pro 16GB also runs DeepSeek-R1 7B Q4_K_M at ~30+ tok/s."
+      ]
+    },
+    "faq": [
+      {
+        "question": "How fast is DeepSeek-R1 1.5B on an M1 Pro 16GB MacBook Pro?",
+        "answer": "Exceptionally fast: ~145.3 tok/s in Q4_K_M (1.65 GB), ~89.2 tok/s in Q8_0 (2.33 GB), and ~50.2 tok/s even in unquantized FP16 (3.74 GB) at 8K context."
+      },
+      {
+        "question": "Why is M1 Pro 16GB nearly 3x faster than M1 16GB on DeepSeek-R1 1.5B?",
+        "answer": "M1 Pro upgrades unified memory from 68 GB/s LPDDR4X to 200 GB/s LPDDR5, directly multiplying token generation speed on bandwidth-bound 1.5B inference."
+      },
+      {
+        "question": "Should I run Q4_K_M, Q8_0, or FP16 for DeepSeek-R1 1.5B on M1 Pro 16GB?",
+        "answer": "Pick Q8_0 (2.33 GB, ~89.2 tok/s) for the best blend of full reasoning accuracy and near-90 tok/s output, or FP16 (~50.2 tok/s) for completely unquantized precision."
+      },
+      {
+        "question": "Can M1 Pro 16GB handle 64K context smoothly on DeepSeek-R1 1.5B?",
+        "answer": "Yes. At 64K context, Q4_K_M totals just 3.18 GB (~82.9 tok/s) and FP16 totals 5.27 GB—leaving plenty of room inside the 12.0 GB wired GPU ceiling."
+      }
+    ],
+    "related_slugs": [
+      "deepseek-r1-1.5b-on-apple-m1-8gb",
+      "deepseek-r1-1.5b-on-apple-m1-16gb"
+    ]
   }
 ]
