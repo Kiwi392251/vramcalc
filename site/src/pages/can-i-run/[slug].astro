@@ -77,12 +77,19 @@ const faqSchema = {
   })),
 };
 
+const appOs =
+  hardware.vendor === 'Apple'
+    ? 'macOS'
+    : hardware.id.includes('dgx-spark')
+      ? 'Linux (DGX OS)'
+      : 'Linux, Windows';
+
 const appSchema = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
   name: `${model.name} on ${hardware.name} VRAM Calculator`,
   applicationCategory: 'UtilitiesApplication',
-  operatingSystem: hardware.is_unified ? 'macOS' : 'Linux, Windows',
+  operatingSystem: appOs,
   url: `https://vramcalc.me/can-i-run/${entry.slug}/`,
   description: entry.meta_description,
 };

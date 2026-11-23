@@ -39,6 +39,22 @@ EFFICIENCY_METAL: dict[QuantKey, float] = {
     "FP16": 0.78,
 }
 
+EFFICIENCY_ROCM: dict[QuantKey, float] = {
+    "Q4_K_M": 0.70,
+    "Q5_K_M": 0.71,
+    "Q6_K": 0.71,
+    "Q8_0": 0.72,
+    "FP16": 0.74,
+}
+
+EFFICIENCY_BY_BACKEND: dict[str, dict[QuantKey, float]] = {
+    "CUDA": EFFICIENCY_CUDA,
+    "Metal": EFFICIENCY_METAL,
+    "ROCm": EFFICIENCY_ROCM,
+}
+
+MULTI_GPU_EFFICIENCY = 0.92
+
 QUANT_LABELS: dict[QuantKey, str] = {
     "Q4_K_M": "4.85 bpw · Balanced 4-bit",
     "Q5_K_M": "5.70 bpw · Higher-precision 5-bit",
@@ -136,20 +152,20 @@ def estimate_run(
         else:
             status = "OOM"
 
-    eff = (EFFICIENCY_METAL if hardware["is_unified"] else EFFICIENCY_CUDA)[quant]
+    eff = EFFICIENCY_BY_BACKEND.get(hardware["backend"], EFFICIENCY_CUDA)[quant]
+    multi_gpu_factor = MULTI_GPU_EFFICIENCY if hardware.get("gpu_count", 1) > 1 else 1.0
+    effective_bw = hardware["bandwidth_gbps"] * eff * multi_gpu_factor
     kv_read_gb = kv_cache_gb * 0.5
 
     if status == "OOM":
         est_tps = 0.0
     elif status == "Smooth":
-        est_tps = (hardware["bandwidth_gbps"] * eff) / (weights_gb + kv_read_gb)
+        est_tps = effective_bw / (weights_gb + kv_read_gb)
     elif hardware["is_unified"]:
         # Unified memory pressure & swap overhead degrades throughput
-        est_tps = ((hardware["bandwidth_gbps"] * eff) / (weights_gb + kv_read_gb)) * 0.55
+        est_tps = (effective_bw / (weights_gb + kv_read_gb)) * 0.55
     else:
-        t_gpu = (weights_gb * gpu_fraction + kv_read_gb) / (
-            hardware["bandwidth_gbps"] * eff
-        )
+        t_gpu = (weights_gb * gpu_fraction + kv_read_gb) / effective_bw
         t_cpu = (weights_gb * (1.0 - gpu_fraction)) / CPU_OFFLOAD_BW_GBPS
         est_tps = 1.0 / (t_gpu + t_cpu) if (t_gpu + t_cpu) > 0 else 0.0
 
@@ -196,7 +212,9 @@ def _quant_note(quant: QuantKey, est: RunEstimate, hardware: HardwareSpec) -> st
 
     if est["status"] == "Partial Offload":
         if hardware["is_unified"]:
-            return "Exceeds safe macOS wired ceiling; risks swap thrashing under load."
+            if hardware["vendor"] == "Apple":
+                return "Exceeds safe macOS wired ceiling; risks swap thrashing under load."
+            return "Exceeds safe unified GPU memory ceiling; risks OS memory pressure and swap."
         return (
             f"Fits {est['gpu_layers_fit']}/{est['total_layers']} layers on GPU; "
             "remaining layers spill to system RAM over PCIe."
@@ -282,13 +300,15 @@ def build_commands(
         else ""
     )
 
+    split_flag = " --split-mode layer" if hardware.get("gpu_count", 1) > 1 else ""
+
     llama_cli = (
         f"{oom_prefix}llama-cli -hf {model['hf_repo']}:Q4_K_M \\\n"
-        f"  -ngl {ngl_flag} -c {recommended_ctx} -fa on --cache-type-k q8_0 --cache-type-v q8_0"
+        f"  -ngl {ngl_flag} -c {recommended_ctx} -fa on{split_flag} --cache-type-k q8_0 --cache-type-v q8_0"
     )
     llama_server = (
         f"{oom_prefix}llama-server -hf {model['hf_repo']}:Q4_K_M \\\n"
-        f"  -ngl {ngl_flag} -c {recommended_ctx} -fa on --host 127.0.0.1 --port 8080"
+        f"  -ngl {ngl_flag} -c {recommended_ctx} -fa on{split_flag} --host 127.0.0.1 --port 8080"
     )
 
     return {

@@ -1,6 +1,14 @@
 export type QuantKey = 'Q4_K_M' | 'Q5_K_M' | 'Q6_K' | 'Q8_0' | 'FP16';
 export type CalculatorQuantKey = 'Q4_K_M' | 'Q8_0' | 'FP16';
 export type CompatStatus = 'Smooth' | 'Partial Offload' | 'OOM';
+export type HardwareVendor = 'NVIDIA' | 'Apple' | 'AMD';
+export type HardwareBackend = 'CUDA' | 'Metal' | 'ROCm';
+export type HardwareCategory =
+  | 'Desktop GPU'
+  | 'Laptop GPU'
+  | 'Multi-GPU'
+  | 'Workstation'
+  | 'Unified Memory';
 
 export interface ModelSpec {
   id: string;
@@ -24,14 +32,16 @@ export interface HardwareSpec {
   id: string;
   name: string;
   short_name: string;
-  vendor: string;
+  vendor: HardwareVendor;
   series: string;
+  category?: HardwareCategory;
+  gpu_count?: number;
   vram_gb: number;
   usable_vram_gb: number;
   bandwidth_gbps: number;
   memory_type: string;
   is_unified: boolean;
-  backend: string;
+  backend: HardwareBackend;
   msrp_usd: number;
 }
 

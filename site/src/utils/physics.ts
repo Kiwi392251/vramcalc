@@ -30,6 +30,21 @@ export const EFFICIENCY_METAL: Record<QuantKey, number> = {
   FP16: 0.78,
 };
 
+export const EFFICIENCY_ROCM: Record<QuantKey, number> = {
+  Q4_K_M: 0.7,
+  Q5_K_M: 0.71,
+  Q6_K: 0.71,
+  Q8_0: 0.72,
+  FP16: 0.74,
+};
+
+export const EFFICIENCY_BY_BACKEND: Record<string, Record<QuantKey, number>> = {
+  CUDA: EFFICIENCY_CUDA,
+  Metal: EFFICIENCY_METAL,
+  ROCm: EFFICIENCY_ROCM,
+};
+
+export const MULTI_GPU_EFFICIENCY = 0.92;
 export const CPU_OFFLOAD_BW_GBPS = 35.0;
 
 function round2(n: number): number {
@@ -90,20 +105,20 @@ export function estimateRun(
         : 'OOM';
   }
 
-  const eff = (hardware.is_unified ? EFFICIENCY_METAL : EFFICIENCY_CUDA)[quant];
+  const eff = (EFFICIENCY_BY_BACKEND[hardware.backend] ?? EFFICIENCY_CUDA)[quant];
+  const multiGpuFactor = (hardware.gpu_count ?? 1) > 1 ? MULTI_GPU_EFFICIENCY : 1.0;
+  const effectiveBw = hardware.bandwidth_gbps * eff * multiGpuFactor;
   const kvReadGb = kvCacheGb * 0.5;
 
   let estTps = 0.0;
   if (status === 'OOM') {
     estTps = 0.0;
   } else if (status === 'Smooth') {
-    estTps = (hardware.bandwidth_gbps * eff) / (weightsGb + kvReadGb);
+    estTps = effectiveBw / (weightsGb + kvReadGb);
   } else if (hardware.is_unified) {
-    estTps =
-      ((hardware.bandwidth_gbps * eff) / (weightsGb + kvReadGb)) * 0.55;
+    estTps = (effectiveBw / (weightsGb + kvReadGb)) * 0.55;
   } else {
-    const tGpu =
-      (weightsGb * gpuFraction + kvReadGb) / (hardware.bandwidth_gbps * eff);
+    const tGpu = (weightsGb * gpuFraction + kvReadGb) / effectiveBw;
     const tCpu = (weightsGb * (1.0 - gpuFraction)) / CPU_OFFLOAD_BW_GBPS;
     estTps = tGpu + tCpu > 0 ? 1.0 / (tGpu + tCpu) : 0.0;
   }

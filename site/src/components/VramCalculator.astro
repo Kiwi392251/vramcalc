@@ -31,7 +31,9 @@ const initialVerdictLine =
       ? `Partial offload: ${res.gpu_layers_fit}/${res.total_layers} layers fit in VRAM; remainder spills to system RAM.`
       : `Out of memory: ${res.total_vram_gb.toFixed(2)} GB required exceeds ${hardware.short_name}'s capacity.`;
 const initialNgl = res.status === 'Smooth' ? 99 : Math.max(1, res.gpu_layers_fit);
-const initialLiveCmd = `llama-cli -hf ${model.hf_repo}:Q4_K_M -ngl ${initialNgl} -c ${entry.default_context} -fa on`;
+const gpuCount = hardware.gpu_count ?? 1;
+const splitModeSuffix = gpuCount > 1 ? ' --split-mode layer' : '';
+const initialLiveCmd = `llama-cli -hf ${model.hf_repo}:Q4_K_M -ngl ${initialNgl} -c ${entry.default_context} -fa on${splitModeSuffix}`;
 const weightsStyle = `width: ${weightsPct.toFixed(2)}%`;
 const kvStyle = `width: ${kvPct.toFixed(2)}%`;
 const overheadStyle = `width: ${overheadPct.toFixed(2)}%`;
@@ -50,6 +52,8 @@ const calcPayload = JSON.stringify({
   hardware: {
     name: hardware.name,
     short_name: hardware.short_name,
+    vendor: hardware.vendor,
+    gpu_count: gpuCount,
     vram_gb: hardware.vram_gb,
     usable_vram_gb: hardware.usable_vram_gb,
     bandwidth_gbps: hardware.bandwidth_gbps,
@@ -315,6 +319,9 @@ const contextTicks = [4096, 8192, 16384, 32768, 49152, 65536];
     const QUANT_BPW = { Q4_K_M: 4.85, Q5_K_M: 5.7, Q6_K: 6.6, Q8_0: 8.5, FP16: 16.0 };
     const EFFICIENCY_CUDA = { Q4_K_M: 0.78, Q5_K_M: 0.79, Q6_K: 0.79, Q8_0: 0.8, FP16: 0.82 };
     const EFFICIENCY_METAL = { Q4_K_M: 0.74, Q5_K_M: 0.75, Q6_K: 0.75, Q8_0: 0.76, FP16: 0.78 };
+    const EFFICIENCY_ROCM = { Q4_K_M: 0.7, Q5_K_M: 0.71, Q6_K: 0.71, Q8_0: 0.72, FP16: 0.74 };
+    const EFFICIENCY_BY_BACKEND = { CUDA: EFFICIENCY_CUDA, Metal: EFFICIENCY_METAL, ROCm: EFFICIENCY_ROCM };
+    const MULTI_GPU_EFFICIENCY = 0.92;
     const CPU_OFFLOAD_BW_GBPS = 35.0;
 
     let currentQuant = cfg.default_quant || 'Q4_K_M';
@@ -368,18 +375,21 @@ const contextTicks = [4096, 8192, 16384, 32768, 49152, 65536];
         status = totalVramGb <= usable * 2.0 && gpuFraction >= 0.35 ? 'Partial Offload' : 'OOM';
       }
 
-      const eff = (hardware.is_unified ? EFFICIENCY_METAL : EFFICIENCY_CUDA)[quant];
+      const effTable = EFFICIENCY_BY_BACKEND[hardware.backend] || EFFICIENCY_CUDA;
+      const eff = effTable[quant];
+      const multiGpuFactor = (hardware.gpu_count || 1) > 1 ? MULTI_GPU_EFFICIENCY : 1.0;
+      const effectiveBw = hardware.bandwidth_gbps * eff * multiGpuFactor;
       const kvReadGb = kvCacheGb * 0.5;
       let estTps = 0.0;
 
       if (status === 'OOM') {
         estTps = 0.0;
       } else if (status === 'Smooth') {
-        estTps = (hardware.bandwidth_gbps * eff) / (weightsGb + kvReadGb);
+        estTps = effectiveBw / (weightsGb + kvReadGb);
       } else if (hardware.is_unified) {
-        estTps = ((hardware.bandwidth_gbps * eff) / (weightsGb + kvReadGb)) * 0.55;
+        estTps = (effectiveBw / (weightsGb + kvReadGb)) * 0.55;
       } else {
-        const tGpu = (weightsGb * gpuFraction + kvReadGb) / (hardware.bandwidth_gbps * eff);
+        const tGpu = (weightsGb * gpuFraction + kvReadGb) / effectiveBw;
         const tCpu = (weightsGb * (1.0 - gpuFraction)) / CPU_OFFLOAD_BW_GBPS;
         estTps = tGpu + tCpu > 0 ? 1.0 / (tGpu + tCpu) : 0.0;
       }
@@ -491,7 +501,8 @@ const contextTicks = [4096, 8192, 16384, 32768, 49152, 65536];
 
       if (liveCmdEl) {
         const ngl = r.status === 'Smooth' ? 99 : Math.max(1, r.gpuLayersFit);
-        liveCmdEl.textContent = `llama-cli -hf ${model.hf_repo}:${currentQuant} -ngl ${ngl} -c ${currentContext} -fa on`;
+        const splitFlag = (hardware.gpu_count || 1) > 1 ? ' --split-mode layer' : '';
+        liveCmdEl.textContent = `llama-cli -hf ${model.hf_repo}:${currentQuant} -ngl ${ngl} -c ${currentContext} -fa on${splitFlag}`;
       }
 
       quantBtns.forEach((btn) => {
