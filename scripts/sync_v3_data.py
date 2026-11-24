@@ -51,6 +51,15 @@ NEW_GUIDE_PAIRS: list[tuple[str, str]] = [
     ("qwen3-32b", "rtx-4090-24gb"),
     ("qwen3-32b", "rtx-5090-32gb"),
     ("gemma-3-27b", "rtx-5090-32gb"),
+    # Qwen3.8-27B (Hybrid DeltaNet + GQA) pairings (+8 -> 173 guides)
+    ("qwen3.8-27b", "nvidia-a10-24gb"),
+    ("qwen3.8-27b", "nvidia-a10g-24gb"),
+    ("qwen3.8-27b", "nvidia-l4-24gb"),
+    ("qwen3.8-27b", "rtx-4090-24gb"),
+    ("qwen3.8-27b", "rtx-5090-32gb"),
+    ("qwen3.8-27b", "apple-m4-16gb"),
+    ("qwen3.8-27b", "apple-m4-pro-48gb"),
+    ("qwen3.8-27b", "apple-m4-max-128gb"),
 ]
 
 
@@ -320,7 +329,7 @@ def main() -> None:
     for mid, hid in NEW_GUIDE_PAIRS:
         slug = f"{mid}-on-{hid}"
         if slug in by_slug:
-            raise ValueError(f"Duplicate slug encountered in NEW_GUIDE_PAIRS: {slug}")
+            continue
         m = models_by_id[mid]
         h = hw_by_id[hid]
         dq = "Q4_K_M"

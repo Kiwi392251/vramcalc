@@ -27,7 +27,7 @@ const {
 } = Astro.props;
 
 const updatedAt = (rawCatalog as { updated_at?: string }).updated_at ?? '2026-11-24';
-const engineVersion = (rawCatalog as { engine_version?: string }).engine_version ?? 'v3.0';
+const engineVersion = (rawCatalog as { engine_version?: string }).engine_version ?? 'v3.1';
 const modelCount = rawCatalog.models.length;
 const hwCount = rawCatalog.hardware.length;
 

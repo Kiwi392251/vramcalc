@@ -6,10 +6,17 @@ import SpeedBadge from '../components/SpeedBadge.astro';
 import catalogRaw from '../data/catalog_data.json';
 import rawPagesData from '../data/pages_data.json';
 import type { CatalogData, PageEntry, SpeedTier } from '../types/vram';
-import { statusRank } from '../utils/hubs';
+import {
+  buildHardwareHubs,
+  buildModelHubs,
+  getBenchmarksMethodologyNote,
+  getReferenceBenchmarks,
+  statusRank,
+} from '../utils/hubs';
 import {
   classifySpeedTier,
   effectiveUsableVramGb,
+  estimateRigRun,
   formatContextLabel,
   formatTpsRange,
 } from '../utils/physics';
@@ -18,33 +25,33 @@ const PAGE_SIZE = 24;
 const catalog = catalogRaw as CatalogData;
 const rawEntries = rawPagesData as PageEntry[];
 const updatedAt = catalog.updated_at ?? '2026-11-24';
-const engineVersion = catalog.engine_version ?? 'v3.0';
+const engineVersion = catalog.engine_version ?? 'v3.1';
 
 const FEATURED_TOP_SLUGS = [
+  'qwen3.8-27b-on-nvidia-a10-24gb',
+  'qwen3.8-27b-on-rtx-4090-24gb',
+  'qwen3.8-27b-on-apple-m4-pro-48gb',
+  'qwen3.8-27b-on-apple-m4-16gb',
   'qwen3-8b-on-apple-m4-16gb',
+  'qwen3.8-27b-on-rtx-5090-32gb',
+  'qwen3.8-27b-on-nvidia-l4-24gb',
   'qwen3-14b-on-nvidia-t4-16gb',
   'qwen3-32b-on-nvidia-a10-24gb',
   'gemma-3-27b-on-nvidia-a10-24gb',
   'qwen3-30b-a3b-on-apple-m4-pro-48gb',
-  'gemma-3-27b-on-nvidia-l4-24gb',
-  'qwen3-32b-on-rtx-4090-24gb',
-  'qwen3-32b-on-rtx-5090-32gb',
   'llama-3.3-70b-on-dual-rtx-4090-48gb',
   'deepseek-r1-70b-on-ryzen-ai-max-395-128gb',
+  'qwen3.8-27b-on-apple-m4-max-128gb',
+  'qwen3-32b-on-rtx-4090-24gb',
+  'qwen3-32b-on-rtx-5090-32gb',
   'qwen3-8b-on-nvidia-t4-16gb',
   'qwen3-14b-on-nvidia-a10-24gb',
   'gemma-3-27b-on-rtx-4090-24gb',
   'qwen3-32b-on-apple-m4-max-128gb',
-  'gemma-3-27b-on-apple-m4-pro-48gb',
   'qwen3-30b-a3b-on-nvidia-a10-24gb',
   'deepseek-r1-7b-on-apple-m4-16gb',
   'llama-3.1-8b-on-apple-m4-16gb',
-  'gemma-3-27b-on-rtx-5090-32gb',
-  'qwen3-14b-on-nvidia-l4-24gb',
-  'qwen3-32b-on-apple-m4-pro-48gb',
-  'llama-3.1-8b-on-nvidia-t4-16gb',
-  'gemma-3-27b-on-nvidia-a10g-24gb',
-  'llama-3.3-70b-on-ryzen-ai-max-395-128gb',
+  'gemma-3-27b-on-nvidia-l4-24gb',
 ];
 const featuredRank = new Map(FEATURED_TOP_SLUGS.map((slug, idx) => [slug, idx]));
 
@@ -134,7 +141,75 @@ const homeCollectionSchema = {
   ],
 };
 const homeOgTitle = `Local AI LLM VRAM & Speed Calculator (${catalogModelCount} Models × ${catalogHwCount} GPUs · Updated ${updatedAt}) | VRAMCalc.me`;
-const homeOgDescription = `Check GGUF, AWQ & MLX VRAM fit, max safe context, Tight Fit & PCIe All-Reduce headroom, and bandwidth tok/s estimate ranges across ${catalogHwCount} GPUs & Macs and ${catalogModelCount} open LLMs (Qwen3, Gemma 3, DeepSeek-R1, Llama-3.3).`;
+const homeOgDescription = `Check GGUF, AWQ & MLX VRAM fit, max safe context, Tight Fit & PCIe All-Reduce headroom, and measured + formula tok/s ranges across ${catalogHwCount} GPUs & Macs and ${catalogModelCount} open LLMs (Qwen3.8-27B, Qwen3, Gemma 3, DeepSeek-R1, Llama-3.3).`;
+
+const curatedSlugMap = new Map(Object.entries(curatedSlugs));
+const modelCatalogMap = new Map(catalog.models.map((m) => [m.id, m]));
+const hwCatalogMap = new Map(catalog.hardware.map((h) => [h.id, h]));
+const measuredAnchors = getReferenceBenchmarks({});
+const measuredNote = getBenchmarksMethodologyNote();
+const measuredByPair = new Map<string, (typeof measuredAnchors)[number]>();
+for (const anc of measuredAnchors) {
+  const pk = `${anc.model_id}::${anc.hardware_id}`;
+  if (!measuredByPair.has(pk)) measuredByPair.set(pk, anc);
+}
+
+const measuredRows = measuredAnchors
+  .map((anc) => {
+    const m = modelCatalogMap.get(anc.model_id);
+    const h = hwCatalogMap.get(anc.hardware_id);
+    if (!m || !h) return null;
+    const est = estimateRigRun({
+      model: m,
+      hardware: h,
+      gpuCount: h.gpu_count || 1,
+      quant: anc.quant,
+      format: anc.format,
+      contextTokens: anc.context_tokens,
+      kvQuant: 'fp16',
+      reserveProfile: 'desktop',
+    });
+    const slug = curatedSlugMap.get(`${m.id}::${h.id}`);
+    return {
+      anc,
+      model: m,
+      hardware: h,
+      est,
+      pairHref: slug ? `/can-i-run/${slug}/` : `/gpu/${h.id}/`,
+      ctxLabel: formatContextLabel(anc.context_tokens),
+      measuredText: `${anc.gen_tps_low}–${anc.gen_tps_high} tok/s measured`,
+      measuredUnitArgs: JSON.stringify({ low: anc.gen_tps_low, high: anc.gen_tps_high }),
+      formulaText: formatTpsRange(est.est_tps_low, est.est_tps_high, est.est_tps, est.status),
+    };
+  })
+  .filter((x): x is NonNullable<typeof x> => x !== null);
+
+const modelHubRows = buildModelHubs(entries);
+const hwHubRows = buildHardwareHubs(entries);
+
+const staticIndexRows = entries.map((e) => {
+  const res = e.default_result;
+  const usable =
+    res.effective_usable_vram_gb ??
+    effectiveUsableVramGb(e.hardware, e.hardware.gpu_count || 1, 'desktop')[1];
+  const speedTier: SpeedTier = res.speed_tier ?? classifySpeedTier(res.est_tps, res.status);
+  const tpsText = formatTpsRange(res.est_tps_low, res.est_tps_high, res.est_tps, res.status);
+  const hasMaxFit = Boolean(e.max_fit_context && e.max_fit_context > 0 && e.max_fit_total_vram_gb);
+  const maxFitText = hasMaxFit
+    ? `${formatContextLabel(e.max_fit_context!)} (${e.max_fit_total_vram_gb!.toFixed(1)} GB)`
+    : 'Offload req.';
+  return {
+    href: `/can-i-run/${e.slug}/`,
+    modelShort: e.model.short_name,
+    hwShort: e.hardware.name,
+    vramText: `${res.total_vram_gb.toFixed(1)} / ${usable.toFixed(1)} GB`,
+    maxFitText,
+    status: res.status,
+    speedTier,
+    tpsText,
+    layersText: `${res.gpu_layers_fit}/${res.total_layers}`,
+  };
+});
 
 const heroDescArgs = JSON.stringify({ models: catalogModelCount, hw: catalogHwCount });
 const ctaGpusArgs = JSON.stringify({ count: uniqueHubHwCount });
@@ -149,11 +224,19 @@ const initViewArgs = JSON.stringify({ shown: initialVisibleCount, total: totalCo
 const initLoadArgs = JSON.stringify({ chunk: Math.min(PAGE_SIZE, initialRemainingCount), left: initialRemainingCount });
 const modelHubsArgs = JSON.stringify({ count: uniqueHubModelCount });
 const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
+const measuredSubArgs = JSON.stringify({ count: measuredRows.length });
+const staticIndexTitleArgs = JSON.stringify({ guides: totalCount });
+const staticIndexSubArgs = JSON.stringify({
+  guides: totalCount,
+  models: catalogModelCount,
+  hw: catalogHwCount,
+  combos: catalogModelCount * catalogHwCount,
+});
 ---
 
 <BaseLayout
   title="VRAMCalc.me — Local AI Model VRAM & Speed Calculator"
-  description="Check whether DeepSeek-R1, Qwen3, Qwen2.5-Coder, Gemma 3, and Llama run smoothly on Apple Silicon M1–M5, NVIDIA GTX/RTX (1x–8x), AMD Radeon / Strix Halo, Intel Arc, or CPU RAM."
+  description="Check whether Qwen3.8-27B, Qwen3, Gemma 3, DeepSeek-R1, and Llama run on Apple Silicon M1–M5, NVIDIA GTX/RTX (1x–8x), T4/L4/A10/H200, AMD Radeon / Strix Halo, Intel Arc, or CPU RAM."
   canonicalPath="/"
   totalPages={totalCount}
   ogTitle={homeOgTitle}
@@ -181,12 +264,18 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
           <span class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-mono font-medium text-slate-700">
             Physics {engineVersion} · <span class="ml-1" data-i18n="speed.formulaDesc">Formula Estimate (±15–25%)</span>
           </span>
+          <a
+            href="#measured-benchmarks"
+            class="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 font-mono font-semibold text-sky-800 hover:bg-sky-100 transition-colors"
+          >
+            {measuredRows.length} <span data-i18n="speed.measuredBadge">Measured</span>
+          </a>
         </div>
         <h1 class="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl" data-i18n="home.heroTitle">
           Local AI Model VRAM &amp; Inference Speed Matrix
         </h1>
         <p class="mt-3 text-base leading-relaxed text-slate-600" data-i18n="home.heroDesc" data-i18n-args={heroDescArgs}>
-          Check memory fit, max safe context, and honest bandwidth throughput ranges across {catalogModelCount} models (Qwen3, Gemma 3, DeepSeek-R1, Llama-3.3) and {catalogHwCount} GPUs &amp; Macs (M4 16GB, T4, L4, A10, RTX 5090), supporting GGUF, AWQ, MLX, and 1x–8x multi-GPU topologies.
+          Check memory fit, max safe context, and honest bandwidth throughput ranges across {catalogModelCount} models (Qwen3.8-27B, Qwen3, Gemma 3, DeepSeek-R1, Llama-3.3) and {catalogHwCount} GPUs &amp; Macs (M4 16GB, T4, L4, A10, RTX 5090), supporting GGUF, AWQ, MLX, and 1x–8x multi-GPU topologies.
         </p>
 
         <div class="mt-5 flex flex-wrap items-center gap-3">
@@ -456,6 +545,10 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
         const maxFitCtxLabel = hasMaxFit ? formatContextLabel(entry.max_fit_context!) : '';
         const maxFitGbStr = hasMaxFit ? entry.max_fit_total_vram_gb!.toFixed(1) : '';
         const maxFitArgs = hasMaxFit ? JSON.stringify({ ctx: maxFitCtxLabel, gb: maxFitGbStr }) : undefined;
+        const cardMeasured = measuredByPair.get(`${entry.model.id}::${entry.hardware.id}`);
+        const cardMeasuredText = cardMeasured
+          ? `${cardMeasured.gen_tps_low}–${cardMeasured.gen_tps_high} tok/s measured`
+          : '';
 
         return (
           <article
@@ -517,7 +610,7 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
               <div class="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
                 <div class={fillBarClass} style={fillStyle}></div>
               </div>
-              <div class="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-slate-500 tabular-nums">
+              <div class="mt-1.5 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 tabular-nums">
                 {hasMaxFit ? (
                   <span data-i18n="common.maxFitLabel" data-i18n-args={maxFitArgs}>
                     Max Fit: {maxFitCtxLabel} ({maxFitGbStr} GB)
@@ -525,11 +618,18 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
                 ) : (
                   <span data-i18n="common.maxFitNone">Max Fit: Offload req.</span>
                 )}
-                {res.status !== 'OOM' && (
-                  <span class="shrink-0 font-mono text-[10px] text-slate-400" data-i18n="speed.formulaEst">
-                    Formula est.
-                  </span>
-                )}
+                <div class="flex items-center gap-1.5 shrink-0">
+                  {cardMeasured && (
+                    <span class="rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-800">
+                      {cardMeasuredText}
+                    </span>
+                  )}
+                  {res.status !== 'OOM' && (
+                    <span class="font-mono text-[10px] text-slate-400" data-i18n="speed.formulaEst">
+                      Formula est.
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div class="mt-3 flex items-center justify-between">
@@ -677,56 +777,218 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
     <script type="application/json" id="home-catalog-json" set:html={homeCatalogPayload}></script>
   </section>
 
-  <!-- Aggregation Hubs Discovery -->
-  <section class="mx-auto max-w-6xl px-4 pt-6 sm:px-6" aria-labelledby="hubs-heading">
-    <h2 id="hubs-heading" class="sr-only">Browse GPU and Model Aggregation Hubs</h2>
-    <div class="grid gap-4 md:grid-cols-2">
-      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-        <div class="flex items-center justify-between gap-2">
-          <h3 class="text-sm font-bold tracking-tight text-slate-950" data-i18n="home.modelHubsHeading" data-i18n-args={modelHubsArgs}>
-            Model Hubs ({uniqueHubModelCount})
-          </h3>
-          <a href="/model/" class="text-xs font-semibold text-blue-600 hover:text-blue-800" data-i18n="common.viewAll">
-            View All -&gt;
-          </a>
+  <!-- Measured Community Benchmarks vs Formula Estimates -->
+  <section id="measured-benchmarks" class="mx-auto max-w-6xl px-4 pt-6 sm:px-6" aria-labelledby="measured-heading">
+    <div class="min-w-0 max-w-full rounded-2xl border border-sky-200 bg-white p-5 shadow-xs sm:p-6">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h2 id="measured-heading" class="text-base font-bold tracking-tight text-slate-950" data-i18n="home.measuredTitle">
+              Measured Community Benchmarks vs Formula Estimates
+            </h2>
+            <span
+              class="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-800"
+              data-i18n="speed.measuredBadge"
+            >
+              Measured
+            </span>
+          </div>
+          <p class="mt-1 text-xs text-slate-600" data-i18n="home.measuredSub" data-i18n-args={measuredSubArgs}>
+            Side-by-side comparison of {measuredRows.length} published community measured runs against Physics {engineVersion} bandwidth formula ranges (batch=1 decode).
+          </p>
         </div>
-        <div class="mt-3 flex flex-wrap gap-1.5">
-          {uniqueHubModels.map((m) => {
-            const mHref = `/model/${m.id}/`;
-            return (
-              <a
-                href={mHref}
-                class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-              >
-                {m.short_name}
-              </a>
-            );
-          })}
-        </div>
+        <span class="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-[11px] text-slate-600">
+          llama.cpp · vLLM · mlx-lm
+        </span>
       </div>
 
-      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-        <div class="flex items-center justify-between gap-2">
-          <h3 class="text-sm font-bold tracking-tight text-slate-950" data-i18n="home.hwHubsHeading" data-i18n-args={hwHubsArgs}>
-            Hardware Hubs ({uniqueHubHwCount})
+      <div class="mt-4 w-full max-w-full overflow-x-auto rounded-xl border border-slate-200">
+        <table class="w-full min-w-[760px] border-collapse text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <th class="px-3.5 py-2.5" data-i18n="home.measuredColPair">Model × Hardware</th>
+              <th class="px-3.5 py-2.5" data-i18n="home.measuredColFormat">Format / Runtime</th>
+              <th class="px-3.5 py-2.5" data-i18n="home.measuredColMeasured">Measured Speed</th>
+              <th class="px-3.5 py-2.5" data-i18n="home.measuredColFormula">Formula Est. (±15–25%)</th>
+              <th class="px-3.5 py-2.5" data-i18n="home.measuredColSource">Source</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {measuredRows.map((row) => (
+              <tr class="hover:bg-slate-50/70 transition-colors">
+                <td class="px-3.5 py-2.5">
+                  <a href={row.pairHref} class="font-bold text-slate-950 hover:text-blue-600">
+                    {row.model.short_name}
+                  </a>
+                  <div class="text-[11px] text-slate-500">{row.hardware.name}</div>
+                </td>
+                <td class="px-3.5 py-2.5 font-mono text-slate-700">
+                  <div>{row.anc.format} · {row.anc.quant} @ {row.ctxLabel}</div>
+                  <div class="text-[11px] text-slate-500">{row.anc.backend}</div>
+                </td>
+                <td class="px-3.5 py-2.5">
+                  <span
+                    class="inline-flex items-center rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono font-bold text-emerald-800"
+                    data-i18n="speed.measuredUnit"
+                    data-i18n-args={row.measuredUnitArgs}
+                  >
+                    {row.measuredText}
+                  </span>
+                </td>
+                <td class="px-3.5 py-2.5 font-mono text-slate-700">
+                  {row.formulaText}
+                </td>
+                <td class="px-3.5 py-2.5 text-[11px]">
+                  <a
+                    href={row.anc.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-blue-600 underline hover:text-blue-800"
+                  >
+                    {row.anc.source_label}
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-2.5 text-[11px] text-slate-500">{measuredNote}</p>
+    </div>
+  </section>
+
+  <!-- Zero-JS Full Model Hubs Table, Hardware Directory & All Curated Static Pairings -->
+  <section class="mx-auto max-w-6xl px-4 pt-6 sm:px-6 space-y-6" aria-labelledby="hubs-heading">
+    <h2 id="hubs-heading" class="sr-only">Browse All Static Model Hubs, GPU Hubs &amp; Pairings</h2>
+
+    <!-- All 23 Model Hubs Table (Zero-JS Visible HTML) -->
+    <div class="min-w-0 max-w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h3 class="text-sm font-bold tracking-tight text-slate-950" data-i18n="home.modelHubsHeading" data-i18n-args={modelHubsArgs}>
+          All {uniqueHubModelCount} Model Hubs
+        </h3>
+        <a href="/model/" class="text-xs font-semibold text-blue-600 hover:text-blue-800" data-i18n="common.viewAll">
+          View All -&gt;
+        </a>
+      </div>
+      <div class="mt-3 w-full max-w-full overflow-x-auto rounded-xl border border-slate-200">
+        <table class="w-full min-w-[680px] border-collapse text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <th class="px-3 py-2" data-i18n="home.modelTableModel">Model</th>
+              <th class="px-3 py-2" data-i18n="home.modelTableQ4">Q4_K_M @ 8K</th>
+              <th class="px-3 py-2" data-i18n="home.modelTableAwq">AWQ 4-bit @ 8K</th>
+              <th class="px-3 py-2" data-i18n="home.modelTableKv">KV / 4K</th>
+              <th class="px-3 py-2" data-i18n="home.modelTableFits">Fits GPUs</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {modelHubRows.map((hub) => {
+              const mHref = `/model/${hub.model.id}/`;
+              const fitCount = hub.fitsCount + hub.tightCount;
+              const q4Gb = hub.q4Row.total_vram_gb.toFixed(1);
+              const awqGb = hub.awqRow.total_vram_gb.toFixed(1);
+              const kvStr = hub.kvPer4k.toFixed(2);
+              return (
+                <tr class="hover:bg-slate-50/70 transition-colors">
+                  <td class="px-3 py-2">
+                    <a href={mHref} class="font-bold text-slate-950 hover:text-blue-600">
+                      {hub.model.name}
+                    </a>
+                    <span class="ml-2 font-mono text-[11px] text-slate-500">{hub.model.architecture}</span>
+                  </td>
+                  <td class="px-3 py-2 font-mono text-slate-800 tabular-nums">{q4Gb} GB</td>
+                  <td class="px-3 py-2 font-mono text-slate-700 tabular-nums">{awqGb} GB</td>
+                  <td class="px-3 py-2 font-mono text-slate-600 tabular-nums">+{kvStr} GB</td>
+                  <td class="px-3 py-2 font-mono font-semibold text-emerald-700 tabular-nums">
+                    {fitCount} / {uniqueHubHwCount}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- All 103 Hardware Hubs (Zero-JS Visible HTML) -->
+    <div class="min-w-0 max-w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h3 class="text-sm font-bold tracking-tight text-slate-950" data-i18n="home.hwHubsHeading" data-i18n-args={hwHubsArgs}>
+          All {uniqueHubHwCount} Hardware Hubs
+        </h3>
+        <a href="/gpu/" class="text-xs font-semibold text-blue-600 hover:text-blue-800" data-i18n="common.viewAll">
+          View All -&gt;
+        </a>
+      </div>
+      <div class="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {hwHubRows.map((hub) => {
+          const hHref = `/gpu/${hub.hardware.id}/`;
+          const fitTotal = hub.fitsCount + hub.tightCount;
+          const usableStr = hub.effectiveUsableGb.toFixed(1);
+          return (
+            <a
+              href={hHref}
+              class="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs hover:border-blue-300 hover:bg-blue-50 transition-colors"
+            >
+              <span class="truncate font-semibold text-slate-800">{hub.hardware.short_name}</span>
+              <span class="shrink-0 font-mono text-[11px] text-slate-500 tabular-nums">
+                {usableStr}G · {fitTotal}/{uniqueHubModelCount}
+              </span>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+
+    <!-- Complete Static Compatibility Index (All 173 Curated Pairings, Zero-JS) -->
+    <div id="static-compatibility-index" class="min-w-0 max-w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h3 class="text-sm font-bold tracking-tight text-slate-950" data-i18n="home.staticIndexTitle" data-i18n-args={staticIndexTitleArgs}>
+            Complete Static Compatibility Index (All {totalCount} Curated Pairings · Zero-JS)
           </h3>
-          <a href="/gpu/" class="text-xs font-semibold text-blue-600 hover:text-blue-800" data-i18n="common.viewAll">
-            View All -&gt;
-          </a>
+          <p class="mt-0.5 text-xs text-slate-600" data-i18n="home.staticIndexSub" data-i18n-args={staticIndexSubArgs}>
+            Full static HTML index of all {totalCount} curated guides below, plus {catalogModelCount} Model Hub pages × {catalogHwCount} GPU Hub pages ({catalogModelCount * catalogHwCount} static combinations verifiable without JavaScript).
+          </p>
         </div>
-        <div class="mt-3 flex flex-wrap gap-1.5">
-          {uniqueHubHardware.map((h) => {
-            const hHref = `/gpu/${h.id}/`;
-            return (
-              <a
-                href={hHref}
-                class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-              >
-                {h.short_name}
-              </a>
-            );
-          })}
-        </div>
+      </div>
+      <div class="mt-3 w-full max-w-full max-h-[420px] overflow-auto rounded-xl border border-slate-200">
+        <table class="w-full min-w-[780px] border-collapse text-left text-xs">
+          <thead class="sticky top-0 z-10 bg-slate-50">
+            <tr class="border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <th class="px-3 py-2" data-i18n="home.modelTableModel">Model</th>
+              <th class="px-3 py-2" data-i18n="hub.colHardware">Hardware</th>
+              <th class="px-3 py-2" data-i18n="detail.colStatus">Fit / Speed</th>
+              <th class="px-3 py-2" data-i18n="common.vram8kLabel">VRAM @ 8K</th>
+              <th class="px-3 py-2" data-i18n="hub.bestQuantMaxCtx">Max Fit</th>
+              <th class="px-3 py-2" data-i18n="sim.colSpeed">Est. Range</th>
+              <th class="px-3 py-2 text-right" data-i18n="sim.colAction">Guide</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {staticIndexRows.map((row) => (
+              <tr class="hover:bg-slate-50/70 transition-colors">
+                <td class="px-3 py-2 font-bold text-slate-900">{row.modelShort}</td>
+                <td class="px-3 py-2 text-slate-700">{row.hwShort}</td>
+                <td class="px-3 py-2">
+                  <div class="flex flex-wrap items-center gap-1">
+                    <StatusBadge status={row.status} />
+                    <SpeedBadge tier={row.speedTier} short={true} />
+                  </div>
+                </td>
+                <td class="px-3 py-2 font-mono text-slate-700 tabular-nums">{row.vramText}</td>
+                <td class="px-3 py-2 font-mono text-slate-600 tabular-nums">{row.maxFitText}</td>
+                <td class="px-3 py-2 font-mono font-semibold text-slate-900 tabular-nums">{row.tpsText}</td>
+                <td class="px-3 py-2 text-right">
+                  <a href={row.href} class="font-semibold text-blue-600 hover:text-blue-800" data-i18n="common.openGuide">
+                    Open Guide -&gt;
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   </section>
@@ -736,7 +998,7 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
     <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <h2 class="text-lg font-bold tracking-tight text-slate-950" data-i18n="home.methodTitle">
-          Physics Engine v3.0: Transparent Formula Ranges vs Real Benchmarks
+          Physics Engine {engineVersion}: Transparent Formula Ranges vs Measured Benchmarks
         </h2>
         <span
           class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-mono text-[11px] font-medium text-slate-600"

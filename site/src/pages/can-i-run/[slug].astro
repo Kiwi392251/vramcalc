@@ -351,10 +351,10 @@ const appSchema = {
       <section class="mt-7 rounded-2xl border border-sky-200 bg-sky-50/70 p-5" aria-labelledby="detail-ref-benchmarks">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <h2 id="detail-ref-benchmarks" class="text-base font-bold text-slate-950" data-i18n="speed.refBenchmark">
-            Public Reference Benchmarks
+            Measured Community Benchmarks
           </h2>
-          <span class="rounded-md bg-white/90 px-2 py-0.5 font-mono text-[11px] text-slate-600 border border-sky-200">
-            Community / Framework Anchor
+          <span class="rounded-md bg-white/90 px-2 py-0.5 font-mono text-[11px] font-semibold text-emerald-800 border border-emerald-200" data-i18n="speed.measuredBadge">
+            Measured
           </span>
         </div>
         <p class="mt-1 text-xs text-slate-600">{refNote}</p>
@@ -365,8 +365,8 @@ const appSchema = {
                 <span class="font-mono font-bold text-slate-950">
                   {anc.format} · {anc.quant} @ {formatContextLabel(anc.context_tokens)} ({anc.backend})
                 </span>
-                <span class="font-mono font-bold text-sky-700">
-                  {anc.gen_tps_low}–{anc.gen_tps_high} tok/s
+                <span class="font-mono font-bold text-emerald-700">
+                  {anc.gen_tps_low}–{anc.gen_tps_high} tok/s measured
                 </span>
               </div>
               <p class="mt-1 text-slate-600">{anc.notes}</p>

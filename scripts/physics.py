@@ -1,4 +1,4 @@
-"""Deterministic LLM VRAM, Context, Offload, and Throughput Physics Engine (v3.0).
+"""Deterministic LLM VRAM, Context, Offload, and Throughput Physics Engine (v3.1).
 
 Keep constants and formulas strictly synchronized with `site/src/utils/physics.ts`.
 All token/s outputs are honest formula estimate ranges (~low-high tok/s), never raw measured telemetry.
@@ -32,7 +32,7 @@ ReserveProfile = Literal["desktop", "clean", "custom"]
 CompatStatus = Literal["Fits", "Tight Fit", "Partial Offload", "OOM"]
 SpeedTier = Literal["Fast", "Interactive", "Readable", "Slow", "OOM"]
 
-ENGINE_VERSION = "v3.0"
+ENGINE_VERSION = "v3.1"
 
 QUANT_SPECS: dict[QuantKey, dict[str, object]] = {
     "Q4_K_M": {"bpw": 4.85, "format": "GGUF", "label": "4.85 bpw · Balanced 4-bit GGUF"},
@@ -254,9 +254,10 @@ def kv_cache_gb(
 ) -> float:
     kv_bits = KV_BITS[kv_quant]
     bytes_per_el = kv_bits / 8.0
+    kv_layers = int(model.get("kv_layers") or model["num_layers"])
     total_bytes = (
         2.0
-        * model["num_layers"]
+        * kv_layers
         * model["num_kv_heads"]
         * model["head_dim"]
         * bytes_per_el

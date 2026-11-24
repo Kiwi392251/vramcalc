@@ -1,6 +1,6 @@
 {
   "updated_at": "2026-11-24",
-  "engine_version": "v3.0",
+  "engine_version": "v3.1",
   "models": [
     {
       "id": "deepseek-r1-1.5b",
@@ -505,6 +505,30 @@
         "Dense 32B reasoning",
         "Full-repo coding",
         "24GB-48GB rigs"
+      ]
+    },
+    {
+      "id": "qwen3.8-27b",
+      "name": "Qwen3.8-27B",
+      "short_name": "Qwen3.8 27B",
+      "family": "Qwen3.8",
+      "params_b": 27.8,
+      "architecture": "Hybrid (48 DeltaNet + 16 GQA)",
+      "num_layers": 64,
+      "kv_layers": 16,
+      "num_kv_heads": 4,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "qwen3.8:27b",
+      "hf_repo": "unsloth/Qwen3.8-27B-GGUF",
+      "gguf_file_q4": "Qwen3.8-27B-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3.8-27B-AWQ",
+      "mlx_repo": "mlx-community/Qwen3.8-27B-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "Hybrid 262K long-context reasoning",
+        "Single 24GB GPU / A10 AWQ (~18.5 GB)",
+        "Apple Silicon MLX 4-bit"
       ]
     }
   ],

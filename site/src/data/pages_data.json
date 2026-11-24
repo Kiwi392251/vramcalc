@@ -254,9 +254,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-apple-m4-pro-48gb",
       "qwen3-32b-on-apple-m4-pro-48gb",
       "qwen3-30b-a3b-on-apple-m4-pro-48gb",
-      "gemma-3-27b-on-apple-m4-pro-48gb",
       "deepseek-r1-32b-on-apple-m5-pro-48gb",
       "deepseek-r1-32b-on-rtx-5090-32gb",
       "deepseek-r1-32b-on-apple-m4-max-36gb"
@@ -500,9 +500,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-rtx-4090-24gb",
       "qwen3-32b-on-rtx-4090-24gb",
       "gemma-3-27b-on-rtx-4090-24gb",
-      "mistral-small-24b-on-rtx-4090-24gb",
       "deepseek-r1-32b-on-rtx-3090-24gb",
       "deepseek-r1-32b-on-rx-7900-xtx-24gb",
       "deepseek-r1-32b-on-apple-m4-32gb"
@@ -992,9 +992,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-rtx-5090-32gb",
       "deepseek-r1-32b-on-rtx-5090-32gb",
       "qwen3-32b-on-rtx-5090-32gb",
-      "gemma-3-27b-on-rtx-5090-32gb",
       "qwen2.5-coder-32b-on-apple-m4-pro-48gb",
       "qwen2.5-coder-32b-on-rtx-4090-24gb",
       "qwen2.5-coder-32b-on-rtx-3090-24gb"
@@ -9623,9 +9623,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-rtx-5090-32gb",
       "qwen3-32b-on-rtx-5090-32gb",
       "gemma-3-27b-on-rtx-5090-32gb",
-      "mistral-small-24b-on-rtx-5090-32gb",
       "deepseek-r1-32b-on-apple-m4-max-36gb",
       "deepseek-r1-32b-on-apple-m5-pro-48gb",
       "deepseek-r1-32b-on-apple-m4-pro-48gb"
@@ -9869,9 +9869,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-rtx-5090-32gb",
       "deepseek-r1-32b-on-rtx-5090-32gb",
       "qwen3-32b-on-rtx-5090-32gb",
-      "gemma-3-27b-on-rtx-5090-32gb",
       "deepseek-r1-70b-on-rtx-4090-24gb",
       "deepseek-r1-70b-on-dual-rtx-4090-48gb",
       "deepseek-r1-70b-on-dual-rtx-3090-48gb"
@@ -10115,9 +10115,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-rtx-5090-32gb",
       "deepseek-r1-70b-on-rtx-5090-32gb",
       "deepseek-r1-32b-on-rtx-5090-32gb",
-      "qwen3-32b-on-rtx-5090-32gb",
       "llama-3.3-70b-on-rtx-4090-24gb",
       "llama-3.3-70b-on-dual-rtx-4090-48gb",
       "llama-3.3-70b-on-dual-rtx-3090-48gb"
@@ -10361,9 +10361,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-rtx-5090-32gb",
       "gemma-3-27b-on-rtx-5090-32gb",
       "deepseek-r1-32b-on-rtx-5090-32gb",
-      "qwen3-32b-on-rtx-5090-32gb",
       "mistral-small-24b-on-rtx-4090-24gb",
       "mistral-small-24b-on-rtx-3090-24gb",
       "mistral-small-24b-on-apple-m4-24gb"
@@ -12575,9 +12575,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-rtx-4090-24gb",
       "deepseek-r1-32b-on-rtx-4090-24gb",
       "qwen3-32b-on-rtx-4090-24gb",
-      "gemma-3-27b-on-rtx-4090-24gb",
       "qwen2.5-coder-32b-on-rtx-3090-24gb",
       "qwen2.5-coder-32b-on-rx-7900-xtx-24gb",
       "qwen2.5-coder-32b-on-rtx-5090-32gb"
@@ -12821,9 +12821,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-rtx-4090-24gb",
       "gemma-3-27b-on-rtx-4090-24gb",
       "deepseek-r1-32b-on-rtx-4090-24gb",
-      "qwen3-32b-on-rtx-4090-24gb",
       "mistral-small-24b-on-rtx-3090-24gb",
       "mistral-small-24b-on-apple-m4-24gb",
       "mistral-small-24b-on-rtx-5090-32gb"
@@ -13067,9 +13067,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-rtx-4090-24gb",
       "deepseek-r1-70b-on-rtx-4090-24gb",
       "deepseek-r1-32b-on-rtx-4090-24gb",
-      "qwen3-32b-on-rtx-4090-24gb",
       "llama-3.3-70b-on-rtx-5090-32gb",
       "llama-3.3-70b-on-apple-m1-16gb",
       "llama-3.3-70b-on-rtx-3060-12gb"
@@ -16345,9 +16345,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-apple-m4-max-128gb",
       "qwen3-32b-on-apple-m4-max-128gb",
       "gemma-3-27b-on-apple-m4-max-128gb",
-      "llama-3.3-70b-on-apple-m4-max-128gb",
       "deepseek-r1-70b-on-apple-m5-max-128gb",
       "deepseek-r1-70b-on-ryzen-ai-max-395-128gb",
       "deepseek-r1-70b-on-nvidia-dgx-spark-gb10-128gb"
@@ -16611,9 +16611,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-apple-m4-max-128gb",
       "deepseek-r1-70b-on-apple-m4-max-128gb",
       "qwen3-32b-on-apple-m4-max-128gb",
-      "gemma-3-27b-on-apple-m4-max-128gb",
       "qwen2.5-72b-on-apple-m5-max-128gb",
       "qwen2.5-72b-on-ryzen-ai-max-395-128gb",
       "qwen2.5-72b-on-nvidia-dgx-spark-gb10-128gb"
@@ -18373,9 +18373,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-rtx-5090-32gb",
       "deepseek-r1-14b-on-rtx-5090-32gb",
       "mistral-small-24b-on-rtx-5090-32gb",
-      "gemma-3-27b-on-rtx-5090-32gb",
       "qwen2.5-coder-14b-on-apple-m4-pro-24gb",
       "qwen2.5-coder-14b-on-apple-m4-24gb",
       "qwen2.5-coder-14b-on-rtx-5080-16gb"
@@ -18619,9 +18619,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-rtx-5090-32gb",
       "mistral-small-24b-on-rtx-5090-32gb",
       "gemma-3-27b-on-rtx-5090-32gb",
-      "deepseek-r1-32b-on-rtx-5090-32gb",
       "deepseek-r1-14b-on-apple-m5-pro-24gb",
       "deepseek-r1-14b-on-apple-m4-pro-24gb",
       "deepseek-r1-14b-on-apple-m4-24gb"
@@ -21079,9 +21079,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-rtx-4090-24gb",
       "deepseek-r1-32b-on-rtx-4090-24gb",
       "qwen3-32b-on-rtx-4090-24gb",
-      "gemma-3-27b-on-rtx-4090-24gb",
       "deepseek-r1-70b-on-rtx-5090-32gb",
       "deepseek-r1-70b-on-apple-m1-16gb",
       "deepseek-r1-70b-on-apple-m1-8gb"
@@ -25055,9 +25055,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-apple-m4-max-128gb",
       "deepseek-r1-70b-on-apple-m4-max-128gb",
       "qwen3-32b-on-apple-m4-max-128gb",
-      "gemma-3-27b-on-apple-m4-max-128gb",
       "llama-3.3-70b-on-apple-m5-max-128gb",
       "llama-3.3-70b-on-ryzen-ai-max-395-128gb",
       "llama-3.3-70b-on-nvidia-dgx-spark-gb10-128gb"
@@ -32841,9 +32841,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-apple-m4-16gb",
       "qwen3-8b-on-apple-m4-16gb",
       "gemma-3-12b-on-apple-m4-16gb",
-      "qwen3-14b-on-apple-m4-16gb",
       "deepseek-r1-7b-on-apple-m2-16gb",
       "deepseek-r1-7b-on-apple-m3-16gb",
       "deepseek-r1-7b-on-apple-m1-16gb"
@@ -33107,9 +33107,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-apple-m4-16gb",
       "qwen3-14b-on-apple-m4-16gb",
       "gemma-3-12b-on-apple-m4-16gb",
-      "qwen3-8b-on-apple-m4-16gb",
       "qwen2.5-coder-14b-on-apple-m1-16gb",
       "qwen2.5-coder-14b-on-apple-m3-16gb",
       "qwen2.5-coder-14b-on-rtx-5070-12gb"
@@ -34969,9 +34969,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-apple-m4-pro-48gb",
       "deepseek-r1-32b-on-apple-m4-pro-48gb",
       "qwen3-32b-on-apple-m4-pro-48gb",
-      "qwen3-30b-a3b-on-apple-m4-pro-48gb",
       "qwen2.5-coder-32b-on-rtx-5090-32gb",
       "qwen2.5-coder-32b-on-apple-m5-max-64gb",
       "qwen2.5-coder-32b-on-apple-m4-max-64gb"
@@ -36036,12 +36036,12 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-apple-m4-16gb",
       "deepseek-r1-7b-on-apple-m4-16gb",
       "gemma-3-12b-on-apple-m4-16gb",
-      "qwen3-14b-on-apple-m4-16gb",
       "qwen3-8b-on-nvidia-t4-16gb",
-      "llama-3.1-8b-on-apple-m4-16gb",
-      "qwen2.5-coder-14b-on-apple-m4-16gb"
+      "qwen3-14b-on-apple-m4-16gb",
+      "llama-3.1-8b-on-apple-m4-16gb"
     ]
   },
   {
@@ -36302,9 +36302,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-apple-m4-16gb",
       "gemma-3-12b-on-apple-m4-16gb",
       "qwen3-8b-on-apple-m4-16gb",
-      "deepseek-r1-7b-on-apple-m4-16gb",
       "qwen3-14b-on-nvidia-t4-16gb",
       "qwen3-14b-on-nvidia-a10-24gb",
       "qwen3-14b-on-nvidia-l4-24gb"
@@ -36568,6 +36568,7 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-apple-m4-16gb",
       "qwen3-14b-on-apple-m4-16gb",
       "qwen3-8b-on-apple-m4-16gb",
       "deepseek-r1-7b-on-apple-m4-16gb",
@@ -36833,9 +36834,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-apple-m4-16gb",
       "qwen3-8b-on-apple-m4-16gb",
       "deepseek-r1-7b-on-apple-m4-16gb",
-      "gemma-3-12b-on-apple-m4-16gb",
       "llama-3.1-8b-on-apple-m1-16gb",
       "llama-3.1-8b-on-rtx-4070-12gb",
       "llama-3.1-8b-on-rtx-3060-12gb"
@@ -37099,9 +37100,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-apple-m4-pro-48gb",
       "deepseek-r1-32b-on-apple-m4-pro-48gb",
       "qwen3-30b-a3b-on-apple-m4-pro-48gb",
-      "gemma-3-27b-on-apple-m4-pro-48gb",
       "qwen3-32b-on-rtx-5090-32gb",
       "qwen3-32b-on-rtx-4090-24gb",
       "qwen3-32b-on-nvidia-a10-24gb"
@@ -37365,9 +37366,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-apple-m4-pro-48gb",
       "qwen3-30b-a3b-on-apple-m4-pro-48gb",
       "deepseek-r1-32b-on-apple-m4-pro-48gb",
-      "qwen3-32b-on-apple-m4-pro-48gb",
       "gemma-3-27b-on-rtx-5090-32gb",
       "gemma-3-27b-on-rtx-4090-24gb",
       "gemma-3-27b-on-nvidia-a10-24gb"
@@ -37632,10 +37633,11 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-apple-m4-pro-48gb",
       "deepseek-r1-32b-on-apple-m4-pro-48gb",
       "qwen3-32b-on-apple-m4-pro-48gb",
-      "gemma-3-27b-on-apple-m4-pro-48gb",
       "qwen3-30b-a3b-on-nvidia-a10-24gb",
+      "gemma-3-27b-on-apple-m4-pro-48gb",
       "qwen2.5-coder-32b-on-apple-m4-pro-48gb"
     ]
   },
@@ -37897,9 +37899,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-apple-m4-max-128gb",
       "gemma-3-27b-on-apple-m4-max-128gb",
       "deepseek-r1-70b-on-apple-m4-max-128gb",
-      "llama-3.3-70b-on-apple-m4-max-128gb",
       "qwen3-32b-on-apple-m4-pro-48gb",
       "qwen3-32b-on-rtx-5090-32gb",
       "qwen3-32b-on-rtx-4090-24gb"
@@ -38163,9 +38165,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-apple-m4-max-128gb",
       "qwen3-32b-on-apple-m4-max-128gb",
       "deepseek-r1-70b-on-apple-m4-max-128gb",
-      "llama-3.3-70b-on-apple-m4-max-128gb",
       "gemma-3-27b-on-apple-m4-pro-48gb",
       "gemma-3-27b-on-rtx-5090-32gb",
       "gemma-3-27b-on-rtx-4090-24gb"
@@ -38410,9 +38412,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-nvidia-a10-24gb",
       "qwen3-30b-a3b-on-nvidia-a10-24gb",
       "qwen3-32b-on-nvidia-a10-24gb",
-      "qwen3-14b-on-nvidia-a10-24gb",
       "gemma-3-27b-on-nvidia-a10g-24gb",
       "gemma-3-27b-on-nvidia-l4-24gb",
       "gemma-3-27b-on-rtx-4090-24gb"
@@ -38657,9 +38659,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-nvidia-a10-24gb",
       "qwen3-30b-a3b-on-nvidia-a10-24gb",
       "gemma-3-27b-on-nvidia-a10-24gb",
-      "qwen3-14b-on-nvidia-a10-24gb",
       "qwen3-32b-on-nvidia-a10g-24gb",
       "qwen3-32b-on-rtx-4090-24gb",
       "qwen3-32b-on-rtx-5090-32gb"
@@ -38904,9 +38906,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-nvidia-a10-24gb",
       "gemma-3-27b-on-nvidia-a10-24gb",
       "qwen3-30b-a3b-on-nvidia-a10-24gb",
-      "qwen3-32b-on-nvidia-a10-24gb",
       "qwen3-14b-on-nvidia-l4-24gb",
       "qwen3-14b-on-nvidia-t4-16gb",
       "qwen3-14b-on-apple-m4-16gb"
@@ -39152,10 +39154,11 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-nvidia-a10-24gb",
       "qwen3-32b-on-nvidia-a10-24gb",
       "gemma-3-27b-on-nvidia-a10-24gb",
-      "qwen3-14b-on-nvidia-a10-24gb",
-      "qwen3-30b-a3b-on-apple-m4-pro-48gb"
+      "qwen3-30b-a3b-on-apple-m4-pro-48gb",
+      "qwen3-14b-on-nvidia-a10-24gb"
     ]
   },
   {
@@ -39397,12 +39400,12 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-nvidia-a10g-24gb",
       "qwen3-32b-on-nvidia-a10g-24gb",
       "gemma-3-27b-on-nvidia-a10-24gb",
       "gemma-3-27b-on-nvidia-l4-24gb",
       "gemma-3-27b-on-rtx-4090-24gb",
-      "gemma-3-27b-on-rtx-5090-32gb",
-      "gemma-3-27b-on-apple-m4-pro-48gb"
+      "gemma-3-27b-on-rtx-5090-32gb"
     ]
   },
   {
@@ -39644,12 +39647,12 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-nvidia-a10g-24gb",
       "gemma-3-27b-on-nvidia-a10g-24gb",
       "qwen3-32b-on-nvidia-a10-24gb",
       "qwen3-32b-on-rtx-4090-24gb",
       "qwen3-32b-on-rtx-5090-32gb",
-      "qwen3-32b-on-apple-m4-pro-48gb",
-      "qwen3-32b-on-apple-m4-max-128gb"
+      "qwen3-32b-on-apple-m4-pro-48gb"
     ]
   },
   {
@@ -40628,12 +40631,12 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-nvidia-l4-24gb",
       "qwen3-14b-on-nvidia-l4-24gb",
       "gemma-3-27b-on-nvidia-a10-24gb",
       "gemma-3-27b-on-nvidia-a10g-24gb",
       "gemma-3-27b-on-rtx-4090-24gb",
-      "gemma-3-27b-on-rtx-5090-32gb",
-      "gemma-3-27b-on-apple-m4-pro-48gb"
+      "gemma-3-27b-on-rtx-5090-32gb"
     ]
   },
   {
@@ -40875,6 +40878,7 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-nvidia-l4-24gb",
       "gemma-3-27b-on-nvidia-l4-24gb",
       "qwen3-14b-on-nvidia-a10-24gb",
       "qwen3-14b-on-nvidia-t4-16gb",
@@ -41119,9 +41123,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-rtx-4090-24gb",
       "mistral-small-24b-on-rtx-4090-24gb",
       "deepseek-r1-32b-on-rtx-4090-24gb",
-      "qwen3-32b-on-rtx-4090-24gb",
       "gemma-3-27b-on-nvidia-a10-24gb",
       "gemma-3-27b-on-nvidia-a10g-24gb",
       "gemma-3-27b-on-nvidia-l4-24gb"
@@ -41365,9 +41369,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-rtx-4090-24gb",
       "deepseek-r1-32b-on-rtx-4090-24gb",
       "gemma-3-27b-on-rtx-4090-24gb",
-      "mistral-small-24b-on-rtx-4090-24gb",
       "qwen3-32b-on-nvidia-a10-24gb",
       "qwen3-32b-on-nvidia-a10g-24gb",
       "qwen3-32b-on-rtx-5090-32gb"
@@ -41611,9 +41615,9 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-rtx-5090-32gb",
       "deepseek-r1-32b-on-rtx-5090-32gb",
       "gemma-3-27b-on-rtx-5090-32gb",
-      "mistral-small-24b-on-rtx-5090-32gb",
       "qwen3-32b-on-apple-m4-pro-48gb",
       "qwen3-32b-on-rtx-4090-24gb",
       "qwen3-32b-on-nvidia-a10-24gb"
@@ -41857,12 +41861,2051 @@
       }
     ],
     "related_slugs": [
+      "qwen3.8-27b-on-rtx-5090-32gb",
       "mistral-small-24b-on-rtx-5090-32gb",
       "deepseek-r1-32b-on-rtx-5090-32gb",
-      "qwen3-32b-on-rtx-5090-32gb",
       "gemma-3-27b-on-apple-m4-pro-48gb",
       "gemma-3-27b-on-rtx-4090-24gb",
       "gemma-3-27b-on-nvidia-a10-24gb"
+    ]
+  },
+  {
+    "slug": "qwen3.8-27b-on-nvidia-a10-24gb",
+    "title": "Can NVIDIA A10 24GB Run Qwen3.8 27B? VRAM, Speed & CLI Guide",
+    "meta_description": "Fits (Fast): Qwen3.8-27B Q4_K_M uses 18.00 GB at 8K context on NVIDIA A10 (24GB GDDR6) (22.8 GB usable, 4.8 GB headroom, est. ~21–30 tok/s). Includes GGUF, AWQ, MLX & CLI.",
+    "updated_at": "2026-11-24",
+    "model": {
+      "id": "qwen3.8-27b",
+      "name": "Qwen3.8-27B",
+      "short_name": "Qwen3.8 27B",
+      "family": "Qwen3.8",
+      "params_b": 27.8,
+      "architecture": "Hybrid (48 DeltaNet + 16 GQA)",
+      "num_layers": 64,
+      "kv_layers": 16,
+      "num_kv_heads": 4,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "qwen3.8:27b",
+      "hf_repo": "unsloth/Qwen3.8-27B-GGUF",
+      "gguf_file_q4": "Qwen3.8-27B-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3.8-27B-AWQ",
+      "mlx_repo": "mlx-community/Qwen3.8-27B-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "Hybrid 262K long-context reasoning",
+        "Single 24GB GPU / A10 AWQ (~18.5 GB)",
+        "Apple Silicon MLX 4-bit"
+      ]
+    },
+    "hardware": {
+      "id": "nvidia-a10-24gb",
+      "name": "NVIDIA A10 (24GB GDDR6)",
+      "short_name": "NVIDIA A10 24GB",
+      "vendor": "NVIDIA",
+      "series": "Data Center & Homelab",
+      "category": "Data Center",
+      "gpu_count": 1,
+      "vram_gb": 24.0,
+      "usable_vram_gb": 22.8,
+      "bandwidth_gbps": 600.0,
+      "memory_type": "GDDR6",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 3200,
+      "has_nvlink": false
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "format": "GGUF",
+      "context_tokens": 8192,
+      "weights_gb": 16.85,
+      "kv_cache_gb": 0.5,
+      "overhead_gb": 0.65,
+      "total_vram_gb": 18.0,
+      "effective_usable_vram_gb": 22.8,
+      "headroom_gb": 4.8,
+      "status": "Fits",
+      "speed_tier": "Fast",
+      "est_tps": 25.0,
+      "est_tps_low": 21,
+      "est_tps_high": 30,
+      "gpu_layers_fit": 64,
+      "total_layers": 64,
+      "gpu_fraction": 1.0,
+      "comm_overhead_pct": 0.0,
+      "comm_warning": false
+    },
+    "verdict_summary": "NVIDIA A10 (24GB GDDR6) fits Qwen3.8-27B cleanly at Q4_K_M with 4.80 GB headroom at 8K context (18.00 / 22.8 GB usable; max 64K context @ 21.62 GB). Formula throughput sits in the Fast band (est. ~21–30 tok/s) driven by 600 GB/s memory bandwidth.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "format": "GGUF",
+        "label": "4.85 bpw · Balanced 4-bit GGUF",
+        "bits_per_weight": 4.85,
+        "weights_gb": 16.85,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.65,
+        "total_vram_8k_gb": 18.0,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 25.0,
+        "est_tps_low": 21,
+        "est_tps_high": 30,
+        "status": "Fits",
+        "speed_tier": "Fast",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": true,
+        "notes": "Fits 100% in CUDA memory (4.8 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "format": "GGUF",
+        "label": "5.65 bpw · Higher-accuracy 5-bit GGUF",
+        "bits_per_weight": 5.65,
+        "weights_gb": 19.63,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.69,
+        "total_vram_8k_gb": 20.82,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 22.0,
+        "est_tps_low": 18,
+        "est_tps_high": 26,
+        "status": "Fits",
+        "speed_tier": "Interactive",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in CUDA memory (2.0 GB headroom)."
+      },
+      {
+        "quant": "Q6_K",
+        "format": "GGUF",
+        "label": "6.56 bpw · Near-lossless 6-bit GGUF",
+        "bits_per_weight": 6.56,
+        "weights_gb": 22.8,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 24.02,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 11.0,
+        "est_tps_low": 8,
+        "est_tps_high": 14,
+        "status": "Partial Offload",
+        "speed_tier": "Readable",
+        "gpu_layers_fit": 60,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "60/64 layers on GPU; remainder offloaded to system RAM."
+      },
+      {
+        "quant": "Q8_0",
+        "format": "GGUF",
+        "label": "8.50 bpw · 8-bit reference GGUF",
+        "bits_per_weight": 8.5,
+        "weights_gb": 29.54,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.8,
+        "total_vram_8k_gb": 30.84,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 3.0,
+        "est_tps_low": 2,
+        "est_tps_high": 5,
+        "status": "Partial Offload",
+        "speed_tier": "Slow",
+        "gpu_layers_fit": 46,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "46/64 layers on GPU; remainder offloaded to system RAM."
+      },
+      {
+        "quant": "FP16",
+        "format": "GGUF",
+        "label": "16.0 bpw · Unquantized FP16",
+        "bits_per_weight": 16.0,
+        "weights_gb": 55.6,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 1.12,
+        "total_vram_8k_gb": 57.22,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 0.9,
+        "est_tps_low": 0,
+        "est_tps_high": 1,
+        "status": "Partial Offload",
+        "speed_tier": "Slow",
+        "gpu_layers_fit": 24,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "24/64 layers on GPU; remainder offloaded to system RAM."
+      },
+      {
+        "quant": "AWQ_4BIT",
+        "format": "AWQ",
+        "label": "4.75 bpw · 4-bit AWQ (vLLM Marlin)",
+        "bits_per_weight": 4.75,
+        "weights_gb": 16.51,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 1.48,
+        "total_vram_8k_gb": 18.49,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 24.0,
+        "est_tps_low": 20,
+        "est_tps_high": 29,
+        "status": "Fits",
+        "speed_tier": "Interactive",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in CUDA memory (4.3 GB headroom)."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen3.8:27b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=32768 ollama run qwen3.8:27b",
+      "llama_cli": "llama-cli -hf unsloth/Qwen3.8-27B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf unsloth/Qwen3.8-27B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --host 127.0.0.1 --port 8080",
+      "vllm_serve": "vllm serve Qwen/Qwen3.8-27B-AWQ --quantization awq --max-model-len 32768",
+      "mlx_lm": "mlx_lm.generate --model mlx-community/Qwen3.8-27B-4bit --max-tokens 1024 --prompt \"Explain KV cache sizing\"",
+      "recommended_ctx": 32768,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.25,
+      "max_smooth_context_q4": 65536,
+      "bottleneck_summary": "Qwen3.8 27B Q4_K_M weights occupy 16.85 GB plus 0.65 GB runtime scratchpad, and FP16 KV cache grows by +0.25 GB per 4K tokens (0.50 GB @ 8K). With 22.8 GB usable budget on NVIDIA A10 24GB, max resident context reaches 64K (21.62 GB total, Fits).",
+      "key_points": [
+        "Q4_K_M @ 8K requires 18.00 GB total (16.85 GB weights + 0.50 GB FP16 KV + 0.65 GB runtime buffer).",
+        "Max fit context on Q4_K_M reaches 64K (21.62 GB total footprint, status: Fits).",
+        "Higher precision Q8_0 requires 30.84 GB @ 8K (Partial Offload, est. ~2–5 tok/s).",
+        "Under vLLM AWQ 4-bit, Qwen3.8 27B requires 18.49 GB at 8K context (vs 22.8 GB usable — Fits, est. ~20–29 tok/s)."
+      ],
+      "optimization_tips": [
+        "Set FlashAttention (-fa on) and 8-bit KV cache (-ctk q8_0 -ctv q8_0) to nearly halve KV memory growth per 4K tokens.",
+        "Deploy with vLLM AWQ 4-bit Marlin kernels in headless Linux containers to maximize cloud VRAM headroom and concurrency.",
+        "Remember all tok/s numbers are formula estimate ranges (~±15–25%); check Community Reference Anchors where available."
+      ]
+    },
+    "max_fit_context": 65536,
+    "max_fit_total_vram_gb": 21.62,
+    "max_fit_status": "Fits",
+    "faq": [
+      {
+        "question": "Does Qwen3.8 27B fit cleanly in NVIDIA A10 24GB VRAM?",
+        "answer": "Qwen3.8-27B at Q4_K_M (8K context) needs 18.00 GB vs 22.8 GB usable on NVIDIA A10 (24GB GDDR6). Status is Fits with 4.80 GB spare headroom (max 64K @ 21.62 GB)."
+      },
+      {
+        "question": "What token generation speed can I expect for Qwen3.8 27B on NVIDIA A10 24GB?",
+        "answer": "Our bandwidth physics formula estimates ~21–30 tok/s (Fast) for batch=1 decoding at 8K context. Treat this as a ±15–20% planning range rather than a universal benchmark."
+      },
+      {
+        "question": "Can I run Qwen3.8 27B with AWQ (vLLM) or Apple MLX instead of GGUF?",
+        "answer": "Under vLLM AWQ 4-bit, Qwen3.8 27B requires 18.49 GB at 8K context (vs 22.8 GB usable — Fits, est. ~20–29 tok/s)."
+      },
+      {
+        "question": "How much context window fits safely without swapping on NVIDIA A10 24GB?",
+        "answer": "With FP16 KV cache growing at +0.25 GB per 4K tokens, Q4_K_M clears up to 64K (21.62 GB total footprint)."
+      }
+    ],
+    "related_slugs": [
+      "gemma-3-27b-on-nvidia-a10-24gb",
+      "qwen3-30b-a3b-on-nvidia-a10-24gb",
+      "qwen3-32b-on-nvidia-a10-24gb",
+      "qwen3.8-27b-on-nvidia-a10g-24gb",
+      "qwen3.8-27b-on-nvidia-l4-24gb",
+      "qwen3.8-27b-on-rtx-4090-24gb"
+    ]
+  },
+  {
+    "slug": "qwen3.8-27b-on-nvidia-a10g-24gb",
+    "title": "Can NVIDIA A10G 24GB Run Qwen3.8 27B? VRAM, Speed & CLI Guide",
+    "meta_description": "Fits (Fast): Qwen3.8-27B Q4_K_M uses 18.00 GB at 8K context on NVIDIA A10G (24GB GDDR6) (22.8 GB usable, 4.8 GB headroom, est. ~21–30 tok/s). Includes GGUF, AWQ, MLX & CLI.",
+    "updated_at": "2026-11-24",
+    "model": {
+      "id": "qwen3.8-27b",
+      "name": "Qwen3.8-27B",
+      "short_name": "Qwen3.8 27B",
+      "family": "Qwen3.8",
+      "params_b": 27.8,
+      "architecture": "Hybrid (48 DeltaNet + 16 GQA)",
+      "num_layers": 64,
+      "kv_layers": 16,
+      "num_kv_heads": 4,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "qwen3.8:27b",
+      "hf_repo": "unsloth/Qwen3.8-27B-GGUF",
+      "gguf_file_q4": "Qwen3.8-27B-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3.8-27B-AWQ",
+      "mlx_repo": "mlx-community/Qwen3.8-27B-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "Hybrid 262K long-context reasoning",
+        "Single 24GB GPU / A10 AWQ (~18.5 GB)",
+        "Apple Silicon MLX 4-bit"
+      ]
+    },
+    "hardware": {
+      "id": "nvidia-a10g-24gb",
+      "name": "NVIDIA A10G (24GB GDDR6)",
+      "short_name": "NVIDIA A10G 24GB",
+      "vendor": "NVIDIA",
+      "series": "Data Center & Homelab",
+      "category": "Data Center",
+      "gpu_count": 1,
+      "vram_gb": 24.0,
+      "usable_vram_gb": 22.8,
+      "bandwidth_gbps": 600.0,
+      "memory_type": "GDDR6",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 3200,
+      "has_nvlink": false
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "format": "GGUF",
+      "context_tokens": 8192,
+      "weights_gb": 16.85,
+      "kv_cache_gb": 0.5,
+      "overhead_gb": 0.65,
+      "total_vram_gb": 18.0,
+      "effective_usable_vram_gb": 22.8,
+      "headroom_gb": 4.8,
+      "status": "Fits",
+      "speed_tier": "Fast",
+      "est_tps": 25.0,
+      "est_tps_low": 21,
+      "est_tps_high": 30,
+      "gpu_layers_fit": 64,
+      "total_layers": 64,
+      "gpu_fraction": 1.0,
+      "comm_overhead_pct": 0.0,
+      "comm_warning": false
+    },
+    "verdict_summary": "NVIDIA A10G (24GB GDDR6) fits Qwen3.8-27B cleanly at Q4_K_M with 4.80 GB headroom at 8K context (18.00 / 22.8 GB usable; max 64K context @ 21.62 GB). Formula throughput sits in the Fast band (est. ~21–30 tok/s) driven by 600 GB/s memory bandwidth.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "format": "GGUF",
+        "label": "4.85 bpw · Balanced 4-bit GGUF",
+        "bits_per_weight": 4.85,
+        "weights_gb": 16.85,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.65,
+        "total_vram_8k_gb": 18.0,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 25.0,
+        "est_tps_low": 21,
+        "est_tps_high": 30,
+        "status": "Fits",
+        "speed_tier": "Fast",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": true,
+        "notes": "Fits 100% in CUDA memory (4.8 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "format": "GGUF",
+        "label": "5.65 bpw · Higher-accuracy 5-bit GGUF",
+        "bits_per_weight": 5.65,
+        "weights_gb": 19.63,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.69,
+        "total_vram_8k_gb": 20.82,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 22.0,
+        "est_tps_low": 18,
+        "est_tps_high": 26,
+        "status": "Fits",
+        "speed_tier": "Interactive",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in CUDA memory (2.0 GB headroom)."
+      },
+      {
+        "quant": "Q6_K",
+        "format": "GGUF",
+        "label": "6.56 bpw · Near-lossless 6-bit GGUF",
+        "bits_per_weight": 6.56,
+        "weights_gb": 22.8,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 24.02,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 11.0,
+        "est_tps_low": 8,
+        "est_tps_high": 14,
+        "status": "Partial Offload",
+        "speed_tier": "Readable",
+        "gpu_layers_fit": 60,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "60/64 layers on GPU; remainder offloaded to system RAM."
+      },
+      {
+        "quant": "Q8_0",
+        "format": "GGUF",
+        "label": "8.50 bpw · 8-bit reference GGUF",
+        "bits_per_weight": 8.5,
+        "weights_gb": 29.54,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.8,
+        "total_vram_8k_gb": 30.84,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 3.0,
+        "est_tps_low": 2,
+        "est_tps_high": 5,
+        "status": "Partial Offload",
+        "speed_tier": "Slow",
+        "gpu_layers_fit": 46,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "46/64 layers on GPU; remainder offloaded to system RAM."
+      },
+      {
+        "quant": "FP16",
+        "format": "GGUF",
+        "label": "16.0 bpw · Unquantized FP16",
+        "bits_per_weight": 16.0,
+        "weights_gb": 55.6,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 1.12,
+        "total_vram_8k_gb": 57.22,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 0.9,
+        "est_tps_low": 0,
+        "est_tps_high": 1,
+        "status": "Partial Offload",
+        "speed_tier": "Slow",
+        "gpu_layers_fit": 24,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "24/64 layers on GPU; remainder offloaded to system RAM."
+      },
+      {
+        "quant": "AWQ_4BIT",
+        "format": "AWQ",
+        "label": "4.75 bpw · 4-bit AWQ (vLLM Marlin)",
+        "bits_per_weight": 4.75,
+        "weights_gb": 16.51,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 1.48,
+        "total_vram_8k_gb": 18.49,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 24.0,
+        "est_tps_low": 20,
+        "est_tps_high": 29,
+        "status": "Fits",
+        "speed_tier": "Interactive",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in CUDA memory (4.3 GB headroom)."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen3.8:27b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=32768 ollama run qwen3.8:27b",
+      "llama_cli": "llama-cli -hf unsloth/Qwen3.8-27B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf unsloth/Qwen3.8-27B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --host 127.0.0.1 --port 8080",
+      "vllm_serve": "vllm serve Qwen/Qwen3.8-27B-AWQ --quantization awq --max-model-len 32768",
+      "mlx_lm": "mlx_lm.generate --model mlx-community/Qwen3.8-27B-4bit --max-tokens 1024 --prompt \"Explain KV cache sizing\"",
+      "recommended_ctx": 32768,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.25,
+      "max_smooth_context_q4": 65536,
+      "bottleneck_summary": "Qwen3.8 27B Q4_K_M weights occupy 16.85 GB plus 0.65 GB runtime scratchpad, and FP16 KV cache grows by +0.25 GB per 4K tokens (0.50 GB @ 8K). With 22.8 GB usable budget on NVIDIA A10G 24GB, max resident context reaches 64K (21.62 GB total, Fits).",
+      "key_points": [
+        "Q4_K_M @ 8K requires 18.00 GB total (16.85 GB weights + 0.50 GB FP16 KV + 0.65 GB runtime buffer).",
+        "Max fit context on Q4_K_M reaches 64K (21.62 GB total footprint, status: Fits).",
+        "Higher precision Q8_0 requires 30.84 GB @ 8K (Partial Offload, est. ~2–5 tok/s).",
+        "Under vLLM AWQ 4-bit, Qwen3.8 27B requires 18.49 GB at 8K context (vs 22.8 GB usable — Fits, est. ~20–29 tok/s)."
+      ],
+      "optimization_tips": [
+        "Set FlashAttention (-fa on) and 8-bit KV cache (-ctk q8_0 -ctv q8_0) to nearly halve KV memory growth per 4K tokens.",
+        "Deploy with vLLM AWQ 4-bit Marlin kernels in headless Linux containers to maximize cloud VRAM headroom and concurrency.",
+        "Remember all tok/s numbers are formula estimate ranges (~±15–25%); check Community Reference Anchors where available."
+      ]
+    },
+    "max_fit_context": 65536,
+    "max_fit_total_vram_gb": 21.62,
+    "max_fit_status": "Fits",
+    "faq": [
+      {
+        "question": "Does Qwen3.8 27B fit cleanly in NVIDIA A10G 24GB VRAM?",
+        "answer": "Qwen3.8-27B at Q4_K_M (8K context) needs 18.00 GB vs 22.8 GB usable on NVIDIA A10G (24GB GDDR6). Status is Fits with 4.80 GB spare headroom (max 64K @ 21.62 GB)."
+      },
+      {
+        "question": "What token generation speed can I expect for Qwen3.8 27B on NVIDIA A10G 24GB?",
+        "answer": "Our bandwidth physics formula estimates ~21–30 tok/s (Fast) for batch=1 decoding at 8K context. Treat this as a ±15–20% planning range rather than a universal benchmark."
+      },
+      {
+        "question": "Can I run Qwen3.8 27B with AWQ (vLLM) or Apple MLX instead of GGUF?",
+        "answer": "Under vLLM AWQ 4-bit, Qwen3.8 27B requires 18.49 GB at 8K context (vs 22.8 GB usable — Fits, est. ~20–29 tok/s)."
+      },
+      {
+        "question": "How much context window fits safely without swapping on NVIDIA A10G 24GB?",
+        "answer": "With FP16 KV cache growing at +0.25 GB per 4K tokens, Q4_K_M clears up to 64K (21.62 GB total footprint)."
+      }
+    ],
+    "related_slugs": [
+      "gemma-3-27b-on-nvidia-a10g-24gb",
+      "qwen3-32b-on-nvidia-a10g-24gb",
+      "qwen3.8-27b-on-nvidia-a10-24gb",
+      "qwen3.8-27b-on-nvidia-l4-24gb",
+      "qwen3.8-27b-on-rtx-4090-24gb",
+      "qwen3.8-27b-on-rtx-5090-32gb"
+    ]
+  },
+  {
+    "slug": "qwen3.8-27b-on-nvidia-l4-24gb",
+    "title": "Can NVIDIA L4 24GB Run Qwen3.8 27B? VRAM, Speed & CLI Guide",
+    "meta_description": "Fits (Interactive): Qwen3.8-27B Q4_K_M uses 18.00 GB at 8K context on NVIDIA L4 (24GB GDDR6) (22.8 GB usable, 4.8 GB headroom, est. ~10–15 tok/s). Includes GGUF, AWQ, MLX & CLI.",
+    "updated_at": "2026-11-24",
+    "model": {
+      "id": "qwen3.8-27b",
+      "name": "Qwen3.8-27B",
+      "short_name": "Qwen3.8 27B",
+      "family": "Qwen3.8",
+      "params_b": 27.8,
+      "architecture": "Hybrid (48 DeltaNet + 16 GQA)",
+      "num_layers": 64,
+      "kv_layers": 16,
+      "num_kv_heads": 4,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "qwen3.8:27b",
+      "hf_repo": "unsloth/Qwen3.8-27B-GGUF",
+      "gguf_file_q4": "Qwen3.8-27B-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3.8-27B-AWQ",
+      "mlx_repo": "mlx-community/Qwen3.8-27B-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "Hybrid 262K long-context reasoning",
+        "Single 24GB GPU / A10 AWQ (~18.5 GB)",
+        "Apple Silicon MLX 4-bit"
+      ]
+    },
+    "hardware": {
+      "id": "nvidia-l4-24gb",
+      "name": "NVIDIA L4 (24GB GDDR6)",
+      "short_name": "NVIDIA L4 24GB",
+      "vendor": "NVIDIA",
+      "series": "Data Center & Homelab",
+      "category": "Data Center",
+      "gpu_count": 1,
+      "vram_gb": 24.0,
+      "usable_vram_gb": 22.8,
+      "bandwidth_gbps": 300.0,
+      "memory_type": "GDDR6",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 2800,
+      "has_nvlink": false
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "format": "GGUF",
+      "context_tokens": 8192,
+      "weights_gb": 16.85,
+      "kv_cache_gb": 0.5,
+      "overhead_gb": 0.65,
+      "total_vram_gb": 18.0,
+      "effective_usable_vram_gb": 22.8,
+      "headroom_gb": 4.8,
+      "status": "Fits",
+      "speed_tier": "Interactive",
+      "est_tps": 13.0,
+      "est_tps_low": 10,
+      "est_tps_high": 15,
+      "gpu_layers_fit": 64,
+      "total_layers": 64,
+      "gpu_fraction": 1.0,
+      "comm_overhead_pct": 0.0,
+      "comm_warning": false
+    },
+    "verdict_summary": "NVIDIA L4 (24GB GDDR6) fits Qwen3.8-27B cleanly at Q4_K_M with 4.80 GB headroom at 8K context (18.00 / 22.8 GB usable; max 64K context @ 21.62 GB). Formula throughput sits in the Interactive band (est. ~10–15 tok/s) driven by 300 GB/s memory bandwidth.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "format": "GGUF",
+        "label": "4.85 bpw · Balanced 4-bit GGUF",
+        "bits_per_weight": 4.85,
+        "weights_gb": 16.85,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.65,
+        "total_vram_8k_gb": 18.0,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 13.0,
+        "est_tps_low": 10,
+        "est_tps_high": 15,
+        "status": "Fits",
+        "speed_tier": "Interactive",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": true,
+        "notes": "Fits 100% in CUDA memory (4.8 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "format": "GGUF",
+        "label": "5.65 bpw · Higher-accuracy 5-bit GGUF",
+        "bits_per_weight": 5.65,
+        "weights_gb": 19.63,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.69,
+        "total_vram_8k_gb": 20.82,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 11.0,
+        "est_tps_low": 9,
+        "est_tps_high": 13,
+        "status": "Fits",
+        "speed_tier": "Readable",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in CUDA memory (2.0 GB headroom)."
+      },
+      {
+        "quant": "Q6_K",
+        "format": "GGUF",
+        "label": "6.56 bpw · Near-lossless 6-bit GGUF",
+        "bits_per_weight": 6.56,
+        "weights_gb": 22.8,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 24.02,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 7.0,
+        "est_tps_low": 5,
+        "est_tps_high": 9,
+        "status": "Partial Offload",
+        "speed_tier": "Readable",
+        "gpu_layers_fit": 60,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "60/64 layers on GPU; remainder offloaded to system RAM."
+      },
+      {
+        "quant": "Q8_0",
+        "format": "GGUF",
+        "label": "8.50 bpw · 8-bit reference GGUF",
+        "bits_per_weight": 8.5,
+        "weights_gb": 29.54,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.8,
+        "total_vram_8k_gb": 30.84,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 3.0,
+        "est_tps_low": 2,
+        "est_tps_high": 4,
+        "status": "Partial Offload",
+        "speed_tier": "Slow",
+        "gpu_layers_fit": 46,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "46/64 layers on GPU; remainder offloaded to system RAM."
+      },
+      {
+        "quant": "FP16",
+        "format": "GGUF",
+        "label": "16.0 bpw · Unquantized FP16",
+        "bits_per_weight": 16.0,
+        "weights_gb": 55.6,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 1.12,
+        "total_vram_8k_gb": 57.22,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 0.9,
+        "est_tps_low": 0,
+        "est_tps_high": 1,
+        "status": "Partial Offload",
+        "speed_tier": "Slow",
+        "gpu_layers_fit": 24,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "24/64 layers on GPU; remainder offloaded to system RAM."
+      },
+      {
+        "quant": "AWQ_4BIT",
+        "format": "AWQ",
+        "label": "4.75 bpw · 4-bit AWQ (vLLM Marlin)",
+        "bits_per_weight": 4.75,
+        "weights_gb": 16.51,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 1.48,
+        "total_vram_8k_gb": 18.49,
+        "effective_usable_vram_gb": 22.8,
+        "est_tps": 12.0,
+        "est_tps_low": 10,
+        "est_tps_high": 15,
+        "status": "Fits",
+        "speed_tier": "Interactive",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in CUDA memory (4.3 GB headroom)."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen3.8:27b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=32768 ollama run qwen3.8:27b",
+      "llama_cli": "llama-cli -hf unsloth/Qwen3.8-27B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf unsloth/Qwen3.8-27B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --host 127.0.0.1 --port 8080",
+      "vllm_serve": "vllm serve Qwen/Qwen3.8-27B-AWQ --quantization awq --max-model-len 32768",
+      "mlx_lm": "mlx_lm.generate --model mlx-community/Qwen3.8-27B-4bit --max-tokens 1024 --prompt \"Explain KV cache sizing\"",
+      "recommended_ctx": 32768,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.25,
+      "max_smooth_context_q4": 65536,
+      "bottleneck_summary": "Qwen3.8 27B Q4_K_M weights occupy 16.85 GB plus 0.65 GB runtime scratchpad, and FP16 KV cache grows by +0.25 GB per 4K tokens (0.50 GB @ 8K). With 22.8 GB usable budget on NVIDIA L4 24GB, max resident context reaches 64K (21.62 GB total, Fits).",
+      "key_points": [
+        "Q4_K_M @ 8K requires 18.00 GB total (16.85 GB weights + 0.50 GB FP16 KV + 0.65 GB runtime buffer).",
+        "Max fit context on Q4_K_M reaches 64K (21.62 GB total footprint, status: Fits).",
+        "Higher precision Q8_0 requires 30.84 GB @ 8K (Partial Offload, est. ~2–4 tok/s).",
+        "Under vLLM AWQ 4-bit, Qwen3.8 27B requires 18.49 GB at 8K context (vs 22.8 GB usable — Fits, est. ~10–15 tok/s)."
+      ],
+      "optimization_tips": [
+        "Set FlashAttention (-fa on) and 8-bit KV cache (-ctk q8_0 -ctv q8_0) to nearly halve KV memory growth per 4K tokens.",
+        "Deploy with vLLM AWQ 4-bit Marlin kernels in headless Linux containers to maximize cloud VRAM headroom and concurrency.",
+        "Remember all tok/s numbers are formula estimate ranges (~±15–25%); check Community Reference Anchors where available."
+      ]
+    },
+    "max_fit_context": 65536,
+    "max_fit_total_vram_gb": 21.62,
+    "max_fit_status": "Fits",
+    "faq": [
+      {
+        "question": "Does Qwen3.8 27B fit cleanly in NVIDIA L4 24GB VRAM?",
+        "answer": "Qwen3.8-27B at Q4_K_M (8K context) needs 18.00 GB vs 22.8 GB usable on NVIDIA L4 (24GB GDDR6). Status is Fits with 4.80 GB spare headroom (max 64K @ 21.62 GB)."
+      },
+      {
+        "question": "What token generation speed can I expect for Qwen3.8 27B on NVIDIA L4 24GB?",
+        "answer": "Our bandwidth physics formula estimates ~10–15 tok/s (Interactive) for batch=1 decoding at 8K context. Treat this as a ±15–20% planning range rather than a universal benchmark."
+      },
+      {
+        "question": "Can I run Qwen3.8 27B with AWQ (vLLM) or Apple MLX instead of GGUF?",
+        "answer": "Under vLLM AWQ 4-bit, Qwen3.8 27B requires 18.49 GB at 8K context (vs 22.8 GB usable — Fits, est. ~10–15 tok/s)."
+      },
+      {
+        "question": "How much context window fits safely without swapping on NVIDIA L4 24GB?",
+        "answer": "With FP16 KV cache growing at +0.25 GB per 4K tokens, Q4_K_M clears up to 64K (21.62 GB total footprint)."
+      }
+    ],
+    "related_slugs": [
+      "gemma-3-27b-on-nvidia-l4-24gb",
+      "qwen3-14b-on-nvidia-l4-24gb",
+      "qwen3.8-27b-on-nvidia-a10-24gb",
+      "qwen3.8-27b-on-nvidia-a10g-24gb",
+      "qwen3.8-27b-on-rtx-4090-24gb",
+      "qwen3.8-27b-on-rtx-5090-32gb"
+    ]
+  },
+  {
+    "slug": "qwen3.8-27b-on-rtx-4090-24gb",
+    "title": "Can RTX 4090 24GB Run Qwen3.8 27B? VRAM, Speed & CLI Guide",
+    "meta_description": "Fits (Fast): Qwen3.8-27B Q4_K_M uses 18.00 GB at 8K context on NVIDIA RTX 4090 (24GB) (23.5 GB usable, 5.5 GB headroom, est. ~36–50 tok/s). Includes GGUF, AWQ, MLX & CLI.",
+    "updated_at": "2026-11-24",
+    "model": {
+      "id": "qwen3.8-27b",
+      "name": "Qwen3.8-27B",
+      "short_name": "Qwen3.8 27B",
+      "family": "Qwen3.8",
+      "params_b": 27.8,
+      "architecture": "Hybrid (48 DeltaNet + 16 GQA)",
+      "num_layers": 64,
+      "kv_layers": 16,
+      "num_kv_heads": 4,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "qwen3.8:27b",
+      "hf_repo": "unsloth/Qwen3.8-27B-GGUF",
+      "gguf_file_q4": "Qwen3.8-27B-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3.8-27B-AWQ",
+      "mlx_repo": "mlx-community/Qwen3.8-27B-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "Hybrid 262K long-context reasoning",
+        "Single 24GB GPU / A10 AWQ (~18.5 GB)",
+        "Apple Silicon MLX 4-bit"
+      ]
+    },
+    "hardware": {
+      "id": "rtx-4090-24gb",
+      "name": "NVIDIA RTX 4090 (24GB)",
+      "short_name": "RTX 4090 24GB",
+      "vendor": "NVIDIA",
+      "series": "RTX 40 Series",
+      "category": "Desktop GPU",
+      "gpu_count": 1,
+      "vram_gb": 24.0,
+      "usable_vram_gb": 23.5,
+      "bandwidth_gbps": 1008.0,
+      "memory_type": "GDDR6X",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 1599
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "format": "GGUF",
+      "context_tokens": 8192,
+      "weights_gb": 16.85,
+      "kv_cache_gb": 0.5,
+      "overhead_gb": 0.65,
+      "total_vram_gb": 18.0,
+      "effective_usable_vram_gb": 23.5,
+      "headroom_gb": 5.5,
+      "status": "Fits",
+      "speed_tier": "Fast",
+      "est_tps": 43.0,
+      "est_tps_low": 36,
+      "est_tps_high": 50,
+      "gpu_layers_fit": 64,
+      "total_layers": 64,
+      "gpu_fraction": 1.0,
+      "comm_overhead_pct": 0.0,
+      "comm_warning": false
+    },
+    "verdict_summary": "NVIDIA RTX 4090 (24GB) fits Qwen3.8-27B cleanly at Q4_K_M with 5.50 GB headroom at 8K context (18.00 / 23.5 GB usable; max 64K context @ 21.62 GB). Formula throughput sits in the Fast band (est. ~36–50 tok/s) driven by 1008 GB/s memory bandwidth.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "format": "GGUF",
+        "label": "4.85 bpw · Balanced 4-bit GGUF",
+        "bits_per_weight": 4.85,
+        "weights_gb": 16.85,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.65,
+        "total_vram_8k_gb": 18.0,
+        "effective_usable_vram_gb": 23.5,
+        "est_tps": 43.0,
+        "est_tps_low": 36,
+        "est_tps_high": 50,
+        "status": "Fits",
+        "speed_tier": "Fast",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": true,
+        "notes": "Fits 100% in CUDA memory (5.5 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "format": "GGUF",
+        "label": "5.65 bpw · Higher-accuracy 5-bit GGUF",
+        "bits_per_weight": 5.65,
+        "weights_gb": 19.63,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.69,
+        "total_vram_8k_gb": 20.82,
+        "effective_usable_vram_gb": 23.5,
+        "est_tps": 37.0,
+        "est_tps_low": 31,
+        "est_tps_high": 43,
+        "status": "Fits",
+        "speed_tier": "Fast",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in CUDA memory (2.7 GB headroom)."
+      },
+      {
+        "quant": "Q6_K",
+        "format": "GGUF",
+        "label": "6.56 bpw · Near-lossless 6-bit GGUF",
+        "bits_per_weight": 6.56,
+        "weights_gb": 22.8,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 24.02,
+        "effective_usable_vram_gb": 23.5,
+        "est_tps": 19.0,
+        "est_tps_low": 14,
+        "est_tps_high": 24,
+        "status": "Partial Offload",
+        "speed_tier": "Interactive",
+        "gpu_layers_fit": 62,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "62/64 layers on GPU; remainder offloaded to system RAM."
+      },
+      {
+        "quant": "Q8_0",
+        "format": "GGUF",
+        "label": "8.50 bpw · 8-bit reference GGUF",
+        "bits_per_weight": 8.5,
+        "weights_gb": 29.54,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.8,
+        "total_vram_8k_gb": 30.84,
+        "effective_usable_vram_gb": 23.5,
+        "est_tps": 4.0,
+        "est_tps_low": 2,
+        "est_tps_high": 5,
+        "status": "Partial Offload",
+        "speed_tier": "Slow",
+        "gpu_layers_fit": 48,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "48/64 layers on GPU; remainder offloaded to system RAM."
+      },
+      {
+        "quant": "FP16",
+        "format": "GGUF",
+        "label": "16.0 bpw · Unquantized FP16",
+        "bits_per_weight": 16.0,
+        "weights_gb": 55.6,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 1.12,
+        "total_vram_8k_gb": 57.22,
+        "effective_usable_vram_gb": 23.5,
+        "est_tps": 0.9,
+        "est_tps_low": 0,
+        "est_tps_high": 1,
+        "status": "Partial Offload",
+        "speed_tier": "Slow",
+        "gpu_layers_fit": 25,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "25/64 layers on GPU; remainder offloaded to system RAM."
+      },
+      {
+        "quant": "AWQ_4BIT",
+        "format": "AWQ",
+        "label": "4.75 bpw · 4-bit AWQ (vLLM Marlin)",
+        "bits_per_weight": 4.75,
+        "weights_gb": 16.51,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 1.48,
+        "total_vram_8k_gb": 18.49,
+        "effective_usable_vram_gb": 23.5,
+        "est_tps": 41.0,
+        "est_tps_low": 34,
+        "est_tps_high": 48,
+        "status": "Fits",
+        "speed_tier": "Fast",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in CUDA memory (5.0 GB headroom)."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen3.8:27b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=32768 ollama run qwen3.8:27b",
+      "llama_cli": "llama-cli -hf unsloth/Qwen3.8-27B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf unsloth/Qwen3.8-27B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --host 127.0.0.1 --port 8080",
+      "vllm_serve": "vllm serve Qwen/Qwen3.8-27B-AWQ --quantization awq --max-model-len 32768",
+      "mlx_lm": "mlx_lm.generate --model mlx-community/Qwen3.8-27B-4bit --max-tokens 1024 --prompt \"Explain KV cache sizing\"",
+      "recommended_ctx": 32768,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.25,
+      "max_smooth_context_q4": 65536,
+      "bottleneck_summary": "Qwen3.8 27B Q4_K_M weights occupy 16.85 GB plus 0.65 GB runtime scratchpad, and FP16 KV cache grows by +0.25 GB per 4K tokens (0.50 GB @ 8K). With 23.5 GB usable budget on RTX 4090 24GB, max resident context reaches 64K (21.62 GB total, Fits).",
+      "key_points": [
+        "Q4_K_M @ 8K requires 18.00 GB total (16.85 GB weights + 0.50 GB FP16 KV + 0.65 GB runtime buffer).",
+        "Max fit context on Q4_K_M reaches 64K (21.62 GB total footprint, status: Fits).",
+        "Higher precision Q8_0 requires 30.84 GB @ 8K (Partial Offload, est. ~2–5 tok/s).",
+        "Under vLLM AWQ 4-bit, Qwen3.8 27B requires 18.49 GB at 8K context (vs 23.5 GB usable — Fits, est. ~34–48 tok/s)."
+      ],
+      "optimization_tips": [
+        "Set FlashAttention (-fa on) and 8-bit KV cache (-ctk q8_0 -ctv q8_0) to nearly halve KV memory growth per 4K tokens.",
+        "Use the Desktop vs Clean OS reserve selector above to verify safe headroom if your display or IDE shares GPU memory.",
+        "Remember all tok/s numbers are formula estimate ranges (~±15–25%); check Community Reference Anchors where available."
+      ]
+    },
+    "max_fit_context": 65536,
+    "max_fit_total_vram_gb": 21.62,
+    "max_fit_status": "Fits",
+    "faq": [
+      {
+        "question": "Does Qwen3.8 27B fit cleanly in RTX 4090 24GB VRAM?",
+        "answer": "Qwen3.8-27B at Q4_K_M (8K context) needs 18.00 GB vs 23.5 GB usable on NVIDIA RTX 4090 (24GB). Status is Fits with 5.50 GB spare headroom (max 64K @ 21.62 GB)."
+      },
+      {
+        "question": "What token generation speed can I expect for Qwen3.8 27B on RTX 4090 24GB?",
+        "answer": "Our bandwidth physics formula estimates ~36–50 tok/s (Fast) for batch=1 decoding at 8K context. Treat this as a ±15–20% planning range rather than a universal benchmark."
+      },
+      {
+        "question": "Can I run Qwen3.8 27B with AWQ (vLLM) or Apple MLX instead of GGUF?",
+        "answer": "Under vLLM AWQ 4-bit, Qwen3.8 27B requires 18.49 GB at 8K context (vs 23.5 GB usable — Fits, est. ~34–48 tok/s)."
+      },
+      {
+        "question": "How much context window fits safely without swapping on RTX 4090 24GB?",
+        "answer": "With FP16 KV cache growing at +0.25 GB per 4K tokens, Q4_K_M clears up to 64K (21.62 GB total footprint)."
+      }
+    ],
+    "related_slugs": [
+      "gemma-3-27b-on-rtx-4090-24gb",
+      "mistral-small-24b-on-rtx-4090-24gb",
+      "deepseek-r1-32b-on-rtx-4090-24gb",
+      "qwen3.8-27b-on-nvidia-a10-24gb",
+      "qwen3.8-27b-on-nvidia-a10g-24gb",
+      "qwen3.8-27b-on-nvidia-l4-24gb"
+    ]
+  },
+  {
+    "slug": "qwen3.8-27b-on-rtx-5090-32gb",
+    "title": "Can RTX 5090 32GB Run Qwen3.8 27B? VRAM, Speed & CLI Guide",
+    "meta_description": "Fits (Fast): Qwen3.8-27B Q4_K_M uses 18.00 GB at 8K context on NVIDIA RTX 5090 (32GB) (31.5 GB usable, 13.5 GB headroom, est. ~64–88 tok/s). Includes GGUF, AWQ, MLX & CLI.",
+    "updated_at": "2026-11-24",
+    "model": {
+      "id": "qwen3.8-27b",
+      "name": "Qwen3.8-27B",
+      "short_name": "Qwen3.8 27B",
+      "family": "Qwen3.8",
+      "params_b": 27.8,
+      "architecture": "Hybrid (48 DeltaNet + 16 GQA)",
+      "num_layers": 64,
+      "kv_layers": 16,
+      "num_kv_heads": 4,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "qwen3.8:27b",
+      "hf_repo": "unsloth/Qwen3.8-27B-GGUF",
+      "gguf_file_q4": "Qwen3.8-27B-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3.8-27B-AWQ",
+      "mlx_repo": "mlx-community/Qwen3.8-27B-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "Hybrid 262K long-context reasoning",
+        "Single 24GB GPU / A10 AWQ (~18.5 GB)",
+        "Apple Silicon MLX 4-bit"
+      ]
+    },
+    "hardware": {
+      "id": "rtx-5090-32gb",
+      "name": "NVIDIA RTX 5090 (32GB)",
+      "short_name": "RTX 5090 32GB",
+      "vendor": "NVIDIA",
+      "series": "RTX 50 Series",
+      "category": "Desktop GPU",
+      "gpu_count": 1,
+      "vram_gb": 32.0,
+      "usable_vram_gb": 31.5,
+      "bandwidth_gbps": 1792.0,
+      "memory_type": "GDDR7",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 1999
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "format": "GGUF",
+      "context_tokens": 8192,
+      "weights_gb": 16.85,
+      "kv_cache_gb": 0.5,
+      "overhead_gb": 0.65,
+      "total_vram_gb": 18.0,
+      "effective_usable_vram_gb": 31.5,
+      "headroom_gb": 13.5,
+      "status": "Fits",
+      "speed_tier": "Fast",
+      "est_tps": 76.0,
+      "est_tps_low": 64,
+      "est_tps_high": 88,
+      "gpu_layers_fit": 64,
+      "total_layers": 64,
+      "gpu_fraction": 1.0,
+      "comm_overhead_pct": 0.0,
+      "comm_warning": false
+    },
+    "verdict_summary": "NVIDIA RTX 5090 (32GB) fits Qwen3.8-27B cleanly at Q4_K_M with 13.50 GB headroom at 8K context (18.00 / 31.5 GB usable; max 128K context @ 25.62 GB). Formula throughput sits in the Fast band (est. ~64–88 tok/s) driven by 1792 GB/s memory bandwidth.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "format": "GGUF",
+        "label": "4.85 bpw · Balanced 4-bit GGUF",
+        "bits_per_weight": 4.85,
+        "weights_gb": 16.85,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.65,
+        "total_vram_8k_gb": 18.0,
+        "effective_usable_vram_gb": 31.5,
+        "est_tps": 76.0,
+        "est_tps_low": 64,
+        "est_tps_high": 88,
+        "status": "Fits",
+        "speed_tier": "Fast",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": true,
+        "notes": "Fits 100% in CUDA memory (13.5 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "format": "GGUF",
+        "label": "5.65 bpw · Higher-accuracy 5-bit GGUF",
+        "bits_per_weight": 5.65,
+        "weights_gb": 19.63,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.69,
+        "total_vram_8k_gb": 20.82,
+        "effective_usable_vram_gb": 31.5,
+        "est_tps": 65.0,
+        "est_tps_low": 55,
+        "est_tps_high": 75,
+        "status": "Fits",
+        "speed_tier": "Fast",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in CUDA memory (10.7 GB headroom)."
+      },
+      {
+        "quant": "Q6_K",
+        "format": "GGUF",
+        "label": "6.56 bpw · Near-lossless 6-bit GGUF",
+        "bits_per_weight": 6.56,
+        "weights_gb": 22.8,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 24.02,
+        "effective_usable_vram_gb": 31.5,
+        "est_tps": 56.0,
+        "est_tps_low": 47,
+        "est_tps_high": 65,
+        "status": "Fits",
+        "speed_tier": "Fast",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in CUDA memory (7.5 GB headroom)."
+      },
+      {
+        "quant": "Q8_0",
+        "format": "GGUF",
+        "label": "8.50 bpw · 8-bit reference GGUF",
+        "bits_per_weight": 8.5,
+        "weights_gb": 29.54,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.8,
+        "total_vram_8k_gb": 30.84,
+        "effective_usable_vram_gb": 31.5,
+        "est_tps": 43.0,
+        "est_tps_low": 34,
+        "est_tps_high": 53,
+        "status": "Tight Fit",
+        "speed_tier": "Fast",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Tight margin (0.66 GB free) — driver/KV growth may spill to CPU/RAM."
+      },
+      {
+        "quant": "FP16",
+        "format": "GGUF",
+        "label": "16.0 bpw · Unquantized FP16",
+        "bits_per_weight": 16.0,
+        "weights_gb": 55.6,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 1.12,
+        "total_vram_8k_gb": 57.22,
+        "effective_usable_vram_gb": 31.5,
+        "est_tps": 1.0,
+        "est_tps_low": 1,
+        "est_tps_high": 2,
+        "status": "Partial Offload",
+        "speed_tier": "Slow",
+        "gpu_layers_fit": 34,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "34/64 layers on GPU; remainder offloaded to system RAM."
+      },
+      {
+        "quant": "AWQ_4BIT",
+        "format": "AWQ",
+        "label": "4.75 bpw · 4-bit AWQ (vLLM Marlin)",
+        "bits_per_weight": 4.75,
+        "weights_gb": 16.51,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 1.48,
+        "total_vram_8k_gb": 18.49,
+        "effective_usable_vram_gb": 31.5,
+        "est_tps": 73.0,
+        "est_tps_low": 62,
+        "est_tps_high": 84,
+        "status": "Fits",
+        "speed_tier": "Fast",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in CUDA memory (13.0 GB headroom)."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen3.8:27b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=32768 ollama run qwen3.8:27b",
+      "llama_cli": "llama-cli -hf unsloth/Qwen3.8-27B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf unsloth/Qwen3.8-27B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --host 127.0.0.1 --port 8080",
+      "vllm_serve": "vllm serve Qwen/Qwen3.8-27B-AWQ --quantization awq --max-model-len 32768",
+      "mlx_lm": "mlx_lm.generate --model mlx-community/Qwen3.8-27B-4bit --max-tokens 1024 --prompt \"Explain KV cache sizing\"",
+      "recommended_ctx": 32768,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.25,
+      "max_smooth_context_q4": 131072,
+      "bottleneck_summary": "Qwen3.8 27B Q4_K_M weights occupy 16.85 GB plus 0.65 GB runtime scratchpad, and FP16 KV cache grows by +0.25 GB per 4K tokens (0.50 GB @ 8K). With 31.5 GB usable budget on RTX 5090 32GB, max resident context reaches 128K (25.62 GB total, Fits).",
+      "key_points": [
+        "Q4_K_M @ 8K requires 18.00 GB total (16.85 GB weights + 0.50 GB FP16 KV + 0.65 GB runtime buffer).",
+        "Max fit context on Q4_K_M reaches 128K (25.62 GB total footprint, status: Fits).",
+        "Higher precision Q8_0 requires 30.84 GB @ 8K (Tight Fit, est. ~34–53 tok/s).",
+        "Under vLLM AWQ 4-bit, Qwen3.8 27B requires 18.49 GB at 8K context (vs 31.5 GB usable — Fits, est. ~62–84 tok/s)."
+      ],
+      "optimization_tips": [
+        "Set FlashAttention (-fa on) and 8-bit KV cache (-ctk q8_0 -ctv q8_0) to nearly halve KV memory growth per 4K tokens.",
+        "Use the Desktop vs Clean OS reserve selector above to verify safe headroom if your display or IDE shares GPU memory.",
+        "Remember all tok/s numbers are formula estimate ranges (~±15–25%); check Community Reference Anchors where available."
+      ]
+    },
+    "max_fit_context": 131072,
+    "max_fit_total_vram_gb": 25.62,
+    "max_fit_status": "Fits",
+    "faq": [
+      {
+        "question": "Does Qwen3.8 27B fit cleanly in RTX 5090 32GB VRAM?",
+        "answer": "Qwen3.8-27B at Q4_K_M (8K context) needs 18.00 GB vs 31.5 GB usable on NVIDIA RTX 5090 (32GB). Status is Fits with 13.50 GB spare headroom (max 128K @ 25.62 GB)."
+      },
+      {
+        "question": "What token generation speed can I expect for Qwen3.8 27B on RTX 5090 32GB?",
+        "answer": "Our bandwidth physics formula estimates ~64–88 tok/s (Fast) for batch=1 decoding at 8K context. Treat this as a ±15–20% planning range rather than a universal benchmark."
+      },
+      {
+        "question": "Can I run Qwen3.8 27B with AWQ (vLLM) or Apple MLX instead of GGUF?",
+        "answer": "Under vLLM AWQ 4-bit, Qwen3.8 27B requires 18.49 GB at 8K context (vs 31.5 GB usable — Fits, est. ~62–84 tok/s)."
+      },
+      {
+        "question": "How much context window fits safely without swapping on RTX 5090 32GB?",
+        "answer": "With FP16 KV cache growing at +0.25 GB per 4K tokens, Q4_K_M clears up to 128K (25.62 GB total footprint)."
+      }
+    ],
+    "related_slugs": [
+      "gemma-3-27b-on-rtx-5090-32gb",
+      "mistral-small-24b-on-rtx-5090-32gb",
+      "deepseek-r1-32b-on-rtx-5090-32gb",
+      "qwen3.8-27b-on-apple-m4-pro-48gb",
+      "qwen3.8-27b-on-rtx-4090-24gb",
+      "qwen3.8-27b-on-nvidia-a10-24gb"
+    ]
+  },
+  {
+    "slug": "qwen3.8-27b-on-apple-m4-16gb",
+    "title": "Can M4 16GB Run Qwen3.8 27B? VRAM, Speed & CLI Guide",
+    "meta_description": "OOM on M4 16GB: Qwen3.8-27B Q4_K_M requires 18.00 GB at 8K context vs 10.5 GB usable. See offload thresholds, AWQ/GGUF sizes, and recommended GPUs.",
+    "updated_at": "2026-11-24",
+    "model": {
+      "id": "qwen3.8-27b",
+      "name": "Qwen3.8-27B",
+      "short_name": "Qwen3.8 27B",
+      "family": "Qwen3.8",
+      "params_b": 27.8,
+      "architecture": "Hybrid (48 DeltaNet + 16 GQA)",
+      "num_layers": 64,
+      "kv_layers": 16,
+      "num_kv_heads": 4,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "qwen3.8:27b",
+      "hf_repo": "unsloth/Qwen3.8-27B-GGUF",
+      "gguf_file_q4": "Qwen3.8-27B-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3.8-27B-AWQ",
+      "mlx_repo": "mlx-community/Qwen3.8-27B-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "Hybrid 262K long-context reasoning",
+        "Single 24GB GPU / A10 AWQ (~18.5 GB)",
+        "Apple Silicon MLX 4-bit"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m4-16gb",
+      "name": "Apple M4 (16GB Unified)",
+      "short_name": "M4 16GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M4",
+      "category": "Unified Memory",
+      "gpu_count": 1,
+      "vram_gb": 16.0,
+      "usable_vram_gb": 12.0,
+      "bandwidth_gbps": 120.0,
+      "memory_type": "LPDDR5X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 1599
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "format": "GGUF",
+      "context_tokens": 8192,
+      "weights_gb": 16.85,
+      "kv_cache_gb": 0.5,
+      "overhead_gb": 0.65,
+      "total_vram_gb": 18.0,
+      "effective_usable_vram_gb": 10.5,
+      "headroom_gb": -7.5,
+      "status": "OOM",
+      "speed_tier": "OOM",
+      "est_tps": 0.0,
+      "est_tps_low": 0,
+      "est_tps_high": 0,
+      "gpu_layers_fit": 35,
+      "total_layers": 64,
+      "gpu_fraction": 0.547,
+      "comm_overhead_pct": 0.0,
+      "comm_warning": false
+    },
+    "verdict_summary": "Qwen3.8-27B Q4_K_M (18.00 GB @ 8K) exceeds Apple M4 (16GB Unified)'s 10.5 GB usable memory. Unified memory Macs cannot stably spill large weights once wired limits saturate.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "format": "GGUF",
+        "label": "4.85 bpw · Balanced 4-bit GGUF",
+        "bits_per_weight": 4.85,
+        "weights_gb": 16.85,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.65,
+        "total_vram_8k_gb": 18.0,
+        "effective_usable_vram_gb": 10.5,
+        "est_tps": 0.0,
+        "est_tps_low": 0,
+        "est_tps_high": 0,
+        "status": "OOM",
+        "speed_tier": "OOM",
+        "gpu_layers_fit": 35,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Needs 18.0 GB vs 10.5 GB usable pool."
+      },
+      {
+        "quant": "Q5_K_M",
+        "format": "GGUF",
+        "label": "5.65 bpw · Higher-accuracy 5-bit GGUF",
+        "bits_per_weight": 5.65,
+        "weights_gb": 19.63,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.69,
+        "total_vram_8k_gb": 20.82,
+        "effective_usable_vram_gb": 10.5,
+        "est_tps": 0.0,
+        "est_tps_low": 0,
+        "est_tps_high": 0,
+        "status": "OOM",
+        "speed_tier": "OOM",
+        "gpu_layers_fit": 30,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Needs 20.8 GB vs 10.5 GB usable pool."
+      },
+      {
+        "quant": "Q6_K",
+        "format": "GGUF",
+        "label": "6.56 bpw · Near-lossless 6-bit GGUF",
+        "bits_per_weight": 6.56,
+        "weights_gb": 22.8,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 24.02,
+        "effective_usable_vram_gb": 10.5,
+        "est_tps": 0.0,
+        "est_tps_low": 0,
+        "est_tps_high": 0,
+        "status": "OOM",
+        "speed_tier": "OOM",
+        "gpu_layers_fit": 26,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Needs 24.0 GB vs 10.5 GB usable pool."
+      },
+      {
+        "quant": "Q8_0",
+        "format": "GGUF",
+        "label": "8.50 bpw · 8-bit reference GGUF",
+        "bits_per_weight": 8.5,
+        "weights_gb": 29.54,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.8,
+        "total_vram_8k_gb": 30.84,
+        "effective_usable_vram_gb": 10.5,
+        "est_tps": 0.0,
+        "est_tps_low": 0,
+        "est_tps_high": 0,
+        "status": "OOM",
+        "speed_tier": "OOM",
+        "gpu_layers_fit": 19,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Needs 30.8 GB vs 10.5 GB usable pool."
+      },
+      {
+        "quant": "FP16",
+        "format": "GGUF",
+        "label": "16.0 bpw · Unquantized FP16",
+        "bits_per_weight": 16.0,
+        "weights_gb": 55.6,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 1.12,
+        "total_vram_8k_gb": 57.22,
+        "effective_usable_vram_gb": 10.5,
+        "est_tps": 0.0,
+        "est_tps_low": 0,
+        "est_tps_high": 0,
+        "status": "OOM",
+        "speed_tier": "OOM",
+        "gpu_layers_fit": 10,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Needs 57.2 GB vs 10.5 GB usable pool."
+      },
+      {
+        "quant": "AWQ_4BIT",
+        "format": "AWQ",
+        "label": "4.75 bpw · 4-bit AWQ (vLLM Marlin)",
+        "bits_per_weight": 4.75,
+        "weights_gb": 16.51,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 1.48,
+        "total_vram_8k_gb": 18.49,
+        "effective_usable_vram_gb": 10.5,
+        "est_tps": 0.0,
+        "est_tps_low": 0,
+        "est_tps_high": 0,
+        "status": "OOM",
+        "speed_tier": "OOM",
+        "gpu_layers_fit": 33,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Needs 18.5 GB vs 10.5 GB usable pool."
+      },
+      {
+        "quant": "MLX_4BIT",
+        "format": "MLX",
+        "label": "4.55 bpw · 4-bit Affine (Apple MLX)",
+        "bits_per_weight": 4.55,
+        "weights_gb": 15.81,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.69,
+        "total_vram_8k_gb": 17.0,
+        "effective_usable_vram_gb": 10.5,
+        "est_tps": 0.0,
+        "est_tps_low": 0,
+        "est_tps_high": 0,
+        "status": "OOM",
+        "speed_tier": "OOM",
+        "gpu_layers_fit": 37,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Needs 17.0 GB vs 10.5 GB usable pool."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen3.8:27b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=8192 ollama run qwen3.8:27b",
+      "llama_cli": "llama-cli -hf unsloth/Qwen3.8-27B-GGUF:Q4_K_M \\\n  -ngl 35 -c 8192 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf unsloth/Qwen3.8-27B-GGUF:Q4_K_M \\\n  -ngl 35 -c 8192 -fa on --host 127.0.0.1 --port 8080",
+      "vllm_serve": "vllm serve Qwen/Qwen3.8-27B-AWQ --quantization awq --max-model-len 8192",
+      "mlx_lm": "mlx_lm.generate --model mlx-community/Qwen3.8-27B-4bit --max-tokens 1024 --prompt \"Explain KV cache sizing\"",
+      "recommended_ctx": 8192,
+      "recommended_ngl": 35
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.25,
+      "max_smooth_context_q4": 0,
+      "bottleneck_summary": "Qwen3.8 27B Q4_K_M weights occupy 16.85 GB plus 0.65 GB runtime scratchpad, and FP16 KV cache grows by +0.25 GB per 4K tokens (0.50 GB @ 8K). With 10.5 GB usable budget on M4 16GB, max resident context reaches 0K (0.00 GB total, OOM). Desktop macOS reserve assumes ~5.5 GB stays wired for WindowServer, browsers, and IDEs; switching to the Clean OS reserve profile recovers extra GB when closing heavy desktop apps.",
+      "key_points": [
+        "Q4_K_M @ 8K requires 18.00 GB total (16.85 GB weights + 0.50 GB FP16 KV + 0.65 GB runtime buffer).",
+        "Even at 4K context, Q4_K_M exceeds usable device memory without host-RAM offloading or heavier quantization.",
+        "Higher precision Q8_0 requires 30.84 GB @ 8K (OOM, est. OOM).",
+        "Under Apple MLX 4-bit (mlx-lm), Qwen3.8 27B uses 17.00 GB of your 10.5 GB realistic Desktop unified pool (OOM; OOM)."
+      ],
+      "optimization_tips": [
+        "Set FlashAttention (-fa on) and 8-bit KV cache (-ctk q8_0 -ctv q8_0) to nearly halve KV memory growth per 4K tokens.",
+        "Prefer mlx-lm 4-bit weights on Apple Silicon for native Metal kernel throughput, or toggle Clean OS reserve before running larger quants.",
+        "Remember all tok/s numbers are formula estimate ranges (~±15–25%); check Community Reference Anchors where available."
+      ]
+    },
+    "max_fit_context": 0,
+    "max_fit_total_vram_gb": 0.0,
+    "max_fit_status": "OOM",
+    "faq": [
+      {
+        "question": "Does Qwen3.8 27B fit cleanly in M4 16GB VRAM?",
+        "answer": "Qwen3.8-27B at Q4_K_M (8K context) needs 18.00 GB vs 10.5 GB usable on Apple M4 (16GB Unified). Status is OOM (35/64 layers fit on GPU)."
+      },
+      {
+        "question": "What token generation speed can I expect for Qwen3.8 27B on M4 16GB?",
+        "answer": "Our bandwidth physics formula estimates OOM (OOM) for batch=1 decoding at 8K context. Treat this as a ±15–20% planning range rather than a universal benchmark."
+      },
+      {
+        "question": "Can I run Qwen3.8 27B with AWQ (vLLM) or Apple MLX instead of GGUF?",
+        "answer": "Under Apple MLX 4-bit (mlx-lm), Qwen3.8 27B uses 17.00 GB of your 10.5 GB realistic Desktop unified pool (OOM; OOM)."
+      },
+      {
+        "question": "How much context window fits safely without swapping on M4 16GB?",
+        "answer": "At 18.00 GB @ 8K, Q4_K_M already exceeds 10.5 GB usable memory; reduce layers on GPU, quantize KV to Q8_0, or use a smaller parameter class."
+      }
+    ],
+    "related_slugs": [
+      "qwen3-14b-on-apple-m4-16gb",
+      "gemma-3-12b-on-apple-m4-16gb",
+      "qwen3-8b-on-apple-m4-16gb",
+      "qwen3.8-27b-on-nvidia-a10-24gb",
+      "qwen3.8-27b-on-nvidia-a10g-24gb",
+      "qwen3.8-27b-on-nvidia-l4-24gb"
+    ]
+  },
+  {
+    "slug": "qwen3.8-27b-on-apple-m4-pro-48gb",
+    "title": "Can M4 Pro 48GB Run Qwen3.8 27B? VRAM, Speed & CLI Guide",
+    "meta_description": "Fits (Interactive): Qwen3.8-27B Q4_K_M uses 18.00 GB at 8K context on Apple M4 Pro (48GB Unified) (36.5 GB usable, 18.5 GB headroom, est. ~9–14 tok/s). Includes GGUF, AWQ, MLX & CLI.",
+    "updated_at": "2026-11-24",
+    "model": {
+      "id": "qwen3.8-27b",
+      "name": "Qwen3.8-27B",
+      "short_name": "Qwen3.8 27B",
+      "family": "Qwen3.8",
+      "params_b": 27.8,
+      "architecture": "Hybrid (48 DeltaNet + 16 GQA)",
+      "num_layers": 64,
+      "kv_layers": 16,
+      "num_kv_heads": 4,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "qwen3.8:27b",
+      "hf_repo": "unsloth/Qwen3.8-27B-GGUF",
+      "gguf_file_q4": "Qwen3.8-27B-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3.8-27B-AWQ",
+      "mlx_repo": "mlx-community/Qwen3.8-27B-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "Hybrid 262K long-context reasoning",
+        "Single 24GB GPU / A10 AWQ (~18.5 GB)",
+        "Apple Silicon MLX 4-bit"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m4-pro-48gb",
+      "name": "Apple M4 Pro (48GB Unified)",
+      "short_name": "M4 Pro 48GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M4",
+      "category": "Unified Memory",
+      "gpu_count": 1,
+      "vram_gb": 48.0,
+      "usable_vram_gb": 37.4,
+      "bandwidth_gbps": 273.0,
+      "memory_type": "LPDDR5X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 2399
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "format": "GGUF",
+      "context_tokens": 8192,
+      "weights_gb": 16.85,
+      "kv_cache_gb": 0.5,
+      "overhead_gb": 0.65,
+      "total_vram_gb": 18.0,
+      "effective_usable_vram_gb": 36.48,
+      "headroom_gb": 18.48,
+      "status": "Fits",
+      "speed_tier": "Interactive",
+      "est_tps": 12.0,
+      "est_tps_low": 9,
+      "est_tps_high": 14,
+      "gpu_layers_fit": 64,
+      "total_layers": 64,
+      "gpu_fraction": 1.0,
+      "comm_overhead_pct": 0.0,
+      "comm_warning": false
+    },
+    "verdict_summary": "Apple M4 Pro (48GB Unified) fits Qwen3.8-27B cleanly at Q4_K_M with 18.48 GB headroom at 8K context (18.00 / 36.5 GB usable; max 128K context @ 25.62 GB). Formula throughput sits in the Interactive band (est. ~9–14 tok/s) driven by 273 GB/s memory bandwidth.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "format": "GGUF",
+        "label": "4.85 bpw · Balanced 4-bit GGUF",
+        "bits_per_weight": 4.85,
+        "weights_gb": 16.85,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.65,
+        "total_vram_8k_gb": 18.0,
+        "effective_usable_vram_gb": 36.48,
+        "est_tps": 12.0,
+        "est_tps_low": 9,
+        "est_tps_high": 14,
+        "status": "Fits",
+        "speed_tier": "Interactive",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": true,
+        "notes": "Fits 100% in Metal memory (18.5 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "format": "GGUF",
+        "label": "5.65 bpw · Higher-accuracy 5-bit GGUF",
+        "bits_per_weight": 5.65,
+        "weights_gb": 19.63,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.69,
+        "total_vram_8k_gb": 20.82,
+        "effective_usable_vram_gb": 36.48,
+        "est_tps": 10.0,
+        "est_tps_low": 8,
+        "est_tps_high": 12,
+        "status": "Fits",
+        "speed_tier": "Readable",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (15.7 GB headroom)."
+      },
+      {
+        "quant": "Q6_K",
+        "format": "GGUF",
+        "label": "6.56 bpw · Near-lossless 6-bit GGUF",
+        "bits_per_weight": 6.56,
+        "weights_gb": 22.8,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 24.02,
+        "effective_usable_vram_gb": 36.48,
+        "est_tps": 9.0,
+        "est_tps_low": 7,
+        "est_tps_high": 10,
+        "status": "Fits",
+        "speed_tier": "Readable",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (12.5 GB headroom)."
+      },
+      {
+        "quant": "Q8_0",
+        "format": "GGUF",
+        "label": "8.50 bpw · 8-bit reference GGUF",
+        "bits_per_weight": 8.5,
+        "weights_gb": 29.54,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.8,
+        "total_vram_8k_gb": 30.84,
+        "effective_usable_vram_gb": 36.48,
+        "est_tps": 7.0,
+        "est_tps_low": 5,
+        "est_tps_high": 8,
+        "status": "Fits",
+        "speed_tier": "Readable",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (5.6 GB headroom)."
+      },
+      {
+        "quant": "FP16",
+        "format": "GGUF",
+        "label": "16.0 bpw · Unquantized FP16",
+        "bits_per_weight": 16.0,
+        "weights_gb": 55.6,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 1.12,
+        "total_vram_8k_gb": 57.22,
+        "effective_usable_vram_gb": 36.48,
+        "est_tps": 0.0,
+        "est_tps_low": 0,
+        "est_tps_high": 0,
+        "status": "OOM",
+        "speed_tier": "OOM",
+        "gpu_layers_fit": 40,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Needs 57.2 GB vs 36.5 GB usable pool."
+      },
+      {
+        "quant": "AWQ_4BIT",
+        "format": "AWQ",
+        "label": "4.75 bpw · 4-bit AWQ (vLLM Marlin)",
+        "bits_per_weight": 4.75,
+        "weights_gb": 16.51,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 1.48,
+        "total_vram_8k_gb": 18.49,
+        "effective_usable_vram_gb": 36.48,
+        "est_tps": 11.0,
+        "est_tps_low": 9,
+        "est_tps_high": 13,
+        "status": "Fits",
+        "speed_tier": "Readable",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (18.0 GB headroom)."
+      },
+      {
+        "quant": "MLX_4BIT",
+        "format": "MLX",
+        "label": "4.55 bpw · 4-bit Affine (Apple MLX)",
+        "bits_per_weight": 4.55,
+        "weights_gb": 15.81,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.69,
+        "total_vram_8k_gb": 17.0,
+        "effective_usable_vram_gb": 36.48,
+        "est_tps": 13.0,
+        "est_tps_low": 11,
+        "est_tps_high": 15,
+        "status": "Fits",
+        "speed_tier": "Interactive",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (19.5 GB headroom)."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen3.8:27b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=32768 ollama run qwen3.8:27b",
+      "llama_cli": "llama-cli -hf unsloth/Qwen3.8-27B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf unsloth/Qwen3.8-27B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --host 127.0.0.1 --port 8080",
+      "vllm_serve": "vllm serve Qwen/Qwen3.8-27B-AWQ --quantization awq --max-model-len 32768",
+      "mlx_lm": "mlx_lm.generate --model mlx-community/Qwen3.8-27B-4bit --max-tokens 1024 --prompt \"Explain KV cache sizing\"",
+      "recommended_ctx": 32768,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.25,
+      "max_smooth_context_q4": 131072,
+      "bottleneck_summary": "Qwen3.8 27B Q4_K_M weights occupy 16.85 GB plus 0.65 GB runtime scratchpad, and FP16 KV cache grows by +0.25 GB per 4K tokens (0.50 GB @ 8K). With 36.5 GB usable budget on M4 Pro 48GB, max resident context reaches 128K (25.62 GB total, Fits). Desktop macOS reserve assumes ~11.5 GB stays wired for WindowServer, browsers, and IDEs; switching to the Clean OS reserve profile recovers extra GB when closing heavy desktop apps.",
+      "key_points": [
+        "Q4_K_M @ 8K requires 18.00 GB total (16.85 GB weights + 0.50 GB FP16 KV + 0.65 GB runtime buffer).",
+        "Max fit context on Q4_K_M reaches 128K (25.62 GB total footprint, status: Fits).",
+        "Higher precision Q8_0 requires 30.84 GB @ 8K (Fits, est. ~5–8 tok/s).",
+        "Under Apple MLX 4-bit (mlx-lm), Qwen3.8 27B uses 17.00 GB of your 36.5 GB realistic Desktop unified pool (Fits; ~11–15 tok/s)."
+      ],
+      "optimization_tips": [
+        "Set FlashAttention (-fa on) and 8-bit KV cache (-ctk q8_0 -ctv q8_0) to nearly halve KV memory growth per 4K tokens.",
+        "Prefer mlx-lm 4-bit weights on Apple Silicon for native Metal kernel throughput, or toggle Clean OS reserve before running larger quants.",
+        "Remember all tok/s numbers are formula estimate ranges (~±15–25%); check Community Reference Anchors where available."
+      ]
+    },
+    "max_fit_context": 131072,
+    "max_fit_total_vram_gb": 25.62,
+    "max_fit_status": "Fits",
+    "faq": [
+      {
+        "question": "Does Qwen3.8 27B fit cleanly in M4 Pro 48GB VRAM?",
+        "answer": "Qwen3.8-27B at Q4_K_M (8K context) needs 18.00 GB vs 36.5 GB usable on Apple M4 Pro (48GB Unified). Status is Fits with 18.48 GB spare headroom (max 128K @ 25.62 GB)."
+      },
+      {
+        "question": "What token generation speed can I expect for Qwen3.8 27B on M4 Pro 48GB?",
+        "answer": "Our bandwidth physics formula estimates ~9–14 tok/s (Interactive) for batch=1 decoding at 8K context. Treat this as a ±15–20% planning range rather than a universal benchmark."
+      },
+      {
+        "question": "Can I run Qwen3.8 27B with AWQ (vLLM) or Apple MLX instead of GGUF?",
+        "answer": "Under Apple MLX 4-bit (mlx-lm), Qwen3.8 27B uses 17.00 GB of your 36.5 GB realistic Desktop unified pool (Fits; ~11–15 tok/s)."
+      },
+      {
+        "question": "How much context window fits safely without swapping on M4 Pro 48GB?",
+        "answer": "With FP16 KV cache growing at +0.25 GB per 4K tokens, Q4_K_M clears up to 128K (25.62 GB total footprint)."
+      }
+    ],
+    "related_slugs": [
+      "gemma-3-27b-on-apple-m4-pro-48gb",
+      "qwen3-30b-a3b-on-apple-m4-pro-48gb",
+      "deepseek-r1-32b-on-apple-m4-pro-48gb",
+      "qwen3.8-27b-on-rtx-5090-32gb",
+      "qwen3.8-27b-on-rtx-4090-24gb",
+      "qwen3.8-27b-on-nvidia-a10-24gb"
+    ]
+  },
+  {
+    "slug": "qwen3.8-27b-on-apple-m4-max-128gb",
+    "title": "Can M4 Max 128GB Run Qwen3.8 27B? VRAM, Speed & CLI Guide",
+    "meta_description": "Fits (Interactive): Qwen3.8-27B Q4_K_M uses 18.00 GB at 8K context on Apple M4 Max (128GB Unified) (99.8 GB usable, 81.8 GB headroom, est. ~19–27 tok/s). Includes GGUF, AWQ, MLX & CLI.",
+    "updated_at": "2026-11-24",
+    "model": {
+      "id": "qwen3.8-27b",
+      "name": "Qwen3.8-27B",
+      "short_name": "Qwen3.8 27B",
+      "family": "Qwen3.8",
+      "params_b": 27.8,
+      "architecture": "Hybrid (48 DeltaNet + 16 GQA)",
+      "num_layers": 64,
+      "kv_layers": 16,
+      "num_kv_heads": 4,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "qwen3.8:27b",
+      "hf_repo": "unsloth/Qwen3.8-27B-GGUF",
+      "gguf_file_q4": "Qwen3.8-27B-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3.8-27B-AWQ",
+      "mlx_repo": "mlx-community/Qwen3.8-27B-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "Hybrid 262K long-context reasoning",
+        "Single 24GB GPU / A10 AWQ (~18.5 GB)",
+        "Apple Silicon MLX 4-bit"
+      ]
+    },
+    "hardware": {
+      "id": "apple-m4-max-128gb",
+      "name": "Apple M4 Max (128GB Unified)",
+      "short_name": "M4 Max 128GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M4",
+      "category": "Unified Memory",
+      "gpu_count": 1,
+      "vram_gb": 128.0,
+      "usable_vram_gb": 99.8,
+      "bandwidth_gbps": 546.0,
+      "memory_type": "LPDDR5X Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 4699
+    },
+    "default_quant": "Q4_K_M",
+    "default_context": 8192,
+    "default_result": {
+      "quant": "Q4_K_M",
+      "format": "GGUF",
+      "context_tokens": 8192,
+      "weights_gb": 16.85,
+      "kv_cache_gb": 0.5,
+      "overhead_gb": 0.65,
+      "total_vram_gb": 18.0,
+      "effective_usable_vram_gb": 99.84,
+      "headroom_gb": 81.84,
+      "status": "Fits",
+      "speed_tier": "Interactive",
+      "est_tps": 23.0,
+      "est_tps_low": 19,
+      "est_tps_high": 27,
+      "gpu_layers_fit": 64,
+      "total_layers": 64,
+      "gpu_fraction": 1.0,
+      "comm_overhead_pct": 0.0,
+      "comm_warning": false
+    },
+    "verdict_summary": "Apple M4 Max (128GB Unified) fits Qwen3.8-27B cleanly at Q4_K_M with 81.84 GB headroom at 8K context (18.00 / 99.8 GB usable; max 128K context @ 25.62 GB). Formula throughput sits in the Interactive band (est. ~19–27 tok/s) driven by 546 GB/s memory bandwidth.",
+    "quant_table": [
+      {
+        "quant": "Q4_K_M",
+        "format": "GGUF",
+        "label": "4.85 bpw · Balanced 4-bit GGUF",
+        "bits_per_weight": 4.85,
+        "weights_gb": 16.85,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.65,
+        "total_vram_8k_gb": 18.0,
+        "effective_usable_vram_gb": 99.84,
+        "est_tps": 23.0,
+        "est_tps_low": 19,
+        "est_tps_high": 27,
+        "status": "Fits",
+        "speed_tier": "Interactive",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": true,
+        "notes": "Fits 100% in Metal memory (81.8 GB headroom)."
+      },
+      {
+        "quant": "Q5_K_M",
+        "format": "GGUF",
+        "label": "5.65 bpw · Higher-accuracy 5-bit GGUF",
+        "bits_per_weight": 5.65,
+        "weights_gb": 19.63,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.69,
+        "total_vram_8k_gb": 20.82,
+        "effective_usable_vram_gb": 99.84,
+        "est_tps": 20.0,
+        "est_tps_low": 16,
+        "est_tps_high": 23,
+        "status": "Fits",
+        "speed_tier": "Interactive",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (79.0 GB headroom)."
+      },
+      {
+        "quant": "Q6_K",
+        "format": "GGUF",
+        "label": "6.56 bpw · Near-lossless 6-bit GGUF",
+        "bits_per_weight": 6.56,
+        "weights_gb": 22.8,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.72,
+        "total_vram_8k_gb": 24.02,
+        "effective_usable_vram_gb": 99.84,
+        "est_tps": 17.0,
+        "est_tps_low": 14,
+        "est_tps_high": 20,
+        "status": "Fits",
+        "speed_tier": "Interactive",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (75.8 GB headroom)."
+      },
+      {
+        "quant": "Q8_0",
+        "format": "GGUF",
+        "label": "8.50 bpw · 8-bit reference GGUF",
+        "bits_per_weight": 8.5,
+        "weights_gb": 29.54,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.8,
+        "total_vram_8k_gb": 30.84,
+        "effective_usable_vram_gb": 99.84,
+        "est_tps": 13.0,
+        "est_tps_low": 11,
+        "est_tps_high": 16,
+        "status": "Fits",
+        "speed_tier": "Interactive",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (69.0 GB headroom)."
+      },
+      {
+        "quant": "FP16",
+        "format": "GGUF",
+        "label": "16.0 bpw · Unquantized FP16",
+        "bits_per_weight": 16.0,
+        "weights_gb": 55.6,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 1.12,
+        "total_vram_8k_gb": 57.22,
+        "effective_usable_vram_gb": 99.84,
+        "est_tps": 7.0,
+        "est_tps_low": 5,
+        "est_tps_high": 9,
+        "status": "Fits",
+        "speed_tier": "Readable",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (42.6 GB headroom)."
+      },
+      {
+        "quant": "AWQ_4BIT",
+        "format": "AWQ",
+        "label": "4.75 bpw · 4-bit AWQ (vLLM Marlin)",
+        "bits_per_weight": 4.75,
+        "weights_gb": 16.51,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 1.48,
+        "total_vram_8k_gb": 18.49,
+        "effective_usable_vram_gb": 99.84,
+        "est_tps": 22.0,
+        "est_tps_low": 18,
+        "est_tps_high": 26,
+        "status": "Fits",
+        "speed_tier": "Interactive",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (81.3 GB headroom)."
+      },
+      {
+        "quant": "MLX_4BIT",
+        "format": "MLX",
+        "label": "4.55 bpw · 4-bit Affine (Apple MLX)",
+        "bits_per_weight": 4.55,
+        "weights_gb": 15.81,
+        "kv_cache_8k_gb": 0.5,
+        "overhead_gb": 0.69,
+        "total_vram_8k_gb": 17.0,
+        "effective_usable_vram_gb": 99.84,
+        "est_tps": 26.0,
+        "est_tps_low": 22,
+        "est_tps_high": 30,
+        "status": "Fits",
+        "speed_tier": "Fast",
+        "gpu_layers_fit": 64,
+        "total_layers": 64,
+        "recommended": false,
+        "notes": "Fits 100% in Metal memory (82.8 GB headroom)."
+      }
+    ],
+    "commands": {
+      "ollama_run": "ollama run qwen3.8:27b",
+      "ollama_env_cmd": "OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_NUM_CTX=32768 ollama run qwen3.8:27b",
+      "llama_cli": "llama-cli -hf unsloth/Qwen3.8-27B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --cache-type-k q8_0 --cache-type-v q8_0",
+      "llama_server": "llama-server -hf unsloth/Qwen3.8-27B-GGUF:Q4_K_M \\\n  -ngl 99 -c 32768 -fa on --host 127.0.0.1 --port 8080",
+      "vllm_serve": "vllm serve Qwen/Qwen3.8-27B-AWQ --quantization awq --max-model-len 32768",
+      "mlx_lm": "mlx_lm.generate --model mlx-community/Qwen3.8-27B-4bit --max-tokens 1024 --prompt \"Explain KV cache sizing\"",
+      "recommended_ctx": 32768,
+      "recommended_ngl": 99
+    },
+    "context_analysis": {
+      "kv_gb_per_4k": 0.25,
+      "max_smooth_context_q4": 131072,
+      "bottleneck_summary": "Qwen3.8 27B Q4_K_M weights occupy 16.85 GB plus 0.65 GB runtime scratchpad, and FP16 KV cache grows by +0.25 GB per 4K tokens (0.50 GB @ 8K). With 99.8 GB usable budget on M4 Max 128GB, max resident context reaches 128K (25.62 GB total, Fits). Desktop macOS reserve assumes ~28.2 GB stays wired for WindowServer, browsers, and IDEs; switching to the Clean OS reserve profile recovers extra GB when closing heavy desktop apps.",
+      "key_points": [
+        "Q4_K_M @ 8K requires 18.00 GB total (16.85 GB weights + 0.50 GB FP16 KV + 0.65 GB runtime buffer).",
+        "Max fit context on Q4_K_M reaches 128K (25.62 GB total footprint, status: Fits).",
+        "Higher precision Q8_0 requires 30.84 GB @ 8K (Fits, est. ~11–16 tok/s).",
+        "Under Apple MLX 4-bit (mlx-lm), Qwen3.8 27B uses 17.00 GB of your 99.8 GB realistic Desktop unified pool (Fits; ~22–30 tok/s)."
+      ],
+      "optimization_tips": [
+        "Set FlashAttention (-fa on) and 8-bit KV cache (-ctk q8_0 -ctv q8_0) to nearly halve KV memory growth per 4K tokens.",
+        "Prefer mlx-lm 4-bit weights on Apple Silicon for native Metal kernel throughput, or toggle Clean OS reserve before running larger quants.",
+        "Remember all tok/s numbers are formula estimate ranges (~±15–25%); check Community Reference Anchors where available."
+      ]
+    },
+    "max_fit_context": 131072,
+    "max_fit_total_vram_gb": 25.62,
+    "max_fit_status": "Fits",
+    "faq": [
+      {
+        "question": "Does Qwen3.8 27B fit cleanly in M4 Max 128GB VRAM?",
+        "answer": "Qwen3.8-27B at Q4_K_M (8K context) needs 18.00 GB vs 99.8 GB usable on Apple M4 Max (128GB Unified). Status is Fits with 81.84 GB spare headroom (max 128K @ 25.62 GB)."
+      },
+      {
+        "question": "What token generation speed can I expect for Qwen3.8 27B on M4 Max 128GB?",
+        "answer": "Our bandwidth physics formula estimates ~19–27 tok/s (Interactive) for batch=1 decoding at 8K context. Treat this as a ±15–20% planning range rather than a universal benchmark."
+      },
+      {
+        "question": "Can I run Qwen3.8 27B with AWQ (vLLM) or Apple MLX instead of GGUF?",
+        "answer": "Under Apple MLX 4-bit (mlx-lm), Qwen3.8 27B uses 17.00 GB of your 99.8 GB realistic Desktop unified pool (Fits; ~22–30 tok/s)."
+      },
+      {
+        "question": "How much context window fits safely without swapping on M4 Max 128GB?",
+        "answer": "With FP16 KV cache growing at +0.25 GB per 4K tokens, Q4_K_M clears up to 128K (25.62 GB total footprint)."
+      }
+    ],
+    "related_slugs": [
+      "gemma-3-27b-on-apple-m4-max-128gb",
+      "qwen3-32b-on-apple-m4-max-128gb",
+      "deepseek-r1-70b-on-apple-m4-max-128gb",
+      "qwen3.8-27b-on-apple-m4-pro-48gb",
+      "qwen3.8-27b-on-rtx-5090-32gb",
+      "qwen3.8-27b-on-rtx-4090-24gb"
     ]
   }
 ]

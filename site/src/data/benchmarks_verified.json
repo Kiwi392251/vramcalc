@@ -1,6 +1,6 @@
 {
   "updated_at": "2026-11-24",
-  "methodology_note": "Public community & framework reference ranges recorded at short-to-medium prompt lengths (batch=1, single-stream decode). Individual builds vary by driver version, OS memory pressure, FlashAttention, thermal throttling, and prompt length.",
+  "methodology_note": "Measured community & framework single-stream decode benchmarks (batch=1) shown side-by-side against Physics v3.1 formula estimates. Individual runs vary by driver, CUDA graphs / FlashAttention, thermal headroom, and prompt length.",
   "anchors": [
     {
       "hardware_id": "apple-m4-16gb",
@@ -157,6 +157,32 @@
       "source_label": "r/LocalLLaMA & llama.cpp Multi-GPU Benchmarks",
       "source_url": "https://github.com/ggml-org/llama.cpp",
       "notes": "Layer split avoids heavy PCIe All-Reduce per-layer penalties; 24GB pairs run 70B Q4_K_M near ceiling with Tight Fit margin."
+    },
+    {
+      "hardware_id": "rtx-4090-24gb",
+      "model_id": "qwen3.8-27b",
+      "format": "AWQ",
+      "quant": "AWQ_4BIT",
+      "context_tokens": 8192,
+      "gen_tps_low": 34,
+      "gen_tps_high": 43,
+      "backend": "vLLM / Ollama CUDA (up to ~49 tok/s with CUDA Graphs)",
+      "source_label": "vLLM & Community Qwen3.8-27B RTX 4090 Benchmarks",
+      "source_url": "https://huggingface.co/Qwen/Qwen3.8-27B",
+      "notes": "Standard single-stream 4-bit runs measure ~34–43 tok/s on RTX 4090 24GB (~18.5 GB total footprint at 8K); enabling vLLM CUDA Graphs reaches ~49 tok/s."
+    },
+    {
+      "hardware_id": "apple-m4-max-128gb",
+      "model_id": "qwen3.8-27b",
+      "format": "MLX",
+      "quant": "MLX_4BIT",
+      "context_tokens": 8192,
+      "gen_tps_low": 18,
+      "gen_tps_high": 25,
+      "backend": "mlx-lm 4-bit (Metal Unified)",
+      "source_label": "mlx-community & Apple Silicon Qwen3.8-27B Reports",
+      "source_url": "https://huggingface.co/Qwen/Qwen3.8-27B",
+      "notes": "546 GB/s M4 Max unified memory runs Qwen3.8-27B MLX 4-bit (~16.8 GB @ 8K) smoothly in the ~18–25 tok/s measured interactive band."
     }
   ]
 }

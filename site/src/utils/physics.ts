@@ -14,12 +14,12 @@ import type {
 } from '../types/vram';
 
 /**
- * Deterministic LLM VRAM, Context, Offload, and Throughput Physics Engine (v3.0).
+ * Deterministic LLM VRAM, Context, Offload, and Throughput Physics Engine (v3.1).
  * Keep constants and formulas strictly synchronized with `scripts/physics.py`.
  * All token/s outputs are honest formula estimate ranges (~low–high tok/s), never raw telemetry.
  */
 
-export const ENGINE_VERSION = 'v3.0';
+export const ENGINE_VERSION = 'v3.1';
 
 export const QUANT_BPW: Record<QuantKey, number> = {
   Q4_K_M: 4.85,
@@ -164,9 +164,10 @@ export function kvCacheGb(
 ): number {
   const kvBits = KV_BITS[kvQuant] ?? 16.0;
   const bytesPerEl = kvBits / 8.0;
+  const kvLayers = model.kv_layers ?? model.num_layers;
   const totalBytes =
     2.0 *
-    model.num_layers *
+    kvLayers *
     model.num_kv_heads *
     model.head_dim *
     bytesPerEl *

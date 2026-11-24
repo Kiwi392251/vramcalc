@@ -79,7 +79,7 @@ export function getCatalogUpdatedAt(): string {
 }
 
 export function getEngineVersion(): string {
-  return catalogData.engine_version ?? 'v3.0';
+  return catalogData.engine_version ?? 'v3.1';
 }
 
 export function getBenchmarksMethodologyNote(): string {

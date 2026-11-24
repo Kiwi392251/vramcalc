@@ -107,7 +107,9 @@ export const en = {
   // Speed & Benchmark Anchors
   'speed.formulaEst': 'Formula est.',
   'speed.formulaDesc': 'Formula Estimate (±15–25%)',
-  'speed.refBenchmark': 'Public Reference Benchmarks',
+  'speed.refBenchmark': 'Measured Community Benchmarks',
+  'speed.measuredBadge': 'Measured',
+  'speed.measuredUnit': '{low}–{high} tok/s measured',
   'speed.refSource': 'Source',
   'speed.oom': 'OOM (Exceeds Memory)',
   'speed.blazing': 'Fast (>=25 tok/s)',
@@ -120,7 +122,7 @@ export const en = {
   // Homepage
   'home.heroTitle': 'Local AI Model VRAM & Inference Speed Matrix',
   'home.heroDesc':
-    'Check memory fit, max safe context, and honest bandwidth throughput ranges across {models} models (Qwen3, Gemma 3, DeepSeek-R1, Llama-3.3) and {hw} GPUs & Macs (M4 16GB, T4, L4, A10, RTX 5090), supporting GGUF, AWQ, MLX, and 1x–8x multi-GPU topologies.',
+    'Check memory fit, max safe context, and honest bandwidth throughput ranges across {models} models (Qwen3.8-27B, Qwen3, Gemma 3, DeepSeek-R1, Llama-3.3) and {hw} GPUs & Macs (M4 16GB, T4, L4, A10, RTX 5090), supporting GGUF, AWQ, MLX, and 1x–8x multi-GPU topologies.',
   'home.ctaSimulator': 'Multi-GPU, AWQ/MLX & CPU Simulator ->',
   'home.ctaGpus': 'Browse {count} GPU Hubs ->',
   'home.ctaModels': 'Browse {count} Model Hubs ->',
@@ -208,7 +210,23 @@ export const en = {
   'home.emptySimBtn': 'Open Custom Rig Simulator ->',
   'home.modelHubsHeading': 'All {count} Model Hubs',
   'home.hwHubsHeading': 'All {count} Hardware Hubs',
-  'home.methodTitle': 'Physics Engine v3.0: Transparent Formula Ranges vs Real Benchmarks',
+  'home.measuredTitle': 'Measured Community Benchmarks vs Formula Estimates',
+  'home.measuredSub':
+    'Side-by-side comparison of {count} published community measured runs against Physics v3.1 bandwidth formula ranges (batch=1 decode).',
+  'home.measuredColPair': 'Model × Hardware',
+  'home.measuredColFormat': 'Format / Runtime',
+  'home.measuredColMeasured': 'Measured Speed',
+  'home.measuredColFormula': 'Formula Est. (±15–25%)',
+  'home.measuredColSource': 'Source',
+  'home.staticIndexTitle': 'Complete Static Compatibility Index (All {guides} Curated Pairings · Zero-JS)',
+  'home.staticIndexSub':
+    'Full static HTML index of all {guides} curated guides below, plus {models} Model Hub pages × {hw} GPU Hub pages ({combos} static combinations verifiable without JavaScript).',
+  'home.modelTableModel': 'Model',
+  'home.modelTableQ4': 'Q4_K_M @ 8K',
+  'home.modelTableAwq': 'AWQ 4-bit @ 8K',
+  'home.modelTableKv': 'KV / 4K',
+  'home.modelTableFits': 'Fits GPUs',
+  'home.methodTitle': 'Physics Engine v3.1: Transparent Formula Ranges vs Measured Benchmarks',
   'home.method1Title': '1. Fit Status vs Independent Speed Tiers',
   'home.method1Desc':
     'VRAM Fit checks weight (GGUF/AWQ/MLX) + GQA KV + per-card CUDA overhead against Daily Desktop or Clean OS reserves, flagging <5% / <1 GB headroom as Tight Fit. Speed is scored separately: Fast (>=25), Interactive (12–24), Readable (6–11), Slow (<6 tok/s).',

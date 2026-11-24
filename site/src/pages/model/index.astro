@@ -20,7 +20,7 @@ const maxParams = hubs.reduce((acc, h) => Math.max(acc, h.model.params_b), 0);
 
 const canonicalPath = '/model/';
 const pageTitle = `All ${totalHubs} Open-Weight LLM VRAM & GPU Hubs — VRAMCalc.me`;
-const pageDescription = `Compare @8K & Max Fit VRAM, AWQ/MLX sizes, and ${totalHwCount}-GPU leaderboards for all ${totalHubs} open-weight LLMs (${minParams}B–${maxParams}B): Qwen3, Gemma 3, DeepSeek-R1, Llama-3.3 & Mistral.`;
+const pageDescription = `Compare @8K & Max Fit VRAM, AWQ/MLX sizes, and ${totalHwCount}-GPU leaderboards for all ${totalHubs} open-weight LLMs (${minParams}B–${maxParams}B): Qwen3.8-27B, Qwen3, Gemma 3, DeepSeek-R1, Llama-3.3 & Mistral.`;
 
 const breadcrumbSchema = {
   '@context': 'https://schema.org',
@@ -52,7 +52,7 @@ const itemListSchema = {
   })),
 };
 
-const ogTitle = `All ${totalHubs} Open-Weight LLM VRAM Hubs (Qwen3, Gemma 3, DeepSeek) | VRAMCalc.me`;
+const ogTitle = `All ${totalHubs} Open-Weight LLM VRAM Hubs (Qwen3.8-27B, Qwen3, Gemma 3, DeepSeek) | VRAMCalc.me`;
 const ogDescription = `Exact Q4_K_M / AWQ 4-bit / Q8_0 / FP16 requirements and ${totalHwCount}-GPU speed rankings across ${totalHubs} open models.`;
 
 const hubHeadingArgs = JSON.stringify({ count: totalHubs });

@@ -43,6 +43,7 @@ export interface ModelSpec {
   active_params_b?: number;
   architecture: string;
   num_layers: number;
+  kv_layers?: number;
   num_kv_heads: number;
   head_dim: number;
   max_context: number;
