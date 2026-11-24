@@ -2032,23 +2032,45 @@
       "effective_bw_gbps": 35.0,
       "recommended_threads": 6,
       "simd": "AVX2",
-      "tier": "Consumer DDR4"
+      "tier": "Consumer DDR4",
+      "search_aliases": [
+        "ddr4",
+        "3200",
+        "generic",
+        "mainstream desktop",
+        "i5-10400",
+        "i5-11400"
+      ]
     },
     {
       "id": "intel-core-i5-i7-ddr4",
-      "name": "Intel Core i5/i7 12th-14th DDR4 (34 GB/s)",
-      "short_name": "Core DDR4 (34 GB/s)",
+      "name": "Intel Core i5-12400 / i5-13400 / i7-12700 DDR4 (34 GB/s)",
+      "short_name": "Core i5/i7 DDR4 (34 GB/s)",
       "vendor": "Intel",
       "memory_type": "Dual-Ch DDR4-3200",
       "channels": 2,
       "effective_bw_gbps": 34.0,
       "recommended_threads": 6,
       "simd": "AVX2",
-      "tier": "Consumer DDR4"
+      "tier": "Consumer DDR4",
+      "search_aliases": [
+        "i5",
+        "i7",
+        "12400",
+        "12400f",
+        "12600k",
+        "12700",
+        "12700k",
+        "13400",
+        "13400f",
+        "14400",
+        "alder lake",
+        "raptor lake"
+      ]
     },
     {
       "id": "amd-ryzen-5000-ddr4",
-      "name": "AMD Ryzen 5000 AM4 DDR4 (36 GB/s)",
+      "name": "AMD Ryzen 7 5800X / Ryzen 9 5900X / 5950X AM4 DDR4 (36 GB/s)",
       "short_name": "Ryzen 5000 DDR4 (36 GB/s)",
       "vendor": "AMD",
       "memory_type": "Dual-Ch DDR4-3200",
@@ -2056,11 +2078,42 @@
       "effective_bw_gbps": 36.0,
       "recommended_threads": 8,
       "simd": "AVX2",
-      "tier": "Consumer DDR4"
+      "tier": "Consumer DDR4",
+      "search_aliases": [
+        "5800x",
+        "5800x3d",
+        "5900x",
+        "5950x",
+        "am4",
+        "zen 3",
+        "ryzen 5000"
+      ]
+    },
+    {
+      "id": "amd-ryzen-5-5600-5700x3d-ddr4",
+      "name": "AMD Ryzen 5 5600 / Ryzen 7 5700X3D AM4 DDR4 (36 GB/s)",
+      "short_name": "Ryzen 5 5600 / 5700X3D (36 GB/s)",
+      "vendor": "AMD",
+      "memory_type": "Dual-Ch DDR4-3200",
+      "channels": 2,
+      "effective_bw_gbps": 36.0,
+      "recommended_threads": 6,
+      "simd": "AVX2",
+      "tier": "Consumer DDR4",
+      "search_aliases": [
+        "5500",
+        "5600",
+        "5600x",
+        "5700x",
+        "5700x3d",
+        "3600",
+        "3700x",
+        "am4"
+      ]
     },
     {
       "id": "laptop-ddr4-budget",
-      "name": "Standard Laptop DDR4 / LPDDR4X (30 GB/s)",
+      "name": "Standard Laptop DDR4 / LPDDR4X (i5-12450H / R5 5600H · 30 GB/s)",
       "short_name": "Laptop DDR4 (30 GB/s)",
       "vendor": "Generic",
       "memory_type": "Dual-Ch DDR4 / LPDDR4X",
@@ -2068,23 +2121,87 @@
       "effective_bw_gbps": 30.0,
       "recommended_threads": 4,
       "simd": "AVX2",
-      "tier": "Consumer DDR4"
+      "tier": "Consumer DDR4",
+      "search_aliases": [
+        "laptop",
+        "notebook",
+        "1135g7",
+        "12450h",
+        "5600h",
+        "5800h",
+        "6800h",
+        "lpddr4x"
+      ]
     },
     {
       "id": "intel-13-14th-ddr5-5600",
-      "name": "Intel Core 13th/14th Gen DDR5-5600 (64 GB/s)",
-      "short_name": "Intel DDR5-5600 (64 GB/s)",
+      "name": "Intel Core i5-13600K / i5-14600K DDR5-5600 (64 GB/s)",
+      "short_name": "Core i5 DDR5-5600 (64 GB/s)",
       "vendor": "Intel",
       "memory_type": "Dual-Ch DDR5-5600",
       "channels": 2,
       "effective_bw_gbps": 64.0,
       "recommended_threads": 8,
       "simd": "AVX2",
-      "tier": "Consumer DDR5"
+      "tier": "Consumer DDR5",
+      "search_aliases": [
+        "13600k",
+        "13600kf",
+        "14600k",
+        "14600kf",
+        "13400 ddr5",
+        "14400 ddr5",
+        "13th",
+        "14th"
+      ]
+    },
+    {
+      "id": "intel-i7-13700k-14700k-ddr5",
+      "name": "Intel Core i7-13700K / i7-14700K DDR5-6000 (66 GB/s)",
+      "short_name": "Core i7-13700K/14700K (66 GB/s)",
+      "vendor": "Intel",
+      "memory_type": "Dual-Ch DDR5-6000",
+      "channels": 2,
+      "effective_bw_gbps": 66.0,
+      "recommended_threads": 8,
+      "simd": "AVX2",
+      "tier": "Consumer DDR5",
+      "search_aliases": [
+        "13700",
+        "13700k",
+        "13700kf",
+        "14700",
+        "14700k",
+        "14700kf",
+        "i7",
+        "ddr5"
+      ]
+    },
+    {
+      "id": "intel-i9-13900k-14900k-ddr5",
+      "name": "Intel Core i9-13900K / i9-14900K DDR5-6400 (70 GB/s)",
+      "short_name": "Core i9-13900K/14900K (70 GB/s)",
+      "vendor": "Intel",
+      "memory_type": "Dual-Ch DDR5-6400",
+      "channels": 2,
+      "effective_bw_gbps": 70.0,
+      "recommended_threads": 12,
+      "simd": "AVX2",
+      "tier": "Consumer DDR5",
+      "search_aliases": [
+        "13900",
+        "13900k",
+        "13900ks",
+        "14900",
+        "14900k",
+        "14900ks",
+        "i9",
+        "ddr5"
+      ]
     },
     {
       "id": "amd-ryzen-7000-9000-ddr5-6000",
-      "name": "AMD Ryzen 7000/9000 AM5 DDR5-6000 (68 GB/s)",
+      "name": "AMD Ryzen 5 7600 / Ryzen 7 7700X / 9600X AM5 DDR5-6000 (68 GB/s)",
       "short_name": "Ryzen AM5 DDR5 (68 GB/s)",
       "vendor": "AMD",
       "memory_type": "Dual-Ch DDR5-6000",
@@ -2092,31 +2209,82 @@
       "effective_bw_gbps": 68.0,
       "recommended_threads": 8,
       "simd": "AVX-512",
-      "tier": "Consumer DDR5"
+      "tier": "Consumer DDR5",
+      "search_aliases": [
+        "7500f",
+        "7600",
+        "7600x",
+        "7700",
+        "7700x",
+        "9600x",
+        "9700x",
+        "am5",
+        "zen 4",
+        "zen 5"
+      ]
+    },
+    {
+      "id": "amd-ryzen-7-7800x3d-9800x3d-ddr5",
+      "name": "AMD Ryzen 7 7800X3D / 9800X3D AM5 DDR5-6000 (68 GB/s)",
+      "short_name": "Ryzen 7800X3D/9800X3D (68 GB/s)",
+      "vendor": "AMD",
+      "memory_type": "Dual-Ch DDR5-6000",
+      "channels": 2,
+      "effective_bw_gbps": 68.0,
+      "recommended_threads": 8,
+      "simd": "AVX-512",
+      "tier": "Consumer DDR5",
+      "search_aliases": [
+        "7800x3d",
+        "9800x3d",
+        "x3d",
+        "ryzen 7",
+        "am5",
+        "gaming cpu"
+      ]
     },
     {
       "id": "amd-ryzen-9-7950x-9950x-ddr5",
       "name": "AMD Ryzen 9 7950X / 9950X Dual-CCD DDR5 (72 GB/s)",
-      "short_name": "Ryzen 9 DDR5 (72 GB/s)",
+      "short_name": "Ryzen 9 7950X/9950X (72 GB/s)",
       "vendor": "AMD",
       "memory_type": "Dual-Ch DDR5-6000 (2-CCD)",
       "channels": 2,
       "effective_bw_gbps": 72.0,
       "recommended_threads": 16,
       "simd": "AVX-512",
-      "tier": "Consumer DDR5"
+      "tier": "Consumer DDR5",
+      "search_aliases": [
+        "7900x",
+        "7950x",
+        "7950x3d",
+        "9900x",
+        "9950x",
+        "9950x3d",
+        "ryzen 9",
+        "2-ccd"
+      ]
     },
     {
       "id": "intel-core-ultra-200-ddr5-6400",
-      "name": "Intel Core Ultra 200S DDR5-6400 CUDIMM (72 GB/s)",
-      "short_name": "Core Ultra DDR5 (72 GB/s)",
+      "name": "Intel Core Ultra 7 265K / Ultra 9 285K DDR5-6400 CUDIMM (72 GB/s)",
+      "short_name": "Core Ultra 265K/285K (72 GB/s)",
       "vendor": "Intel",
       "memory_type": "Dual-Ch DDR5-6400",
       "channels": 2,
       "effective_bw_gbps": 72.0,
       "recommended_threads": 8,
       "simd": "AVX2",
-      "tier": "Consumer DDR5"
+      "tier": "Consumer DDR5",
+      "search_aliases": [
+        "245k",
+        "265k",
+        "285k",
+        "arrow lake",
+        "core ultra",
+        "cudimm",
+        "lga1851"
+      ]
     },
     {
       "id": "laptop-lpddr5x-7500",
@@ -2128,11 +2296,66 @@
       "effective_bw_gbps": 82.0,
       "recommended_threads": 6,
       "simd": "AVX-512 / AVX2",
-      "tier": "Laptop LPDDR5X"
+      "tier": "Laptop LPDDR5X",
+      "search_aliases": [
+        "ultrabook",
+        "lpddr5",
+        "lpddr5x",
+        "thin light laptop",
+        "snapdragon x elite",
+        "ai pc"
+      ]
+    },
+    {
+      "id": "intel-core-ultra-laptop-lpddr5x",
+      "name": "Intel Core Ultra Laptop (155H / 258V / 285H LPDDR5X · 90 GB/s)",
+      "short_name": "Core Ultra Laptop (90 GB/s)",
+      "vendor": "Intel",
+      "memory_type": "LPDDR5X-8533 / 7500",
+      "channels": 4,
+      "effective_bw_gbps": 90.0,
+      "recommended_threads": 8,
+      "simd": "AVX2",
+      "tier": "Laptop LPDDR5X",
+      "search_aliases": [
+        "155h",
+        "185h",
+        "256v",
+        "258v",
+        "268v",
+        "288v",
+        "285h",
+        "lunar lake",
+        "meteor lake",
+        "arrow lake h"
+      ]
+    },
+    {
+      "id": "amd-ryzen-ai-300-laptop-lpddr5x",
+      "name": "AMD Ryzen AI 9 / 8845HS Laptop (HX 370 / 365 LPDDR5X · 88 GB/s)",
+      "short_name": "Ryzen AI 9 Laptop (88 GB/s)",
+      "vendor": "AMD",
+      "memory_type": "Quad-SubCh LPDDR5X-7500",
+      "channels": 4,
+      "effective_bw_gbps": 88.0,
+      "recommended_threads": 10,
+      "simd": "AVX-512",
+      "tier": "Laptop LPDDR5X",
+      "search_aliases": [
+        "hx 370",
+        "hx370",
+        "ai 9 365",
+        "8845hs",
+        "8945hs",
+        "7840hs",
+        "strix point",
+        "rog zephyrus",
+        "thinkpad"
+      ]
     },
     {
       "id": "amd-threadripper-7000-4ch",
-      "name": "AMD Threadripper 7000 (4-Ch DDR5-5200 · 145 GB/s)",
+      "name": "AMD Threadripper 7000 (7960X / 7970X · 4-Ch DDR5 · 145 GB/s)",
       "short_name": "TR 7000 4-Ch (145 GB/s)",
       "vendor": "AMD",
       "memory_type": "4-Ch DDR5-5200 RDIMM",
@@ -2140,11 +2363,19 @@
       "effective_bw_gbps": 145.0,
       "recommended_threads": 24,
       "simd": "AVX-512",
-      "tier": "Workstation HEDT"
+      "tier": "Workstation HEDT",
+      "search_aliases": [
+        "7960x",
+        "7970x",
+        "7980x",
+        "threadripper",
+        "hedt",
+        "trx50"
+      ]
     },
     {
       "id": "amd-threadripper-pro-7000wx-8ch",
-      "name": "AMD Threadripper PRO 7000WX (8-Ch DDR5 · 270 GB/s)",
+      "name": "AMD Threadripper PRO 7000WX (7975WX / 7995WX · 8-Ch · 270 GB/s)",
       "short_name": "TR PRO 8-Ch (270 GB/s)",
       "vendor": "AMD",
       "memory_type": "8-Ch DDR5-5200 RDIMM",
@@ -2152,11 +2383,20 @@
       "effective_bw_gbps": 270.0,
       "recommended_threads": 32,
       "simd": "AVX-512",
-      "tier": "Workstation HEDT"
+      "tier": "Workstation HEDT",
+      "search_aliases": [
+        "7965wx",
+        "7975wx",
+        "7985wx",
+        "7995wx",
+        "threadripper pro",
+        "wrx90",
+        "8-channel"
+      ]
     },
     {
       "id": "intel-xeon-w-3400-8ch",
-      "name": "Intel Xeon w7/w9 3400 (8-Ch DDR5 · 240 GB/s)",
+      "name": "Intel Xeon w7/w9 3400 (w7-3465X / w9-3495X · 8-Ch · 240 GB/s)",
       "short_name": "Xeon W 8-Ch (240 GB/s)",
       "vendor": "Intel",
       "memory_type": "8-Ch DDR5-4800 RDIMM",
@@ -2164,7 +2404,14 @@
       "effective_bw_gbps": 240.0,
       "recommended_threads": 24,
       "simd": "AMX / AVX-512",
-      "tier": "Workstation HEDT"
+      "tier": "Workstation HEDT",
+      "search_aliases": [
+        "xeon w",
+        "w7-3465x",
+        "w9-3495x",
+        "w5-2455x",
+        "sapphire rapids"
+      ]
     },
     {
       "id": "dual-xeon-e5-v4-homelab",
@@ -2176,11 +2423,21 @@
       "effective_bw_gbps": 105.0,
       "recommended_threads": 20,
       "simd": "AVX2",
-      "tier": "Server EPYC / Xeon"
+      "tier": "Server EPYC / Xeon",
+      "search_aliases": [
+        "e5-2680",
+        "e5-2690",
+        "e5-2697",
+        "e5-2699",
+        "v4",
+        "x99",
+        "homelab",
+        "ecc ddr4"
+      ]
     },
     {
       "id": "amd-epyc-7003-milan-8ch",
-      "name": "AMD EPYC 7003 Milan (8-Ch DDR4-3200 · 155 GB/s)",
+      "name": "AMD EPYC 7003 Milan (7543 / 7763 · 8-Ch DDR4 · 155 GB/s)",
       "short_name": "EPYC Milan (155 GB/s)",
       "vendor": "AMD",
       "memory_type": "8-Ch DDR4-3200 ECC",
@@ -2188,7 +2445,18 @@
       "effective_bw_gbps": 155.0,
       "recommended_threads": 32,
       "simd": "AVX2",
-      "tier": "Server EPYC / Xeon"
+      "tier": "Server EPYC / Xeon",
+      "search_aliases": [
+        "epyc",
+        "7543",
+        "7713",
+        "7763",
+        "7313p",
+        "milan",
+        "rome",
+        "7002",
+        "7003"
+      ]
     },
     {
       "id": "amd-epyc-9004-9005-12ch",
@@ -2200,7 +2468,18 @@
       "effective_bw_gbps": 360.0,
       "recommended_threads": 64,
       "simd": "AVX-512",
-      "tier": "Server EPYC / Xeon"
+      "tier": "Server EPYC / Xeon",
+      "search_aliases": [
+        "epyc",
+        "genoa",
+        "turin",
+        "9654",
+        "9754",
+        "9555",
+        "9755",
+        "12-channel",
+        "server"
+      ]
     },
     {
       "id": "intel-xeon-granite-rapids-8ch",
@@ -2212,7 +2491,15 @@
       "effective_bw_gbps": 280.0,
       "recommended_threads": 48,
       "simd": "AMX / AVX-512",
-      "tier": "Server EPYC / Xeon"
+      "tier": "Server EPYC / Xeon",
+      "search_aliases": [
+        "xeon 6",
+        "granite rapids",
+        "6780e",
+        "6980p",
+        "mrdimm",
+        "amx"
+      ]
     }
   ]
 }

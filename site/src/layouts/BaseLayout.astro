@@ -35,10 +35,10 @@ const isCalc = canonicalPath.startsWith('/calculator');
 const isGpu = canonicalPath.startsWith('/gpu/');
 const isModel = canonicalPath.startsWith('/model/');
 
-const navMatrixClass = isHome ? 'text-blue-600 font-semibold' : 'hover:text-slate-950 transition-colors';
-const navCalcClass = isCalc ? 'text-blue-600 font-semibold' : 'hover:text-slate-950 transition-colors';
-const navGpuClass = isGpu ? 'text-blue-600 font-semibold' : 'hover:text-slate-950 transition-colors';
-const navModelClass = isModel ? 'text-blue-600 font-semibold' : 'hover:text-slate-950 transition-colors';
+const navMatrixClass = isHome ? 'whitespace-nowrap text-blue-600 font-semibold' : 'whitespace-nowrap hover:text-slate-950 transition-colors';
+const navCalcClass = isCalc ? 'whitespace-nowrap text-blue-600 font-semibold' : 'whitespace-nowrap hover:text-slate-950 transition-colors';
+const navGpuClass = isGpu ? 'whitespace-nowrap text-blue-600 font-semibold' : 'whitespace-nowrap hover:text-slate-950 transition-colors';
+const navModelClass = isModel ? 'whitespace-nowrap text-blue-600 font-semibold' : 'whitespace-nowrap hover:text-slate-950 transition-colors';
 ---
 
 <!doctype html>
@@ -76,34 +76,34 @@ const navModelClass = isModel ? 'text-blue-600 font-semibold' : 'hover:text-slat
   </head>
   <body class="min-h-screen bg-[#f8fafc] text-slate-900 antialiased flex flex-col">
     <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-sm">
-      <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+      <div class="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-6">
         <a
           href="/"
-          class="flex items-center gap-2.5 font-semibold tracking-tight text-slate-950 hover:text-blue-600 transition-colors"
+          class="flex shrink-0 items-center gap-2 sm:gap-2.5 font-semibold tracking-tight text-slate-950 hover:text-blue-600 transition-colors"
         >
-          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-950 text-white">
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <span class="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-slate-950 text-white">
+            <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <rect x="3" y="4" width="18" height="4" rx="1" />
               <rect x="3" y="10" width="13" height="4" rx="1" />
               <rect x="3" y="16" width="8" height="4" rx="1" />
               <path d="M19 11v9m0 0l2.5-2.5M19 20l-2.5-2.5" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </span>
-          <span class="text-base">
+          <span class="text-sm sm:text-base whitespace-nowrap">
             VRAMCalc<span class="text-blue-600">.me</span>
           </span>
         </a>
 
-        <nav aria-label="Primary" class="flex items-center gap-4 sm:gap-5 text-sm font-medium text-slate-600">
+        <nav aria-label="Primary" class="flex items-center gap-2.5 sm:gap-5 text-xs sm:text-sm font-medium text-slate-600">
           <a href="/" class={navMatrixClass}>Matrix</a>
           <a href="/calculator/" class={navCalcClass}>Simulator</a>
           <a href="/gpu/" class={navGpuClass}>GPUs</a>
           <a href="/model/" class={navModelClass}>Models</a>
-          <a href="/#methodology" class="hidden md:inline hover:text-slate-950 transition-colors">
+          <a href="/#methodology" class="hidden md:inline whitespace-nowrap hover:text-slate-950 transition-colors">
             VRAM Formula
           </a>
           {totalPages > 0 && (
-            <span class="hidden lg:inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-600 tabular-nums">
+            <span class="hidden lg:inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-600 tabular-nums whitespace-nowrap">
               <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
               {totalPages} configs indexed
             </span>

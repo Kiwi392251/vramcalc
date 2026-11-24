@@ -74,6 +74,7 @@ export interface CpuSpec {
   recommended_threads: number;
   simd: string;
   tier: CpuTier;
+  search_aliases?: string[];
 }
 
 export interface CatalogData {

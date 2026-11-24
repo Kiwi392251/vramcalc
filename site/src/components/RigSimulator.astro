@@ -987,6 +987,11 @@ const cStyle = `left: ${cPct.toFixed(2)}%`;
         params.set('hw', hwId);
         if (gpuCount > 1) params.set('gpus', String(gpuCount));
         if (gpuCount > 1 && splitMode !== 'layer') params.set('split', splitMode);
+      } else if (mode === 'custom') {
+        if (customVramEl?.value) params.set('vram', customVramEl.value);
+        if (customBwEl?.value) params.set('bw', customBwEl.value);
+        if (customBackendEl?.value) params.set('backend', customBackendEl.value);
+        if (customUnifiedEl?.checked) params.set('unified', '1');
       }
       params.set('cpu', cpuId);
       params.set('ram', String(ramGb));
@@ -1228,7 +1233,7 @@ const cStyle = `left: ${cPct.toFixed(2)}%`;
       if (ramNoteEl) {
         ramNoteEl.textContent = hw?.is_unified
           ? `Unified RAM fixed by ${hw.short_name} (${hw.usable_vram_gb} GB usable)`
-          : `${usableRam} GB usable after ${osRamReserveGb(ramGb)} GB OS reserve`;
+          : `${ramGb} GB RAM (${usableRam} GB usable after ${osRamReserveGb(ramGb)} GB OS reserve)`;
       }
 
       const r = estimateRigRun(model, hw, {
@@ -1388,6 +1393,10 @@ const cStyle = `left: ${cPct.toFixed(2)}%`;
       const splitParam = p.get('split') as SplitMode | null;
       const cpuParam = p.get('cpu');
       const ramParam = p.get('ram');
+      const vramParam = p.get('vram');
+      const bwParam = p.get('bw');
+      const backendParam = p.get('backend');
+      const unifiedParam = p.get('unified');
       const modParam = p.get('model');
       const quantParam = p.get('quant') as QuantKey | null;
       const ctxParam = p.get('ctx');
@@ -1413,8 +1422,29 @@ const cStyle = `left: ${cPct.toFixed(2)}%`;
         cpuId = cpuParam;
         if (cpuSelect) cpuSelect.value = cpuParam;
       }
-      if (ramParam && [16, 32, 64, 128, 256, 512].includes(Number(ramParam))) {
-        ramGb = Number(ramParam);
+      if (ramParam) {
+        const rNum = Math.round(Number(ramParam));
+        if (Number.isFinite(rNum) && rNum >= 4 && rNum <= 2048) {
+          ramGb = rNum;
+        }
+      }
+      if (vramParam && customVramEl) {
+        const vNum = Number(vramParam);
+        if (Number.isFinite(vNum) && vNum >= 2 && vNum <= 2048) {
+          customVramEl.value = String(vNum);
+        }
+      }
+      if (bwParam && customBwEl) {
+        const bNum = Number(bwParam);
+        if (Number.isFinite(bNum) && bNum >= 20 && bNum <= 8000) {
+          customBwEl.value = String(bNum);
+        }
+      }
+      if (backendParam && customBackendEl && ['CUDA', 'Metal', 'ROCm', 'Vulkan'].includes(backendParam)) {
+        customBackendEl.value = backendParam;
+      }
+      if (unifiedParam && customUnifiedEl) {
+        customUnifiedEl.checked = unifiedParam === '1' || unifiedParam === 'true';
       }
       if (modParam && modelById.has(modParam)) {
         modelId = modParam;

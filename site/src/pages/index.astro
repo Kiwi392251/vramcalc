@@ -1,10 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ComboboxField from '../components/ComboboxField.astro';
 import StatusBadge from '../components/StatusBadge.astro';
 import catalogRaw from '../data/catalog_data.json';
 import rawPagesData from '../data/pages_data.json';
 import type { CatalogData, PageEntry } from '../types/vram';
-import { groupCatalogHardware, statusRank } from '../utils/hubs';
+import { statusRank } from '../utils/hubs';
 
 const PAGE_SIZE = 24;
 const catalog = catalogRaw as CatalogData;
@@ -40,11 +41,7 @@ const paginationHiddenClass =
 const smoothCount = entries.filter((e) => e.default_result.status === 'Smooth').length;
 const partialCount = entries.filter((e) => e.default_result.status === 'Partial Offload').length;
 
-// Full catalog lists for filter dropdowns & live calculations
-const allModelsSorted = [...catalog.models].sort((a, b) => a.name.localeCompare(b.name));
-const allHardwareSorted = [...catalog.hardware];
-const catalogGroups = groupCatalogHardware(allHardwareSorted);
-
+// Full catalog counts and lookup maps
 const uniqueHubModels = Array.from(
   new Map(entries.map((e) => [e.model.id, e.model])).values()
 ).sort((a, b) => a.name.localeCompare(b.name));
@@ -59,10 +56,16 @@ const catalogModelCount = catalog.models.length;
 const catalogHwCount = catalog.hardware.length;
 
 const curatedKeys = entries.map((e) => `${e.model.id}::${e.hardware.id}`);
+const curatedSlugs: Record<string, string> = {};
+for (const e of entries) {
+  curatedSlugs[`${e.model.id}::${e.hardware.id}`] = e.slug;
+}
 const homeCatalogPayload = JSON.stringify({
   models: catalog.models,
   hardware: catalog.hardware,
+  cpus: catalog.cpus,
   curatedKeys,
+  curatedSlugs,
 });
 
 const websiteSchema = {
@@ -177,90 +180,104 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
     </div>
   </section>
 
-  <!-- Filter Controls + Compatibility Matrix -->
+  <!-- Hardware Rig Configurator + Compatibility Matrix -->
   <section class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
     <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5">
-      <div class="grid gap-3 md:grid-cols-12 md:items-end">
-        <div class="md:col-span-3">
-          <label for="filter-model" class="block text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Filter by Model
-          </label>
-          <select
-            id="filter-model"
-            class="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus:border-blue-600 focus:outline-none"
-          >
-            <option value="all">All Models ({catalogModelCount})</option>
-            {allModelsSorted.map((m) => (
-              <option value={m.id}>{m.name} ({m.params_b}B)</option>
-            ))}
-          </select>
+      <!-- Row 1: CPU + RAM + GPU + QTY -->
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,0.75fr)_minmax(0,1.45fr)_116px] lg:items-end">
+        <div>
+          <ComboboxField
+            id="cb-cpu"
+            label="CPU / Unified Chip"
+            placeholder="Search i5/i7, Ryzen, Apple M1–M5..."
+          />
         </div>
 
-        <div class="md:col-span-3">
-          <label for="filter-hardware" class="block text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Filter by Hardware
-          </label>
-          <select
-            id="filter-hardware"
-            class="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus:border-blue-600 focus:outline-none"
-          >
-            <option value="all">All Hardware ({catalogHwCount} + CPU)</option>
-            <option value="cpu-only">CPU-Only (System RAM · No GPU)</option>
-            {catalogGroups.map((group) => (
-              <optgroup label={group.label}>
-                {group.items.map((h) => (
-                  <option value={h.id}>{h.name}</option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
+        <div>
+          <ComboboxField
+            id="cb-ram"
+            label="RAM (GB)"
+            placeholder="e.g. 32 GB"
+          />
         </div>
 
-        <div class="md:col-span-4">
-          <label for="filter-search" class="block text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Quick Search
-          </label>
-          <div class="relative mt-1.5">
-            <input
-              id="filter-search"
-              type="search"
-              placeholder="e.g. m4 16g, 1080, p40, b580, qwen3..."
-              class="w-full rounded-lg border border-slate-300 bg-white py-2 pl-3 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none"
-            />
-            <kbd
-              aria-hidden="true"
-              title="Press / to focus search"
-              class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-400"
-            >
-              /
-            </kbd>
-          </div>
+        <div>
+          <ComboboxField
+            id="cb-gpu"
+            label="GPU (Graphics Card)"
+            placeholder="Search GPU or None (CPU-Only)..."
+          />
         </div>
 
-        <div class="md:col-span-2">
-          <label for="filter-sort" class="block text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Sort By
+        <div>
+          <label for="rig-gpu-count" class="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Qty
           </label>
           <select
-            id="filter-sort"
-            class="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus:border-blue-600 focus:outline-none"
+            id="rig-gpu-count"
+            disabled
+            class="mt-1.5 h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-sm font-semibold text-slate-400 cursor-not-allowed focus:border-blue-600 focus:outline-none transition-colors"
           >
-            <option value="featured">Recommended</option>
-            <option value="tps-desc">Fastest tok/s</option>
-            <option value="vram-asc">Lowest VRAM</option>
-            <option value="params-desc">Largest Model</option>
+            <option value="0">—</option>
           </select>
         </div>
       </div>
 
-      <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3.5">
-        <div class="flex flex-wrap items-center gap-3">
+      <!-- Conditional Sub-Bar: Unified Memory Info / Multi-GPU Split / CPU-Only Info -->
+      <div
+        id="rig-context-bar"
+        class="mt-3 hidden rounded-xl border border-blue-200/80 bg-blue-50/70 px-3.5 py-2 text-xs text-slate-700"
+      >
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span id="rig-context-text" class="font-medium text-slate-800"></span>
+          <div id="rig-split-toggle" class="hidden">
+            <div
+              class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-0.5"
+              role="group"
+              aria-label="Multi-GPU split strategy"
+            >
+              <button
+                type="button"
+                data-home-split="layer"
+                class="rounded-md px-2.5 py-1 text-[11px] font-semibold bg-slate-900 text-white cursor-pointer"
+              >
+                Layer Split
+              </button>
+              <button
+                type="button"
+                data-home-split="row"
+                class="rounded-md px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:text-slate-950 cursor-pointer"
+              >
+                Tensor Parallel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Model + Status + Sort + Count + Reset -->
+      <div class="mt-4 flex flex-wrap items-center justify-between gap-2.5 border-t border-slate-100 pt-3.5">
+        <div class="flex flex-wrap items-center gap-2.5">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Model</span>
+            <div class="w-48 sm:w-56">
+              <ComboboxField
+                id="cb-model"
+                label="Model"
+                placeholder="All Models"
+                compact={true}
+              />
+            </div>
+          </div>
+
+          <span class="hidden h-4 w-px bg-slate-200 sm:inline-block" aria-hidden="true"></span>
+
           <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by status">
             {(['all', 'Smooth', 'Partial Offload', 'OOM'] as const).map((st) => {
               const btnClass =
                 st === 'all'
-                  ? 'rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-900 bg-slate-900 text-white'
-                  : 'rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100';
+                  ? 'rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-900 bg-slate-900 text-white'
+                  : 'rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100';
               return (
                 <button
                   type="button"
@@ -272,31 +289,26 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
               );
             })}
           </div>
-
-          <span class="hidden h-4 w-px bg-slate-200 sm:inline-block" aria-hidden="true"></span>
-
-          <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by vendor">
-            {(['all', 'NVIDIA', 'Apple', 'AMD', 'Intel'] as const).map((vnd) => {
-              const vBtnClass =
-                vnd === 'all'
-                  ? 'rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border-blue-600 bg-blue-600 text-white'
-                  : 'rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-200 bg-white text-slate-700 hover:bg-slate-100';
-              return (
-                <button
-                  type="button"
-                  data-vendor-btn={vnd}
-                  class={vBtnClass}
-                >
-                  {vnd === 'all' ? 'All Vendors' : vnd}
-                </button>
-              );
-            })}
-          </div>
         </div>
 
-        <div class="flex items-center gap-3 text-xs text-slate-600">
+        <div class="flex flex-wrap items-center gap-2.5 text-xs text-slate-600">
+          <div class="flex items-center gap-1.5">
+            <label for="filter-sort" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              Sort
+            </label>
+            <select
+              id="filter-sort"
+              class="h-8 rounded-lg border border-slate-300 bg-white px-2 text-xs font-medium text-slate-900 focus:border-blue-600 focus:outline-none"
+            >
+              <option value="featured">Recommended</option>
+              <option value="tps-desc">Fastest tok/s</option>
+              <option value="vram-asc">Lowest VRAM</option>
+              <option value="params-desc">Largest Model</option>
+            </select>
+          </div>
+
           <span id="filter-count" class="font-mono tabular-nums">
-            Showing {initialVisibleCount} of {totalCount} full guides ({catalogModelCount}×{catalogHwCount} live)
+            {initialVisibleCount} / {totalCount} guides · {catalogModelCount}×{catalogHwCount} live
           </span>
           <button
             id="filter-reset"
@@ -455,12 +467,15 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
       </div>
     </div>
 
-    <!-- Live Full-Catalog Calculations (Populated when searching/filtering catalog hardware, models, Intel, or CPU) -->
-    <section id="live-calc-section" class="mt-8 hidden" aria-label="Live Catalog Estimates">
+    <!-- Live Full-Catalog & Custom Rig Calculations -->
+    <section id="live-calc-section" class="mt-6 hidden" aria-label="Live Catalog Estimates">
       <div class="flex flex-col gap-3 rounded-2xl border border-blue-200 bg-blue-50/60 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div class="flex flex-wrap items-center gap-2">
-            <span class="rounded-full bg-blue-600 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white">
+            <span
+              id="live-calc-badge"
+              class="rounded-full bg-blue-600 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white"
+            >
               Live Catalog Physics
             </span>
             <h2 id="live-calc-heading" class="text-sm font-bold text-slate-950">
@@ -482,26 +497,28 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
 
       <div id="live-calc-grid" class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
 
-      <div id="live-pagination-bar" class="mt-5 hidden flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs">
-        <span id="live-pagination-summary" class="font-mono text-slate-600 tabular-nums"></span>
-        <button
-          id="live-load-more-btn"
-          type="button"
-          class="rounded-lg bg-slate-900 px-3.5 py-1.5 font-semibold text-white hover:bg-slate-800 cursor-pointer"
-        >
-          Load More Live Estimates
-        </button>
+      <div id="live-pagination-bar" class="mt-5 hidden">
+        <div class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs">
+          <span id="live-pagination-summary" class="font-mono text-slate-600 tabular-nums"></span>
+          <button
+            id="live-load-more-btn"
+            type="button"
+            class="rounded-lg bg-slate-900 px-3.5 py-1.5 font-semibold text-white hover:bg-slate-800 cursor-pointer"
+          >
+            Load More Live Estimates
+          </button>
+        </div>
       </div>
     </section>
 
     <!-- Empty Filter State -->
     <div
       id="empty-state"
-      class="mt-8 hidden rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center"
+      class="mt-6 hidden rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center"
     >
-      <p class="text-base font-semibold text-slate-900">No matching Model × Hardware configurations</p>
+      <p class="text-base font-semibold text-slate-900">No matching Model × Rig configurations</p>
       <p class="mt-1 text-sm text-slate-500">
-        Try clearing your search query or launch the custom Rig Simulator to model custom VRAM &amp; CPU setups.
+        Try relaxing the status filter, adding GPU capacity, or launch the full Rig Simulator.
       </p>
       <div class="mt-4 flex flex-wrap justify-center gap-2">
         <button
@@ -512,6 +529,7 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
           Reset All Filters
         </button>
         <a
+          id="empty-sim-link"
           href="/calculator/"
           class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100"
         >
@@ -613,13 +631,36 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
 </BaseLayout>
 
 <script>
-  import { estimateRigRun } from '../utils/physics';
-  import type { CatalogData, CompatStatus, HardwareSpec, ModelSpec, RigRunEstimate } from '../types/vram';
+  import { SearchableCombobox, type ComboboxOption } from '../utils/combobox';
+  import { groupCatalogHardware } from '../utils/hubs';
+  import { estimateRigRun, osRamReserveGb } from '../utils/physics';
+  import {
+    buildSimulatorUrl,
+    extractUnifiedSocProfiles,
+    getDiscreteSingleGpus,
+    GPU_COUNT_OPTIONS,
+    isMultiGpuCapable,
+    parseRamGb,
+    resolveCuratedGuideSlug,
+    resolveUnifiedHardware,
+    STANDARD_RAM_OPTIONS,
+    type UnifiedSocProfile,
+  } from '../utils/rigCatalog';
+  import type {
+    CompatStatus,
+    CpuSpec,
+    HardwareSpec,
+    ModelSpec,
+    RigRunEstimate,
+    SplitMode,
+  } from '../types/vram';
 
   interface HomeCatalogPayload {
     models: ModelSpec[];
     hardware: HardwareSpec[];
+    cpus: CpuSpec[];
     curatedKeys: string[];
+    curatedSlugs: Record<string, string>;
   }
 
   interface LiveItem {
@@ -628,6 +669,11 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
     res: RigRunEstimate;
     rank: number;
     simHref: string;
+    guideSlug?: string;
+    gpuCountLabel: string;
+    chipLabel: string;
+    hwSubtitle: string;
+    layersText: string;
   }
 
   function rankOf(s: CompatStatus): number {
@@ -648,19 +694,36 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
     return 'bg-rose-600';
   }
 
+  function escapeHtml(s: string): string {
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function initMatrixPage() {
     const PAGE_SIZE = 24;
-    const modelSelect = document.getElementById('filter-model') as HTMLSelectElement | null;
-    const hwSelect = document.getElementById('filter-hardware') as HTMLSelectElement | null;
-    const searchInput = document.getElementById('filter-search') as HTMLInputElement | null;
+
+    const cpuRoot = document.getElementById('cb-cpu');
+    const ramRoot = document.getElementById('cb-ram');
+    const gpuRoot = document.getElementById('cb-gpu');
+    const modelRoot = document.getElementById('cb-model');
+    const gpuCountSelect = document.getElementById('rig-gpu-count') as HTMLSelectElement | null;
+    const contextBar = document.getElementById('rig-context-bar');
+    const contextTextEl = document.getElementById('rig-context-text');
+    const splitToggleEl = document.getElementById('rig-split-toggle');
+    const splitBtns = Array.from(document.querySelectorAll('[data-home-split]'));
+
     const sortSelect = document.getElementById('filter-sort') as HTMLSelectElement | null;
     const statusButtons = Array.from(document.querySelectorAll('[data-status-btn]'));
-    const vendorButtons = Array.from(document.querySelectorAll('[data-vendor-btn]'));
     const cards = Array.from(document.querySelectorAll('[data-card]'));
     const countEl = document.getElementById('filter-count');
     const resetBtn = document.getElementById('filter-reset');
     const emptyState = document.getElementById('empty-state');
     const emptyResetBtn = document.getElementById('empty-reset-btn');
+    const emptySimLink = document.getElementById('empty-sim-link') as HTMLAnchorElement | null;
     const cardsGrid = document.getElementById('cards-grid');
     const paginationBar = document.getElementById('pagination-bar');
     const paginationSummary = document.getElementById('pagination-summary');
@@ -669,6 +732,7 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
     const showAllBtn = document.getElementById('show-all-btn');
 
     const liveSection = document.getElementById('live-calc-section');
+    const liveBadge = document.getElementById('live-calc-badge');
     const liveHeading = document.getElementById('live-calc-heading');
     const liveSub = document.getElementById('live-calc-sub');
     const liveSimCta = document.getElementById('live-sim-cta') as HTMLAnchorElement | null;
@@ -680,25 +744,37 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
     const catalogEl = document.getElementById('home-catalog-json');
     const catData: HomeCatalogPayload = catalogEl
       ? (JSON.parse(catalogEl.textContent || '{}') as HomeCatalogPayload)
-      : { models: [], hardware: [], curatedKeys: [] };
-    const curatedKeySet = new Set(catData.curatedKeys || []);
+      : { models: [], hardware: [], cpus: [], curatedKeys: [], curatedSlugs: {} };
 
+    if (!cpuRoot || !ramRoot || !gpuRoot || !modelRoot) return;
+
+    const curatedKeySet = new Set(catData.curatedKeys || []);
+    const curatedSlugMap = new Map<string, string>(Object.entries(catData.curatedSlugs || {}));
+    const hwById = new Map(catData.hardware.map((h) => [h.id, h]));
+    const cpuById = new Map(catData.cpus.map((c) => [c.id, c]));
+    const modelById = new Map(catData.models.map((m) => [m.id, m]));
+    const defaultCpu = catData.cpus[0];
+
+    const socProfiles = extractUnifiedSocProfiles(catData.hardware);
+    const socById = new Map(socProfiles.map((s) => [s.id, s]));
+    const discreteGpus = getDiscreteSingleGpus(catData.hardware);
+    const discreteGroupList = groupCatalogHardware(discreteGpus);
+
+    // State
+    let selectedCpuVal: string = ''; // '', 'soc:<id>', or 'x86:<id>'
+    let selectedRamGb: number | null = null;
+    let selectedGpuVal: string = ''; // '', 'none', or discrete hw.id
+    let gpuCount = 1;
+    let splitMode: SplitMode = 'layer';
+    let selectedModel = 'all';
     let selectedStatus = 'all';
-    let selectedVendor = 'all';
     let visibleLimit = PAGE_SIZE;
     let liveVisibleLimit = PAGE_SIZE;
     let currentSort = 'featured';
+
     const totalCurated = cards.length;
     const totalCombinations = catData.models.length * catData.hardware.length;
 
-    // Precompute normalized search blobs for models & hardware
-    const modelSearchMap = new Map<string, string>();
-    for (const m of catData.models) {
-      modelSearchMap.set(
-        m.id,
-        [m.id, m.name, m.short_name, m.family, m.architecture].join(' ').toLowerCase(),
-      );
-    }
     const hwSearchMap = new Map<string, string>();
     for (const h of catData.hardware) {
       hwSearchMap.set(
@@ -709,6 +785,449 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
       );
     }
 
+    // Build CPU options (Unified Silicon + x86 Tiers)
+    const cpuOptions: ComboboxOption[] = [];
+    for (const soc of socProfiles) {
+      cpuOptions.push({
+        value: `soc:${soc.id}`,
+        label: soc.name,
+        group: 'Unified Memory Chips (CPU + RAM · GPU = None)',
+        sublabel: `Tiers: ${soc.ramTiers.join(' / ')} GB · ${soc.backend} ${soc.bwLabel}`,
+        badge: `${soc.backend} Unified`,
+        searchBlob: soc.searchBlob,
+      });
+    }
+
+    const cpuTiers = [
+      'Consumer DDR5',
+      'Consumer DDR4',
+      'Laptop LPDDR5X',
+      'Workstation HEDT',
+      'Server EPYC / Xeon',
+    ] as const;
+    for (const tier of cpuTiers) {
+      for (const c of catData.cpus) {
+        if (c.tier !== tier) continue;
+        const aliases = (c.search_aliases || []).join(' ');
+        cpuOptions.push({
+          value: `x86:${c.id}`,
+          label: c.name,
+          group: `${tier} (Discrete / System RAM)`,
+          sublabel: `${c.memory_type} · ${c.channels}-Ch · ${c.simd}`,
+          badge: `${c.effective_bw_gbps} GB/s`,
+          searchBlob: [c.id, c.name, c.short_name, c.vendor, c.tier, c.memory_type, aliases]
+            .join(' ')
+            .toLowerCase(),
+        });
+      }
+    }
+
+    function buildRamOptions(soc: UnifiedSocProfile | null): ComboboxOption[] {
+      const opts: ComboboxOption[] = [];
+      if (soc) {
+        for (const gb of soc.ramTiers) {
+          const sku = soc.skus.find((s) => Math.round(s.vram_gb) === gb);
+          opts.push({
+            value: String(gb),
+            label: `${gb} GB`,
+            group: `${soc.shortName} Official Tiers`,
+            badge: sku ? `${sku.bandwidth_gbps} GB/s` : 'Unified',
+            searchBlob: `${gb} ${gb}gb ${gb}g unified official ${soc.shortName}`.toLowerCase(),
+          });
+        }
+        for (const gb of STANDARD_RAM_OPTIONS) {
+          if (soc.ramTiers.includes(gb)) continue;
+          opts.push({
+            value: String(gb),
+            label: `${gb} GB`,
+            group: 'Custom / Other Capacities (or type any GB)',
+            badge: 'Custom',
+            searchBlob: `${gb} ${gb}gb ${gb}g custom`.toLowerCase(),
+          });
+        }
+      } else {
+        for (const gb of STANDARD_RAM_OPTIONS) {
+          opts.push({
+            value: String(gb),
+            label: `${gb} GB`,
+            group: 'System RAM (or type any GB)',
+            badge: `${Math.max(0, gb - osRamReserveGb(gb))}G usable`,
+            searchBlob: `${gb} ${gb}gb ${gb}g ram system memory`.toLowerCase(),
+          });
+        }
+      }
+      return opts;
+    }
+
+    const gpuGroupTitleMap: Record<string, string> = {
+      'NVIDIA Multi-GPU & Workstation': 'NVIDIA Workstation & Data Center',
+      'AMD Radeon & Ryzen AI': 'AMD Radeon & Instinct',
+    };
+
+    const gpuOptions: ComboboxOption[] = [
+      {
+        value: 'none',
+        label: 'None — CPU-Only (System RAM)',
+        group: 'No Discrete GPU',
+        sublabel: 'Run model weights & KV cache strictly in host System RAM',
+        badge: 'CPU-Only',
+        searchBlob: 'none no gpu cpu only system ram integrated ddr4 ddr5',
+      },
+    ];
+
+    for (const grp of discreteGroupList) {
+      const grpTitle = gpuGroupTitleMap[grp.label] || grp.label;
+      for (const h of grp.items) {
+        gpuOptions.push({
+          value: h.id,
+          label: h.name,
+          group: grpTitle,
+          sublabel: `${h.vram_gb} GB ${h.memory_type} (${h.usable_vram_gb} GB usable)`,
+          badge: `${h.bandwidth_gbps} GB/s`,
+          searchBlob: hwSearchMap.get(h.id) || h.name.toLowerCase(),
+        });
+      }
+    }
+
+    for (const sku of catData.hardware) {
+      if (!sku.is_unified) continue;
+      gpuOptions.push({
+        value: `uni:${sku.id}`,
+        label: sku.name,
+        group: 'Unified Memory Chips (Auto-sets CPU + RAM · GPU -> None)',
+        sublabel: `Shared ${Math.round(sku.vram_gb)} GB Unified Pool · ${sku.backend} (GPU set to None)`,
+        badge: `${sku.bandwidth_gbps} GB/s`,
+        searchBlob: `${hwSearchMap.get(sku.id) || ''} unified macbook mac studio mac mini`.toLowerCase(),
+      });
+    }
+
+    const allModelsSorted = [...catData.models].sort((a, b) => a.name.localeCompare(b.name));
+    const modelOptions: ComboboxOption[] = [
+      {
+        value: 'all',
+        label: `All Models (${catData.models.length})`,
+        group: 'Model Selection',
+        searchBlob: 'all models clear reset any',
+      },
+      ...allModelsSorted.map((m) => ({
+        value: m.id,
+        label: `${m.short_name} (${m.params_b}B)`,
+        group: m.family,
+        sublabel: m.active_params_b
+          ? `${m.name} · MoE ${m.active_params_b}B active`
+          : `${m.name} · ${m.architecture}`,
+        badge: m.active_params_b ? `${m.active_params_b}B act` : `${m.params_b}B`,
+        searchBlob: [
+          m.id,
+          m.name,
+          m.short_name,
+          m.family,
+          m.architecture,
+          `${m.params_b}b`,
+          m.active_params_b ? `moe ${m.active_params_b}b` : 'dense',
+        ]
+          .join(' ')
+          .toLowerCase(),
+      })),
+    ];
+
+    function getActiveUnifiedSoc(): UnifiedSocProfile | null {
+      if (!selectedCpuVal.startsWith('soc:')) return null;
+      return socById.get(selectedCpuVal.slice(4)) ?? null;
+    }
+
+    function getActiveX86Cpu(): CpuSpec {
+      if (selectedCpuVal.startsWith('x86:')) {
+        return cpuById.get(selectedCpuVal.slice(4)) ?? defaultCpu;
+      }
+      return defaultCpu;
+    }
+
+    function syncGpuQtyControl() {
+      if (!gpuCountSelect) return;
+      const soc = getActiveUnifiedSoc();
+      const hw = selectedGpuVal && selectedGpuVal !== 'none' ? hwById.get(selectedGpuVal) ?? null : null;
+
+      if (soc) {
+        gpuCountSelect.innerHTML = '<option value="0">None</option>';
+        gpuCountSelect.value = '0';
+        gpuCountSelect.disabled = true;
+      } else if (selectedGpuVal === 'none' || !hw) {
+        gpuCountSelect.innerHTML =
+          selectedGpuVal === 'none'
+            ? '<option value="0">None</option>'
+            : '<option value="0">—</option>';
+        gpuCountSelect.value = '0';
+        gpuCountSelect.disabled = true;
+      } else if (!isMultiGpuCapable(hw)) {
+        gpuCount = 1;
+        gpuCountSelect.innerHTML = '<option value="1">1× Laptop</option>';
+        gpuCountSelect.value = '1';
+        gpuCountSelect.disabled = true;
+      } else {
+        gpuCountSelect.innerHTML = GPU_COUNT_OPTIONS.map(
+          (n) => `<option value="${n}">${n === 1 ? '1× GPU' : `${n}× GPUs`}</option>`,
+        ).join('');
+        gpuCountSelect.disabled = false;
+        gpuCountSelect.value = String(gpuCount);
+      }
+
+      const enabled = !gpuCountSelect.disabled;
+      gpuCountSelect.classList.toggle('bg-white', enabled);
+      gpuCountSelect.classList.toggle('border-slate-300', enabled);
+      gpuCountSelect.classList.toggle('text-slate-900', enabled);
+      gpuCountSelect.classList.toggle('cursor-pointer', enabled);
+      gpuCountSelect.classList.toggle('bg-slate-50', !enabled);
+      gpuCountSelect.classList.toggle('border-slate-200', !enabled);
+      gpuCountSelect.classList.toggle('text-slate-400', !enabled);
+      gpuCountSelect.classList.toggle('cursor-not-allowed', !enabled);
+    }
+
+    function updateSplitToggleUi() {
+      splitBtns.forEach((b) => {
+        const active = b.getAttribute('data-home-split') === splitMode;
+        b.classList.toggle('bg-slate-900', active);
+        b.classList.toggle('text-white', active);
+        b.classList.toggle('font-semibold', active);
+        b.classList.toggle('text-slate-600', !active);
+        b.classList.toggle('font-medium', !active);
+        b.classList.toggle('hover:text-slate-950', !active);
+      });
+    }
+
+    function updateContextBar() {
+      if (!contextBar || !contextTextEl || !splitToggleEl) return;
+      const soc = getActiveUnifiedSoc();
+      const hw = selectedGpuVal && selectedGpuVal !== 'none' ? hwById.get(selectedGpuVal) ?? null : null;
+
+      if (soc) {
+        const ram = selectedRamGb ?? soc.defaultRamGb;
+        const { hw: resolvedHw, isExactCatalogSku } = resolveUnifiedHardware(soc, ram);
+        const tag = isExactCatalogSku ? '' : ' (Custom RAM Estimate)';
+        contextBar.classList.remove('hidden');
+        splitToggleEl.classList.add('hidden');
+        contextTextEl.textContent = `Unified Memory Pool: ${soc.shortName} · ${ram} GB Shared RAM (${resolvedHw.usable_vram_gb} GB usable @ ${resolvedHw.bandwidth_gbps} GB/s ${resolvedHw.backend})${tag} — Discrete GPU set to None.`;
+      } else if (hw && gpuCount >= 2 && isMultiGpuCapable(hw)) {
+        const totalVram = Math.round(hw.vram_gb * gpuCount * 10) / 10;
+        const usableVram = Math.round(hw.usable_vram_gb * gpuCount * 10) / 10;
+        contextBar.classList.remove('hidden');
+        splitToggleEl.classList.remove('hidden');
+        contextTextEl.textContent = `Multi-GPU Rig: ${gpuCount}× ${hw.short_name} = ${totalVram} GB VRAM (${usableVram} GB usable) · ${hw.bandwidth_gbps} GB/s/card`;
+        updateSplitToggleUi();
+      } else if (selectedGpuVal === 'none') {
+        const cpu = getActiveX86Cpu();
+        const ram = selectedRamGb ?? 32;
+        const usableRam = Math.max(0, ram - osRamReserveGb(ram));
+        contextBar.classList.remove('hidden');
+        splitToggleEl.classList.add('hidden');
+        contextTextEl.textContent = `CPU-Only Mode (-ngl 0): ${cpu.short_name} · ${ram} GB RAM (${usableRam} GB usable after OS reserve) — Discrete GPU set to None.`;
+      } else {
+        contextBar.classList.add('hidden');
+        splitToggleEl.classList.add('hidden');
+      }
+    }
+
+    // Instantiate Comboboxes
+    const cpuCombo = new SearchableCombobox({
+      root: cpuRoot,
+      options: cpuOptions,
+      placeholder: 'Search i5/i7, Ryzen, Apple M1–M5...',
+      emptyText: 'No matching CPU or Unified Silicon found',
+      onChange: (val) => applyCpuSelection(val),
+    });
+
+    const ramCombo = new SearchableCombobox({
+      root: ramRoot,
+      options: buildRamOptions(null),
+      placeholder: 'e.g. 32 GB',
+      emptyText: 'Type an integer GB (4–2048), e.g. 48',
+      allowCustomNumeric: true,
+      parseCustomNumeric: parseRamGb,
+      formatCustomNumeric: (n) => `${n} GB`,
+      onChange: (val) => {
+        selectedRamGb = val ? parseRamGb(val) : null;
+        updateContextBar();
+        applyFilters(true);
+      },
+    });
+
+    const gpuCombo = new SearchableCombobox({
+      root: gpuRoot,
+      options: gpuOptions,
+      placeholder: 'Search GPU or None (CPU-Only)...',
+      emptyText: 'No matching GPU found',
+      onChange: (val) => applyGpuSelection(val, false),
+    });
+
+    const modelCombo = new SearchableCombobox({
+      root: modelRoot,
+      options: modelOptions,
+      placeholder: `All Models (${catData.models.length})`,
+      emptyValue: 'all',
+      initialValue: 'all',
+      emptyText: 'No matching model found',
+      onChange: (val) => {
+        selectedModel = val || 'all';
+        applyFilters(true);
+      },
+    });
+
+    function activateUnifiedSoc(soc: UnifiedSocProfile, targetRamGb: number | null) {
+      selectedCpuVal = `soc:${soc.id}`;
+      cpuCombo.setValue(selectedCpuVal);
+
+      let nextRam = targetRamGb;
+      if (nextRam === null || !soc.ramTiers.includes(nextRam)) {
+        nextRam = soc.defaultRamGb;
+      }
+      selectedRamGb = nextRam;
+      ramCombo.setOptions(buildRamOptions(soc), false);
+      ramCombo.setValue(String(nextRam), `${nextRam} GB`);
+
+      selectedGpuVal = '';
+      gpuCount = 1;
+      gpuCombo.setDisplayOverride('None — Unified Memory (Auto)', true, false);
+      syncGpuQtyControl();
+      updateContextBar();
+      applyFilters(true);
+    }
+
+    function applyCpuSelection(val: string) {
+      const wasUnified = selectedCpuVal.startsWith('soc:');
+      if (!val) {
+        selectedCpuVal = '';
+        if (wasUnified) {
+          ramCombo.setOptions(buildRamOptions(null), true);
+          gpuCombo.clear(true);
+          selectedGpuVal = '';
+          gpuCount = 1;
+          syncGpuQtyControl();
+        }
+        updateContextBar();
+        applyFilters(true);
+        return;
+      }
+
+      if (val.startsWith('soc:')) {
+        const soc = socById.get(val.slice(4));
+        if (soc) {
+          activateUnifiedSoc(soc, selectedRamGb);
+          return;
+        }
+      }
+
+      // x86 CPU selected
+      selectedCpuVal = val;
+      if (wasUnified) {
+        ramCombo.setOptions(buildRamOptions(null), true);
+        if (!selectedGpuVal) {
+          gpuCombo.clear(true);
+        }
+        syncGpuQtyControl();
+      }
+      updateContextBar();
+      applyFilters(true);
+    }
+
+    function applyGpuSelection(val: string, preserveQty: boolean) {
+      if (val.startsWith('uni:')) {
+        const skuId = val.slice(4);
+        const sku = hwById.get(skuId);
+        if (sku) {
+          const socId = sku.id.replace(/-\d+gb$/, '');
+          const soc = socById.get(socId);
+          if (soc) {
+            activateUnifiedSoc(soc, Math.round(sku.vram_gb));
+            return;
+          }
+        }
+      }
+
+      // Leaving unified mode if switching GPU explicitly
+      if (selectedCpuVal.startsWith('soc:')) {
+        selectedCpuVal = '';
+        cpuCombo.clear(true);
+        ramCombo.setOptions(buildRamOptions(null), true);
+      }
+
+      selectedGpuVal = val;
+      if (!preserveQty) {
+        gpuCount = 1;
+      }
+      syncGpuQtyControl();
+      updateContextBar();
+      applyFilters(true);
+    }
+
+    function isRigConfigured(): boolean {
+      return Boolean(selectedCpuVal || selectedRamGb !== null || selectedGpuVal);
+    }
+
+    function resolveActiveRigForSim(): {
+      hw: HardwareSpec | null;
+      isUnified: boolean;
+      isExactCatalogSku: boolean;
+      cpu: CpuSpec;
+      effGpuCount: number;
+      systemRamArg: number | null;
+      ramForLink: number;
+      rigTitle: string;
+    } {
+      const soc = getActiveUnifiedSoc();
+      if (soc) {
+        const ram = selectedRamGb ?? soc.defaultRamGb;
+        const { hw, isExactCatalogSku } = resolveUnifiedHardware(soc, ram);
+        return {
+          hw,
+          isUnified: true,
+          isExactCatalogSku,
+          cpu: defaultCpu,
+          effGpuCount: 1,
+          systemRamArg: hw.vram_gb,
+          ramForLink: ram,
+          rigTitle: hw.name,
+        };
+      }
+
+      const cpu = getActiveX86Cpu();
+      const hasCustomCpu = selectedCpuVal.startsWith('x86:');
+      const hw = selectedGpuVal && selectedGpuVal !== 'none' ? hwById.get(selectedGpuVal) ?? null : null;
+
+      if (!hw) {
+        // CPU-Only (either GPU === 'none', OR only CPU/RAM chosen so far)
+        const ram = selectedRamGb ?? 32;
+        const titleParts = [hasCustomCpu ? cpu.short_name : 'Default DDR4 (35 GB/s)', `${ram} GB RAM`];
+        return {
+          hw: null,
+          isUnified: false,
+          isExactCatalogSku: false,
+          cpu,
+          effGpuCount: 0,
+          systemRamArg: ram,
+          ramForLink: ram,
+          rigTitle: `CPU-Only (${titleParts.join(' · ')})`,
+        };
+      }
+
+      const effGpuCount = isMultiGpuCapable(hw) ? gpuCount : 1;
+      const hwLabel = effGpuCount > 1 ? `${effGpuCount}× ${hw.short_name}` : hw.name;
+      const hostBits: string[] = [];
+      if (hasCustomCpu) hostBits.push(cpu.short_name);
+      if (selectedRamGb !== null) hostBits.push(`${selectedRamGb} GB RAM`);
+      const rigTitle = hostBits.length > 0 ? `${hwLabel} + ${hostBits.join(' · ')}` : hwLabel;
+
+      return {
+        hw,
+        isUnified: false,
+        isExactCatalogSku: true,
+        cpu,
+        effGpuCount,
+        systemRamArg: selectedRamGb,
+        ramForLink: selectedRamGb ?? 32,
+        rigTitle,
+      };
+    }
+
     function updateStatusPills() {
       statusButtons.forEach((b) => {
         const active = (b.getAttribute('data-status-btn') || 'all') === selectedStatus;
@@ -717,18 +1236,6 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
         b.classList.toggle('text-white', active);
         b.classList.toggle('border-slate-200', !active);
         b.classList.toggle('bg-slate-50', !active);
-        b.classList.toggle('text-slate-700', !active);
-      });
-    }
-
-    function updateVendorPills() {
-      vendorButtons.forEach((b) => {
-        const active = (b.getAttribute('data-vendor-btn') || 'all') === selectedVendor;
-        b.classList.toggle('border-blue-600', active);
-        b.classList.toggle('bg-blue-600', active);
-        b.classList.toggle('text-white', active);
-        b.classList.toggle('border-slate-200', !active);
-        b.classList.toggle('bg-white', !active);
         b.classList.toggle('text-slate-700', !active);
       });
     }
@@ -760,88 +1267,26 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
       cardsGrid.appendChild(frag);
     }
 
-    function syncUrl(mVal: string, hVal: string, query: string, sortVal: string) {
+    function syncUrl() {
       if (!window.history || !window.history.replaceState) return;
       const params = new URLSearchParams();
-      if (query) params.set('q', query);
+      if (selectedCpuVal) params.set('cpu', selectedCpuVal);
+      if (selectedRamGb !== null) params.set('ram', String(selectedRamGb));
+      if (selectedGpuVal) params.set('gpu', selectedGpuVal);
+      if (selectedGpuVal && selectedGpuVal !== 'none' && gpuCount > 1) {
+        params.set('gpus', String(gpuCount));
+        if (splitMode !== 'layer') params.set('split', splitMode);
+      }
+      if (selectedModel !== 'all') params.set('model', selectedModel);
       if (selectedStatus !== 'all') params.set('status', selectedStatus);
-      if (selectedVendor !== 'all') params.set('vendor', selectedVendor);
-      if (mVal !== 'all') params.set('model', mVal);
-      if (hVal !== 'all') params.set('hw', hVal);
-      if (sortVal !== 'featured') params.set('sort', sortVal);
+      if (currentSort !== 'featured') params.set('sort', currentSort);
+
       const qs = params.toString();
       const targetUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
       window.history.replaceState(null, '', targetUrl);
     }
 
-    function computeLiveCatalogMatches(
-      mVal: string,
-      hVal: string,
-      tokens: string[],
-      sortVal: string,
-    ): LiveItem[] {
-      const shouldActivate =
-        hVal !== 'all' || mVal !== 'all' || selectedVendor !== 'all' || tokens.length > 0;
-      if (!shouldActivate) return [];
-
-      const items: LiveItem[] = [];
-
-      if (hVal === 'cpu-only') {
-        if (selectedVendor !== 'all') return [];
-        for (const m of catData.models) {
-          if (mVal !== 'all' && m.id !== mVal) continue;
-          const mBlob = `${modelSearchMap.get(m.id) || ''} cpu system ram ddr5`.toLowerCase();
-          if (tokens.length > 0 && !tokens.every((t) => mBlob.includes(t))) continue;
-          const res = estimateRigRun(m, null, {
-            quant: 'Q4_K_M',
-            contextTokens: 8192,
-            kvQuant: 'FP16',
-            gpuCount: 0,
-            cpuBwGbps: 68,
-            systemRamGb: 64,
-          });
-          if (selectedStatus !== 'all' && res.status !== selectedStatus) continue;
-          items.push({
-            model: m,
-            hw: null,
-            res,
-            rank: rankOf(res.status),
-            simHref: `/calculator/?mode=cpu&cpu=amd-ryzen-7000-9000-ddr5-6000&ram=64&model=${encodeURIComponent(m.id)}`,
-          });
-        }
-      } else {
-        const candidateModels = catData.models.filter((m) => mVal === 'all' || m.id === mVal);
-        const candidateHw = catData.hardware.filter((h) => {
-          if (hVal !== 'all' && h.id !== hVal) return false;
-          if (selectedVendor !== 'all' && h.vendor !== selectedVendor) return false;
-          return true;
-        });
-
-        for (const h of candidateHw) {
-          const hBlob = hwSearchMap.get(h.id) || '';
-          for (const m of candidateModels) {
-            if (curatedKeySet.has(`${m.id}::${h.id}`)) continue;
-            const comboBlob = `${modelSearchMap.get(m.id) || ''} ${hBlob}`;
-            if (tokens.length > 0 && !tokens.every((t) => comboBlob.includes(t))) continue;
-
-            const res = estimateRigRun(m, h, {
-              quant: 'Q4_K_M',
-              contextTokens: 8192,
-              kvQuant: 'FP16',
-              gpuCount: h.gpu_count || 1,
-            });
-            if (selectedStatus !== 'all' && res.status !== selectedStatus) continue;
-            items.push({
-              model: m,
-              hw: h,
-              res,
-              rank: rankOf(res.status),
-              simHref: `/calculator/?model=${encodeURIComponent(m.id)}&hw=${encodeURIComponent(h.id)}`,
-            });
-          }
-        }
-      }
-
+    function sortLiveItems(items: LiveItem[], sortVal: string) {
       items.sort((a, b) => {
         if (sortVal === 'tps-desc') {
           if (b.res.est_tps !== a.res.est_tps) return b.res.est_tps - a.res.est_tps;
@@ -856,19 +1301,154 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
           if (a.rank !== b.rank) return a.rank - b.rank;
           return b.res.est_tps - a.res.est_tps;
         }
-        // Featured order: Smooth first -> Larger params -> Faster tok/s
         if (a.rank !== b.rank) return a.rank - b.rank;
         if (b.model.params_b !== a.model.params_b) return b.model.params_b - a.model.params_b;
         return b.res.est_tps - a.res.est_tps;
       });
+    }
 
+    function computeModelOnlyLiveItems(): LiveItem[] {
+      if (selectedModel === 'all') return [];
+      const model = modelById.get(selectedModel);
+      if (!model) return [];
+
+      const items: LiveItem[] = [];
+      for (const h of catData.hardware) {
+        if (curatedKeySet.has(`${model.id}::${h.id}`)) continue;
+        const res = estimateRigRun(model, h, {
+          quant: 'Q4_K_M',
+          contextTokens: 8192,
+          kvQuant: 'FP16',
+          gpuCount: h.gpu_count || 1,
+        });
+        if (selectedStatus !== 'all' && res.status !== selectedStatus) continue;
+        items.push({
+          model,
+          hw: h,
+          res,
+          rank: rankOf(res.status),
+          simHref: `/calculator/?model=${encodeURIComponent(model.id)}&hw=${encodeURIComponent(h.id)}`,
+          gpuCountLabel: '',
+          chipLabel: `${h.backend} · ${h.bandwidth_gbps} GB/s`,
+          hwSubtitle: `on ${h.name}`,
+          layersText: `(${res.gpu_layers_fit}/${res.total_layers} layers)`,
+        });
+      }
+      sortLiveItems(items, currentSort);
       return items;
     }
 
-    function renderLiveCards(liveItems: LiveItem[], hVal: string, mVal: string, curatedMatchCount: number) {
+    function computeRigLiveResults(): {
+      items: LiveItem[];
+      allSmooth: number;
+      allPartial: number;
+      allOom: number;
+      rigTitle: string;
+      rigSimHref: string;
+    } {
+      const rig = resolveActiveRigForSim();
+      const candidateModels =
+        selectedModel === 'all'
+          ? catData.models
+          : catData.models.filter((m) => m.id === selectedModel);
+
+      const items: LiveItem[] = [];
+      let allSmooth = 0;
+      let allPartial = 0;
+      let allOom = 0;
+
+      for (const m of candidateModels) {
+        const res = estimateRigRun(m, rig.hw, {
+          quant: 'Q4_K_M',
+          contextTokens: 8192,
+          kvQuant: 'FP16',
+          gpuCount: rig.effGpuCount,
+          splitMode,
+          cpuBwGbps: rig.cpu.effective_bw_gbps,
+          systemRamGb: rig.systemRamArg,
+        });
+
+        if (res.status === 'Smooth') allSmooth += 1;
+        else if (res.status === 'Partial Offload') allPartial += 1;
+        else allOom += 1;
+
+        if (selectedStatus !== 'all' && res.status !== selectedStatus) continue;
+
+        const simHref = buildSimulatorUrl({
+          modelId: m.id,
+          hw: rig.hw,
+          isExactCatalogSku: rig.isExactCatalogSku,
+          gpuCount: rig.effGpuCount,
+          splitMode,
+          cpuId: rig.cpu.id,
+          ramGb: rig.ramForLink,
+        });
+
+        const guideSlug = resolveCuratedGuideSlug(
+          m.id,
+          rig.hw,
+          rig.effGpuCount,
+          rig.isExactCatalogSku,
+          curatedSlugMap,
+        );
+
+        const chipLabel = rig.hw
+          ? `${rig.hw.backend} · ${rig.hw.bandwidth_gbps} GB/s`
+          : `CPU · ${rig.cpu.effective_bw_gbps} GB/s`;
+        const layersText = res.is_cpu_only
+          ? `(CPU-only ${res.total_layers}L)`
+          : `(${res.gpu_layers_fit}/${res.total_layers} layers)`;
+
+        items.push({
+          model: m,
+          hw: rig.hw,
+          res,
+          rank: rankOf(res.status),
+          simHref,
+          guideSlug,
+          gpuCountLabel: rig.effGpuCount > 1 ? `${rig.effGpuCount}× ` : '',
+          chipLabel,
+          hwSubtitle: `on ${rig.rigTitle}`,
+          layersText,
+        });
+      }
+
+      sortLiveItems(items, currentSort);
+
+      const rigSimHref = buildSimulatorUrl({
+        modelId: selectedModel !== 'all' ? selectedModel : undefined,
+        hw: rig.hw,
+        isExactCatalogSku: rig.isExactCatalogSku,
+        gpuCount: rig.effGpuCount,
+        splitMode,
+        cpuId: rig.cpu.id,
+        ramGb: rig.ramForLink,
+      });
+
+      return {
+        items,
+        allSmooth,
+        allPartial,
+        allOom,
+        rigTitle: rig.rigTitle,
+        rigSimHref,
+      };
+    }
+
+    function renderLiveCards(
+      items: LiveItem[],
+      isRigMode: boolean,
+      bannerMeta?: {
+        allSmooth: number;
+        allPartial: number;
+        allOom: number;
+        rigTitle: string;
+        rigSimHref: string;
+      },
+    ) {
       if (!liveSection || !liveGrid) return;
 
-      if (liveItems.length === 0) {
+      if (items.length === 0) {
         liveSection.classList.add('hidden');
         liveGrid.innerHTML = '';
         if (livePagBar) livePagBar.classList.add('hidden');
@@ -877,49 +1457,31 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
 
       liveSection.classList.remove('hidden');
 
-      // Contextual Simulator CTA banner
-      const firstHw = liveItems[0]?.hw;
-      const singleHwMatch =
-        hVal !== 'all' && hVal !== 'cpu-only'
-          ? catData.hardware.find((h) => h.id === hVal)
-          : liveItems.every((x) => x.hw?.id === firstHw?.id)
-            ? firstHw
-            : null;
-
-      if (liveHeading && liveSimCta && liveSub) {
-        if (hVal === 'cpu-only') {
-          liveHeading.textContent = `${liveItems.length} Live CPU-Only Model Estimates (DDR5 64 GB RAM Baseline)`;
-          liveSub.textContent =
-            'Switch between 16 CPUs (DDR4, DDR5, Threadripper, EPYC 12-Ch) and 16–512 GB RAM in the Rig Simulator.';
-          liveSimCta.textContent = 'Customize CPU & RAM in Rig Simulator ->';
-          liveSimCta.href =
-            mVal !== 'all'
-              ? `/calculator/?mode=cpu&model=${encodeURIComponent(mVal)}&cpu=amd-ryzen-7000-9000-ddr5-6000&ram=64`
-              : '/calculator/?mode=cpu&cpu=amd-epyc-9004-9005-12ch&ram=256';
-        } else if (singleHwMatch) {
-          const multiCapable = !singleHwMatch.is_unified && singleHwMatch.category !== 'Laptop GPU';
-          liveHeading.textContent = `${curatedMatchCount} Full Guides + ${liveItems.length} Live Catalog Estimates for ${singleHwMatch.name}`;
-          liveSub.textContent = multiCapable
-            ? `Test all ${catData.models.length} models across 7 GGUF quants, KV compression, 1x–8x ${singleHwMatch.short_name} multi-GPU, or CPU offload.`
-            : `Showing full ${catData.models.length}-model coverage for ${singleHwMatch.short_name}. Open any card to adjust 7 quants & Q8_0/Q4_0 KV cache.`;
-          liveSimCta.textContent = multiCapable
-            ? `Try 2x / 3x / 4x ${singleHwMatch.short_name} in Simulator ->`
-            : `Open ${singleHwMatch.short_name} in Rig Simulator ->`;
-          liveSimCta.href = multiCapable
-            ? `/calculator/?hw=${encodeURIComponent(singleHwMatch.id)}&gpus=2`
-            : `/calculator/?hw=${encodeURIComponent(singleHwMatch.id)}`;
+      if (liveBadge && liveHeading && liveSub && liveSimCta) {
+        if (isRigMode && bannerMeta) {
+          const guideCount = items.filter((x) => Boolean(x.guideSlug)).length;
+          liveBadge.textContent = 'Live Rig Matrix';
+          liveHeading.textContent = `${items.length} Model${items.length === 1 ? '' : 's'} on ${bannerMeta.rigTitle}`;
+          liveSub.textContent = `${bannerMeta.allSmooth} Smooth · ${bannerMeta.allPartial} Partial Offload · ${bannerMeta.allOom} OOM @ Q4_K_M 8K (${guideCount} Full Guides included). Click any card for 7 quants & KV tuning.`;
+          liveSimCta.textContent = 'Open Full Rig in Simulator ->';
+          liveSimCta.href = bannerMeta.rigSimHref;
         } else {
-          liveHeading.textContent = `${liveItems.length} Additional Live Catalog Estimates`;
-          liveSub.textContent = `Computed live across ${catData.models.length} models × ${catData.hardware.length} GPUs at Q4_K_M @ 8K. Open any card for 7 quants & Multi-GPU simulation.`;
-          liveSimCta.textContent = 'Open Multi-GPU / CPU Rig Simulator ->';
-          liveSimCta.href = mVal !== 'all' ? `/calculator/?model=${encodeURIComponent(mVal)}` : '/calculator/';
+          const model = modelById.get(selectedModel);
+          liveBadge.textContent = 'Live Catalog Physics';
+          liveHeading.textContent = `${items.length} Additional GPUs for ${model ? model.short_name : 'Selected Model'}`;
+          liveSub.textContent = `Instant Q4_K_M @ 8K estimates across catalog GPUs beyond full guides. Click any card to customize 7 quants & multi-GPU.`;
+          liveSimCta.textContent = 'Open in Rig Simulator ->';
+          liveSimCta.href =
+            selectedModel !== 'all'
+              ? `/calculator/?model=${encodeURIComponent(selectedModel)}`
+              : '/calculator/';
         }
       }
 
-      const slice = liveItems.slice(0, liveVisibleLimit);
+      const slice = items.slice(0, liveVisibleLimit);
       liveGrid.innerHTML = slice
-        .map(({ model, hw, res, simHref }) => {
-          const budget = hw ? hw.usable_vram_gb : res.usable_ram_gb;
+        .map(({ model, res, simHref, guideSlug, chipLabel, hwSubtitle, layersText }) => {
+          const budget = res.is_cpu_only ? res.usable_ram_gb : res.usable_vram_gb;
           const pct = Math.min(100, Math.round((res.total_vram_gb / Math.max(1, budget)) * 100));
           const barColor =
             res.status === 'Smooth'
@@ -928,15 +1490,22 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
                 ? 'bg-amber-500'
                 : 'bg-rose-500';
           const tpsDisplay = res.status === 'OOM' ? 'OOM' : `${res.est_tps.toFixed(1)} tok/s`;
-          const hwTitle = hw ? hw.name : 'CPU-Only (DDR5 · 64 GB RAM)';
-          const hwChip = hw ? `${hw.backend} · ${hw.bandwidth_gbps} GB/s` : 'CPU · 68 GB/s';
-          const budgetLabel = hw ? `VRAM (Q4_K_M @ 8K)` : `RAM (Q4_K_M @ 8K)`;
-          const layersText = hw
-            ? `(${res.gpu_layers_fit}/${res.total_layers} layers)`
-            : `(CPU-only ${res.total_layers}L)`;
+          const budgetLabel = res.is_cpu_only ? 'RAM (Q4_K_M @ 8K)' : 'VRAM (Q4_K_M @ 8K)';
           const moeLine = model.active_params_b
             ? `${model.params_b}B MoE (${model.active_params_b}B active) · ${model.architecture}`
             : `${model.params_b}B Params · ${model.architecture}`;
+
+          const primaryHref = guideSlug ? `/can-i-run/${encodeURIComponent(guideSlug)}/` : simHref;
+          const kindBadge = guideSlug
+            ? '<span class="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700">Full Guide</span>'
+            : '<span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">Live Calc</span>';
+
+          const footerActions = guideSlug
+            ? `<div class="flex items-center gap-2.5">
+                 <a href="${simHref}" class="text-[11px] font-medium text-slate-500 hover:text-blue-600">Sim</a>
+                 <a href="${primaryHref}" class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800">Open Guide -&gt;</a>
+               </div>`
+            : `<a href="${simHref}" class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800">Simulate -&gt;</a>`;
 
           return `
             <article class="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:border-blue-300 hover:shadow-md">
@@ -947,19 +1516,19 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
                       <span class="h-1.5 w-1.5 rounded-full ${dotClass(res.status)}"></span>
                       ${res.status}
                     </span>
-                    <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">Live Calc</span>
+                    ${kindBadge}
                   </div>
-                  <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-600">${hwChip}</span>
+                  <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-600">${escapeHtml(chipLabel)}</span>
                 </div>
 
                 <h3 class="mt-3.5 text-base font-bold tracking-tight text-slate-950 group-hover:text-blue-600 transition-colors">
-                  <a href="${simHref}" class="focus:outline-none">
-                    ${model.short_name}
-                    <span class="block text-sm font-semibold text-slate-600">on ${hwTitle}</span>
+                  <a href="${primaryHref}" class="focus:outline-none">
+                    ${escapeHtml(model.short_name)}
+                    <span class="block text-sm font-semibold text-slate-600">${escapeHtml(hwSubtitle)}</span>
                   </a>
                 </h3>
 
-                <p class="mt-1.5 font-mono text-xs text-slate-500">${moeLine}</p>
+                <p class="mt-1.5 font-mono text-xs text-slate-500">${escapeHtml(moeLine)}</p>
               </div>
 
               <div class="mt-4 pt-4 border-t border-slate-100">
@@ -974,11 +1543,9 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
                 <div class="mt-3.5 flex items-center justify-between">
                   <div class="flex items-baseline gap-1.5">
                     <span class="font-mono text-lg font-bold text-slate-950 tabular-nums">${tpsDisplay}</span>
-                    <span class="text-[11px] text-slate-500 tabular-nums">${layersText}</span>
+                    <span class="text-[11px] text-slate-500 tabular-nums">${escapeHtml(layersText)}</span>
                   </div>
-                  <a href="${simHref}" class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800">
-                    Simulate -&gt;
-                  </a>
+                  ${footerActions}
                 </div>
               </div>
             </article>
@@ -986,10 +1553,10 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
         })
         .join('');
 
-      const liveRemaining = Math.max(0, liveItems.length - slice.length);
+      const liveRemaining = Math.max(0, items.length - slice.length);
       if (livePagBar && livePagSummary && liveLoadMoreBtn) {
         livePagBar.classList.toggle('hidden', liveRemaining === 0);
-        livePagSummary.textContent = `Showing ${slice.length} of ${liveItems.length} live catalog estimates`;
+        livePagSummary.textContent = `Showing ${slice.length} of ${items.length} live estimates`;
         liveLoadMoreBtn.textContent = `Load ${Math.min(PAGE_SIZE, liveRemaining)} More (${liveRemaining} left)`;
       }
     }
@@ -1000,37 +1567,50 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
         liveVisibleLimit = PAGE_SIZE;
       }
 
-      const mVal = modelSelect ? modelSelect.value : 'all';
-      const hVal = hwSelect ? hwSelect.value : 'all';
-      const rawQuery = searchInput ? searchInput.value.trim() : '';
-      const tokens = rawQuery.toLowerCase().split(/\s+/).filter(Boolean);
       const sortVal = sortSelect ? sortSelect.value : 'featured';
-
       if (sortVal !== currentSort) {
         currentSort = sortVal;
         sortCardsInDom(sortVal);
       }
 
+      const rigActive = isRigConfigured();
+
+      if (rigActive) {
+        // Unified live 22-model view for the configured CPU + RAM + GPU rig
+        if (cardsGrid) cardsGrid.classList.add('hidden');
+        if (paginationBar) paginationBar.classList.add('hidden');
+
+        const rigResult = computeRigLiveResults();
+        renderLiveCards(rigResult.items, true, rigResult);
+
+        if (countEl) {
+          countEl.textContent = `${rigResult.items.length} models matched (Q4 @ 8K)`;
+        }
+        if (emptySimLink) {
+          emptySimLink.href = rigResult.rigSimHref;
+        }
+        if (emptyState) {
+          emptyState.classList.toggle('hidden', rigResult.items.length > 0);
+        }
+        if (resetBtn) {
+          resetBtn.classList.remove('hidden');
+        }
+        syncUrl();
+        return;
+      }
+
+      // Default SSR Curated Matrix View (no rig hardware configured)
       const orderedCards = cardsGrid
         ? Array.from(cardsGrid.querySelectorAll('[data-card]'))
         : cards;
 
       const matching: Element[] = [];
       orderedCards.forEach((card) => {
-        const matchModel = mVal === 'all' || card.getAttribute('data-model') === mVal;
-        const matchHw =
-          hVal === 'all'
-            ? true
-            : hVal === 'cpu-only'
-              ? false
-              : card.getAttribute('data-hardware') === hVal;
-        const matchStatus = selectedStatus === 'all' || card.getAttribute('data-status') === selectedStatus;
-        const matchVendor = selectedVendor === 'all' || card.getAttribute('data-vendor') === selectedVendor;
-        const searchBlob = card.getAttribute('data-search') || '';
-        const matchQuery = tokens.length === 0 || tokens.every((t) => searchBlob.includes(t));
-
-        const isMatch = matchModel && matchHw && matchStatus && matchVendor && matchQuery;
-        if (isMatch) {
+        const matchModel =
+          selectedModel === 'all' || card.getAttribute('data-model') === selectedModel;
+        const matchStatus =
+          selectedStatus === 'all' || card.getAttribute('data-status') === selectedStatus;
+        if (matchModel && matchStatus) {
           matching.push(card);
         } else {
           card.classList.add('hidden');
@@ -1042,25 +1622,20 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
         card.classList.toggle('hidden', i >= visibleLimit);
       });
 
-      const liveItems = computeLiveCatalogMatches(mVal, hVal, tokens, sortVal);
-      renderLiveCards(liveItems, hVal, mVal, matching.length);
+      const modelLiveItems = computeModelOnlyLiveItems();
+      renderLiveCards(modelLiveItems, false);
 
       const remaining = Math.max(0, matching.length - shownCount);
       const isFiltered =
-        mVal !== 'all' ||
-        hVal !== 'all' ||
-        selectedStatus !== 'all' ||
-        selectedVendor !== 'all' ||
-        sortVal !== 'featured' ||
-        tokens.length > 0;
+        selectedModel !== 'all' || selectedStatus !== 'all' || currentSort !== 'featured';
 
       if (countEl) {
         if (!isFiltered) {
-          countEl.textContent = `Showing ${shownCount} of ${totalCurated} full guides (${totalCombinations} live)`;
-        } else if (liveItems.length > 0) {
-          countEl.textContent = `${matching.length} Full Guides + ${liveItems.length} Live Estimates (${matching.length + liveItems.length} matched)`;
+          countEl.textContent = `${shownCount} / ${totalCurated} guides · ${catData.models.length}×${catData.hardware.length} live`;
+        } else if (modelLiveItems.length > 0) {
+          countEl.textContent = `${matching.length} guides + ${modelLiveItems.length} live GPUs`;
         } else {
-          countEl.textContent = `Showing ${shownCount} of ${matching.length} matched (${totalCurated} guides)`;
+          countEl.textContent = `${shownCount} / ${matching.length} matched`;
         }
       }
 
@@ -1079,26 +1654,156 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
         loadMoreBtn.textContent = `Load ${nextChunk} More (${remaining} left)`;
       }
 
-      const anyMatched = matching.length > 0 || liveItems.length > 0;
+      const anyMatched = matching.length > 0 || modelLiveItems.length > 0;
       if (resetBtn) resetBtn.classList.toggle('hidden', !isFiltered);
+      if (emptySimLink) emptySimLink.href = '/calculator/';
       if (emptyState) emptyState.classList.toggle('hidden', anyMatched);
       if (cardsGrid) cardsGrid.classList.toggle('hidden', matching.length === 0);
 
-      syncUrl(mVal, hVal, rawQuery, sortVal);
+      syncUrl();
+    }
+
+    function applyLegacyQueryFallback(qParam: string) {
+      const tokens = qParam.trim().toLowerCase().split(/\s+/).filter(Boolean);
+      if (tokens.length === 0) return false;
+
+      // 1. Unified SKU match (e.g. "m4 16g")
+      const matchedUnified = catData.hardware.find(
+        (h) => h.is_unified && tokens.every((t) => (hwSearchMap.get(h.id) || '').includes(t)),
+      );
+      if (matchedUnified) {
+        const socId = matchedUnified.id.replace(/-\d+gb$/, '');
+        const soc = socById.get(socId);
+        if (soc) {
+          selectedCpuVal = `soc:${soc.id}`;
+          selectedRamGb = Math.round(matchedUnified.vram_gb);
+          cpuCombo.setValue(selectedCpuVal);
+          ramCombo.setOptions(buildRamOptions(soc), false);
+          ramCombo.setValue(String(selectedRamGb), `${selectedRamGb} GB`);
+          gpuCombo.setDisplayOverride('None — Unified Memory (Auto)', true, false);
+          return true;
+        }
+      }
+
+      // 2. Discrete GPU match (e.g. "1080", "4070", "p40", "b580")
+      const matchedGpu = discreteGpus.find((h) =>
+        tokens.every((t) => (hwSearchMap.get(h.id) || '').includes(t)),
+      );
+      if (matchedGpu) {
+        selectedGpuVal = matchedGpu.id;
+        gpuCombo.setValue(matchedGpu.id);
+        return true;
+      }
+
+      // 3. Model match (e.g. "qwen3", "deepseek r1 14b")
+      const matchedModel = catData.models.find((m) =>
+        tokens.every((t) =>
+          [m.id, m.name, m.short_name, m.family, `${m.params_b}b`].join(' ').toLowerCase().includes(t),
+        ),
+      );
+      if (matchedModel) {
+        selectedModel = matchedModel.id;
+        modelCombo.setValue(matchedModel.id);
+        return true;
+      }
+
+      return false;
     }
 
     function hydrateFromUrl() {
       const params = new URLSearchParams(window.location.search);
-      const qParam = params.get('q');
-      const stParam = params.get('status');
-      const vndParam = params.get('vendor');
-      const modParam = params.get('model');
+      const cpuParam = params.get('cpu');
+      const ramParam = params.get('ram');
+      const gpuParam = params.get('gpu');
+      const gpusParam = params.get('gpus');
+      const splitParam = params.get('split');
       const hwParam = params.get('hw');
+      const modParam = params.get('model');
+      const stParam = params.get('status');
       const sortParam = params.get('sort');
+      const qParam = params.get('q');
 
       let hadParam = false;
-      if (qParam && searchInput) {
-        searchInput.value = qParam;
+
+      // CPU
+      if (cpuParam) {
+        if (cpuParam.startsWith('soc:') && socById.has(cpuParam.slice(4))) {
+          selectedCpuVal = cpuParam;
+          hadParam = true;
+        } else if (socById.has(cpuParam)) {
+          selectedCpuVal = `soc:${cpuParam}`;
+          hadParam = true;
+        } else if (cpuParam.startsWith('x86:') && cpuById.has(cpuParam.slice(4))) {
+          selectedCpuVal = cpuParam;
+          hadParam = true;
+        } else if (cpuById.has(cpuParam)) {
+          selectedCpuVal = `x86:${cpuParam}`;
+          hadParam = true;
+        }
+      }
+
+      // RAM
+      if (ramParam) {
+        const parsedRam = parseRamGb(ramParam);
+        if (parsedRam !== null) {
+          selectedRamGb = parsedRam;
+          hadParam = true;
+        }
+      }
+
+      // GPU (explicit)
+      if (gpuParam) {
+        if (gpuParam === 'none' || gpuParam === 'cpu-only') {
+          selectedGpuVal = 'none';
+          hadParam = true;
+        } else if (hwById.has(gpuParam) && !hwById.get(gpuParam)!.is_unified) {
+          selectedGpuVal = gpuParam;
+          hadParam = true;
+        }
+      } else if (hwParam) {
+        // Legacy ?hw= support
+        if (hwParam === 'cpu-only') {
+          selectedGpuVal = 'none';
+          hadParam = true;
+        } else if (hwParam === 'dual-rtx-3090-48gb') {
+          selectedGpuVal = 'rtx-3090-24gb';
+          gpuCount = 2;
+          hadParam = true;
+        } else if (hwParam === 'dual-rtx-4090-48gb') {
+          selectedGpuVal = 'rtx-4090-24gb';
+          gpuCount = 2;
+          hadParam = true;
+        } else if (hwById.has(hwParam)) {
+          const h = hwById.get(hwParam)!;
+          if (h.is_unified) {
+            const socId = h.id.replace(/-\d+gb$/, '');
+            if (socById.has(socId)) {
+              selectedCpuVal = `soc:${socId}`;
+              selectedRamGb = selectedRamGb ?? Math.round(h.vram_gb);
+              hadParam = true;
+            }
+          } else {
+            selectedGpuVal = h.id;
+            hadParam = true;
+          }
+        }
+      }
+
+      if (gpusParam) {
+        const gNum = Number(gpusParam);
+        if (GPU_COUNT_OPTIONS.includes(gNum)) {
+          gpuCount = gNum;
+          hadParam = true;
+        }
+      }
+      if (splitParam === 'row' || splitParam === 'layer') {
+        splitMode = splitParam;
+        hadParam = true;
+      }
+
+      if (modParam && modelById.has(modParam)) {
+        selectedModel = modParam;
+        modelCombo.setValue(modParam);
         hadParam = true;
       }
       if (stParam && ['Smooth', 'Partial Offload', 'OOM'].includes(stParam)) {
@@ -1106,43 +1811,81 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
         updateStatusPills();
         hadParam = true;
       }
-      if (vndParam && ['NVIDIA', 'Apple', 'AMD', 'Intel'].includes(vndParam)) {
-        selectedVendor = vndParam;
-        updateVendorPills();
-        hadParam = true;
-      }
-      if (modParam && modelSelect && Array.from(modelSelect.options).some((o) => o.value === modParam)) {
-        modelSelect.value = modParam;
-        hadParam = true;
-      }
-      if (hwParam && hwSelect && Array.from(hwSelect.options).some((o) => o.value === hwParam)) {
-        hwSelect.value = hwParam;
-        hadParam = true;
-      }
       if (sortParam && sortSelect && Array.from(sortSelect.options).some((o) => o.value === sortParam)) {
         sortSelect.value = sortParam;
         hadParam = true;
       }
+
+      // Reflect hydrated CPU / RAM / GPU state into comboboxes
+      const activeSoc = getActiveUnifiedSoc();
+      if (activeSoc) {
+        cpuCombo.setValue(selectedCpuVal);
+        const effRam = selectedRamGb ?? activeSoc.defaultRamGb;
+        selectedRamGb = effRam;
+        ramCombo.setOptions(buildRamOptions(activeSoc), false);
+        ramCombo.setValue(String(effRam), `${effRam} GB`);
+        selectedGpuVal = '';
+        gpuCombo.setDisplayOverride('None — Unified Memory (Auto)', true, false);
+      } else {
+        if (selectedCpuVal) cpuCombo.setValue(selectedCpuVal);
+        if (selectedRamGb !== null) {
+          ramCombo.setValue(String(selectedRamGb), `${selectedRamGb} GB`);
+        }
+        if (selectedGpuVal) {
+          gpuCombo.setValue(selectedGpuVal);
+        }
+      }
+
+      if (!hadParam && qParam) {
+        hadParam = applyLegacyQueryFallback(qParam);
+      }
+
+      syncGpuQtyControl();
+      updateContextBar();
       if (hadParam) {
         applyFilters(true);
       }
     }
 
     function resetAll() {
-      if (modelSelect) modelSelect.value = 'all';
-      if (hwSelect) hwSelect.value = 'all';
-      if (searchInput) searchInput.value = '';
-      if (sortSelect) sortSelect.value = 'featured';
+      selectedCpuVal = '';
+      selectedRamGb = null;
+      selectedGpuVal = '';
+      gpuCount = 1;
+      splitMode = 'layer';
+      selectedModel = 'all';
       selectedStatus = 'all';
-      selectedVendor = 'all';
+
+      cpuCombo.clear(true);
+      ramCombo.setOptions(buildRamOptions(null), false);
+      ramCombo.clear(true);
+      gpuCombo.clear(true);
+      modelCombo.setValue('all');
+      if (sortSelect) sortSelect.value = 'featured';
+
+      syncGpuQtyControl();
+      updateContextBar();
       updateStatusPills();
-      updateVendorPills();
       applyFilters(true);
     }
 
-    if (modelSelect) modelSelect.addEventListener('change', () => applyFilters(true));
-    if (hwSelect) hwSelect.addEventListener('change', () => applyFilters(true));
-    if (searchInput) searchInput.addEventListener('input', () => applyFilters(true));
+    if (gpuCountSelect) {
+      gpuCountSelect.addEventListener('change', () => {
+        const val = Number(gpuCountSelect.value || 1);
+        gpuCount = Math.max(1, val);
+        updateContextBar();
+        applyFilters(true);
+      });
+    }
+
+    splitBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        splitMode = (btn.getAttribute('data-home-split') as SplitMode) || 'layer';
+        updateContextBar();
+        applyFilters(true);
+      });
+    });
+
     if (sortSelect) sortSelect.addEventListener('change', () => applyFilters(true));
     if (resetBtn) resetBtn.addEventListener('click', resetAll);
     if (emptyResetBtn) emptyResetBtn.addEventListener('click', resetAll);
@@ -1176,30 +1919,17 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
       });
     });
 
-    vendorButtons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        selectedVendor = btn.getAttribute('data-vendor-btn') || 'all';
-        updateVendorPills();
-        applyFilters(true);
-      });
-    });
-
     document.addEventListener('keydown', (ev) => {
       if (ev.key === '/' && !ev.metaKey && !ev.ctrlKey && !ev.altKey) {
         const tag = document.activeElement ? document.activeElement.tagName : '';
-        if (!['INPUT', 'SELECT', 'TEXTAREA'].includes(tag) && searchInput) {
+        if (!['INPUT', 'SELECT', 'TEXTAREA'].includes(tag)) {
           ev.preventDefault();
-          searchInput.focus();
+          gpuCombo.focus();
         }
-      } else if (ev.key === 'Escape' && document.activeElement === searchInput && searchInput) {
-        if (searchInput.value.length > 0) {
-          searchInput.value = '';
-          applyFilters(true);
-        }
-        searchInput.blur();
       }
     });
 
+    syncGpuQtyControl();
     hydrateFromUrl();
   }
 
