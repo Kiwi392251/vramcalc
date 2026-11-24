@@ -1,39 +1,35 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import rawPagesData from '../../data/pages_data.json';
-import type { PageEntry } from '../../types/vram';
-import { buildHardwareHubs } from '../../utils/hubs';
+import rawCatalog from '../../data/catalog_data.json';
+import type { CatalogData, VramPageEntry } from '../../types/vram';
+import { buildHardwareHubs, getCatalogUpdatedAt } from '../../utils/hubs';
+import { formatTpsRange } from '../../utils/physics';
 
-const allEntries = rawPagesData as PageEntry[];
+const allEntries = rawPagesData as VramPageEntry[];
+const catalog = rawCatalog as CatalogData;
+const updatedAt = getCatalogUpdatedAt();
 const hubs = buildHardwareHubs(allEntries);
 
 const totalHubs = hubs.length;
+const totalModels = catalog.models.length;
 const totalConfigs = allEntries.length;
 const nvidiaCount = hubs.filter((h) => h.hardware.vendor === 'NVIDIA').length;
 const appleCount = hubs.filter((h) => h.hardware.vendor === 'Apple').length;
 const amdCount = hubs.filter((h) => h.hardware.vendor === 'AMD').length;
-const maxUsableVram = hubs.reduce((acc, h) => Math.max(acc, h.hardware.usable_vram_gb), 0);
+const intelCount = hubs.filter((h) => h.hardware.vendor === 'Intel').length;
+const maxUsableVram = hubs.reduce((acc, h) => Math.max(acc, h.effectiveUsableGb), 0);
 
 const canonicalPath = '/gpu/';
-const pageTitle = `All Local AI GPUs & Macs (${totalHubs} Hardware Hubs) — VRAMCalc.me`;
-const pageDescription = `Compare ${totalHubs} local AI GPUs and unified-memory systems across NVIDIA (${nvidiaCount}), Apple Silicon (${appleCount}), and AMD (${amdCount}). Inspect usable VRAM up to ${maxUsableVram} GB, memory bandwidth, and Smooth LLM support.`;
+const pageTitle = `All Local & Cloud AI GPUs & Macs (${totalHubs} Hardware Hubs) — VRAMCalc.me`;
+const pageDescription = `Compare ${totalHubs} local and data-center AI accelerators across NVIDIA (${nvidiaCount}, including T4/L4/A10/A10G/H200), Apple Silicon (${appleCount}), AMD (${amdCount}), and Intel (${intelCount}). Inspect usable VRAM up to ${maxUsableVram.toFixed(0)} GB and honest tok/s ranges.`;
 
 const breadcrumbSchema = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    {
-      '@type': 'ListItem',
-      position: 1,
-      name: 'Home',
-      item: 'https://vramcalc.me/',
-    },
-    {
-      '@type': 'ListItem',
-      position: 2,
-      name: 'All GPUs',
-      item: 'https://vramcalc.me/gpu/',
-    },
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://vramcalc.me/' },
+    { '@type': 'ListItem', position: 2, name: 'All GPUs', item: 'https://vramcalc.me/gpu/' },
   ],
 };
 
@@ -48,7 +44,7 @@ const collectionSchema = {
 const itemListSchema = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
-  name: 'Local AI Hardware Hubs on VRAMCalc.me',
+  name: 'Local & Cloud AI Hardware Hubs on VRAMCalc.me',
   numberOfItems: totalHubs,
   itemListElement: hubs.map((h, idx) => ({
     '@type': 'ListItem',
@@ -63,6 +59,7 @@ const vendorFilters = [
   { key: 'NVIDIA', label: `NVIDIA (${nvidiaCount})` },
   { key: 'Apple', label: `Apple (${appleCount})` },
   { key: 'AMD', label: `AMD (${amdCount})` },
+  { key: 'Intel', label: `Intel (${intelCount})` },
 ] as const;
 
 const groupFilters = [
@@ -72,12 +69,15 @@ const groupFilters = [
   'Unified Memory',
   'Laptop GPU',
 ] as const;
-const ogTitle = `All ${totalHubs} Local AI GPUs & Macs Compared | VRAMCalc.me`;
-const ogDescription = `Compare usable VRAM, memory bandwidth, and Smooth LLM support across ${totalHubs} GPUs & Apple Silicon systems (${totalConfigs} benchmarks).`;
+
+const ogTitle = `All ${totalHubs} Local & Cloud AI GPUs & Macs | VRAMCalc.me`;
+const ogDescription = `Compare realistic usable VRAM, bandwidth, Tight Fit thresholds, and GGUF/AWQ/MLX speed across ${totalHubs} GPUs & Macs (${totalModels} models each).`;
 
 const hubAllGpusSubArgs = JSON.stringify({ hubs: totalHubs });
 const hubAllVendorsArgs = JSON.stringify({ count: totalHubs });
 const hubShowingArgs = JSON.stringify({ shown: totalHubs, total: totalHubs });
+const browseModelsArgs = JSON.stringify({ count: totalModels });
+const updatedArgs = JSON.stringify({ date: updatedAt });
 const groupI18nMap: Record<string, string> = {
   all: 'hub.allFormFactors',
   'Desktop GPU': 'hub.desktopGpu',
@@ -105,61 +105,60 @@ const groupI18nMap: Record<string, string> = {
   </Fragment>
 
   <article class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-    <!-- Breadcrumbs -->
     <nav aria-label="Breadcrumb" class="mb-4">
       <ol class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-500">
         <li>
           <a href="/" class="hover:text-slate-900 transition-colors" data-i18n="common.home">Home</a>
         </li>
         <li aria-hidden="true">/</li>
-        <li aria-current="page" class="text-slate-900 font-semibold" data-i18n="nav.gpus">All GPUs</li>
+        <li aria-current="page" class="text-slate-900 font-semibold" data-i18n="nav.gpus">GPUs</li>
       </ol>
     </nav>
 
-    <!-- Dark Tech Directory Hero -->
     <header class="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-xs sm:p-8">
       <div class="flex flex-wrap items-center gap-2">
         <span class="rounded-full border border-blue-500/40 bg-blue-500/15 px-2.5 py-0.5 font-mono text-xs font-semibold text-blue-300" data-i18n="hub.hwDirBadge">
           Hardware Directory
         </span>
         <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 font-mono text-xs text-slate-300">
-          CUDA · Metal · ROCm
+          CUDA · Metal · ROCm · XPU
+        </span>
+        <span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-xs text-emerald-300" data-i18n="common.updated" data-i18n-args={updatedArgs}>
+          Updated {updatedAt}
         </span>
       </div>
 
       <h1 class="mt-4 text-2xl font-extrabold tracking-tight text-white sm:text-4xl" data-i18n="hub.allGpusHeading">
-        All Local AI GPUs &amp; Unified Memory Systems
+        All Local &amp; Cloud AI GPUs &amp; Unified Memory Macs
       </h1>
 
       <p class="mt-3 max-w-3xl text-sm leading-relaxed text-slate-300 sm:text-base" data-i18n="hub.allGpusSub" data-i18n-args={hubAllGpusSubArgs}>
-        Browse <strong class="text-white">{totalHubs}</strong> dedicated hardware hubs covering NVIDIA RTX 30/40/50 &amp; Dual-GPU rigs,
-        Apple Silicon M1–M5 unified memory Macs, DGX Spark GB10, and AMD Radeon / Strix Halo. Open any card to see which open-weight
-        LLMs fit cleanly in VRAM and which trigger offload.
+        Browse all <strong class="text-white">{totalHubs}</strong> dedicated hardware hubs covering Consumer RTX 30/40/50,
+        Data Center T4/L4/A10/A10G/H100/H200, Apple Silicon M1–M5, DGX Spark GB10, and Strix Halo.
       </p>
 
       <dl class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
-          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400" data-i18n="hub.indexedGpus">Indexed GPUs &amp; Macs</dt>
+          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400" data-i18n="hub.indexedGpus">Static GPU Hubs</dt>
           <dd class="mt-1 font-mono text-xl font-bold text-white tabular-nums">{totalHubs}</dd>
         </div>
         <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
           <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400" data-i18n="hub.vendorCov">Vendor Coverage</dt>
           <dd class="mt-1 font-mono text-sm font-bold text-sky-300 tabular-nums">
-            {nvidiaCount} NV · {appleCount} Apple · {amdCount} AMD
+            {nvidiaCount} NV · {appleCount} Apple · {amdCount} AMD · {intelCount} Intel
           </dd>
         </div>
         <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
           <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400" data-i18n="hub.usableCeil">Usable Ceiling</dt>
-          <dd class="mt-1 font-mono text-xl font-bold text-emerald-300 tabular-nums">Up to {maxUsableVram} GB</dd>
+          <dd class="mt-1 font-mono text-xl font-bold text-emerald-300 tabular-nums">Up to {maxUsableVram.toFixed(0)} GB</dd>
         </div>
         <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
-          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400" data-i18n="hub.totalBench">Total Benchmarks</dt>
-          <dd class="mt-1 font-mono text-xl font-bold text-white tabular-nums">{totalConfigs} Pairings</dd>
+          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400" data-i18n="hub.totalBench">Full Pairings + Matrix</dt>
+          <dd class="mt-1 font-mono text-xl font-bold text-white tabular-nums">{totalConfigs} + {totalModels}×{totalHubs}</dd>
         </div>
       </dl>
     </header>
 
-    <!-- Filter Controls -->
     <section class="mt-7" aria-label="Filter hardware hubs">
       <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5">
         <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -188,7 +187,7 @@ const groupI18nMap: Record<string, string> = {
             <input
               id="dir-gpu-search"
               type="search"
-              placeholder="Search e.g. 5090, M5 Max, 3090, Halo..."
+              placeholder="Search e.g. T4, A10, M4 16GB, 5090, Halo..."
               data-i18n-placeholder="hub.searchHwPh"
               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none"
             />
@@ -228,20 +227,29 @@ const groupI18nMap: Record<string, string> = {
         </div>
       </div>
 
-      <!-- Cards Grid -->
       <div id="dir-gpu-grid" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {hubs.map((hub) => {
           const hw = hub.hardware;
           const hubHref = `/gpu/${hw.id}/`;
-          const topPick = hub.picks[0]?.entry;
-          const topPickLabel = topPick
-            ? `${topPick.model.short_name} (${topPick.default_result.est_tps.toFixed(1)} tok/s)`
+          const topPickRow = hub.picks[0]?.row;
+          const topPickTps = topPickRow
+            ? formatTpsRange(
+                topPickRow.result.est_tps_low,
+                topPickRow.result.est_tps_high,
+                topPickRow.result.est_tps,
+                topPickRow.result.status,
+              )
+            : '';
+          const topPickLabel = topPickRow
+            ? `${topPickRow.model.short_name} (${topPickTps})`
             : 'See compatibility table';
           const searchBlob = [
+            hw.id,
             hw.name,
             hw.short_name,
             hw.vendor,
             hw.series,
+            hw.category,
             hub.group,
             hw.memory_type,
             hw.backend,
@@ -263,7 +271,7 @@ const groupI18nMap: Record<string, string> = {
                     {hw.vendor} · {hw.backend}
                   </span>
                   <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-medium text-slate-600">
-                    {hub.group}
+                    {hw.category}
                   </span>
                 </div>
 
@@ -277,7 +285,7 @@ const groupI18nMap: Record<string, string> = {
                   <div>
                     <span class="block text-[11px] text-slate-500" data-i18n="hub.usableTotal">Usable / Total</span>
                     <span class="font-mono font-bold text-slate-950 tabular-nums">
-                      {hw.usable_vram_gb} / {hw.vram_gb} GB
+                      {hub.effectiveUsableGb.toFixed(1)} / {hw.vram_gb} GB
                     </span>
                   </div>
                   <div>
@@ -290,8 +298,13 @@ const groupI18nMap: Record<string, string> = {
 
                 <div class="mt-3 flex flex-wrap items-center gap-1.5 text-[11px] font-mono">
                   <span class="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-800 tabular-nums">
-                    {hub.smoothCount} Smooth
+                    {hub.fitsCount} Fits
                   </span>
+                  {hub.tightCount > 0 && (
+                    <span class="rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 font-semibold text-orange-800 tabular-nums">
+                      {hub.tightCount} Tight
+                    </span>
+                  )}
                   {hub.partialCount > 0 && (
                     <span class="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 font-semibold text-amber-800 tabular-nums">
                       {hub.partialCount} Partial
@@ -341,23 +354,23 @@ const groupI18nMap: Record<string, string> = {
       </div>
     </section>
 
-    <!-- Cross-link Banner -->
     <section class="mt-12 rounded-2xl border border-slate-200 bg-white p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h2 class="text-lg font-bold tracking-tight text-slate-950" data-i18n="hub.preferByModel">
           Prefer Browsing by Open-Weight Model?
         </h2>
         <p class="mt-1 text-sm text-slate-600" data-i18n="hub.preferByModelSub">
-          Compare GPUs ranked side-by-side for DeepSeek-R1, Qwen2.5-Coder, Llama-3.3, and Mistral Small.
+          Compare GPUs ranked side-by-side for Qwen3, Gemma 3, DeepSeek-R1, Qwen2.5-Coder, and Llama-3.3.
         </p>
       </div>
       <div class="flex flex-wrap items-center gap-3 shrink-0">
         <a
           href="/model/"
           data-i18n="hub.browseAllModels"
+          data-i18n-args={browseModelsArgs}
           class="rounded-lg bg-slate-950 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors"
         >
-          Browse All Model Hubs -&gt;
+          Browse All {totalModels} Model Hubs -&gt;
         </a>
         <a
           href="/"

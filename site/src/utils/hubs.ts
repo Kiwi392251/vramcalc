@@ -1,510 +1,450 @@
+import rawCatalog from '../data/catalog_data.json';
+import rawBenchmarks from '../data/benchmarks_verified.json';
 import type {
+  BenchmarkAnchor,
+  BenchmarksData,
+  CatalogData,
   CompatStatus,
   FaqItem,
   HardwareSpec,
   ModelSpec,
-  PageEntry,
-  QuantRow,
+  QuantKey,
+  RunEstimate,
+  VramPageEntry,
 } from '../types/vram';
-import { formatContextLabel } from './physics';
+import {
+  estimateRun,
+  formatContextLabel,
+  formatTpsRange,
+  kvGbPer4k,
+  maxFitContextDetails,
+} from './physics';
 
-export type HardwareGroup =
+export type HardwareClassGroup =
   | 'Desktop GPU'
   | 'Multi-GPU & Workstation'
   | 'Unified Memory'
   | 'Laptop GPU';
 
-export interface RecommendedPick {
-  role: string;
-  accent: string;
-  entry: PageEntry;
+export interface HubPairRow {
+  model: ModelSpec;
+  hardware: HardwareSpec;
+  result: RunEstimate;
+  maxFitCtx: number;
+  maxFitVramGb: number;
+  maxFitStatus: CompatStatus;
+  recQuant: QuantKey;
+  isCurated: boolean;
+  href: string;
+  slug?: string;
+  curatedEntry?: VramPageEntry;
 }
 
 export interface HardwareHub {
   hardware: HardwareSpec;
-  group: HardwareGroup;
-  entries: PageEntry[];
-  smoothEntries: PageEntry[];
-  partialEntries: PageEntry[];
-  oomEntries: PageEntry[];
-  smoothCount: number;
+  group: HardwareClassGroup;
+  effectiveUsableGb: number;
+  rows: HubPairRow[];
+  curatedCount: number;
+  fitsCount: number;
+  tightCount: number;
   partialCount: number;
   oomCount: number;
-  picks: RecommendedPick[];
-}
-
-export interface TopHardwarePick {
-  role: string;
-  accent: string;
-  entry: PageEntry;
+  picks: Array<{ role: string; accent: string; row: HubPairRow }>;
 }
 
 export interface ModelHub {
   model: ModelSpec;
-  entries: PageEntry[];
-  smoothEntries: PageEntry[];
-  partialEntries: PageEntry[];
-  oomEntries: PageEntry[];
-  smoothCount: number;
+  rows: HubPairRow[];
+  curatedCount: number;
+  fitsCount: number;
+  tightCount: number;
   partialCount: number;
   oomCount: number;
   fastestTps: number;
-  q4Row?: QuantRow;
-  q8Row?: QuantRow;
-  fp16Row?: QuantRow;
+  fastestTpsText: string;
+  q4Row: RunEstimate;
+  q8Row: RunEstimate;
+  fp16Row: RunEstimate;
+  awqRow: RunEstimate;
   kvPer4k: number;
-  topPicks: TopHardwarePick[];
+  topPicks: Array<{ role: string; accent: string; row: HubPairRow }>;
 }
 
-export function statusRank(s: CompatStatus): number {
-  if (s === 'Smooth') return 0;
-  if (s === 'Partial Offload') return 1;
-  return 2;
+const catalogData = rawCatalog as CatalogData;
+const benchmarksData = rawBenchmarks as BenchmarksData;
+
+export function getCatalogUpdatedAt(): string {
+  return catalogData.updated_at ?? '2026-11-24';
 }
 
-export function resolveHardwareGroup(h: HardwareSpec): HardwareGroup {
-  if (h.category === 'Laptop GPU' || h.series.includes('Laptop')) {
-    return 'Laptop GPU';
-  }
-  if (
-    h.category === 'Multi-GPU' ||
-    h.category === 'Workstation' ||
-    h.category === 'Data Center' ||
-    h.series.includes('Multi-GPU') ||
-    h.series.includes('Workstation')
-  ) {
+export function getEngineVersion(): string {
+  return catalogData.engine_version ?? 'v3.0';
+}
+
+export function getBenchmarksMethodologyNote(): string {
+  return benchmarksData.methodology_note;
+}
+
+export function getReferenceBenchmarks(filters: {
+  modelId?: string;
+  hardwareId?: string;
+}): BenchmarkAnchor[] {
+  return benchmarksData.anchors.filter((a) => {
+    if (filters.modelId && a.model_id !== filters.modelId) return false;
+    if (filters.hardwareId && a.hardware_id !== filters.hardwareId) return false;
+    return true;
+  });
+}
+
+export function statusRank(status: CompatStatus | string): number {
+  if (status === 'Fits' || status === 'Smooth') return 0;
+  if (status === 'Tight Fit') return 1;
+  if (status === 'Partial Offload') return 2;
+  return 3;
+}
+
+export function classifyCatalogGroup(hw: HardwareSpec): HardwareClassGroup {
+  if (hw.category === 'Unified Memory' || hw.is_unified) return 'Unified Memory';
+  if (hw.category === 'Laptop GPU') return 'Laptop GPU';
+  if (hw.category === 'Multi-GPU' || hw.category === 'Workstation' || hw.category === 'Data Center' || hw.gpu_count > 1) {
     return 'Multi-GPU & Workstation';
-  }
-  if (h.is_unified || h.category === 'Unified Memory') {
-    return 'Unified Memory';
   }
   return 'Desktop GPU';
 }
 
-export function classifyCatalogGroup(h: HardwareSpec): string {
-  if (h.vendor === 'Apple') return 'Apple Silicon Unified';
-  if (h.vendor === 'AMD') return 'AMD Radeon & Ryzen AI';
-  if (h.vendor === 'Intel') return 'Intel Arc';
-  if (h.category === 'Laptop GPU' || h.series.includes('Laptop')) {
-    return 'NVIDIA Laptop RTX';
-  }
-  if (
-    h.category === 'Multi-GPU' ||
-    h.category === 'Workstation' ||
-    h.category === 'Data Center' ||
-    h.series.includes('Multi-GPU') ||
-    h.series.includes('Workstation') ||
-    h.series.includes('Data Center')
-  ) {
-    return 'NVIDIA Multi-GPU & Workstation';
-  }
-  if (h.series.includes('GTX 10') || h.series.includes('RTX 20')) {
-    return 'NVIDIA Classic GTX & RTX 20';
-  }
-  return 'NVIDIA Desktop RTX';
+export interface HardwareCatalogGroup {
+  label: string;
+  items: HardwareSpec[];
 }
 
-export function groupCatalogHardware(items: HardwareSpec[]): { label: string; items: HardwareSpec[] }[] {
-  const order = [
-    'NVIDIA Desktop RTX',
-    'NVIDIA Classic GTX & RTX 20',
-    'NVIDIA Multi-GPU & Workstation',
-    'NVIDIA Laptop RTX',
-    'Apple Silicon Unified',
-    'AMD Radeon & Ryzen AI',
-    'Intel Arc',
+export function groupCatalogHardware(list: HardwareSpec[]): HardwareCatalogGroup[] {
+  const groups: HardwareCatalogGroup[] = [
+    {
+      label: 'Apple Silicon Unified',
+      items: list.filter((h) => h.vendor === 'Apple' && h.is_unified),
+    },
+    {
+      label: 'NVIDIA Desktop RTX',
+      items: list.filter(
+        (h) =>
+          h.vendor === 'NVIDIA' &&
+          !h.is_unified &&
+          h.category === 'Desktop GPU' &&
+          !h.series.includes('GTX') &&
+          !h.series.includes('RTX 20'),
+      ),
+    },
+    {
+      label: 'NVIDIA Classic GTX & RTX 20',
+      items: list.filter(
+        (h) =>
+          h.vendor === 'NVIDIA' &&
+          (h.series.includes('GTX') || h.series.includes('RTX 20')),
+      ),
+    },
+    {
+      label: 'NVIDIA Multi-GPU & Workstation',
+      items: list.filter(
+        (h) =>
+          h.vendor === 'NVIDIA' &&
+          (h.category === 'Multi-GPU' || h.category === 'Workstation' || h.category === 'Data Center'),
+      ),
+    },
+    {
+      label: 'NVIDIA Laptop RTX',
+      items: list.filter(
+        (h) => h.vendor === 'NVIDIA' && h.category === 'Laptop GPU',
+      ),
+    },
+    {
+      label: 'AMD Radeon & Ryzen AI',
+      items: list.filter((h) => h.vendor === 'AMD'),
+    },
+    {
+      label: 'Intel Arc',
+      items: list.filter((h) => h.vendor === 'Intel'),
+    },
   ];
-  const byGroup = new Map<string, HardwareSpec[]>();
-  for (const h of items) {
-    const g = classifyCatalogGroup(h);
-    const list = byGroup.get(g);
-    if (list) list.push(h);
-    else byGroup.set(g, [h]);
-  }
-  return order
-    .map((label) => ({
-      label,
-      items: (byGroup.get(label) ?? []).sort((a, b) => a.name.localeCompare(b.name)),
-    }))
-    .filter((g) => g.items.length > 0);
+  return groups.filter((g) => g.items.length > 0);
 }
 
-export function buildHardwareHubs(allEntries: PageEntry[]): HardwareHub[] {
-  const hwSpecMap = new Map<string, HardwareSpec>();
-  const hwEntriesMap = new Map<string, PageEntry[]>();
+function buildPairLookup(allEntries: VramPageEntry[]): Map<string, VramPageEntry> {
+  const map = new Map<string, VramPageEntry>();
+  for (const e of allEntries) {
+    map.set(`${e.model.id}::${e.hardware.id}`, e);
+  }
+  return map;
+}
 
-  for (const entry of allEntries) {
-    const hwId = entry.hardware.id;
-    const prev = hwSpecMap.get(hwId);
-    const merged: HardwareSpec = prev ? { ...prev, ...entry.hardware } : { ...entry.hardware };
-    if (prev?.category && !merged.category) {
-      merged.category = prev.category;
-    }
-    if (prev?.gpu_count !== undefined && merged.gpu_count === undefined) {
-      merged.gpu_count = prev.gpu_count;
-    }
-    hwSpecMap.set(hwId, merged);
-
-    const list = hwEntriesMap.get(hwId);
-    if (list) {
-      list.push(entry);
-    } else {
-      hwEntriesMap.set(hwId, [entry]);
-    }
+function makeHubRow(
+  model: ModelSpec,
+  hardware: HardwareSpec,
+  pairMap: Map<string, VramPageEntry>,
+): HubPairRow {
+  const curated = pairMap.get(`${model.id}::${hardware.id}`);
+  if (curated) {
+    const recRow = curated.quant_table.find((q) => q.recommended);
+    return {
+      model: curated.model,
+      hardware: curated.hardware,
+      result: curated.default_result,
+      maxFitCtx: curated.max_fit_context ?? curated.context_analysis.max_smooth_context_q4,
+      maxFitVramGb: curated.max_fit_total_vram_gb ?? curated.default_result.total_vram_gb,
+      maxFitStatus: curated.max_fit_status ?? curated.default_result.status,
+      recQuant: recRow?.quant ?? curated.default_quant,
+      isCurated: true,
+      href: `/can-i-run/${curated.slug}/`,
+      slug: curated.slug,
+      curatedEntry: curated,
+    };
   }
 
+  const result = estimateRun(model, hardware, 'Q4_K_M', 8192, 'desktop');
+  const maxFit = maxFitContextDetails(model, hardware, 'Q4_K_M', 'desktop');
+  return {
+    model,
+    hardware,
+    result,
+    maxFitCtx: maxFit.contextTokens,
+    maxFitVramGb: maxFit.totalVramGb,
+    maxFitStatus: maxFit.status,
+    recQuant: 'Q4_K_M',
+    isCurated: false,
+    href: `/calculator/?model=${encodeURIComponent(model.id)}&hw=${encodeURIComponent(hardware.id)}`,
+  };
+}
+
+export function buildHardwareHubs(allEntries: VramPageEntry[]): HardwareHub[] {
+  const pairMap = buildPairLookup(allEntries);
   const hubs: HardwareHub[] = [];
 
-  for (const [hwId, rawList] of hwEntriesMap.entries()) {
-    const hardware = hwSpecMap.get(hwId)!;
-    const entries = [...rawList].sort((a, b) => {
-      const sr = statusRank(a.default_result.status) - statusRank(b.default_result.status);
-      if (sr !== 0) return sr;
-      if (b.model.params_b !== a.model.params_b) return b.model.params_b - a.model.params_b;
-      if (b.default_result.est_tps !== a.default_result.est_tps) {
-        return b.default_result.est_tps - a.default_result.est_tps;
-      }
-      return a.model.name.localeCompare(b.model.name);
-    });
+  for (const hardware of catalogData.hardware) {
+    const rows = catalogData.models.map((m) => makeHubRow(m, hardware, pairMap));
+    rows.sort(
+      (a, b) =>
+        statusRank(a.result.status) - statusRank(b.result.status) ||
+        b.result.est_tps - a.result.est_tps ||
+        b.model.params_b - a.model.params_b,
+    );
 
-    const smoothEntries = entries.filter((e) => e.default_result.status === 'Smooth');
-    const partialEntries = entries.filter((e) => e.default_result.status === 'Partial Offload');
-    const oomEntries = entries.filter((e) => e.default_result.status === 'OOM');
+    const effectiveUsableGb = rows[0]?.result.effective_usable_vram_gb ?? hardware.usable_vram_gb;
+    const fitsRows = rows.filter((r) => r.result.status === 'Fits');
+    const tightRows = rows.filter((r) => r.result.status === 'Tight Fit');
+    const partialRows = rows.filter((r) => r.result.status === 'Partial Offload');
+    const oomRows = rows.filter((r) => r.result.status === 'OOM');
 
-    const picks: RecommendedPick[] = [];
-    const pickedSlugs = new Set<string>();
+    const residentRows = [...fitsRows, ...tightRows];
+    const picks: Array<{ role: string; accent: string; row: HubPairRow }> = [];
+    const seenSlugs = new Set<string>();
 
-    if (smoothEntries.length > 0) {
-      const flagshipPick = [...smoothEntries].sort((a, b) => {
-        if (b.model.params_b !== a.model.params_b) return b.model.params_b - a.model.params_b;
-        return b.default_result.est_tps - a.default_result.est_tps;
-      })[0];
-      if (flagshipPick) {
-        pickedSlugs.add(flagshipPick.slug);
-        picks.push({
-          role: 'Flagship Quality Pick',
-          accent: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-          entry: flagshipPick,
-        });
-      }
+    const coding =
+      residentRows
+        .filter((r) => r.model.id.includes('coder') || r.model.family === 'Qwen3')
+        .sort((a, b) => b.model.params_b - a.model.params_b || b.result.est_tps - a.result.est_tps)[0] ??
+      residentRows[0];
 
-      const fastestPick = [...smoothEntries].sort(
-        (a, b) => b.default_result.est_tps - a.default_result.est_tps
-      )[0];
-      if (fastestPick && !pickedSlugs.has(fastestPick.slug)) {
-        pickedSlugs.add(fastestPick.slug);
-        picks.push({
-          role: 'Fastest Interactive Pick',
-          accent: 'border-blue-200 bg-blue-50 text-blue-800',
-          entry: fastestPick,
-        });
-      }
+    const reasoning =
+      residentRows
+        .filter((r) => r.model.family === 'DeepSeek-R1' || r.model.family === 'Gemma 3')
+        .sort((a, b) => b.model.params_b - a.model.params_b || b.result.est_tps - a.result.est_tps)[0];
 
-      const codingPick = [...smoothEntries]
-        .filter((e) => e.model.family === 'Qwen2.5-Coder')
-        .sort((a, b) => {
-          if (b.model.params_b !== a.model.params_b) return b.model.params_b - a.model.params_b;
-          return b.default_result.est_tps - a.default_result.est_tps;
-        })[0];
-      if (codingPick && !pickedSlugs.has(codingPick.slug)) {
-        pickedSlugs.add(codingPick.slug);
-        picks.push({
-          role: 'Best Coding Pick',
-          accent: 'border-indigo-200 bg-indigo-50 text-indigo-800',
-          entry: codingPick,
-        });
-      }
-    } else if (entries.length > 0) {
-      const viablePick =
-        partialEntries.length > 0
-          ? [...partialEntries].sort((a, b) => b.default_result.est_tps - a.default_result.est_tps)[0]
-          : [...entries].sort((a, b) => a.model.params_b - b.model.params_b)[0];
-      if (viablePick) {
-        pickedSlugs.add(viablePick.slug);
-        picks.push({
-          role: 'Closest Viable Run',
-          accent: 'border-amber-200 bg-amber-50 text-amber-800',
-          entry: viablePick,
-        });
-      }
+    const fastest = [...residentRows].sort((a, b) => b.result.est_tps - a.result.est_tps)[0];
+
+    const addPick = (role: string, accent: string, row?: HubPairRow) => {
+      if (!row || seenSlugs.has(row.model.id) || picks.length >= 3) return;
+      seenSlugs.add(row.model.id);
+      picks.push({ role, accent, row });
+    };
+
+    addPick('Best Coding & Agent Fit', 'border-blue-200 bg-blue-50 text-blue-700', coding);
+    addPick('Top Reasoning / Writing Fit', 'border-indigo-200 bg-indigo-50 text-indigo-700', reasoning);
+    addPick('Highest Formula Speed', 'border-emerald-200 bg-emerald-50 text-emerald-700', fastest);
+
+    for (const r of rows) {
+      if (picks.length >= 3) break;
+      addPick('Benchmarked Pair', 'border-slate-200 bg-slate-100 text-slate-700', r);
     }
 
     hubs.push({
       hardware,
-      group: resolveHardwareGroup(hardware),
-      entries,
-      smoothEntries,
-      partialEntries,
-      oomEntries,
-      smoothCount: smoothEntries.length,
-      partialCount: partialEntries.length,
-      oomCount: oomEntries.length,
+      group: classifyCatalogGroup(hardware),
+      effectiveUsableGb,
+      rows,
+      curatedCount: rows.filter((r) => r.isCurated).length,
+      fitsCount: fitsRows.length,
+      tightCount: tightRows.length,
+      partialCount: partialRows.length,
+      oomCount: oomRows.length,
       picks,
     });
   }
 
-  return hubs.sort((a, b) => {
-    if (b.hardware.usable_vram_gb !== a.hardware.usable_vram_gb) {
-      return b.hardware.usable_vram_gb - a.hardware.usable_vram_gb;
-    }
-    if (b.hardware.bandwidth_gbps !== a.hardware.bandwidth_gbps) {
-      return b.hardware.bandwidth_gbps - a.hardware.bandwidth_gbps;
-    }
-    return a.hardware.name.localeCompare(b.hardware.name);
-  });
+  return hubs.sort(
+    (a, b) =>
+      b.effectiveUsableGb - a.effectiveUsableGb ||
+      b.hardware.bandwidth_gbps - a.hardware.bandwidth_gbps ||
+      a.hardware.name.localeCompare(b.hardware.name),
+  );
 }
 
-export function buildModelHubs(allEntries: PageEntry[]): ModelHub[] {
-  const modelMap = new Map<string, ModelSpec>();
-  const modelEntriesMap = new Map<string, PageEntry[]>();
-
-  for (const entry of allEntries) {
-    const mId = entry.model.id;
-    if (!modelMap.has(mId)) {
-      modelMap.set(mId, entry.model);
-    }
-    const list = modelEntriesMap.get(mId);
-    if (list) {
-      list.push(entry);
-    } else {
-      modelEntriesMap.set(mId, [entry]);
-    }
-  }
-
+export function buildModelHubs(allEntries: VramPageEntry[]): ModelHub[] {
+  const pairMap = buildPairLookup(allEntries);
   const hubs: ModelHub[] = [];
 
-  for (const [mId, rawList] of modelEntriesMap.entries()) {
-    const model = modelMap.get(mId)!;
-    // Mandatory Sort: Smooth first -> est_tps descending -> usable_vram_gb desc -> bandwidth desc -> name
-    const entries = [...rawList].sort((a, b) => {
-      const sr = statusRank(a.default_result.status) - statusRank(b.default_result.status);
-      if (sr !== 0) return sr;
-      if (b.default_result.est_tps !== a.default_result.est_tps) {
-        return b.default_result.est_tps - a.default_result.est_tps;
-      }
-      if (b.hardware.usable_vram_gb !== a.hardware.usable_vram_gb) {
-        return b.hardware.usable_vram_gb - a.hardware.usable_vram_gb;
-      }
-      if (b.hardware.bandwidth_gbps !== a.hardware.bandwidth_gbps) {
-        return b.hardware.bandwidth_gbps - a.hardware.bandwidth_gbps;
-      }
-      return a.hardware.name.localeCompare(b.hardware.name);
-    });
+  for (const model of catalogData.models) {
+    const rows = catalogData.hardware.map((hw) => makeHubRow(model, hw, pairMap));
+    rows.sort(
+      (a, b) =>
+        statusRank(a.result.status) - statusRank(b.result.status) ||
+        b.result.est_tps - a.result.est_tps ||
+        (b.result.effective_usable_vram_gb ?? b.hardware.usable_vram_gb) -
+          (a.result.effective_usable_vram_gb ?? a.hardware.usable_vram_gb),
+    );
 
-    const smoothEntries = entries.filter((e) => e.default_result.status === 'Smooth');
-    const partialEntries = entries.filter((e) => e.default_result.status === 'Partial Offload');
-    const oomEntries = entries.filter((e) => e.default_result.status === 'OOM');
+    const fitsRows = rows.filter((r) => r.result.status === 'Fits');
+    const tightRows = rows.filter((r) => r.result.status === 'Tight Fit');
+    const partialRows = rows.filter((r) => r.result.status === 'Partial Offload');
+    const oomRows = rows.filter((r) => r.result.status === 'OOM');
 
-    const fastestTps = Math.max(...entries.map((e) => e.default_result.est_tps), 1);
-    const refEntry = entries[0];
-    const q4Row = refEntry?.quant_table.find((r) => r.quant === 'Q4_K_M');
-    const q8Row = refEntry?.quant_table.find((r) => r.quant === 'Q8_0');
-    const fp16Row = refEntry?.quant_table.find((r) => r.quant === 'FP16');
-    const kvPer4k = refEntry?.context_analysis.kv_gb_per_4k ?? 0;
+    const fastestRow = [...fitsRows, ...tightRows, ...partialRows].sort(
+      (a, b) => b.result.est_tps - a.result.est_tps,
+    )[0];
+    const fastestTps = fastestRow?.result.est_tps ?? 0;
+    const fastestTpsText = fastestRow
+      ? formatTpsRange(
+          fastestRow.result.est_tps_low,
+          fastestRow.result.est_tps_high,
+          fastestRow.result.est_tps,
+          fastestRow.result.status,
+        )
+      : 'OOM';
 
-    const topPicks: TopHardwarePick[] = [];
-    const pickedSlugs = new Set<string>();
+    const refHw = catalogData.hardware.find((h) => h.id === 'rtx-4090-24gb') ?? catalogData.hardware[0];
+    const q4Row = estimateRun(model, refHw, 'Q4_K_M', 8192, 'desktop');
+    const q8Row = estimateRun(model, refHw, 'Q8_0', 8192, 'desktop');
+    const fp16Row = estimateRun(model, refHw, 'FP16', 8192, 'desktop');
+    const awqRow = estimateRun(model, refHw, 'AWQ_4BIT', 8192, 'desktop', 'fp16', 'AWQ');
+    const kvPer4k = kvGbPer4k(model);
 
-    if (smoothEntries.length > 0) {
-      const fastestHw = smoothEntries[0];
-      if (fastestHw) {
-        pickedSlugs.add(fastestHw.slug);
-        topPicks.push({
-          role: 'Fastest Smooth Hardware',
-          accent: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-          entry: fastestHw,
-        });
-      }
+    const residentRows = [...fitsRows, ...tightRows];
+    const topPicks: Array<{ role: string; accent: string; row: HubPairRow }> = [];
+    const seenHw = new Set<string>();
+    const addPick = (role: string, accent: string, row?: HubPairRow) => {
+      if (!row || seenHw.has(row.hardware.id) || topPicks.length >= 3) return;
+      seenHw.add(row.hardware.id);
+      topPicks.push({ role, accent, row });
+    };
 
-      const bestValueHw = [...smoothEntries].sort((a, b) => {
-        if (a.hardware.msrp_usd !== b.hardware.msrp_usd) {
-          return a.hardware.msrp_usd - b.hardware.msrp_usd;
-        }
-        return b.default_result.est_tps - a.default_result.est_tps;
-      })[0];
-      if (bestValueHw && !pickedSlugs.has(bestValueHw.slug)) {
-        pickedSlugs.add(bestValueHw.slug);
-        topPicks.push({
-          role: 'Best Value Smooth Pick',
-          accent: 'border-blue-200 bg-blue-50 text-blue-800',
-          entry: bestValueHw,
-        });
-      }
+    const bestValue =
+      residentRows
+        .filter((r) => !r.hardware.is_unified && r.hardware.msrp_usd > 0)
+        .sort(
+          (a, b) =>
+            statusRank(a.result.status) - statusRank(b.result.status) ||
+            a.hardware.msrp_usd - b.hardware.msrp_usd ||
+            b.result.est_tps - a.result.est_tps,
+        )[0] ?? residentRows[0];
 
-      const bestUnifiedHw = smoothEntries.find((e) => e.hardware.is_unified);
-      if (bestUnifiedHw && !pickedSlugs.has(bestUnifiedHw.slug)) {
-        pickedSlugs.add(bestUnifiedHw.slug);
-        topPicks.push({
-          role: 'Best Unified Memory Pick',
-          accent: 'border-indigo-200 bg-indigo-50 text-indigo-800',
-          entry: bestUnifiedHw,
-        });
-      }
-    } else if (entries.length > 0) {
-      const closestHw = entries[0];
-      pickedSlugs.add(closestHw.slug);
-      topPicks.push({
-        role: 'Closest Viable Hardware',
-        accent: 'border-amber-200 bg-amber-50 text-amber-800',
-        entry: closestHw,
-      });
+    const bestSpeed = [...residentRows].sort((a, b) => b.result.est_tps - a.result.est_tps)[0];
+    const bestMac = residentRows.filter((r) => r.hardware.vendor === 'Apple')[0];
+
+    addPick('Best Value Resident GPU', 'border-emerald-200 bg-emerald-50 text-emerald-700', bestValue);
+    addPick('Fastest Formula Speed', 'border-blue-200 bg-blue-50 text-blue-700', bestSpeed);
+    addPick('Best Unified Mac / Studio', 'border-indigo-200 bg-indigo-50 text-indigo-700', bestMac);
+
+    for (const r of rows) {
+      if (topPicks.length >= 3) break;
+      addPick('Evaluated Hardware', 'border-slate-200 bg-slate-100 text-slate-700', r);
     }
 
     hubs.push({
       model,
-      entries,
-      smoothEntries,
-      partialEntries,
-      oomEntries,
-      smoothCount: smoothEntries.length,
-      partialCount: partialEntries.length,
-      oomCount: oomEntries.length,
+      rows,
+      curatedCount: rows.filter((r) => r.isCurated).length,
+      fitsCount: fitsRows.length,
+      tightCount: tightRows.length,
+      partialCount: partialRows.length,
+      oomCount: oomRows.length,
       fastestTps,
+      fastestTpsText,
       q4Row,
       q8Row,
       fp16Row,
+      awqRow,
       kvPer4k,
       topPicks,
     });
   }
 
-  return hubs.sort(
-    (a, b) => a.model.params_b - b.model.params_b || a.model.name.localeCompare(b.model.name)
-  );
+  return hubs.sort((a, b) => a.model.params_b - b.model.params_b || a.model.name.localeCompare(b.model.name));
 }
 
 export function buildHardwareFaq(hub: HardwareHub): FaqItem[] {
-  const { hardware, entries, smoothEntries, partialEntries, smoothCount, partialCount, oomCount } =
-    hub;
-
-  const flagship = smoothEntries[0] ?? partialEntries[0] ?? entries[0];
-  const fastest =
-    smoothEntries.length > 0
-      ? [...smoothEntries].sort((a, b) => b.default_result.est_tps - a.default_result.est_tps)[0]
-      : entries[0];
-
-  const flagshipRecQuant =
-    flagship?.quant_table.find((r) => r.recommended)?.quant ?? 'Q4_K_M';
-
-  const q1Answer =
-    smoothCount > 0 && flagship
-      ? `In our benchmarks, the largest Smooth model on ${hardware.name} is ${flagship.model.name} (${flagship.model.params_b}B), fitting 100% inside ${hardware.usable_vram_gb} GB usable ${hardware.backend} memory at ${flagship.default_result.total_vram_gb.toFixed(2)} GB (8K Q4_K_M) and ~${flagship.default_result.est_tps.toFixed(1)} tok/s (recommended quant: ${flagshipRecQuant}).`
-      : flagship
-        ? `Among tested models on ${hardware.name}, none fit 100% Smooth at 8K Q4_K_M; the closest viable run is ${flagship.model.name} (${flagship.default_result.status} at ${flagship.default_result.total_vram_gb.toFixed(2)} GB vs ${hardware.usable_vram_gb} GB usable).`
-        : `${hardware.name} provides ${hardware.usable_vram_gb} GB usable ${hardware.backend} memory.`;
-
-  const q2Answer = `Out of ${entries.length} open-weight models benchmarked on ${hardware.short_name} at Q4_K_M @ 8K, ${smoothCount} run Smooth (all layers in ${hardware.backend} memory), ${partialCount} require Partial Offload across PCIe/RAM, and ${oomCount} hit OOM.`;
-
-  const fastestMaxCtx =
-    fastest && fastest.context_analysis.max_smooth_context_q4 > 0
-      ? formatContextLabel(fastest.context_analysis.max_smooth_context_q4)
-      : '4K–8K';
-
-  const q3Answer = fastest
-    ? fastest.default_result.status === 'OOM'
-      ? `At Q4_K_M @ 8K, ${fastest.model.name} exceeds ${hardware.usable_vram_gb} GB usable memory (OOM); use a smaller quantization or smaller parameter model on ${hardware.short_name}.`
-      : `${fastest.model.name} (${fastest.model.params_b}B) delivers the highest tested throughput on ${hardware.short_name} at ~${fastest.default_result.est_tps.toFixed(1)} tok/s using ${fastest.default_result.total_vram_gb.toFixed(2)} GB (${fastest.default_result.status}), scaling smoothly up to ${fastestMaxCtx} context in Q4_K_M.`
-    : `${hardware.short_name} scales decode throughput proportionally to its ${hardware.bandwidth_gbps} GB/s memory bus.`;
-
-  const gpuCount = hardware.gpu_count ?? 1;
-  const topologyDetail =
-    gpuCount > 1
-      ? `Across ${gpuCount}x GPUs (` +
-        `split with --split-mode layer and ~0.92x multi-GPU scaling efficiency), usable CUDA capacity totals ${hardware.usable_vram_gb} GB out of ${hardware.vram_gb} GB physical VRAM.`
-      : hardware.is_unified
-        ? hardware.vendor === 'Apple'
-          ? `Of ${hardware.vram_gb} GB total unified memory, macOS reserves an OS/compositor buffer, leaving ${hardware.usable_vram_gb} GB as the safe Metal wired limit before swap pressure.`
-          : `Of ${hardware.vram_gb} GB total unified RAM, ${hardware.usable_vram_gb} GB is safely addressable by the ${hardware.backend} GPU runtime while reserving host memory for the OS.`
-        : `Out of ${hardware.vram_gb} GB physical ${hardware.memory_type}, ~${(hardware.vram_gb - hardware.usable_vram_gb).toFixed(1)} GB is reserved for driver buffers and display compositing, leaving ${hardware.usable_vram_gb} GB usable VRAM.`;
-
-  const q4Answer = `${hardware.name} exposes ${hardware.usable_vram_gb} GB usable / ${hardware.vram_gb} GB physical memory on a ${hardware.bandwidth_gbps} GB/s ${hardware.memory_type} bus (${hardware.backend}). ${topologyDetail}`;
+  const hw = hub.hardware;
+  const usable = hub.effectiveUsableGb;
+  const resident = hub.rows.filter((r) => r.result.status === 'Fits' || r.result.status === 'Tight Fit');
+  const fitsOnly = hub.rows.filter((r) => r.result.status === 'Fits');
+  const largestFit = [...resident].sort((a, b) => b.model.params_b - a.model.params_b)[0];
+  const largestName = largestFit ? `${largestFit.model.name} (${largestFit.result.status})` : '4B–7B models';
+  const desktopDiff = hw.vram_gb - usable;
 
   return [
     {
-      question: `What is the largest LLM that ${hardware.name} can run smoothly?`,
-      answer: q1Answer,
+      question: `What is the largest LLM ${hw.name} can run without spilling to host RAM?`,
+      answer: `${hw.name} exposes ${usable.toFixed(1)} GB of usable ${hw.backend} memory under Daily Desktop reserve (of ${hw.vram_gb} GB physical). Across ${hub.rows.length} evaluated LLMs, ${fitsOnly.length} clear with >5% headroom and ${hub.tightCount} sit in Tight Fit (<5% free), topped by ${largestName} at Q4_K_M @ 8K context.`,
     },
     {
-      question: `How many tested models run Smooth on ${hardware.short_name}?`,
-      answer: q2Answer,
+      question: `How fast does ${hw.short_name} generate tokens in local LLM inference?`,
+      answer: `With ${hw.bandwidth_gbps} GB/s memory bandwidth, decode speed stays memory-bandwidth-bound. Expect interactive (~12–24+ tok/s) or fast (~25+ tok/s) ranges on models sized comfortably within ${usable.toFixed(1)} GB, dropping to Readable/Slow tiers on heavier 27B–70B models or host-RAM offload.`,
     },
     {
-      question: `Which benchmarked model runs fastest on ${hardware.short_name}?`,
-      answer: q3Answer,
-    },
-    {
-      question: `How much usable VRAM and memory bandwidth does ${hardware.name} have for LLMs?`,
-      answer: q4Answer,
+      question: `Why does ${hw.short_name} show ${usable.toFixed(1)} GB usable out of ${hw.vram_gb} GB physical?`,
+      answer: hw.is_unified
+        ? `In Daily Desktop mode, macOS/Windows leaves ~${desktopDiff.toFixed(1)} GB un-wired for OS compositing, browsers, and background apps so GPU allocations don't trigger swap thrashing. Closing heavy apps unlocks more room under the Clean OS reserve profile in our simulator.`
+        : `Driver kernels, display buffers (${desktopDiff.toFixed(1)} GB), and compute scratchpads sit inside GPU VRAM alongside weights and KV cache. Multi-GPU rigs add +0.55 GB CUDA context overhead per extra card.`,
     },
   ];
 }
 
 export function buildModelFaq(hub: ModelHub): FaqItem[] {
-  const {
-    model,
-    entries,
-    smoothEntries,
-    partialEntries,
-    smoothCount,
-    partialCount,
-    oomCount,
-    q4Row,
-    q8Row,
-    fp16Row,
-    kvPer4k,
-  } = hub;
+  const m = hub.model;
+  const resident = hub.rows.filter((r) => r.result.status === 'Fits' || r.result.status === 'Tight Fit');
+  const minFit = [...resident].sort(
+    (a, b) =>
+      (a.result.effective_usable_vram_gb ?? a.hardware.usable_vram_gb) -
+      (b.result.effective_usable_vram_gb ?? b.hardware.usable_vram_gb),
+  )[0];
+  const fastest = resident[0];
 
-  const q4Text = q4Row
-    ? `${q4Row.total_vram_8k_gb.toFixed(2)} GB (${q4Row.weights_gb.toFixed(2)} GB weights + ${q4Row.kv_cache_8k_gb.toFixed(2)} GB KV + ${q4Row.overhead_gb.toFixed(2)} GB runtime overhead)`
-    : 'varies by hardware overhead';
-  const q8Text = q8Row ? `${q8Row.total_vram_8k_gb.toFixed(2)} GB` : 'higher VRAM';
-  const fp16Text = fp16Row ? `${fp16Row.total_vram_8k_gb.toFixed(2)} GB` : 'unquantized 16-bit';
+  const minFitUsable = minFit ? minFit.result.effective_usable_vram_gb ?? minFit.hardware.usable_vram_gb : 0;
+  const minGpuAnswer = minFit
+    ? `An accelerator with at least ${minFitUsable.toFixed(1)} GB usable memory (${minFit.hardware.name}) holds ${m.short_name} completely in VRAM at Q4_K_M @ 8K (${hub.q4Row.total_vram_gb.toFixed(2)} GB total, status: ${minFit.result.status}).`
+    : `${m.short_name} requires ${hub.q4Row.total_vram_gb.toFixed(2)} GB at Q4_K_M @ 8K; use multi-GPU splits or high-memory Mac Studio / H100/H200 nodes.`;
 
-  const q1Answer = `At 8K context with FP16 KV cache, ${model.name} (${model.params_b}B, ${model.num_layers} layers) requires ${q4Text} in Q4_K_M, ${q8Text} in Q8_0, and ${fp16Text} in full FP16.`;
-
-  const fastest = smoothEntries[0] ?? entries[0];
-  const q2Answer =
-    smoothCount > 0 && fastest
-      ? `The fastest benchmarked platform for ${model.short_name} is ${fastest.hardware.name}, sustaining ~${fastest.default_result.est_tps.toFixed(1)} tok/s in Q4_K_M @ 8K with all ${model.num_layers}/${model.num_layers} layers on-device (${fastest.hardware.usable_vram_gb} GB usable memory at ${fastest.hardware.bandwidth_gbps} GB/s).`
-      : fastest
-        ? `Across ${entries.length} tested devices, ${fastest.hardware.name} leads at ~${fastest.default_result.est_tps.toFixed(1)} tok/s (${fastest.default_result.status}, ${fastest.default_result.gpu_layers_fit}/${model.num_layers} GPU layers).`
-        : `${model.short_name} scales directly with hardware memory bandwidth when weights fit in VRAM.`;
-
-  const bestValue =
-    smoothEntries.length > 0
-      ? [...smoothEntries].sort((a, b) => {
-          if (a.hardware.msrp_usd !== b.hardware.msrp_usd) {
-            return a.hardware.msrp_usd - b.hardware.msrp_usd;
-          }
-          return b.default_result.est_tps - a.default_result.est_tps;
-        })[0]
-      : partialEntries[0] ?? entries[0];
-
-  const q3Answer =
-    smoothCount > 0 && bestValue
-      ? `Of the ${entries.length} benchmarked platforms (${smoothCount} Smooth, ${partialCount} Partial Offload, ${oomCount} OOM), the lowest-cost Smooth option is ${bestValue.hardware.name} ($${bestValue.hardware.msrp_usd.toLocaleString()} reference MSRP, ${bestValue.hardware.usable_vram_gb} GB usable memory) at ~${bestValue.default_result.est_tps.toFixed(1)} tok/s in Q4_K_M.`
-      : bestValue
-        ? `None of the tested GPUs fit ${model.short_name} Q4_K_M completely at 8K without offloading; ${bestValue.hardware.name} provides the closest Partial Offload configuration.`
-        : `Choose hardware with usable memory above ${q4Row ? q4Row.total_vram_8k_gb.toFixed(1) : 'the Q4_K_M footprint'} GB to avoid PCIe offloading.`;
-
-  const q4Answer = `With ${model.num_layers} layers, ${model.num_kv_heads} GQA KV heads, and head_dim=${model.head_dim}, each additional 4K of context adds +${kvPer4k.toFixed(2)} GB in default FP16 KV cache (up to ${formatContextLabel(model.max_context)} max context). Enabling Flash Attention and q8_0 KV cache roughly halves KV growth per 4K tokens.`;
+  const fastestText = fastest
+    ? formatTpsRange(
+        fastest.result.est_tps_low,
+        fastest.result.est_tps_high,
+        fastest.result.est_tps,
+        fastest.result.status,
+      )
+    : 'Offload';
 
   return [
     {
-      question: `How much VRAM does ${model.name} require at Q4_K_M, Q8_0, and FP16?`,
-      answer: q1Answer,
+      question: `How much VRAM does ${m.name} require?`,
+      answer: `At 8K context with FP16 KV cache, ${m.name} (${m.params_b}B) requires ${hub.q4Row.total_vram_gb.toFixed(2)} GB at Q4_K_M (GGUF), ${hub.awqRow.total_vram_gb.toFixed(2)} GB at 4-bit AWQ (vLLM), ${hub.q8Row.total_vram_gb.toFixed(2)} GB at Q8_0, and ${hub.fp16Row.total_vram_gb.toFixed(1)} GB at FP16. KV cache scales by +${hub.kvPer4k.toFixed(2)} GB per 4K context tokens.`,
     },
     {
-      question: `What is the fastest GPU or Mac to run ${model.short_name}?`,
-      answer: q2Answer,
+      question: `What GPU or Mac fits ${m.short_name} cleanly without offload?`,
+      answer: `${minGpuAnswer} Across our ${hub.rows.length}-GPU matrix, ${hub.fitsCount} GPUs fit comfortably and ${hub.tightCount} qualify as Tight Fit (<5% headroom).`,
     },
     {
-      question: `What is the most affordable hardware that runs ${model.short_name} smoothly?`,
-      answer: q3Answer,
-    },
-    {
-      question: `How much VRAM does ${model.short_name} KV cache consume as context grows?`,
-      answer: q4Answer,
+      question: `Which GPU achieves the highest decode speed on ${m.short_name}?`,
+      answer: fastest
+        ? `On ${fastest.hardware.name} (${fastest.hardware.bandwidth_gbps} GB/s), formula decode rate reaches ${fastestText} (${fastest.result.speed_tier}). Dual-GPU Layer Split scales memory capacity safely, while Tensor Parallel on PCIe incurs All-Reduce latency.`
+        : `Higher memory-bandwidth cards reduce per-token decode time cleanly once all ${m.num_layers} layers fit in VRAM.`,
     },
   ];
 }

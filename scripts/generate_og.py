@@ -56,11 +56,17 @@ MONO_REG_CANDIDATES = [
 ]
 
 PALETTES: dict[str, dict[str, tuple[int, int, int]]] = {
-    "Smooth": {
+    "Fits": {
         "accent": (16, 185, 129),      # #10b981
         "badge_bg": (6, 78, 59),       # #064e3b
         "badge_text": (167, 243, 208), # #a7f3d0
         "kpi_val": (52, 211, 153),     # #34d399
+    },
+    "Tight Fit": {
+        "accent": (249, 115, 22),      # #f97316
+        "badge_bg": (67, 20, 7),       # #431407
+        "badge_text": (254, 215, 170), # #fed7aa
+        "kpi_val": (251, 146, 60),     # #fb923c
     },
     "Partial Offload": {
         "accent": (245, 158, 11),      # #f59e0b
@@ -281,7 +287,7 @@ def render_og_card(
     f_url, url_fit = fit_single_line(draw, url_path, MONO_REG_CANDIDATES, 640, (17, 15))
     draw.text((content_x, 530), url_fit, font=f_url, fill=(148, 163, 184))
 
-    tagline = "Interactive VRAM & Tokens/s Estimator"
+    tagline = f"Formula Estimates (±20%) · Updated {catalog.CATALOG_UPDATED_AT}"
     f_tag = _load_font(SANS_BOLD_CANDIDATES, 17)
     tag_w = draw.textlength(tagline, font=f_tag)
     draw.text((content_right - tag_w, 530), tagline, font=f_tag, fill=(96, 165, 250))
@@ -292,11 +298,7 @@ def render_og_card(
 
 
 def status_rank(s: str) -> int:
-    if s == "Smooth":
-        return 0
-    if s == "Partial Offload":
-        return 1
-    return 2
+    return {"Fits": 0, "Tight Fit": 1, "Partial Offload": 2, "OOM": 3}.get(s, 3)
 
 
 def fmt_ctx(tokens: int) -> str:
@@ -305,12 +307,6 @@ def fmt_ctx(tokens: int) -> str:
 
 def main() -> None:
     entries = json.loads(DATA_PATH.read_text(encoding="utf-8"))
-    by_hw: dict[str, list[dict]] = defaultdict(list)
-    by_mod: dict[str, list[dict]] = defaultdict(list)
-
-    for e in entries:
-        by_hw[e["hardware"]["id"]].append(e)
-        by_mod[e["model"]["id"]].append(e)
 
     # Clear old generated PNGs cleanly before writing
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -318,7 +314,7 @@ def main() -> None:
         stale.unlink()
 
     generated = 0
-    smooth_total = sum(1 for e in entries if e["default_result"]["status"] == "Smooth")
+    fits_total = sum(1 for e in entries if e["default_result"]["status"] in ("Fits", "Tight Fit"))
 
     # 1. Homepage OG card
     render_og_card(
@@ -326,11 +322,11 @@ def main() -> None:
         palette_key="Blue",
         badge_label="COMPATIBILITY MATRIX",
         headline="Local AI LLM VRAM & Speed Calculator",
-        subtitle="7-Tier Quants (Q2_K–FP16), Multi-GPU (1x–8x) & CPU/RAM tok/s across NVIDIA, Apple, AMD & Intel",
+        subtitle="GGUF, AWQ & MLX Formats · Multi-GPU PCIe/NVLink & Reserve Profiles",
         kpis=[
-            ("Full Guides", f"{len(entries)} Pairings", f"{smooth_total} Smooth GPU runs", True),
-            ("Catalog GPUs", f"{len(catalog.HARDWARE)} Devices", f"{len(by_hw)} Hardware Hubs · 1x-8x", False),
-            ("Open LLMs", f"{len(catalog.MODELS)} Models", "DeepSeek-R1 · Qwen3 · Gemma 3", False),
+            ("Full Guides", f"{len(entries)} Pairings", f"{fits_total} Fits / Tight Fit", True),
+            ("Catalog GPUs", f"{len(catalog.HARDWARE)} Hubs", "T4 · L4 · A10 · RTX · M4", False),
+            ("Open LLMs", f"{len(catalog.MODELS)} Models", "Qwen3 · Gemma 3 · DeepSeek", False),
         ],
         url_path="vramcalc.me/",
     )
@@ -341,11 +337,11 @@ def main() -> None:
         OUT_DIR / "calculator.png",
         palette_key="Blue",
         badge_label="CUSTOM RIG SIMULATOR",
-        headline="Multi-GPU, 7-Quant & CPU/RAM LLM Simulator",
-        subtitle="Test 1x–8x GPU layer/tensor splits, Q2_K–FP16 weights, Q8_0/Q4_0 KV cache & CPU-only inference",
+        headline="Multi-GPU, AWQ/MLX & CPU/RAM LLM Simulator",
+        subtitle="1x–8x Layer/Tensor Splits, GGUF/AWQ/MLX, Desktop vs Clean Reserve & PCIe Sync",
         kpis=[
             ("Accelerators", f"{len(catalog.HARDWARE)} GPUs (1x-8x)", "NVIDIA · Apple · AMD · Intel", True),
-            ("Model Catalog", f"{len(catalog.MODELS)} Open LLMs", "Dense + MoE (Qwen3-30B-A3B)", False),
+            ("Formats", "GGUF · AWQ · MLX", "llama.cpp · vLLM · mlx-lm", False),
             ("CPU & Memory", f"{len(catalog.CPUS)} CPU Profiles", "16–512 GB DDR4 / DDR5 / EPYC", False),
         ],
         url_path="vramcalc.me/calculator/",
@@ -353,56 +349,54 @@ def main() -> None:
     generated += 1
 
     # 2. /gpu/ Directory OG card
-    max_usable = max(e["hardware"]["usable_vram_gb"] for e in entries)
+    max_usable = max(h["usable_vram_gb"] for h in catalog.HARDWARE)
     render_og_card(
         OUT_DIR / "gpu-index.png",
         palette_key="Blue",
         badge_label="HARDWARE DIRECTORY",
-        headline=f"All {len(by_hw)} Local AI GPUs & Unified Macs",
-        subtitle="Filter NVIDIA RTX, Dual-GPU, Apple Silicon & AMD Radeon/Ryzen AI by usable VRAM & bandwidth",
+        headline=f"All {len(catalog.HARDWARE)} Local AI GPUs & Macs",
+        subtitle="Consumer RTX, Data Center T4/L4/A10/H200, Apple Silicon & Dual-GPU Hosts",
         kpis=[
-            ("GPU & Mac Hubs", f"{len(by_hw)} Devices", "CUDA · Metal · ROCm", True),
+            ("Hardware Hubs", f"{len(catalog.HARDWARE)} Devices", "CUDA · Metal · ROCm", True),
             ("Usable Ceiling", f"Up to {max_usable:g} GB", "Unified & Multi-GPU rigs", False),
-            ("Total Benchmarks", f"{len(entries)} Pairings", "Interactive calculators", False),
+            ("Updated", catalog.CATALOG_UPDATED_AT, f"Physics {catalog.ENGINE_VERSION}", False),
         ],
         url_path="vramcalc.me/gpu/",
     )
     generated += 1
 
     # 3. /model/ Directory OG card
-    min_p = min(e["model"]["params_b"] for e in entries)
-    max_p = max(e["model"]["params_b"] for e in entries)
-    families = len({e["model"]["family"] for e in entries})
+    min_p = min(m["params_b"] for m in catalog.MODELS)
+    max_p = max(m["params_b"] for m in catalog.MODELS)
+    families = len({m["family"] for m in catalog.MODELS})
     render_og_card(
         OUT_DIR / "model-index.png",
         palette_key="Blue",
         badge_label="MODEL DIRECTORY",
-        headline=f"All {len(by_mod)} Open-Weight LLM VRAM Hubs",
-        subtitle="Compare Q4_K_M / Q8_0 / FP16 requirements and ranked GPUs from DeepSeek-R1 to Llama 3.3 70B",
+        headline=f"All {len(catalog.MODELS)} Open LLMs Ranked by GPU Fit",
+        subtitle="Qwen3, Gemma 3, DeepSeek-R1, Qwen2.5-Coder, Llama-3.3, Mistral & Phi-4",
         kpis=[
-            ("Indexed Models", f"{len(by_mod)} LLMs", f"Across {families} model families", True),
+            ("Open LLMs", f"{len(catalog.MODELS)} Models", f"{families} model families", True),
             ("Parameter Range", f"{min_p:g}B – {max_p:g}B", "1.5B edge up to 72B flagship", False),
-            ("GPU Leaderboards", f"{len(entries)} Runs", "Ranked Smooth-first by tok/s", False),
+            ("GPU Hubs Matrix", f"{len(catalog.HARDWARE)} GPUs Each", "Honest Fits & Speed Tiers", False),
         ],
         url_path="vramcalc.me/model/",
     )
     generated += 1
 
-    # 4. 29 Hardware Hub OG cards
-    for hid, lst in sorted(by_hw.items()):
-        # Merge optional hardware fields cleanly
-        hw = dict(lst[0]["hardware"])
-        for item in lst[1:]:
-            for k, v in item["hardware"].items():
-                if v is not None:
-                    hw[k] = v
-        smooth = [x for x in lst if x["default_result"]["status"] == "Smooth"]
-        smooth.sort(key=lambda x: (-x["model"]["params_b"], -x["default_result"]["est_tps"]))
-        top_label = (
-            f"{smooth[0]['model']['short_name']} ({smooth[0]['default_result']['est_tps']:.1f} t/s)"
-            if smooth
-            else f"{len(lst)} tested models"
-        )
+    # 4. All 103 Hardware Hub OG cards
+    for hw in catalog.HARDWARE:
+        hid = hw["id"]
+        runs = [(m, physics.estimate_run(m, hw, quant="Q4_K_M", context_tokens=8192)) for m in catalog.MODELS]
+        usable = runs[0][1]["effective_usable_vram_gb"]
+        fit_runs = [pair for pair in runs if pair[1]["status"] in ("Fits", "Tight Fit")]
+        fit_runs.sort(key=lambda x: (-x[0]["params_b"], -x[1]["est_tps"]))
+        if fit_runs:
+            bm, br = fit_runs[0]
+            top_label = f"{bm['short_name']} ({physics.format_tps_range(br['est_tps_low'], br['est_tps_high'], br['est_tps'], br['status'])})"
+        else:
+            top_label = f"{len(catalog.MODELS)} models evaluated"
+
         render_og_card(
             OUT_DIR / f"gpu-{hid}.png",
             palette_key="Blue",
@@ -410,33 +404,31 @@ def main() -> None:
             headline=f"Best Local AI Models for {hw['name']}",
             subtitle=f"{hw['vendor']} · {hw['backend']} · {hw['memory_type']} · ${hw['msrp_usd']:,} MSRP",
             kpis=[
-                ("Usable VRAM", f"{hw['usable_vram_gb']} GB", f"of {hw['vram_gb']} GB physical", False),
+                ("Usable Pool", f"{usable:.1f} GB", f"of {hw['vram_gb']:g} GB physical", False),
                 ("Bandwidth", f"{hw['bandwidth_gbps']:g} GB/s", f"{hw['backend']} runtime", False),
-                ("Smooth Models", f"{len(smooth)} / {len(lst)} Fit", top_label, True),
+                ("Fits / Tight Fit", f"{len(fit_runs)} / {len(catalog.MODELS)} Fit", top_label, True),
             ],
             url_path=f"vramcalc.me/gpu/{hid}/",
         )
         generated += 1
 
-    # 5. 12 Model Hub OG cards
-    for mid, lst in sorted(by_mod.items()):
-        sorted_runs = sorted(
-            lst,
+    # 5. All 22 Model Hub OG cards
+    for m in catalog.MODELS:
+        mid = m["id"]
+        runs = [(hw, physics.estimate_run(m, hw, quant="Q4_K_M", context_tokens=8192)) for hw in catalog.HARDWARE]
+        runs.sort(
             key=lambda x: (
-                status_rank(x["default_result"]["status"]),
-                -x["default_result"]["est_tps"],
-                -x["hardware"]["usable_vram_gb"],
-            ),
+                status_rank(x[1]["status"]),
+                -x[1]["est_tps"],
+                -x[1]["effective_usable_vram_gb"],
+            )
         )
-        m = sorted_runs[0]["model"]
-        q4_gb = sorted_runs[0]["default_result"]["total_vram_gb"]
-        kv_4k = sorted_runs[0]["context_analysis"]["kv_gb_per_4k"]
-        smooth = [x for x in sorted_runs if x["default_result"]["status"] == "Smooth"]
-        fastest = smooth[0] if smooth else sorted_runs[0]
-        fast_val = (
-            f"{fastest['default_result']['est_tps']:.1f} tok/s"
-            if fastest["default_result"]["status"] != "OOM"
-            else "Offload Req."
+        q4_gb = runs[0][1]["total_vram_gb"]
+        kv_4k = physics.kv_gb_per_4k(m)
+        fit_runs = [x for x in runs if x[1]["status"] in ("Fits", "Tight Fit")]
+        fastest_hw, fastest_res = fit_runs[0] if fit_runs else runs[0]
+        fast_val = physics.format_tps_range(
+            fastest_res["est_tps_low"], fastest_res["est_tps_high"], fastest_res["est_tps"], fastest_res["status"]
         )
         render_og_card(
             OUT_DIR / f"model-{mid}.png",
@@ -446,37 +438,34 @@ def main() -> None:
             subtitle=f"{m['params_b']}B Params · {m['architecture']} · {m['num_layers']} Layers · {fmt_ctx(m['max_context'])} Max",
             kpis=[
                 ("Q4_K_M @ 8K", f"{q4_gb:.2f} GB", f"+{kv_4k:.2f} GB KV / 4K", False),
-                ("Smooth GPUs", f"{len(smooth)} / {len(lst)} Fit", "Full on-device residency", len(smooth) > 0),
-                ("Fastest GPU", fastest["hardware"]["short_name"], fast_val, True),
+                ("Fits / Tight Fit", f"{len(fit_runs)} / {len(catalog.HARDWARE)} GPUs", "Full on-device residency", len(fit_runs) > 0),
+                ("Fastest GPU", fastest_hw["short_name"], fast_val, True),
             ],
             url_path=f"vramcalc.me/model/{mid}/",
         )
         generated += 1
 
-    # 6. 106 Detail page OG cards
+    # 6. All 165 Detail page OG cards
     for e in entries:
         m = e["model"]
         h = e["hardware"]
         r = e["default_result"]
         st = r["status"]
-        max_ctx = e["context_analysis"]["max_smooth_context_q4"]
-        max_ctx_str = f"Max {fmt_ctx(max_ctx)} Q4" if max_ctx > 0 else "Needs Offload/Q2"
-        speed_val = f"{r['est_tps']:.1f} tok/s" if st != "OOM" else "OOM (0 tok/s)"
-        speed_sub = (
-            "Full GPU bandwidth"
-            if st == "Smooth"
-            else "PCIe / RAM bottleneck"
-            if st == "Partial Offload"
-            else "Exceeds capacity"
-        )
+        tier = r.get("speed_tier", physics.classify_speed_tier(r["est_tps"], st))
+        usable = r.get("effective_usable_vram_gb", h["usable_vram_gb"])
+        max_ctx = e.get("max_fit_context", e["context_analysis"]["max_smooth_context_q4"])
+        max_ctx_vram = e.get("max_fit_total_vram_gb", 0.0)
+        max_ctx_str = f"Max {fmt_ctx(max_ctx)} ({max_ctx_vram:.1f} GB)" if max_ctx > 0 else "Offload / Q8 KV req."
+        speed_val = physics.format_tps_range(r.get("est_tps_low", int(r["est_tps"])), r.get("est_tps_high", int(r["est_tps"])), r["est_tps"], st)
+        speed_sub = f"{tier} · Formula est." if st != "OOM" else "Exceeds capacity"
         render_og_card(
             OUT_DIR / f"run-{e['slug']}.png",
             palette_key=st,
             badge_label=st.upper(),
             headline=f"{m['short_name']} on {h['name']}",
-            subtitle=f"{m['params_b']}B ({m['num_layers']}L) · {h['backend']} {h['bandwidth_gbps']:g} GB/s · {h['usable_vram_gb']} GB Usable",
+            subtitle=f"{m['params_b']}B ({m['num_layers']}L) · {h['backend']} {h['bandwidth_gbps']:g} GB/s · {usable:.1f} GB Usable",
             kpis=[
-                ("VRAM (Q4 @ 8K)", f"{r['total_vram_gb']:.2f} GB", f"vs {h['usable_vram_gb']} GB usable", False),
+                ("VRAM (Q4 @ 8K)", f"{r['total_vram_gb']:.2f} GB", f"vs {usable:.1f} GB usable", False),
                 ("Est. Speed", speed_val, speed_sub, True),
                 ("GPU Layers", f"{r['gpu_layers_fit']}/{r['total_layers']}", max_ctx_str, False),
             ],

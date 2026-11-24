@@ -1,15 +1,22 @@
 export type QuantKey =
-  | 'Q2_K'
-  | 'Q3_K_M'
   | 'Q4_K_M'
   | 'Q5_K_M'
   | 'Q6_K'
   | 'Q8_0'
-  | 'FP16';
-export type CalculatorQuantKey = QuantKey;
-export type KvQuantKey = 'FP16' | 'Q8_0' | 'Q4_0';
-export type SplitMode = 'layer' | 'row';
-export type CompatStatus = 'Smooth' | 'Partial Offload' | 'OOM';
+  | 'FP16'
+  | 'AWQ_4BIT'
+  | 'FP8'
+  | 'MLX_4BIT'
+  | 'MLX_8BIT';
+
+export type RuntimeFormat = 'GGUF' | 'AWQ' | 'MLX';
+export type KvQuantKey = 'fp16' | 'q8_0' | 'q4_0';
+export type SplitMode = 'layer' | 'tensor';
+export type ReserveProfile = 'desktop' | 'clean' | 'custom';
+
+export type CompatStatus = 'Fits' | 'Tight Fit' | 'Partial Offload' | 'OOM';
+export type SpeedTier = 'Fast' | 'Interactive' | 'Readable' | 'Slow' | 'OOM';
+
 export type HardwareVendor = 'NVIDIA' | 'Apple' | 'AMD' | 'Intel';
 export type HardwareBackend = 'CUDA' | 'Metal' | 'ROCm' | 'Vulkan' | 'CPU';
 export type HardwareCategory =
@@ -19,6 +26,7 @@ export type HardwareCategory =
   | 'Workstation'
   | 'Unified Memory'
   | 'Data Center';
+
 export type CpuTier =
   | 'Consumer DDR4'
   | 'Consumer DDR5'
@@ -41,6 +49,8 @@ export interface ModelSpec {
   ollama_tag: string;
   hf_repo: string;
   gguf_file_q4: string;
+  awq_repo?: string;
+  mlx_repo?: string;
   release_year: number;
   use_cases: string[];
 }
@@ -51,9 +61,8 @@ export interface HardwareSpec {
   short_name: string;
   vendor: HardwareVendor;
   series: string;
-  category?: HardwareCategory;
-  gpu_count?: number;
-  has_nvlink?: boolean;
+  category: HardwareCategory;
+  gpu_count: number;
   vram_gb: number;
   usable_vram_gb: number;
   bandwidth_gbps: number;
@@ -61,6 +70,7 @@ export interface HardwareSpec {
   is_unified: boolean;
   backend: HardwareBackend;
   msrp_usd: number;
+  has_nvlink?: boolean;
 }
 
 export interface CpuSpec {
@@ -78,6 +88,8 @@ export interface CpuSpec {
 }
 
 export interface CatalogData {
+  updated_at?: string;
+  engine_version?: string;
   models: ModelSpec[];
   hardware: HardwareSpec[];
   cpus: CpuSpec[];
@@ -85,63 +97,81 @@ export interface CatalogData {
 
 export interface RunEstimate {
   quant: QuantKey;
+  format?: RuntimeFormat;
   context_tokens: number;
   weights_gb: number;
   kv_cache_gb: number;
   overhead_gb: number;
   total_vram_gb: number;
+  effective_usable_vram_gb?: number;
+  headroom_gb?: number;
   status: CompatStatus;
+  speed_tier?: SpeedTier;
   est_tps: number;
+  est_tps_low?: number;
+  est_tps_high?: number;
   gpu_layers_fit: number;
   total_layers: number;
   gpu_fraction: number;
-}
-
-export interface RigRunOptions {
-  quant?: QuantKey;
-  contextTokens?: number;
-  kvQuant?: KvQuantKey;
-  gpuCount?: number;
-  splitMode?: SplitMode;
-  cpuBwGbps?: number;
-  systemRamGb?: number | null;
-}
-
-export interface RigRunEstimate extends RunEstimate {
-  kv_quant: KvQuantKey;
-  gpu_count: number;
-  split_mode: SplitMode;
-  usable_vram_gb: number;
-  total_phys_vram_gb: number;
-  offload_ram_gb: number;
-  usable_ram_gb: number;
-  is_cpu_only: boolean;
-  oom_reason: string;
+  comm_overhead_pct?: number;
+  comm_warning?: boolean;
 }
 
 export interface QuantRow {
   quant: QuantKey;
+  format?: RuntimeFormat;
   label: string;
   bits_per_weight: number;
   weights_gb: number;
   kv_cache_8k_gb: number;
   overhead_gb: number;
   total_vram_8k_gb: number;
+  effective_usable_vram_gb?: number;
   est_tps: number;
+  est_tps_low?: number;
+  est_tps_high?: number;
   status: CompatStatus;
+  speed_tier?: SpeedTier;
   gpu_layers_fit: number;
   total_layers: number;
   recommended: boolean;
   notes: string;
 }
 
-export interface LaunchCommands {
+export interface CommandsBlock {
   ollama_run: string;
   ollama_env_cmd: string;
   llama_cli: string;
   llama_server: string;
+  vllm_serve?: string;
+  mlx_lm?: string;
   recommended_ctx: number;
   recommended_ngl: number;
+}
+
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+export interface BenchmarkAnchor {
+  hardware_id: string;
+  model_id: string;
+  format: RuntimeFormat;
+  quant: QuantKey;
+  context_tokens: number;
+  gen_tps_low: number;
+  gen_tps_high: number;
+  backend: string;
+  source_label: string;
+  source_url: string;
+  notes: string;
+}
+
+export interface BenchmarksData {
+  updated_at: string;
+  methodology_note: string;
+  anchors: BenchmarkAnchor[];
 }
 
 export interface ContextAnalysis {
@@ -152,12 +182,7 @@ export interface ContextAnalysis {
   optimization_tips: string[];
 }
 
-export interface FaqItem {
-  question: string;
-  answer: string;
-}
-
-export interface PageEntry {
+export interface VramPageEntry {
   slug: string;
   title: string;
   meta_description: string;
@@ -169,8 +194,47 @@ export interface PageEntry {
   default_result: RunEstimate;
   verdict_summary: string;
   quant_table: QuantRow[];
-  commands: LaunchCommands;
+  commands: CommandsBlock;
   context_analysis: ContextAnalysis;
+  max_fit_context?: number;
+  max_fit_total_vram_gb?: number;
+  max_fit_status?: CompatStatus;
   faq: FaqItem[];
   related_slugs: string[];
+}
+
+export type PageEntry = VramPageEntry;
+
+export interface RigRunOptions {
+  model: ModelSpec;
+  hardware: HardwareSpec | null;
+  gpuCount?: number;
+  cpu?: CpuSpec | null;
+  systemRamGb?: number;
+  quant?: QuantKey;
+  format?: RuntimeFormat;
+  contextTokens?: number;
+  kvQuant?: KvQuantKey;
+  splitMode?: SplitMode;
+  reserveProfile?: ReserveProfile;
+  customUsableGb?: number | null;
+  flashAttention?: boolean;
+}
+
+export interface RigRunEstimate extends RunEstimate {
+  raw_vram_gb: number;
+  usable_vram_gb: number;
+  system_ram_gb: number;
+  available_ram_gb: number;
+  spill_ram_gb: number;
+  fits_vram: boolean;
+  fits_rig: boolean;
+  bottleneck: 'VRAM' | 'PCIe / System RAM' | 'System RAM' | 'Insufficient Memory' | 'PCIe All-Reduce';
+  gpu_count: number;
+  split_mode: SplitMode;
+  kv_quant: KvQuantKey;
+  reserve_profile: ReserveProfile;
+  os_ram_reserve_gb: number;
+  effective_bw_gbps: number;
+  active_params_b: number;
 }

@@ -1,18 +1,22 @@
 ---
 import type { CompatStatus } from '../types/vram';
 
-interface Props {
+export interface Props {
   status: CompatStatus;
-  size?: 'sm' | 'md';
   id?: string;
+  size?: 'sm' | 'md';
 }
 
-const { status, size = 'sm', id } = Astro.props;
+const { status, id, size = 'sm' } = Astro.props;
 
 const paletteMap: Record<CompatStatus, { badge: string; dot: string }> = {
-  Smooth: {
+  Fits: {
     badge: 'border-emerald-200 bg-emerald-50 text-emerald-800',
     dot: 'bg-emerald-600',
+  },
+  'Tight Fit': {
+    badge: 'border-orange-200 bg-orange-50 text-orange-800',
+    dot: 'bg-orange-500',
   },
   'Partial Offload': {
     badge: 'border-amber-200 bg-amber-50 text-amber-800',
@@ -20,13 +24,17 @@ const paletteMap: Record<CompatStatus, { badge: string; dot: string }> = {
   },
   OOM: {
     badge: 'border-rose-200 bg-rose-50 text-rose-800',
-    dot: 'bg-rose-600',
+    dot: 'bg-rose-500',
   },
 };
 
-const sizeClass = size === 'md' ? 'px-3 py-1 text-xs' : 'px-2.5 py-0.5 text-[11px]';
-const style = paletteMap[status];
-const badgeClass = `inline-flex items-center gap-1.5 rounded-full border font-semibold tracking-tight whitespace-nowrap ${sizeClass} ${style.badge}`;
+const sizeCls =
+  size === 'md'
+    ? 'px-3 py-1 text-xs font-semibold gap-2'
+    : 'px-2.5 py-0.5 text-[11px] font-semibold gap-1.5';
+
+const style = paletteMap[status] ?? paletteMap.OOM;
+const badgeClass = `inline-flex items-center rounded-full border tracking-wide whitespace-nowrap ${sizeCls} ${style.badge}`;
 const dotClass = `h-1.5 w-1.5 rounded-full ${style.dot}`;
 ---
 

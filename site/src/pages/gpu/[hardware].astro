@@ -1,14 +1,21 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
-import catalogRaw from '../../data/catalog_data.json';
+import SpeedBadge from '../../components/SpeedBadge.astro';
 import rawPagesData from '../../data/pages_data.json';
-import type { CatalogData, HardwareSpec, PageEntry } from '../../types/vram';
-import { estimateRun, formatContextLabel, maxSmoothContext } from '../../utils/physics';
-import { buildHardwareFaq, buildHardwareHubs, statusRank, type HardwareHub } from '../../utils/hubs';
+import type { HardwareSpec, VramPageEntry } from '../../types/vram';
+import { formatContextLabel, formatTpsRange } from '../../utils/physics';
+import {
+  buildHardwareFaq,
+  buildHardwareHubs,
+  getBenchmarksMethodologyNote,
+  getCatalogUpdatedAt,
+  getReferenceBenchmarks,
+  type HardwareHub,
+} from '../../utils/hubs';
 
 export function getStaticPaths() {
-  const allEntries = rawPagesData as PageEntry[];
+  const allEntries = rawPagesData as VramPageEntry[];
   const hubs = buildHardwareHubs(allEntries);
   const allHardware = hubs.map((h) => h.hardware);
 
@@ -31,92 +38,20 @@ interface Props {
 const { hub, allHardware, totalSiteEntries } = Astro.props;
 const {
   hardware,
-  entries: sortedEntries,
-  smoothCount,
+  effectiveUsableGb,
+  rows,
+  fitsCount,
+  tightCount,
   partialCount,
   oomCount,
   picks,
 } = hub;
 
-const entries = sortedEntries;
+const updatedAt = getCatalogUpdatedAt();
 const faq = buildHardwareFaq(hub);
-const catalog = catalogRaw as CatalogData;
-
-// Build unified 22-model table (curated Full Guides + SSR Live Catalog calculations)
-const curatedByModelId = new Map(entries.map((e) => [e.model.id, e]));
-
-interface UnifiedModelRow {
-  model: CatalogData['models'][number];
-  isCurated: boolean;
-  href: string;
-  modelHubHref?: string;
-  status: PageEntry['default_result']['status'];
-  totalVramGb: number;
-  estTps: number;
-  gpuLayersFit: number;
-  totalLayers: number;
-  recQuant: string;
-  maxCtxLabel: string;
-}
-
-const curatedModelHubIds = new Set(entries.map((e) => e.model.id));
-// Note: check all 12 curated model hubs sitewide
-const allCuratedModelHubIds = new Set((rawPagesData as PageEntry[]).map((e) => e.model.id));
-
-const unifiedRows: UnifiedModelRow[] = catalog.models
-  .map((m) => {
-    const curated = curatedByModelId.get(m.id);
-    if (curated) {
-      const r = curated.default_result;
-      const recQ = curated.quant_table.find((x) => x.recommended)?.quant ?? 'Q4_K_M';
-      const maxCtx =
-        curated.context_analysis.max_smooth_context_q4 > 0
-          ? `${formatContextLabel(curated.context_analysis.max_smooth_context_q4)} Smooth`
-          : 'Needs Offload/Q2';
-      return {
-        model: curated.model,
-        isCurated: true,
-        href: `/can-i-run/${curated.slug}/`,
-        modelHubHref: `/model/${curated.model.id}/`,
-        status: r.status,
-        totalVramGb: r.total_vram_gb,
-        estTps: r.est_tps,
-        gpuLayersFit: r.gpu_layers_fit,
-        totalLayers: r.total_layers,
-        recQuant: recQ,
-        maxCtxLabel: maxCtx,
-      };
-    }
-
-    const r = estimateRun(m, hardware, 'Q4_K_M', 8192);
-    const maxCtxTokens = maxSmoothContext(m, hardware, 'Q4_K_M');
-    const maxCtx = maxCtxTokens > 0 ? `${formatContextLabel(maxCtxTokens)} Smooth` : 'Needs Offload/Q2';
-    return {
-      model: m,
-      isCurated: false,
-      href: `/calculator/?model=${encodeURIComponent(m.id)}&hw=${encodeURIComponent(hardware.id)}`,
-      modelHubHref: allCuratedModelHubIds.has(m.id) ? `/model/${m.id}/` : undefined,
-      status: r.status,
-      totalVramGb: r.total_vram_gb,
-      estTps: r.est_tps,
-      gpuLayersFit: r.gpu_layers_fit,
-      totalLayers: r.total_layers,
-      recQuant: 'Q4_K_M',
-      maxCtxLabel: maxCtx,
-    };
-  })
-  .sort((a, b) => {
-    const sr = statusRank(a.status) - statusRank(b.status);
-    if (sr !== 0) return sr;
-    if (b.model.params_b !== a.model.params_b) return b.model.params_b - a.model.params_b;
-    if (b.estTps !== a.estTps) return b.estTps - a.estTps;
-    return a.model.name.localeCompare(b.model.name);
-  });
-
-const allModelsCount = unifiedRows.length;
-const fullSmoothCount = unifiedRows.filter((r) => r.status === 'Smooth').length;
-const fullPartialCount = unifiedRows.filter((r) => r.status === 'Partial Offload').length;
-const fullOomCount = unifiedRows.filter((r) => r.status === 'OOM').length;
+const allModelsCount = rows.length;
+const refBenchmarks = getReferenceBenchmarks({ hardwareId: hardware.id });
+const refNote = getBenchmarksMethodologyNote();
 
 const relatedHardware = allHardware
   .filter((h) => h.id !== hardware.id)
@@ -140,58 +75,50 @@ const topologyLabel =
       ? `Unified Memory (${hardware.backend})`
       : `Discrete Single GPU (${hardware.backend})`;
 
-const topPickSummary =
-  picks.length > 0
-    ? `${picks[0].entry.model.short_name} (${picks[0].entry.default_result.est_tps.toFixed(1)} tok/s)`
-    : `${entries.length} tested models`;
+const topPickRow = picks[0]?.row;
+const topPickSummary = topPickRow
+  ? `${topPickRow.model.short_name} (${formatTpsRange(
+      topPickRow.result.est_tps_low,
+      topPickRow.result.est_tps_high,
+      topPickRow.result.est_tps,
+      topPickRow.result.status,
+    )})`
+  : `${allModelsCount} models evaluated`;
 
 const isMultiCapable = !hardware.is_unified && hardware.category !== 'Laptop GPU';
 const simActionHref = isMultiCapable
   ? `/calculator/?hw=${encodeURIComponent(hardware.id)}&gpus=2`
   : `/calculator/?hw=${encodeURIComponent(hardware.id)}`;
 const simActionLabel = isMultiCapable
-  ? 'Simulate 2x / 3x / 4x Multi-GPU & CPU ->'
-  : 'Open 7-Quant & KV Simulator ->';
+  ? 'Simulate 1x–8x Multi-GPU & AWQ/MLX ->'
+  : 'Open Format & Reserve Simulator ->';
 
 const canonicalPath = `/gpu/${hardware.id}/`;
 const pageTitle = `Best Local AI Models for ${hardware.name} — VRAMCalc.me`;
-const pageDescription = `${hardware.name} packs ${hardware.usable_vram_gb} GB usable ${hardware.memory_type} (${hardware.bandwidth_gbps} GB/s). Check all ${allModelsCount} local LLM compatibility scores (${fullSmoothCount} Smooth at Q4_K_M @ 8K).`;
+const pageDescription = `${hardware.name} exposes ${effectiveUsableGb.toFixed(1)} GB usable ${hardware.memory_type} (${hardware.bandwidth_gbps} GB/s). Inspect all ${allModelsCount} LLMs (${fitsCount} Fits, ${tightCount} Tight Fit at Q4_K_M @ 8K) plus AWQ/MLX & Max Context.`;
 
 const breadcrumbSchema = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    {
-      '@type': 'ListItem',
-      position: 1,
-      name: 'Home',
-      item: 'https://vramcalc.me/',
-    },
-    {
-      '@type': 'ListItem',
-      position: 2,
-      name: 'All GPUs',
-      item: 'https://vramcalc.me/gpu/',
-    },
-    {
-      '@type': 'ListItem',
-      position: 3,
-      name: hardware.name,
-      item: `https://vramcalc.me/gpu/${hardware.id}/`,
-    },
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://vramcalc.me/' },
+    { '@type': 'ListItem', position: 2, name: 'All GPUs', item: 'https://vramcalc.me/gpu/' },
+    { '@type': 'ListItem', position: 3, name: hardware.name, item: `https://vramcalc.me/gpu/${hardware.id}/` },
   ],
 };
 
 const itemListSchema = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
-  name: `Local LLM Benchmarks on ${hardware.name}`,
-  numberOfItems: sortedEntries.length,
-  itemListElement: sortedEntries.map((e, idx) => ({
+  name: `Local LLM Compatibility Matrix for ${hardware.name}`,
+  numberOfItems: rows.length,
+  itemListElement: rows.map((r, idx) => ({
     '@type': 'ListItem',
     position: idx + 1,
-    name: `${e.model.name} on ${hardware.short_name}`,
-    url: `https://vramcalc.me/can-i-run/${e.slug}/`,
+    name: `${r.model.name} on ${hardware.short_name}`,
+    url: r.isCurated
+      ? `https://vramcalc.me${r.href}`
+      : `https://vramcalc.me/model/${r.model.id}/`,
   })),
 };
 
@@ -201,27 +128,28 @@ const faqSchema = {
   mainEntity: faq.map((item) => ({
     '@type': 'Question',
     name: item.question,
-    acceptedAnswer: {
-      '@type': 'Answer',
-      text: item.answer,
-    },
+    acceptedAnswer: { '@type': 'Answer', text: item.answer },
   })),
 };
 
 const statusFilters = [
   { key: 'all', label: `All (${allModelsCount})`, i18nKey: 'status.allWithCount', i18nArgs: JSON.stringify({ count: allModelsCount }) },
-  { key: 'Smooth', label: `Smooth (${fullSmoothCount})`, i18nKey: 'status.smoothWithCount', i18nArgs: JSON.stringify({ count: fullSmoothCount }) },
-  { key: 'Partial Offload', label: `Partial Offload (${fullPartialCount})`, i18nKey: 'status.partialWithCount', i18nArgs: JSON.stringify({ count: fullPartialCount }) },
-  { key: 'OOM', label: `OOM (${fullOomCount})`, i18nKey: 'status.oomWithCount', i18nArgs: JSON.stringify({ count: fullOomCount }) },
+  { key: 'Fits', label: `Fits (${fitsCount})`, i18nKey: 'status.fitsWithCount', i18nArgs: JSON.stringify({ count: fitsCount }) },
+  { key: 'Tight Fit', label: `Tight Fit (${tightCount})`, i18nKey: 'status.tightWithCount', i18nArgs: JSON.stringify({ count: tightCount }) },
+  { key: 'Partial Offload', label: `Partial Offload (${partialCount})`, i18nKey: 'status.partialWithCount', i18nArgs: JSON.stringify({ count: partialCount }) },
+  { key: 'OOM', label: `OOM (${oomCount})`, i18nKey: 'status.oomWithCount', i18nArgs: JSON.stringify({ count: oomCount }) },
 ] as const;
+
 const simBtnI18nKey = isMultiCapable ? 'hub.simMultiGpuBtn' : 'hub.open7QuantBtn';
 const bestModelsForArgs = JSON.stringify({ hw: hardware.name });
 const recBestModelsArgs = JSON.stringify({ hw: hardware.short_name });
 const allCatalogModelsArgs = JSON.stringify({ count: allModelsCount, hw: hardware.short_name });
 const faqTargetArgs = JSON.stringify({ target: hardware.short_name });
 const showAllArgs = JSON.stringify({ count: allModelsCount });
-const ogTitle = `${hardware.name}: ${smoothCount}/${entries.length} Local LLMs Run Smooth`;
-const ogDescription = `${hardware.usable_vram_gb} GB usable ${hardware.memory_type} (${hardware.bandwidth_gbps} GB/s). Top fit: ${topPickSummary}. Compare every tested model & CLI flags.`;
+const browseAllHwArgs = JSON.stringify({ count: allHardware.length });
+const updatedArgs = JSON.stringify({ date: updatedAt });
+const ogTitle = `${hardware.name}: ${fitsCount + tightCount}/${allModelsCount} Local LLMs Fit`;
+const ogDescription = `${effectiveUsableGb.toFixed(1)} GB usable ${hardware.memory_type} (${hardware.bandwidth_gbps} GB/s). Top fit: ${topPickSummary}.`;
 const ogImage = `/og/gpu-${hardware.id}.png`;
 ---
 
@@ -243,7 +171,6 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
   </Fragment>
 
   <article class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-    <!-- Breadcrumbs -->
     <nav aria-label="Breadcrumb" class="mb-4">
       <ol class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-500">
         <li>
@@ -251,7 +178,7 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
         </li>
         <li aria-hidden="true">/</li>
         <li>
-          <a href="/gpu/" class="hover:text-slate-900 transition-colors" data-i18n="nav.gpus">All GPUs</a>
+          <a href="/gpu/" class="hover:text-slate-900 transition-colors" data-i18n="nav.gpus">GPUs</a>
         </li>
         <li aria-hidden="true">/</li>
         <li aria-current="page" class="text-slate-900 font-semibold truncate">
@@ -260,7 +187,6 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
       </ol>
     </nav>
 
-    <!-- Dark Tech Hardware Spec Hero -->
     <header class="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-xs sm:p-8">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex flex-wrap items-center gap-2">
@@ -270,13 +196,14 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
           <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 font-mono text-xs text-slate-300">
             {hardware.series}
           </span>
-          {hardware.category && (
-            <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 font-mono text-xs text-slate-300">
-              {hardware.category}
-            </span>
-          )}
+          <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 font-mono text-xs text-slate-300">
+            {hardware.category}
+          </span>
           <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 font-mono text-xs text-emerald-300">
             {hardware.memory_type}
+          </span>
+          <span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-xs text-emerald-300" data-i18n="common.updated" data-i18n-args={updatedArgs}>
+            Updated {updatedAt}
           </span>
         </div>
 
@@ -294,19 +221,20 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
       </h1>
 
       <p class="mt-3 max-w-3xl text-sm leading-relaxed text-slate-300 sm:text-base">
-        With <strong class="text-white font-mono">{hardware.usable_vram_gb} GB</strong> of usable {hardware.backend} memory
-        ({hardware.vram_gb} GB physical) and <strong class="text-white font-mono">{hardware.bandwidth_gbps} GB/s</strong> bandwidth,
-        this hub compares all <strong class="text-white">{allModelsCount}</strong> open-weight LLMs on{' '}
-        {hardware.short_name}: <span class="text-emerald-300 font-semibold">{fullSmoothCount} Smooth</span>,{' '}
-        <span class="text-amber-300 font-semibold">{fullPartialCount} Partial Offload</span>, and{' '}
-        <span class="text-rose-300 font-semibold">{fullOomCount} OOM</span> at Q4_K_M @ 8K.
+        Under Daily Desktop reserve, <strong class="text-white font-mono">{effectiveUsableGb.toFixed(1)} GB</strong> of{' '}
+        {hardware.vram_gb} GB physical {hardware.backend} memory is usable ({hardware.bandwidth_gbps} GB/s). Across all{' '}
+        <strong class="text-white">{allModelsCount}</strong> LLMs at Q4_K_M @ 8K:{' '}
+        <span class="text-emerald-300 font-semibold">{fitsCount} Fits</span>,{' '}
+        <span class="text-orange-300 font-semibold">{tightCount} Tight Fit</span>,{' '}
+        <span class="text-amber-300 font-semibold">{partialCount} Partial Offload</span>, and{' '}
+        <span class="text-rose-300 font-semibold">{oomCount} OOM</span>.
       </p>
 
       <dl class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
           <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400">Usable / Total VRAM</dt>
           <dd class="mt-1 font-mono text-lg font-bold text-white tabular-nums">
-            {hardware.usable_vram_gb} / {hardware.vram_gb} GB
+            {effectiveUsableGb.toFixed(1)} / {hardware.vram_gb} GB
           </dd>
         </div>
         <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
@@ -322,9 +250,9 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
           </dd>
         </div>
         <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
-          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400">Full 22-LLM Fit</dt>
+          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400">Full {allModelsCount}-LLM Fit</dt>
           <dd class="mt-1 font-mono text-sm font-bold text-emerald-300 tabular-nums">
-            {fullSmoothCount} Smooth · {fullPartialCount} Offload
+            {fitsCount} Fits · {tightCount} Tight · {partialCount} Offload
           </dd>
         </div>
         <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
@@ -336,16 +264,50 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
       </dl>
     </header>
 
-    <!-- Recommended Best Models (Curated Deep-Dive Guides) -->
+    {refBenchmarks.length > 0 && (
+      <section class="mt-7 rounded-2xl border border-sky-200 bg-sky-50/70 p-5" aria-labelledby="gpu-ref-benchmarks">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 id="gpu-ref-benchmarks" class="text-base font-bold text-slate-950" data-i18n="speed.refBenchmark">
+            Public Reference Benchmarks
+          </h2>
+          <span class="rounded-md bg-white/90 px-2 py-0.5 font-mono text-[11px] text-slate-600 border border-sky-200">
+            Community / Framework Anchors
+          </span>
+        </div>
+        <p class="mt-1 text-xs text-slate-600">{refNote}</p>
+        <div class="mt-3 grid gap-3 sm:grid-cols-2">
+          {refBenchmarks.map((anc) => (
+            <div class="rounded-xl border border-sky-200 bg-white p-3.5 text-xs">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="font-mono font-bold text-slate-950">
+                  {anc.model_id} · {anc.quant} @ {formatContextLabel(anc.context_tokens)}
+                </span>
+                <span class="font-mono font-bold text-sky-700">
+                  {anc.gen_tps_low}–{anc.gen_tps_high} tok/s
+                </span>
+              </div>
+              <p class="mt-1 text-slate-600">{anc.notes}</p>
+              <div class="mt-1.5 text-[11px] text-slate-500">
+                <span data-i18n="speed.refSource">Source</span>:{' '}
+                <a href={anc.source_url} target="_blank" rel="noopener noreferrer" class="underline hover:text-slate-900">
+                  {anc.source_label}
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
     {picks.length > 0 && (
       <section class="mt-10" aria-labelledby="recommended-models-heading">
         <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 id="recommended-models-heading" class="text-xl font-bold tracking-tight text-slate-950" data-i18n="hub.recBestModels" data-i18n-args={recBestModelsArgs}>
-              Recommended Best Models for {hardware.short_name}
+              Top Recommended Models for {hardware.short_name}
             </h2>
             <p class="mt-1 text-sm text-slate-600">
-              {hardware.usable_vram_gb} GB usable VRAM · {hardware.bandwidth_gbps} GB/s
+              {effectiveUsableGb.toFixed(1)} GB usable VRAM · {hardware.bandwidth_gbps} GB/s
             </p>
           </div>
           <a href="/" class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0" data-i18n="detail.viewFullMatrix">
@@ -355,54 +317,61 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
 
         <div class="mt-4 grid gap-4 md:grid-cols-3">
           {picks.map((pick) => {
-            const e = pick.entry;
-            const res = e.default_result;
-            const detailHref = `/can-i-run/${e.slug}/`;
-            const modelHref = `/model/${e.model.id}/`;
-            const recQuant = e.quant_table.find((r) => r.recommended)?.quant ?? 'Q4_K_M';
+            const row = pick.row;
+            const res = row.result;
+            const tier = res.speed_tier ?? 'Readable';
+            const speedText = formatTpsRange(res.est_tps_low, res.est_tps_high, res.est_tps, res.status);
             const maxCtx =
-              e.context_analysis.max_smooth_context_q4 > 0
-                ? formatContextLabel(e.context_analysis.max_smooth_context_q4)
-                : 'Offload/OOM';
-            const speedText = res.status === 'OOM' ? 'OOM' : `${res.est_tps.toFixed(1)} tok/s`;
+              row.maxFitCtx > 0
+                ? `${formatContextLabel(row.maxFitCtx)} (${row.maxFitVramGb.toFixed(1)} GB)`
+                : 'Offload/Q8';
             const roleClass = `inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${pick.accent}`;
+            const modelHref = `/model/${row.model.id}/`;
+            const summaryText = row.curatedEntry
+              ? row.curatedEntry.verdict_summary
+              : `${hardware.short_name} runs ${row.model.name} (${res.weights_gb.toFixed(2)} GB weights @ Q4_K_M) in status ${res.status} with ${maxCtx} resident context headroom.`;
+            const ctaI18n = row.isCurated ? 'common.openGuide' : 'common.simulate';
+            const ctaText = row.isCurated ? 'Open Guide ->' : 'Simulate ->';
 
             return (
               <div class="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-xs hover:border-blue-300 transition-colors">
                 <div>
-                  <div class="flex items-center justify-between gap-2">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
                     <span class={roleClass}>{pick.role}</span>
-                    <StatusBadge status={res.status} />
+                    <div class="flex items-center gap-1.5">
+                      <StatusBadge status={res.status} />
+                      <SpeedBadge tier={tier} />
+                    </div>
                   </div>
 
                   <h3 class="mt-3 text-lg font-bold tracking-tight text-slate-950">
-                    <a href={detailHref} class="hover:text-blue-600 transition-colors">
-                      {e.model.name}
+                    <a href={row.href} class="hover:text-blue-600 transition-colors">
+                      {row.model.name}
                     </a>
                   </h3>
                   <p class="mt-0.5 font-mono text-xs text-slate-500">
-                    {e.model.params_b}B · {e.model.architecture} · {recQuant}
+                    {row.model.params_b}B · {row.model.architecture} · {row.recQuant}
                   </p>
 
                   <p class="mt-2.5 text-xs leading-relaxed text-slate-600 line-clamp-3">
-                    {e.verdict_summary}
+                    {summaryText}
                   </p>
                 </div>
 
                 <div class="mt-4 border-t border-slate-100 pt-3.5">
                   <div class="grid grid-cols-3 gap-2 text-xs">
                     <div>
-                      <span class="block text-[11px] text-slate-500" data-i18n="detail.colEstSpeed">Speed</span>
-                      <span class="font-mono font-bold text-slate-950 tabular-nums" data-i18n={res.status === 'OOM' ? 'status.oom' : undefined}>{speedText}</span>
+                      <span class="block text-[11px] text-slate-500" data-i18n="speed.formulaEst">Formula est.</span>
+                      <span class="font-mono font-bold text-slate-950 tabular-nums">{speedText}</span>
                     </div>
                     <div>
-                      <span class="block text-[11px] text-slate-500" data-i18n="detail.colTotalVram">8K Q4 VRAM</span>
+                      <span class="block text-[11px] text-slate-500" data-i18n="common.vram8kLabel">VRAM @ 8K</span>
                       <span class="font-mono font-semibold text-slate-900 tabular-nums">
                         {res.total_vram_gb.toFixed(1)} GB
                       </span>
                     </div>
                     <div>
-                      <span class="block text-[11px] text-slate-500" data-i18n="detail.maxSmoothCtx">Max Ctx (Q4)</span>
+                      <span class="block text-[11px] text-slate-500" data-i18n="detail.maxSmoothCtx">Max Fit</span>
                       <span class="font-mono font-semibold text-slate-900 tabular-nums">{maxCtx}</span>
                     </div>
                   </div>
@@ -411,8 +380,8 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
                     <a href={modelHref} class="text-slate-600 hover:text-slate-950 transition-colors" data-i18n="hub.compareGpusLink">
                       Compare GPUs -&gt;
                     </a>
-                    <a href={detailHref} class="text-blue-600 hover:text-blue-800 transition-colors" data-i18n="common.openCalculator">
-                      Open Calculator -&gt;
+                    <a href={row.href} class="text-blue-600 hover:text-blue-800 transition-colors" data-i18n={ctaI18n}>
+                      {ctaText}
                     </a>
                   </div>
                 </div>
@@ -423,7 +392,6 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
       </section>
     )}
 
-    <!-- Unified 22-Model Compatibility Table (Curated Full Guides + Live Catalog Math) -->
     <section class="mt-10" aria-labelledby="gpu-models-table-heading">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
@@ -431,7 +399,7 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
             All {allModelsCount} Catalog Models on {hardware.short_name}
           </h2>
           <p class="mt-1 text-sm text-slate-600">
-            <span class="font-mono text-slate-900">Q4_K_M @ 8K FP16 KV</span> · {hardware.usable_vram_gb} GB
+            <span class="font-mono text-slate-900">Q4_K_M @ 8K FP16 KV</span> · {effectiveUsableGb.toFixed(1)} GB usable (Daily Desktop)
           </p>
         </div>
 
@@ -457,32 +425,36 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
       </div>
 
       <div id="gpu-table-wrap" class="mt-4 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
-        <table class="w-full min-w-[820px] border-collapse text-left text-sm">
+        <table class="w-full min-w-[880px] border-collapse text-left text-sm">
           <thead>
             <tr class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
               <th class="px-4 py-3" data-i18n="sim.colModel">Model</th>
-              <th class="px-4 py-3" data-i18n="detail.colStatus">Status</th>
-              <th class="px-4 py-3" data-i18n="detail.colTotalVram">VRAM (Q4 @ 8K)</th>
+              <th class="px-4 py-3" data-i18n="detail.colStatus">Fit / Speed</th>
+              <th class="px-4 py-3" data-i18n="detail.colTotalVram">VRAM @ 8K</th>
               <th class="px-4 py-3" data-i18n="detail.colGpuLayers">GPU Layers</th>
-              <th class="px-4 py-3" data-i18n="hub.colSpeed8k">Est. Speed</th>
-              <th class="px-4 py-3" data-i18n="hub.bestQuantMaxCtx">Best Quant &amp; Max Ctx</th>
+              <th class="px-4 py-3" data-i18n="hub.colSpeed8k">Formula Speed (Q4 @ 8K)</th>
+              <th class="px-4 py-3" data-i18n="hub.bestQuantMaxCtx">Max Fit &amp; @Max VRAM</th>
               <th class="px-4 py-3 text-right" data-i18n="hub.colCalculator">Calculator</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            {unifiedRows.map((row) => {
-              const tpsText = row.status === 'OOM' ? 'OOM' : `${row.estTps.toFixed(1)} tok/s`;
-              const fillPct = Math.min(100, Math.round((row.totalVramGb / hardware.usable_vram_gb) * 100));
+            {rows.map((row) => {
+              const res = row.result;
+              const tier = res.speed_tier ?? 'Readable';
+              const tpsText = formatTpsRange(res.est_tps_low, res.est_tps_high, res.est_tps, res.status);
+              const fillPct = Math.min(100, Math.round((res.total_vram_gb / effectiveUsableGb) * 100));
               const fillColor =
-                row.status === 'Smooth'
+                res.status === 'Fits'
                   ? 'bg-emerald-500'
-                  : row.status === 'Partial Offload'
-                    ? 'bg-amber-500'
-                    : 'bg-rose-500';
+                  : res.status === 'Tight Fit'
+                    ? 'bg-orange-500'
+                    : res.status === 'Partial Offload'
+                      ? 'bg-amber-500'
+                      : 'bg-rose-500';
               const barClass = `h-full rounded-full ${fillColor}`;
               const barStyle = `width: ${fillPct}%`;
               const speedBadgeClass =
-                row.status === 'OOM'
+                res.status === 'OOM'
                   ? 'font-mono font-semibold text-rose-700 tabular-nums'
                   : 'font-mono font-bold text-slate-950 tabular-nums';
               const actionClass = row.isCurated
@@ -491,9 +463,14 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
               const actionText = row.isCurated ? 'Open Guide ->' : 'Simulate ->';
               const actionI18n = row.isCurated ? 'common.openGuide' : 'common.simulate';
               const moeLabel = row.model.active_params_b ? ` · MoE ${row.model.active_params_b}B` : '';
+              const modelHubHref = `/model/${row.model.id}/`;
+              const maxCtxLabel =
+                row.maxFitCtx > 0
+                  ? `${formatContextLabel(row.maxFitCtx)} · ${row.maxFitVramGb.toFixed(1)} GB`
+                  : 'Offload / Q8 KV';
 
               return (
-                <tr data-gpu-row data-status={row.status} class="hover:bg-slate-50/70 transition-colors">
+                <tr data-gpu-row data-status={res.status} class="hover:bg-slate-50/70 transition-colors">
                   <td class="px-4 py-3.5 align-top">
                     <div class="flex flex-wrap items-center gap-1.5">
                       <a href={row.href} class="font-bold text-slate-950 hover:text-blue-600 transition-colors">
@@ -511,36 +488,38 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
                     </div>
                     <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-500">
                       <span class="font-mono">{row.model.params_b}B{moeLabel}</span>
-                      {row.modelHubHref && (
-                        <>
-                          <span>·</span>
-                          <a href={row.modelHubHref} class="hover:text-slate-900 underline decoration-slate-300 underline-offset-2">
-                            {row.model.family}
-                          </a>
-                        </>
-                      )}
+                      <span>·</span>
+                      <a href={modelHubHref} class="hover:text-slate-900 underline decoration-slate-300 underline-offset-2">
+                        {row.model.family}
+                      </a>
                     </div>
                   </td>
                   <td class="px-4 py-3.5 align-top">
-                    <StatusBadge status={row.status} />
+                    <div class="flex flex-wrap items-center gap-1">
+                      <StatusBadge status={res.status} />
+                      <SpeedBadge tier={tier} />
+                    </div>
                   </td>
                   <td class="px-4 py-3.5 align-top">
                     <div class="font-mono text-xs font-semibold text-slate-900 tabular-nums">
-                      {row.totalVramGb.toFixed(2)} / {hardware.usable_vram_gb} GB
+                      {res.total_vram_gb.toFixed(2)} / {effectiveUsableGb.toFixed(1)} GB
                     </div>
                     <div class="mt-1.5 h-1.5 w-28 overflow-hidden rounded-full bg-slate-100">
                       <div class={barClass} style={barStyle}></div>
                     </div>
                   </td>
                   <td class="px-4 py-3.5 align-top font-mono text-slate-700 tabular-nums">
-                    {row.gpuLayersFit}/{row.totalLayers}
+                    {res.gpu_layers_fit}/{res.total_layers}
                   </td>
                   <td class="px-4 py-3.5 align-top">
-                    <span class={speedBadgeClass} data-i18n={row.status === 'OOM' ? 'status.oom' : undefined}>{tpsText}</span>
+                    <span class={speedBadgeClass}>{tpsText}</span>
+                    {res.status !== 'OOM' && (
+                      <span class="block text-[10px] text-slate-400" data-i18n="speed.formulaEst">Formula est.</span>
+                    )}
                   </td>
                   <td class="px-4 py-3.5 align-top text-xs">
                     <div class="font-mono font-semibold text-slate-900">{row.recQuant}</div>
-                    <div class="mt-0.5 text-slate-500">{row.maxCtxLabel}</div>
+                    <div class="mt-0.5 text-slate-500">{maxCtxLabel}</div>
                   </td>
                   <td class="px-4 py-3.5 align-top text-right">
                     <a href={row.href} class={actionClass} data-i18n={actionI18n}>
@@ -573,7 +552,6 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
       </div>
     </section>
 
-    <!-- Hardware Hub FAQ -->
     <section class="mt-10" aria-labelledby="gpu-faq-heading">
       <h2 id="gpu-faq-heading" class="text-xl font-bold tracking-tight text-slate-950" data-i18n="hub.faqForTarget" data-i18n-args={faqTargetArgs}>
         Frequently Asked Questions ({hardware.short_name})
@@ -596,7 +574,6 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
       </div>
     </section>
 
-    <!-- Other Hardware Hubs -->
     {relatedHardware.length > 0 && (
       <section class="mt-12 border-t border-slate-200 pt-8" aria-labelledby="other-gpus-heading">
         <div class="flex items-center justify-between gap-4">
@@ -608,8 +585,8 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
               {hardware.vendor} · {hardware.backend}
             </p>
           </div>
-          <a href="/gpu/" class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0" data-i18n="hub.browseAllHw">
-            Browse All Hardware Hubs -&gt;
+          <a href="/gpu/" class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0" data-i18n="hub.browseAllHw" data-i18n-args={browseAllHwArgs}>
+            Browse All {allHardware.length} Hardware Hubs -&gt;
           </a>
         </div>
 
@@ -650,15 +627,17 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
     const resetBtn = document.getElementById('gpu-filter-reset');
 
     function applyFilter(selected) {
+      let norm = selected;
+      if (norm === 'Smooth') norm = 'Fits';
       let visible = 0;
       rows.forEach((row) => {
-        const match = selected === 'all' || row.getAttribute('data-status') === selected;
+        const match = norm === 'all' || row.getAttribute('data-status') === norm;
         row.classList.toggle('hidden', !match);
         if (match) visible += 1;
       });
 
       buttons.forEach((b) => {
-        const active = (b.getAttribute('data-gpu-status-btn') || 'all') === selected;
+        const active = (b.getAttribute('data-gpu-status-btn') || 'all') === norm;
         b.classList.toggle('border-slate-900', active);
         b.classList.toggle('bg-slate-900', active);
         b.classList.toggle('text-white', active);

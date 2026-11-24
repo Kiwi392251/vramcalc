@@ -2,26 +2,60 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ComboboxField from '../components/ComboboxField.astro';
 import StatusBadge from '../components/StatusBadge.astro';
+import SpeedBadge from '../components/SpeedBadge.astro';
 import catalogRaw from '../data/catalog_data.json';
 import rawPagesData from '../data/pages_data.json';
-import type { CatalogData, PageEntry } from '../types/vram';
+import type { CatalogData, PageEntry, SpeedTier } from '../types/vram';
 import { statusRank } from '../utils/hubs';
+import {
+  classifySpeedTier,
+  effectiveUsableVramGb,
+  formatContextLabel,
+  formatTpsRange,
+} from '../utils/physics';
 
 const PAGE_SIZE = 24;
 const catalog = catalogRaw as CatalogData;
 const rawEntries = rawPagesData as PageEntry[];
+const updatedAt = catalog.updated_at ?? '2026-11-24';
+const engineVersion = catalog.engine_version ?? 'v3.0';
 
-function featuredTier(e: PageEntry): number {
-  const hid = e.hardware.id;
-  if (hid.startsWith('apple-m1-8gb') || hid.startsWith('apple-m1-16gb')) return 2;
-  return 0;
-}
+const FEATURED_TOP_SLUGS = [
+  'qwen3-8b-on-apple-m4-16gb',
+  'qwen3-14b-on-nvidia-t4-16gb',
+  'qwen3-32b-on-nvidia-a10-24gb',
+  'gemma-3-27b-on-nvidia-a10-24gb',
+  'qwen3-30b-a3b-on-apple-m4-pro-48gb',
+  'gemma-3-27b-on-nvidia-l4-24gb',
+  'qwen3-32b-on-rtx-4090-24gb',
+  'qwen3-32b-on-rtx-5090-32gb',
+  'llama-3.3-70b-on-dual-rtx-4090-48gb',
+  'deepseek-r1-70b-on-ryzen-ai-max-395-128gb',
+  'qwen3-8b-on-nvidia-t4-16gb',
+  'qwen3-14b-on-nvidia-a10-24gb',
+  'gemma-3-27b-on-rtx-4090-24gb',
+  'qwen3-32b-on-apple-m4-max-128gb',
+  'gemma-3-27b-on-apple-m4-pro-48gb',
+  'qwen3-30b-a3b-on-nvidia-a10-24gb',
+  'deepseek-r1-7b-on-apple-m4-16gb',
+  'llama-3.1-8b-on-apple-m4-16gb',
+  'gemma-3-27b-on-rtx-5090-32gb',
+  'qwen3-14b-on-nvidia-l4-24gb',
+  'qwen3-32b-on-apple-m4-pro-48gb',
+  'llama-3.1-8b-on-nvidia-t4-16gb',
+  'gemma-3-27b-on-nvidia-a10g-24gb',
+  'llama-3.3-70b-on-ryzen-ai-max-395-128gb',
+];
+const featuredRank = new Map(FEATURED_TOP_SLUGS.map((slug, idx) => [slug, idx]));
 
 const entries = [...rawEntries].sort((a, b) => {
+  const fa = featuredRank.get(a.slug);
+  const fb = featuredRank.get(b.slug);
+  if (fa !== undefined && fb !== undefined) return fa - fb;
+  if (fa !== undefined) return -1;
+  if (fb !== undefined) return 1;
   const sr = statusRank(a.default_result.status) - statusRank(b.default_result.status);
   if (sr !== 0) return sr;
-  const ft = featuredTier(a) - featuredTier(b);
-  if (ft !== 0) return ft;
   if (b.model.params_b !== a.model.params_b) return b.model.params_b - a.model.params_b;
   if (b.default_result.est_tps !== a.default_result.est_tps) {
     return b.default_result.est_tps - a.default_result.est_tps;
@@ -38,22 +72,20 @@ const paginationHiddenClass =
   initialRemainingCount > 0
     ? 'mt-7 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'
     : 'hidden';
-const smoothCount = entries.filter((e) => e.default_result.status === 'Smooth').length;
-const partialCount = entries.filter((e) => e.default_result.status === 'Partial Offload').length;
+const fitsCount = entries.filter((e) => e.default_result.status === 'Fits').length;
+const tightPartialCount = entries.filter(
+  (e) => e.default_result.status === 'Tight Fit' || e.default_result.status === 'Partial Offload',
+).length;
 
-// Full catalog counts and lookup maps
-const uniqueHubModels = Array.from(
-  new Map(entries.map((e) => [e.model.id, e.model])).values()
-).sort((a, b) => a.name.localeCompare(b.name));
-
-const uniqueHubHardware = Array.from(
-  new Map(entries.map((e) => [e.hardware.id, e.hardware])).values()
-).sort((a, b) => a.name.localeCompare(b.name));
+// Full static catalog hubs (all 22 models + all 103 hardware SKUs reachable in 1 hop from '/')
+const uniqueHubModels = [...catalog.models].sort((a, b) => a.name.localeCompare(b.name));
+const uniqueHubHardware = [...catalog.hardware].sort((a, b) => a.name.localeCompare(b.name));
 
 const uniqueHubModelCount = uniqueHubModels.length;
 const uniqueHubHwCount = uniqueHubHardware.length;
 const catalogModelCount = catalog.models.length;
 const catalogHwCount = catalog.hardware.length;
+const updatedArgs = JSON.stringify({ date: updatedAt });
 
 const curatedKeys = entries.map((e) => `${e.model.id}::${e.hardware.id}`);
 const curatedSlugs: Record<string, string> = {};
@@ -101,8 +133,8 @@ const homeCollectionSchema = {
     },
   ],
 };
-const homeOgTitle = `Local AI LLM VRAM & Speed Calculator (${catalogModelCount} Models × ${catalogHwCount} GPUs) | VRAMCalc.me`;
-const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x Multi-GPU & CPU/RAM tok/s across ${catalogHwCount} GPUs & Macs and ${catalogModelCount} open LLMs.`;
+const homeOgTitle = `Local AI LLM VRAM & Speed Calculator (${catalogModelCount} Models × ${catalogHwCount} GPUs · Updated ${updatedAt}) | VRAMCalc.me`;
+const homeOgDescription = `Check GGUF, AWQ & MLX VRAM fit, max safe context, Tight Fit & PCIe All-Reduce headroom, and bandwidth tok/s estimate ranges across ${catalogHwCount} GPUs & Macs and ${catalogModelCount} open LLMs (Qwen3, Gemma 3, DeepSeek-R1, Llama-3.3).`;
 
 const heroDescArgs = JSON.stringify({ models: catalogModelCount, hw: catalogHwCount });
 const ctaGpusArgs = JSON.stringify({ count: uniqueHubHwCount });
@@ -138,11 +170,23 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
   <section class="border-b border-slate-200 bg-white">
     <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
       <div class="max-w-3xl">
+        <div class="mb-3 flex flex-wrap items-center gap-2 text-xs">
+          <span
+            class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 font-mono font-semibold text-emerald-800"
+            data-i18n="common.updated"
+            data-i18n-args={updatedArgs}
+          >
+            Updated {updatedAt}
+          </span>
+          <span class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-mono font-medium text-slate-700">
+            Physics {engineVersion} · <span class="ml-1" data-i18n="speed.formulaDesc">Formula Estimate (±15–25%)</span>
+          </span>
+        </div>
         <h1 class="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl" data-i18n="home.heroTitle">
           Local AI Model VRAM &amp; Inference Speed Matrix
         </h1>
         <p class="mt-3 text-base leading-relaxed text-slate-600" data-i18n="home.heroDesc" data-i18n-args={heroDescArgs}>
-          Pick any of {catalogModelCount} models and {catalogHwCount} GPUs &amp; Macs—or simulate 1x–8x multi-GPU rigs &amp; CPU/RAM offload across 7 GGUF quants (Q2_K–FP16) and realistic tokens/sec throughput.
+          Check memory fit, max safe context, and honest bandwidth throughput ranges across {catalogModelCount} models (Qwen3, Gemma 3, DeepSeek-R1, Llama-3.3) and {catalogHwCount} GPUs &amp; Macs (M4 16GB, T4, L4, A10, RTX 5090), supporting GGUF, AWQ, MLX, and 1x–8x multi-GPU topologies.
         </p>
 
         <div class="mt-5 flex flex-wrap items-center gap-3">
@@ -151,7 +195,7 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
             class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-colors"
             data-i18n="home.ctaSimulator"
           >
-            Multi-GPU &amp; CPU Rig Simulator -&gt;
+            Multi-GPU, AWQ/MLX &amp; CPU Simulator -&gt;
           </a>
           <a
             href="/gpu/"
@@ -174,19 +218,19 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
 
       <dl class="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         <div class="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
-          <dt class="text-xs font-medium text-slate-500" data-i18n="home.kpiGuides">Full Benchmark Guides</dt>
+          <dt class="text-xs font-medium text-slate-500" data-i18n="home.kpiGuides">Curated Pairings</dt>
           <dd class="mt-1 font-mono text-2xl font-bold text-slate-950 tabular-nums">{totalCount}</dd>
         </div>
         <div class="rounded-xl border border-emerald-200/80 bg-emerald-50/50 px-4 py-3">
-          <dt class="text-xs font-medium text-emerald-800" data-i18n="home.kpiSmooth">Smooth Guides (8K Q4)</dt>
-          <dd class="mt-1 font-mono text-2xl font-bold text-emerald-900 tabular-nums">{smoothCount}</dd>
+          <dt class="text-xs font-medium text-emerald-800" data-i18n="home.kpiSmooth">Full Fits (8K Q4)</dt>
+          <dd class="mt-1 font-mono text-2xl font-bold text-emerald-900 tabular-nums">{fitsCount}</dd>
         </div>
         <div class="rounded-xl border border-amber-200/80 bg-amber-50/50 px-4 py-3">
-          <dt class="text-xs font-medium text-amber-800" data-i18n="home.kpiPartial">Partial Offload Guides</dt>
-          <dd class="mt-1 font-mono text-2xl font-bold text-amber-900 tabular-nums">{partialCount}</dd>
+          <dt class="text-xs font-medium text-amber-800" data-i18n="home.kpiPartial">Tight / Partial Offload</dt>
+          <dd class="mt-1 font-mono text-2xl font-bold text-amber-900 tabular-nums">{tightPartialCount}</dd>
         </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
-          <dt class="text-xs font-medium text-slate-500" data-i18n="home.kpiLiveEngine">Live Catalog Engine</dt>
+          <dt class="text-xs font-medium text-slate-500" data-i18n="home.kpiLiveEngine">Static Matrix Coverage</dt>
           <dd class="mt-1 font-mono text-2xl font-bold text-slate-950 tabular-nums">
             {catalogModelCount} × {catalogHwCount}
           </dd>
@@ -271,7 +315,7 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
               </button>
               <button
                 type="button"
-                data-home-split="row"
+                data-home-split="tensor"
                 class="rounded-md px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:text-slate-950 cursor-pointer"
                 data-i18n="home.tensorParallel"
               >
@@ -301,7 +345,7 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
           <span class="hidden h-4 w-px bg-slate-200 sm:inline-block" aria-hidden="true"></span>
 
           <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by status">
-            {(['all', 'Smooth', 'Partial Offload', 'OOM'] as const).map((st) => {
+            {(['all', 'Fits', 'Tight Fit', 'Partial Offload', 'OOM'] as const).map((st) => {
               const btnClass =
                 st === 'all'
                   ? 'rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-900 bg-slate-900 text-white'
@@ -309,11 +353,13 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
               const stI18nKey =
                 st === 'all'
                   ? 'status.allStatuses'
-                  : st === 'Smooth'
-                    ? 'status.smooth'
-                    : st === 'Partial Offload'
-                      ? 'status.partialOffload'
-                      : 'status.oom';
+                  : st === 'Fits'
+                    ? 'status.fits'
+                    : st === 'Tight Fit'
+                      ? 'status.tightFit'
+                      : st === 'Partial Offload'
+                        ? 'status.partialOffload'
+                        : 'status.oom';
               return (
                 <button
                   type="button"
@@ -345,7 +391,7 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
           </div>
 
           <span id="filter-count" class="font-mono tabular-nums" data-i18n="home.countInitial" data-i18n-args={initCountArgs}>
-            {initialVisibleCount} / {totalCount} guides · {catalogModelCount}×{catalogHwCount} live
+            {initialVisibleCount} / {totalCount} guides · {catalogModelCount}×{catalogHwCount} static hubs
           </span>
           <button
             id="filter-reset"
@@ -359,19 +405,24 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
       </div>
     </div>
 
-    <!-- Curated Deep-Dive Cards Grid (SSR Progressive Window: first 24 visible, all 141 crawlable in DOM) -->
+    <!-- Curated Deep-Dive Cards Grid (SSR Progressive Window: first 24 visible, all 165 crawlable in DOM) -->
     <div id="cards-grid" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {entries.map((entry, idx) => {
         const res = entry.default_result;
-        const usable = entry.hardware.usable_vram_gb;
-        const fillPct = Math.min(100, Math.round((res.total_vram_gb / usable) * 100));
+        const usable =
+          res.effective_usable_vram_gb ??
+          effectiveUsableVramGb(entry.hardware, entry.hardware.gpu_count || 1, 'desktop')[1];
+        const fillPct = Math.min(100, Math.round((res.total_vram_gb / Math.max(0.5, usable)) * 100));
         const barColor =
-          res.status === 'Smooth'
+          res.status === 'Fits'
             ? 'bg-emerald-500'
-            : res.status === 'Partial Offload'
-              ? 'bg-amber-500'
-              : 'bg-rose-500';
-        const tpsDisplay = res.status === 'OOM' ? 'OOM' : `${res.est_tps.toFixed(1)} tok/s`;
+            : res.status === 'Tight Fit'
+              ? 'bg-orange-500'
+              : res.status === 'Partial Offload'
+                ? 'bg-amber-500'
+                : 'bg-rose-500';
+        const speedTier: SpeedTier = res.speed_tier ?? classifySpeedTier(res.est_tps, res.status);
+        const tpsDisplay = formatTpsRange(res.est_tps_low, res.est_tps_high, res.est_tps, res.status);
         const fillStyle = `width: ${fillPct}%`;
         const fillBarClass = `h-full rounded-full ${barColor}`;
         const detailHref = `/can-i-run/${entry.slug}/`;
@@ -391,6 +442,7 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
           entry.hardware.backend,
           entry.hardware.memory_type,
           res.status,
+          speedTier,
         ]
           .join(' ')
           .toLowerCase();
@@ -398,6 +450,12 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
         const hwOnArgs = JSON.stringify({ hw: entry.hardware.name });
         const layerArgs = JSON.stringify({ fit: res.gpu_layers_fit, total: res.total_layers });
         const statusAttrs = res.status === 'OOM' ? 'status.oom' : undefined;
+        const hasMaxFit = Boolean(
+          entry.max_fit_context && entry.max_fit_context > 0 && entry.max_fit_total_vram_gb,
+        );
+        const maxFitCtxLabel = hasMaxFit ? formatContextLabel(entry.max_fit_context!) : '';
+        const maxFitGbStr = hasMaxFit ? entry.max_fit_total_vram_gb!.toFixed(1) : '';
+        const maxFitArgs = hasMaxFit ? JSON.stringify({ ctx: maxFitCtxLabel, gb: maxFitGbStr }) : undefined;
 
         return (
           <article
@@ -415,9 +473,10 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
             class={cardClass}
           >
             <div>
-              <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-1.5">
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex flex-wrap items-center gap-1.5">
                   <StatusBadge status={res.status} />
+                  <SpeedBadge tier={speedTier} short={true} />
                   <span
                     class="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700"
                     data-i18n="common.fullGuide"
@@ -425,7 +484,7 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
                     Full Guide
                   </span>
                 </div>
-                <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-600">
+                <span class="shrink-0 rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-600">
                   {entry.hardware.backend} · {entry.hardware.bandwidth_gbps} GB/s
                 </span>
               </div>
@@ -450,18 +509,32 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
 
             <div class="mt-4 pt-4 border-t border-slate-100">
               <div class="flex items-center justify-between text-xs">
-                <span class="text-slate-500" data-i18n="common.vram8kLabel">VRAM ({entry.default_quant} @ 8K)</span>
+                <span class="text-slate-500" data-i18n="common.vram8kLabel">VRAM @ 8K</span>
                 <span class="font-mono font-semibold text-slate-900 tabular-nums">
-                  {res.total_vram_gb.toFixed(1)} / {usable} GB
+                  {res.total_vram_gb.toFixed(1)} / {usable.toFixed(1)} GB
                 </span>
               </div>
               <div class="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
                 <div class={fillBarClass} style={fillStyle}></div>
               </div>
+              <div class="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-slate-500 tabular-nums">
+                {hasMaxFit ? (
+                  <span data-i18n="common.maxFitLabel" data-i18n-args={maxFitArgs}>
+                    Max Fit: {maxFitCtxLabel} ({maxFitGbStr} GB)
+                  </span>
+                ) : (
+                  <span data-i18n="common.maxFitNone">Max Fit: Offload req.</span>
+                )}
+                {res.status !== 'OOM' && (
+                  <span class="shrink-0 font-mono text-[10px] text-slate-400" data-i18n="speed.formulaEst">
+                    Formula est.
+                  </span>
+                )}
+              </div>
 
-              <div class="mt-3.5 flex items-center justify-between">
+              <div class="mt-3 flex items-center justify-between">
                 <div class="flex items-baseline gap-1.5">
-                  <span class="font-mono text-lg font-bold text-slate-950 tabular-nums" data-i18n={statusAttrs}>
+                  <span class="font-mono text-base sm:text-lg font-bold text-slate-950 tabular-nums" data-i18n={statusAttrs}>
                     {tpsDisplay}
                   </span>
                   <span
@@ -544,7 +617,7 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
             </h2>
           </div>
           <p id="live-calc-sub" class="mt-1 text-xs text-slate-600">
-            Instant Q4_K_M @ 8K estimates across all {catalogModelCount} models &amp; {catalogHwCount} GPUs. Click any card to tweak 7 quants, KV cache, multi-GPU, or CPU offload.
+            Instant @8K + Max Fit calculations across all {catalogModelCount} models &amp; {catalogHwCount} catalog GPUs. Click any card for AWQ/MLX format toggles, reserve profiles, and multi-GPU splits.
           </p>
         </div>
         <a
@@ -661,26 +734,35 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
   <!-- Estimation Formula & Methodology -->
   <section id="methodology" class="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
     <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
-      <h2 class="text-lg font-bold tracking-tight text-slate-950" data-i18n="home.methodTitle">
-        How VRAMCalc.me Estimates Memory &amp; Tokens/sec
-      </h2>
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h2 class="text-lg font-bold tracking-tight text-slate-950" data-i18n="home.methodTitle">
+          Physics Engine v3.0: Transparent Formula Ranges vs Real Benchmarks
+        </h2>
+        <span
+          class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-mono text-[11px] font-medium text-slate-600"
+          data-i18n="common.updated"
+          data-i18n-args={updatedArgs}
+        >
+          Updated {updatedAt}
+        </span>
+      </div>
       <div class="mt-4 grid gap-6 text-sm leading-relaxed text-slate-600 md:grid-cols-3">
         <div>
-          <h3 class="font-semibold text-slate-900" data-i18n="home.method1Title">1. 7-Tier GGUF &amp; MoE Math</h3>
+          <h3 class="font-semibold text-slate-900" data-i18n="home.method1Title">1. Fit Status vs Independent Speed Tiers</h3>
           <p class="mt-1.5" data-i18n="home.method1Desc">
-            Total weights scale from Q2_K (3.0 bpw) through Q4_K_M (4.85), Q8_0 (8.50) to FP16, while MoE models compute speed using active parameters.
+            VRAM Fit checks weight (GGUF/AWQ/MLX) + GQA KV + per-card CUDA overhead against Daily Desktop or Clean OS reserves, flagging &lt;5% / &lt;1 GB headroom as Tight Fit. Speed is scored separately: Fast (&gt;=25), Interactive (12–24), Readable (6–11), Slow (&lt;6 tok/s).
           </p>
         </div>
         <div>
-          <h3 class="font-semibold text-slate-900" data-i18n="home.method2Title">2. GQA KV-Cache Compression</h3>
+          <h3 class="font-semibold text-slate-900" data-i18n="home.method2Title">2. Runtime Formats &amp; Context Alignment</h3>
           <p class="mt-1.5" data-i18n="home.method2Desc">
-            KV cache uses exact layer geometry (2 × layers × kv_heads × head_dim × ctx) with FP16, Q8_0 (-50%), or Q4_0 (-75%) KV options.
+            Compute exact footprint across GGUF (llama.cpp), 4-bit AWQ / FP8 (vLLM Marlin), and 4/8-bit Apple MLX (mlx-lm), always pairing the @8K baseline with the full footprint required at Max Fit context.
           </p>
         </div>
         <div>
-          <h3 class="font-semibold text-slate-900" data-i18n="home.method3Title">3. Multi-GPU &amp; CPU/RAM Bandwidth</h3>
+          <h3 class="font-semibold text-slate-900" data-i18n="home.method3Title">3. Multi-GPU PCIe Sync &amp; Reference Anchors</h3>
           <p class="mt-1.5" data-i18n="home.method3Desc">
-            Smooth runs scale by CUDA/Metal/ROCm/Vulkan efficiency and Layer-Split or Tensor-Parallel scaling across 1x–8x GPUs; spill/CPU-only uses selected DDR4/DDR5/EPYC RAM speed.
+            Token throughput is reported as a ±15–25% formula estimate range rather than false 0.1 tok/s precision. Multi-GPU Tensor Parallel on PCIe includes 2×per-layer All-Reduce latency penalties, alongside verified community reference benchmarks.
           </p>
         </div>
       </div>
@@ -691,8 +773,16 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
 <script>
   import { SearchableCombobox, type ComboboxOption } from '../utils/combobox';
   import { groupCatalogHardware } from '../utils/hubs';
-  import { getLocale, onLocaleChange, t, tStatus } from '../utils/i18n';
-  import { estimateRigRun, osRamReserveGb } from '../utils/physics';
+  import { getLocale, onLocaleChange, t, tSpeedTier, tStatus } from '../utils/i18n';
+  import {
+    classifySpeedTier,
+    effectiveUsableVramGb,
+    estimateRigRun,
+    formatContextLabel,
+    formatTpsRange,
+    maxFitContextDetails,
+    osRamReserveGb,
+  } from '../utils/physics';
   import {
     buildSimulatorUrl,
     extractUnifiedSocProfiles,
@@ -711,6 +801,7 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
     HardwareSpec,
     ModelSpec,
     RigRunEstimate,
+    SpeedTier,
     SplitMode,
   } from '../types/vram';
 
@@ -733,24 +824,36 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
     chipLabel: string;
     hwSubtitle: string;
     layersText: string;
+    maxFitLabel: string;
   }
 
   function rankOf(s: CompatStatus): number {
-    if (s === 'Smooth') return 0;
-    if (s === 'Partial Offload') return 1;
-    return 2;
+    if (s === 'Fits') return 0;
+    if (s === 'Tight Fit') return 1;
+    if (s === 'Partial Offload') return 2;
+    return 3;
   }
 
   function badgeClasses(s: CompatStatus): string {
-    if (s === 'Smooth') return 'border-emerald-200 bg-emerald-50 text-emerald-800';
+    if (s === 'Fits') return 'border-emerald-200 bg-emerald-50 text-emerald-800';
+    if (s === 'Tight Fit') return 'border-orange-200 bg-orange-50 text-orange-800';
     if (s === 'Partial Offload') return 'border-amber-200 bg-amber-50 text-amber-800';
     return 'border-rose-200 bg-rose-50 text-rose-800';
   }
 
   function dotClass(s: CompatStatus): string {
-    if (s === 'Smooth') return 'bg-emerald-600';
+    if (s === 'Fits') return 'bg-emerald-600';
+    if (s === 'Tight Fit') return 'bg-orange-500';
     if (s === 'Partial Offload') return 'bg-amber-500';
     return 'bg-rose-600';
+  }
+
+  function speedBadgeClasses(tier: SpeedTier): string {
+    if (tier === 'Fast') return 'border-sky-200 bg-sky-50 text-sky-800';
+    if (tier === 'Interactive') return 'border-indigo-200 bg-indigo-50 text-indigo-800';
+    if (tier === 'Readable') return 'border-slate-200 bg-slate-100 text-slate-700';
+    if (tier === 'Slow') return 'border-amber-200 bg-amber-50 text-amber-800';
+    return 'border-rose-200 bg-rose-50 text-rose-800';
   }
 
   function escapeHtml(s: string): string {
@@ -956,6 +1059,7 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
         const gKey = gpuGroupKeyMap[grp.label];
         const grpTitle = gKey ? t(gKey) : grp.label;
         for (const h of grp.items) {
+          const usableDesktop = effectiveUsableVramGb(h, 1, 'desktop')[1];
           opts.push({
             value: h.id,
             label: h.name,
@@ -963,7 +1067,7 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
             sublabel: t('home.vramLineSub', {
               vram: h.vram_gb,
               mem: h.memory_type,
-              usable: h.usable_vram_gb,
+              usable: usableDesktop,
             }),
             badge: `${h.bandwidth_gbps} GB/s`,
             searchBlob: hwSearchMap.get(h.id) || h.name.toLowerCase(),
@@ -1094,19 +1198,20 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
         const ram = selectedRamGb ?? soc.defaultRamGb;
         const { hw: resolvedHw, isExactCatalogSku } = resolveUnifiedHardware(soc, ram);
         const tag = isExactCatalogSku ? '' : t('home.ctxUnifiedCustomTag');
+        const usableUnified = effectiveUsableVramGb(resolvedHw, 1, 'desktop')[1];
         contextBar.classList.remove('hidden');
         splitToggleEl.classList.add('hidden');
         contextTextEl.textContent = t('home.ctxUnified', {
           soc: soc.shortName,
           ram,
-          usable: resolvedHw.usable_vram_gb,
+          usable: usableUnified,
           bw: resolvedHw.bandwidth_gbps,
           backend: resolvedHw.backend,
           custom: tag,
         });
       } else if (hw && gpuCount >= 2 && isMultiGpuCapable(hw)) {
         const totalVram = Math.round(hw.vram_gb * gpuCount * 10) / 10;
-        const usableVram = Math.round(hw.usable_vram_gb * gpuCount * 10) / 10;
+        const usableVram = effectiveUsableVramGb(hw, gpuCount, 'desktop')[1];
         contextBar.classList.remove('hidden');
         splitToggleEl.classList.remove('hidden');
         contextTextEl.textContent = t('home.ctxMultiGpu', {
@@ -1425,13 +1530,25 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
       const items: LiveItem[] = [];
       for (const h of catData.hardware) {
         if (curatedKeySet.has(`${model.id}::${h.id}`)) continue;
-        const res = estimateRigRun(model, h, {
-          quant: 'Q4_K_M',
-          contextTokens: 8192,
-          kvQuant: 'FP16',
+        const res = estimateRigRun({
+          model,
+          hardware: h,
           gpuCount: h.gpu_count || 1,
+          quant: 'Q4_K_M',
+          format: 'GGUF',
+          contextTokens: 8192,
+          kvQuant: 'fp16',
+          reserveProfile: 'desktop',
         });
         if (selectedStatus !== 'all' && res.status !== selectedStatus) continue;
+        const maxFit = maxFitContextDetails(model, h, 'Q4_K_M', 'desktop', 'fp16');
+        const maxFitLabel =
+          maxFit.contextTokens > 0
+            ? t('common.maxFitLabel', {
+                ctx: formatContextLabel(maxFit.contextTokens),
+                gb: maxFit.totalVramGb.toFixed(1),
+              })
+            : t('common.maxFitNone');
         items.push({
           model,
           hw: h,
@@ -1445,6 +1562,7 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
             fit: res.gpu_layers_fit,
             total: res.total_layers,
           }),
+          maxFitLabel,
         });
       }
       sortLiveItems(items, currentSort);
@@ -1453,7 +1571,8 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
 
     function computeRigLiveResults(): {
       items: LiveItem[];
-      allSmooth: number;
+      allFits: number;
+      allTight: number;
       allPartial: number;
       allOom: number;
       rigTitle: string;
@@ -1466,22 +1585,28 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
           : catData.models.filter((m) => m.id === selectedModel);
 
       const items: LiveItem[] = [];
-      let allSmooth = 0;
+      let allFits = 0;
+      let allTight = 0;
       let allPartial = 0;
       let allOom = 0;
 
       for (const m of candidateModels) {
-        const res = estimateRigRun(m, rig.hw, {
-          quant: 'Q4_K_M',
-          contextTokens: 8192,
-          kvQuant: 'FP16',
+        const res = estimateRigRun({
+          model: m,
+          hardware: rig.hw,
           gpuCount: rig.effGpuCount,
+          cpu: rig.cpu,
+          systemRamGb: rig.systemRamArg ?? undefined,
+          quant: 'Q4_K_M',
+          format: 'GGUF',
+          contextTokens: 8192,
+          kvQuant: 'fp16',
           splitMode,
-          cpuBwGbps: rig.cpu.effective_bw_gbps,
-          systemRamGb: rig.systemRamArg,
+          reserveProfile: 'desktop',
         });
 
-        if (res.status === 'Smooth') allSmooth += 1;
+        if (res.status === 'Fits') allFits += 1;
+        else if (res.status === 'Tight Fit') allTight += 1;
         else if (res.status === 'Partial Offload') allPartial += 1;
         else allOom += 1;
 
@@ -1505,12 +1630,31 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
           curatedSlugMap,
         );
 
+        const isCpuOnly = res.gpu_count === 0;
         const chipLabel = rig.hw
           ? `${rig.hw.backend} · ${rig.hw.bandwidth_gbps} GB/s`
           : `CPU · ${rig.cpu.effective_bw_gbps} GB/s`;
-        const layersText = res.is_cpu_only
+        const layersText = isCpuOnly
           ? t('common.cpuOnlyLayers', { total: res.total_layers })
           : t('common.layersCount', { fit: res.gpu_layers_fit, total: res.total_layers });
+
+        let maxFitLabel = '';
+        if (rig.hw && res.gpu_count === 1) {
+          const maxFit = maxFitContextDetails(m, rig.hw, 'Q4_K_M', 'desktop', 'fp16');
+          maxFitLabel =
+            maxFit.contextTokens > 0
+              ? t('common.maxFitLabel', {
+                  ctx: formatContextLabel(maxFit.contextTokens),
+                  gb: maxFit.totalVramGb.toFixed(1),
+                })
+              : t('common.maxFitNone');
+        } else if (res.comm_warning) {
+          maxFitLabel = `PCIe TP · -${Math.round(res.comm_overhead_pct || 0)}% sync`;
+        } else if (res.headroom_gb > 0) {
+          maxFitLabel = t('sim.headroomFree', { gb: res.headroom_gb.toFixed(1) });
+        } else {
+          maxFitLabel = t('common.maxFitNone');
+        }
 
         items.push({
           model: m,
@@ -1523,6 +1667,7 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
           chipLabel,
           hwSubtitle: t('common.onPrefix', { hw: rig.rigTitle }),
           layersText,
+          maxFitLabel,
         });
       }
 
@@ -1540,7 +1685,8 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
 
       return {
         items,
-        allSmooth,
+        allFits,
+        allTight,
         allPartial,
         allOom,
         rigTitle: rig.rigTitle,
@@ -1552,7 +1698,8 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
       items: LiveItem[],
       isRigMode: boolean,
       bannerMeta?: {
-        allSmooth: number;
+        allFits: number;
+        allTight: number;
         allPartial: number;
         allOom: number;
         rigTitle: string;
@@ -1579,7 +1726,8 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
               ? t('home.headingRigModelOne', { rig: bannerMeta.rigTitle })
               : t('home.headingRigModels', { count: items.length, rig: bannerMeta.rigTitle });
           liveSub.textContent = t('home.subRigSummary', {
-            smooth: bannerMeta.allSmooth,
+            fits: bannerMeta.allFits,
+            tight: bannerMeta.allTight,
             partial: bannerMeta.allPartial,
             oom: bannerMeta.allOom,
             guides: guideCount,
@@ -1593,7 +1741,9 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
             count: items.length,
             model: model ? model.short_name : '',
           });
-          liveSub.textContent = t('home.subAdditionalGpus');
+          liveSub.textContent = t('home.subAdditionalGpus', {
+            hwTotal: catData.hardware.length,
+          });
           liveSimCta.textContent = t('common.openFullSim');
           liveSimCta.href =
             selectedModel !== 'all'
@@ -1604,18 +1754,28 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
 
       const slice = items.slice(0, liveVisibleLimit);
       liveGrid.innerHTML = slice
-        .map(({ model, res, simHref, guideSlug, chipLabel, hwSubtitle, layersText }) => {
-          const budget = res.is_cpu_only ? res.usable_ram_gb : res.usable_vram_gb;
+        .map(({ model, res, simHref, guideSlug, chipLabel, hwSubtitle, layersText, maxFitLabel }) => {
+          const isCpuOnly = res.gpu_count === 0;
+          const budget = isCpuOnly ? res.available_ram_gb : res.usable_vram_gb;
           const pct = Math.min(100, Math.round((res.total_vram_gb / Math.max(1, budget)) * 100));
           const barColor =
-            res.status === 'Smooth'
+            res.status === 'Fits'
               ? 'bg-emerald-500'
-              : res.status === 'Partial Offload'
-                ? 'bg-amber-500'
-                : 'bg-rose-500';
+              : res.status === 'Tight Fit'
+                ? 'bg-orange-500'
+                : res.status === 'Partial Offload'
+                  ? 'bg-amber-500'
+                  : 'bg-rose-500';
+          const speedTier = res.speed_tier ?? classifySpeedTier(res.est_tps, res.status);
           const tpsDisplay =
-            res.status === 'OOM' ? escapeHtml(t('status.oom')) : `${res.est_tps.toFixed(1)} tok/s`;
-          const budgetLabel = res.is_cpu_only ? t('common.ram8kLabel') : t('common.vram8kLabel');
+            res.status === 'OOM'
+              ? escapeHtml(t('status.oom'))
+              : escapeHtml(formatTpsRange(res.est_tps_low, res.est_tps_high, res.est_tps, res.status));
+          const budgetLabel = isCpuOnly ? t('common.ram8kLabel') : t('common.vram8kLabel');
+          const formulaTag =
+            res.status !== 'OOM'
+              ? `<span class="shrink-0 font-mono text-[10px] text-slate-400">${escapeHtml(t('speed.formulaEst'))}</span>`
+              : '';
           const moeLine = model.active_params_b
             ? t('common.moeLine', {
                 params: model.params_b,
@@ -1642,15 +1802,18 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
           return `
             <article class="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:border-blue-300 hover:shadow-md">
               <div>
-                <div class="flex items-center justify-between gap-2">
-                  <div class="flex items-center gap-1.5">
-                    <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${badgeClasses(res.status)}">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${badgeClasses(res.status)}">
                       <span class="h-1.5 w-1.5 rounded-full ${dotClass(res.status)}"></span>
                       ${escapeHtml(tStatus(res.status))}
                     </span>
+                    <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold ${speedBadgeClasses(speedTier)}">
+                      ${escapeHtml(tSpeedTier(speedTier, true))}
+                    </span>
                     ${kindBadge}
                   </div>
-                  <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-600">${escapeHtml(chipLabel)}</span>
+                  <span class="shrink-0 rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-600">${escapeHtml(chipLabel)}</span>
                 </div>
 
                 <h3 class="mt-3.5 text-base font-bold tracking-tight text-slate-950 group-hover:text-blue-600 transition-colors">
@@ -1671,10 +1834,14 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
                 <div class="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
                   <div class="h-full rounded-full ${barColor}" style="width: ${pct}%"></div>
                 </div>
+                <div class="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-slate-500 tabular-nums">
+                  <span>${escapeHtml(maxFitLabel)}</span>
+                  ${formulaTag}
+                </div>
 
-                <div class="mt-3.5 flex items-center justify-between">
+                <div class="mt-3 flex items-center justify-between">
                   <div class="flex items-baseline gap-1.5">
-                    <span class="font-mono text-lg font-bold text-slate-950 tabular-nums">${tpsDisplay}</span>
+                    <span class="font-mono text-base sm:text-lg font-bold text-slate-950 tabular-nums">${tpsDisplay}</span>
                     <span class="text-[11px] text-slate-500 tabular-nums">${escapeHtml(layersText)}</span>
                   </div>
                   ${footerActions}
@@ -1951,8 +2118,11 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
           hadParam = true;
         }
       }
-      if (splitParam === 'row' || splitParam === 'layer') {
-        splitMode = splitParam;
+      if (splitParam === 'tensor' || splitParam === 'row') {
+        splitMode = 'tensor';
+        hadParam = true;
+      } else if (splitParam === 'layer') {
+        splitMode = 'layer';
         hadParam = true;
       }
 
@@ -1961,10 +2131,13 @@ const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
         modelCombo.setValue(modParam);
         hadParam = true;
       }
-      if (stParam && ['Smooth', 'Partial Offload', 'OOM'].includes(stParam)) {
-        selectedStatus = stParam;
-        updateStatusPills();
-        hadParam = true;
+      if (stParam) {
+        const normStatus = stParam === 'Smooth' ? 'Fits' : stParam;
+        if (['Fits', 'Tight Fit', 'Partial Offload', 'OOM'].includes(normStatus)) {
+          selectedStatus = normStatus;
+          updateStatusPills();
+          hadParam = true;
+        }
       }
       if (sortParam && sortSelect && Array.from(sortSelect.options).some((o) => o.value === sortParam)) {
         sortSelect.value = sortParam;

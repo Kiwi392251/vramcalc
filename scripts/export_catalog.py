@@ -24,6 +24,8 @@ def main() -> None:
     assert len(cpu_ids) == len(set(cpu_ids)), "Duplicate CPU IDs in catalog.py!"
 
     payload = {
+        "updated_at": catalog.CATALOG_UPDATED_AT,
+        "engine_version": catalog.ENGINE_VERSION,
         "models": catalog.MODELS,
         "hardware": catalog.HARDWARE,
         "cpus": catalog.CPUS,

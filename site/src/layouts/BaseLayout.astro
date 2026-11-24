@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import rawCatalog from '../data/catalog_data.json';
 
 interface Props {
   title: string;
@@ -25,6 +26,11 @@ const {
   themeColor = '#2563eb',
 } = Astro.props;
 
+const updatedAt = (rawCatalog as { updated_at?: string }).updated_at ?? '2026-11-24';
+const engineVersion = (rawCatalog as { engine_version?: string }).engine_version ?? 'v3.0';
+const modelCount = rawCatalog.models.length;
+const hwCount = rawCatalog.hardware.length;
+
 const canonicalUrl = new URL(canonicalPath, Astro.site ?? 'https://vramcalc.me').toString();
 const socialTitle = ogTitle ?? title;
 const socialDesc = ogDescription ?? description;
@@ -39,7 +45,8 @@ const navMatrixClass = isHome ? 'whitespace-nowrap text-blue-600 font-semibold' 
 const navCalcClass = isCalc ? 'whitespace-nowrap text-blue-600 font-semibold' : 'whitespace-nowrap hover:text-slate-950 transition-colors';
 const navGpuClass = isGpu ? 'whitespace-nowrap text-blue-600 font-semibold' : 'whitespace-nowrap hover:text-slate-950 transition-colors';
 const navModelClass = isModel ? 'whitespace-nowrap text-blue-600 font-semibold' : 'whitespace-nowrap hover:text-slate-950 transition-colors';
-const indexedArgs = JSON.stringify({ count: totalPages });
+const indexedArgs = JSON.stringify({ count: totalPages, models: modelCount, hw: hwCount });
+const footerMetaArgs = JSON.stringify({ date: updatedAt, ver: engineVersion });
 ---
 
 <!doctype html>
@@ -192,7 +199,7 @@ const indexedArgs = JSON.stringify({ count: totalPages });
           {totalPages > 0 && (
             <span class="hidden xl:inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-600 tabular-nums whitespace-nowrap">
               <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-              <span data-i18n="nav.configsIndexed" data-i18n-args={indexedArgs}>{totalPages} configs indexed</span>
+              <span data-i18n="nav.configsIndexed" data-i18n-args={indexedArgs}>{totalPages} guides · {modelCount}×{hwCount}</span>
             </span>
           )}
         </nav>
@@ -205,13 +212,22 @@ const indexedArgs = JSON.stringify({ count: totalPages });
 
     <footer class="mt-16 border-t border-slate-200 bg-white">
       <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <div class="space-y-1">
-          <p class="font-medium text-slate-900" data-i18n="footer.tagline">
-            VRAMCalc.me — Local LLM Memory &amp; Throughput Estimator
-          </p>
+        <div class="space-y-1.5">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <p class="font-medium text-slate-900" data-i18n="footer.tagline">
+              VRAMCalc.me — Local LLM Memory &amp; Throughput Estimator
+            </p>
+            <span
+              class="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-mono text-slate-500"
+              data-i18n="footer.updatedMeta"
+              data-i18n-args={footerMetaArgs}
+            >
+              Updated {updatedAt} · Physics {engineVersion} · Formula Estimates
+            </span>
+          </div>
           <p class="max-w-2xl text-xs text-slate-500" data-i18n="footer.disclaimer">
-            Estimates derive from GGUF bits-per-weight, GQA KV-cache geometry (FP16 K/V), runtime buffer overhead,
-            and memory-bandwidth-bound decode math. Actual throughput varies by driver version, Flash Attention, and PCIe topology.
+            VRAM budgets come from weight bit-width (GGUF / AWQ / MLX), GQA KV-cache geometry, per-GPU CUDA/PCIe overhead,
+            and selectable OS reserves. Speed numbers are bandwidth formula estimate ranges (±15–25%), paired with public reference benchmarks where verified.
           </p>
         </div>
         <div class="flex flex-wrap items-center gap-4 text-xs font-medium text-slate-500 shrink-0">

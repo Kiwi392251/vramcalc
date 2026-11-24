@@ -4,346 +4,483 @@ import type {
   KvQuantKey,
   ModelSpec,
   QuantKey,
+  ReserveProfile,
   RigRunEstimate,
   RigRunOptions,
   RunEstimate,
+  RuntimeFormat,
+  SpeedTier,
   SplitMode,
 } from '../types/vram';
 
-export const ALL_QUANT_ORDER: QuantKey[] = [
-  'Q2_K',
-  'Q3_K_M',
-  'Q4_K_M',
-  'Q5_K_M',
-  'Q6_K',
-  'Q8_0',
-  'FP16',
-];
+/**
+ * Deterministic LLM VRAM, Context, Offload, and Throughput Physics Engine (v3.0).
+ * Keep constants and formulas strictly synchronized with `scripts/physics.py`.
+ * All token/s outputs are honest formula estimate ranges (~low–high tok/s), never raw telemetry.
+ */
+
+export const ENGINE_VERSION = 'v3.0';
 
 export const QUANT_BPW: Record<QuantKey, number> = {
-  Q2_K: 3.0,
-  Q3_K_M: 3.9,
   Q4_K_M: 4.85,
-  Q5_K_M: 5.7,
-  Q6_K: 6.6,
+  Q5_K_M: 5.65,
+  Q6_K: 6.56,
   Q8_0: 8.5,
   FP16: 16.0,
+  AWQ_4BIT: 4.75,
+  FP8: 8.2,
+  MLX_4BIT: 4.55,
+  MLX_8BIT: 8.25,
 };
 
-export const KV_QUANT_BYTES: Record<KvQuantKey, number> = {
-  FP16: 2.0,
-  Q8_0: 1.0,
-  Q4_0: 0.5,
+export const QUANT_LABELS: Record<QuantKey, string> = {
+  Q4_K_M: '4.85 bpw · Balanced 4-bit GGUF',
+  Q5_K_M: '5.65 bpw · Higher-accuracy 5-bit GGUF',
+  Q6_K: '6.56 bpw · Near-lossless 6-bit GGUF',
+  Q8_0: '8.50 bpw · 8-bit reference GGUF',
+  FP16: '16.0 bpw · Unquantized FP16',
+  AWQ_4BIT: '4.75 bpw · 4-bit AWQ (vLLM Marlin)',
+  FP8: '8.20 bpw · 8-bit FP8 (vLLM)',
+  MLX_4BIT: '4.55 bpw · 4-bit Affine (Apple MLX)',
+  MLX_8BIT: '8.25 bpw · 8-bit Affine (Apple MLX)',
 };
 
-export const EFFICIENCY_CUDA: Record<QuantKey, number> = {
-  Q2_K: 0.75,
-  Q3_K_M: 0.77,
-  Q4_K_M: 0.78,
-  Q5_K_M: 0.79,
-  Q6_K: 0.79,
-  Q8_0: 0.8,
-  FP16: 0.82,
+export const FORMAT_QUANTS: Record<RuntimeFormat, QuantKey[]> = {
+  GGUF: ['Q4_K_M', 'Q5_K_M', 'Q6_K', 'Q8_0', 'FP16'],
+  AWQ: ['AWQ_4BIT', 'FP8'],
+  MLX: ['MLX_4BIT', 'MLX_8BIT'],
 };
 
-export const EFFICIENCY_METAL: Record<QuantKey, number> = {
-  Q2_K: 0.71,
-  Q3_K_M: 0.73,
-  Q4_K_M: 0.74,
-  Q5_K_M: 0.75,
-  Q6_K: 0.75,
-  Q8_0: 0.76,
-  FP16: 0.78,
+export const KV_BITS: Record<KvQuantKey, number> = {
+  fp16: 16.0,
+  q8_0: 8.5,
+  q4_0: 4.5,
 };
 
-export const EFFICIENCY_ROCM: Record<QuantKey, number> = {
-  Q2_K: 0.67,
-  Q3_K_M: 0.69,
-  Q4_K_M: 0.7,
-  Q5_K_M: 0.71,
-  Q6_K: 0.71,
-  Q8_0: 0.72,
-  FP16: 0.74,
-};
+export const CONTEXT_LADDER = [4096, 8192, 16384, 32768, 40960, 65536, 131072];
 
-export const EFFICIENCY_VULKAN: Record<QuantKey, number> = {
-  Q2_K: 0.63,
-  Q3_K_M: 0.64,
-  Q4_K_M: 0.65,
-  Q5_K_M: 0.66,
-  Q6_K: 0.66,
-  Q8_0: 0.67,
-  FP16: 0.69,
-};
-
-export const EFFICIENCY_CPU: Record<QuantKey, number> = {
-  Q2_K: 0.82,
-  Q3_K_M: 0.84,
-  Q4_K_M: 0.86,
-  Q5_K_M: 0.87,
-  Q6_K: 0.87,
-  Q8_0: 0.88,
-  FP16: 0.85,
-};
-
-export const EFFICIENCY_BY_BACKEND: Record<string, Record<QuantKey, number>> = {
-  CUDA: EFFICIENCY_CUDA,
-  Metal: EFFICIENCY_METAL,
-  ROCm: EFFICIENCY_ROCM,
-  Vulkan: EFFICIENCY_VULKAN,
-  CPU: EFFICIENCY_CPU,
-};
-
-export const MULTI_GPU_EFFICIENCY = 0.92;
-export const CPU_OFFLOAD_BW_GBPS = 35.0;
-export const CONTEXT_CHECKPOINTS = [65536, 49152, 32768, 16384, 8192, 4096];
-
-const LAYER_SPLIT_EFF: Record<number, number> = {
-  1: 1.0,
-  2: 0.92,
-  3: 0.89,
-  4: 0.86,
-  6: 0.83,
-  8: 0.8,
-};
-
-const TP_PCIE_EFF: Record<number, number> = {
-  1: 1.0,
-  2: 0.8,
-  3: 0.74,
-  4: 0.68,
-  6: 0.6,
-  8: 0.55,
-};
-
-const TP_NVLINK_EFF: Record<number, number> = {
-  1: 1.0,
-  2: 0.9,
-  3: 0.87,
-  4: 0.84,
-  6: 0.8,
-  8: 0.78,
-};
+export const SPEED_FAST_MIN = 25.0;
+export const SPEED_INTERACTIVE_MIN = 12.0;
+export const SPEED_READABLE_MIN = 6.0;
 
 function round2(n: number): number {
-  return Math.round(n * 100) / 100;
-}
-
-function round1(n: number): number {
-  return Math.round(n * 10) / 10;
+  const s = n < 0 ? -1 : 1;
+  return (s * Math.round(Math.abs(n) * 100)) / 100;
 }
 
 function round3(n: number): number {
-  return Math.round(n * 1000) / 1000;
+  const s = n < 0 ? -1 : 1;
+  return (s * Math.round(Math.abs(n) * 1000)) / 1000;
+}
+
+function round1(n: number): number {
+  const s = n < 0 ? -1 : 1;
+  return (s * Math.round(Math.abs(n) * 10)) / 10;
+}
+
+export function defaultQuantForFormat(fmt: RuntimeFormat): QuantKey {
+  if (fmt === 'AWQ') return 'AWQ_4BIT';
+  if (fmt === 'MLX') return 'MLX_4BIT';
+  return 'Q4_K_M';
+}
+
+export function formatForQuant(quant: QuantKey): RuntimeFormat {
+  if (quant === 'AWQ_4BIT' || quant === 'FP8') return 'AWQ';
+  if (quant === 'MLX_4BIT' || quant === 'MLX_8BIT') return 'MLX';
+  return 'GGUF';
+}
+
+export function normalizeFormatAndQuant(
+  fmt?: RuntimeFormat | null,
+  quant?: QuantKey | null,
+): [RuntimeFormat, QuantKey] {
+  if (!fmt && !quant) return ['GGUF', 'Q4_K_M'];
+  if (!fmt && quant) return [formatForQuant(quant), quant];
+  const resolvedFmt = fmt as RuntimeFormat;
+  const allowed = FORMAT_QUANTS[resolvedFmt];
+  if (quant && allowed.includes(quant)) {
+    return [resolvedFmt, quant];
+  }
+  return [resolvedFmt, defaultQuantForFormat(resolvedFmt)];
 }
 
 export function osRamReserveGb(systemRamGb: number): number {
-  if (systemRamGb <= 16) return 4.0;
+  if (systemRamGb <= 16) return 4.5;
   if (systemRamGb <= 32) return 6.0;
-  return 8.0;
+  if (systemRamGb <= 64) return 8.0;
+  return 10.0;
 }
 
-function splitScaleFactor(
+export function effectiveUsableVramGb(
+  hardware: HardwareSpec,
   gpuCount: number,
-  splitMode: SplitMode,
-  hasNvlink: boolean,
-): number {
-  if (gpuCount <= 1) return 1.0;
-  if (splitMode === 'row') {
-    const table = hasNvlink ? TP_NVLINK_EFF : TP_PCIE_EFF;
-    const eff = table[gpuCount] ?? 0.52;
-    return eff * gpuCount;
+  reserveProfile: ReserveProfile = 'desktop',
+  customUsableGb?: number | null,
+): [number, number] {
+  const baseCards = Math.max(1, Math.trunc(hardware.gpu_count || 1));
+  const singleRaw = hardware.vram_gb / baseCards;
+  const rawTotal = round2(singleRaw * gpuCount);
+  if (gpuCount <= 0) return [0, 0];
+
+  if (reserveProfile === 'custom' && customUsableGb !== undefined && customUsableGb !== null && customUsableGb > 0) {
+    const capped = Math.min(rawTotal, Math.max(0.5, customUsableGb));
+    return [rawTotal, round2(capped)];
   }
-  return LAYER_SPLIT_EFF[gpuCount] ?? 0.8;
+
+  if (hardware.is_unified) {
+    let usable: number;
+    if (reserveProfile === 'clean') {
+      if (rawTotal <= 8) usable = 6.0;
+      else if (rawTotal <= 16) usable = round2(rawTotal - 3.0);
+      else if (rawTotal <= 24) usable = round2(rawTotal - 4.0);
+      else if (rawTotal <= 36) usable = round2(rawTotal * 0.84);
+      else usable = round2(rawTotal * 0.86);
+    } else {
+      if (rawTotal <= 8) usable = 4.8;
+      else if (rawTotal <= 16) usable = 10.5;
+      else if (rawTotal <= 24) usable = 16.8;
+      else if (rawTotal <= 36) usable = round2(rawTotal * 0.74);
+      else if (rawTotal <= 64) usable = round2(rawTotal * 0.76);
+      else usable = round2(rawTotal * 0.78);
+    }
+    return [rawTotal, round2(Math.min(rawTotal, Math.max(0.5, usable)))];
+  }
+
+  const singleUsableCatalog = hardware.usable_vram_gb / baseCards;
+  if (reserveProfile === 'clean') {
+    const cleanUsable = rawTotal - Math.min(1.8, rawTotal * 0.025);
+    const usable = Math.max(singleUsableCatalog * gpuCount, cleanUsable);
+    return [rawTotal, round2(Math.min(rawTotal, usable))];
+  }
+
+  const desktopUsable = singleUsableCatalog * gpuCount;
+  return [rawTotal, round2(Math.min(rawTotal, Math.max(0.5, desktopUsable)))];
 }
 
-/**
- * Exact mirror of scripts/physics.py estimate_rig_run() for Multi-GPU (1x-8x),
- * 7-tier quantization, FP16/Q8_0/Q4_0 KV cache, MoE active params, and CPU+RAM offload.
- */
-export function estimateRigRun(
+export function kvCacheGb(
   model: ModelSpec,
-  hardware: HardwareSpec | null,
-  options: RigRunOptions = {},
-): RigRunEstimate {
-  const quant: QuantKey = options.quant ?? 'Q4_K_M';
-  const contextTokens = options.contextTokens ?? 8192;
-  const kvQuant: KvQuantKey = options.kvQuant ?? 'FP16';
-  const reqGpuCount = options.gpuCount ?? (hardware ? hardware.gpu_count ?? 1 : 0);
-  const splitMode: SplitMode = options.splitMode ?? 'layer';
-  const cpuBwGbps = options.cpuBwGbps ?? CPU_OFFLOAD_BW_GBPS;
-  const systemRamGb = options.systemRamGb ?? null;
-
-  const bpw = QUANT_BPW[quant];
-  const paramsB = model.params_b;
-  const weightsGb = (paramsB * bpw) / 8.0;
-  const activeParamsB = model.active_params_b ?? paramsB;
-  const activeRatio = paramsB > 0 ? Math.min(1.0, activeParamsB / paramsB) : 1.0;
-  const activeWeightsGb = weightsGb * activeRatio;
-
-  const kvBytesPerElem = KV_QUANT_BYTES[kvQuant];
-  const kvBytes =
-    2 *
+  contextTokens: number,
+  kvQuant: KvQuantKey = 'fp16',
+): number {
+  const kvBits = KV_BITS[kvQuant] ?? 16.0;
+  const bytesPerEl = kvBits / 8.0;
+  const totalBytes =
+    2.0 *
     model.num_layers *
     model.num_kv_heads *
     model.head_dim *
-    contextTokens *
-    kvBytesPerElem;
-  const kvCacheGb = kvBytes / 1024 ** 3;
-  const kvReadGb = kvCacheGb * 0.5;
+    bytesPerEl *
+    contextTokens;
+  return round2(totalBytes / (1024 ** 3));
+}
 
-  const overheadGb = Math.min(2.0, 0.5 + 0.015 * paramsB);
-  const totalVramGb = weightsGb + kvCacheGb + overheadGb;
+export function kvGbPer4k(model: ModelSpec, kvQuant: KvQuantKey = 'fp16'): number {
+  return kvCacheGb(model, 4096, kvQuant);
+}
 
-  const isCpuOnly = hardware === null || reqGpuCount <= 0;
+export function classifySpeedTier(estTps: number, status: CompatStatus): SpeedTier {
+  if (status === 'OOM' || estTps <= 0) return 'OOM';
+  if (estTps >= SPEED_FAST_MIN) return 'Fast';
+  if (estTps >= SPEED_INTERACTIVE_MIN) return 'Interactive';
+  if (estTps >= SPEED_READABLE_MIN) return 'Readable';
+  return 'Slow';
+}
 
-  if (isCpuOnly) {
-    const sysRam = systemRamGb !== null ? systemRamGb : 32.0;
-    const usableRam = Math.max(0.0, sysRam - osRamReserveGb(sysRam));
-    let status: CompatStatus;
-    let oomReason = '';
-    if (totalVramGb <= usableRam) {
-      status = 'Smooth';
-    } else if (totalVramGb <= sysRam * 0.94) {
-      status = 'Partial Offload';
-      oomReason = 'Exceeds usable OS-reserved RAM; risks SSD swap thrashing.';
-    } else {
-      status = 'OOM';
-      oomReason = 'Exceeds total physical System RAM.';
+export function speedRating(tps: number, status: CompatStatus = 'Fits'): SpeedTier {
+  return classifySpeedTier(tps, status);
+}
+
+export function formatTpsRange(
+  low?: number,
+  high?: number,
+  estTps = 0,
+  status: CompatStatus = 'Fits',
+): string {
+  if (status === 'OOM' || (estTps <= 0 && (high ?? 0) <= 0)) return 'OOM';
+  const resolvedLow = low ?? Math.max(1, Math.floor(estTps * 0.85));
+  const resolvedHigh = high ?? Math.max(resolvedLow, Math.ceil(estTps * 1.15));
+  if (resolvedLow <= 0 && estTps < 1.0) return '<1 tok/s';
+  if (resolvedLow === resolvedHigh) return `~${resolvedLow} tok/s`;
+  return `~${resolvedLow}\u2013${resolvedHigh} tok/s`;
+}
+
+export function formatContextLabel(tokens: number): string {
+  if (tokens >= 1024 && tokens % 1024 === 0) return `${tokens / 1024}K`;
+  if (tokens >= 10000 && tokens % 1000 === 0) return `${tokens / 1000}K`;
+  return String(tokens);
+}
+
+function computeTpsBounds(rawTps: number, status: CompatStatus): [number, number, number] {
+  if (status === 'OOM' || rawTps <= 0) return [0, 0, 0];
+  const spread = status === 'Fits' ? 0.15 : status === 'Tight Fit' ? 0.2 : 0.25;
+  if (rawTps < 1.0) {
+    return [round1(rawTps), 0, 1];
+  }
+  const estTps = Math.round(rawTps);
+  const tpsLow = Math.max(1, Math.floor(rawTps * (1.0 - spread)));
+  const tpsHigh = Math.max(
+    tpsLow + (rawTps >= 3.0 ? 1 : 0),
+    Math.ceil(rawTps * (1.0 + spread)),
+  );
+  return [estTps, tpsLow, tpsHigh];
+}
+
+export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
+  const {
+    model,
+    hardware,
+    cpu = null,
+    systemRamGb = 64.0,
+    kvQuant = 'fp16',
+    splitMode = 'layer',
+    reserveProfile = 'desktop',
+    customUsableGb = null,
+    flashAttention = true,
+  } = opts;
+  const contextTokens = opts.contextTokens ?? 8192;
+
+  const [fmt, normQuant] = normalizeFormatAndQuant(opts.format ?? null, opts.quant ?? 'Q4_K_M');
+  const bpw = QUANT_BPW[normQuant];
+
+  const weightsGb = round2((model.params_b * bpw) / 8.0);
+  const activeParamsB = model.active_params_b ?? model.params_b;
+  const activeWeightsGb = round2(weightsGb * (activeParamsB / model.params_b));
+  const kvGb = kvCacheGb(model, contextTokens, kvQuant);
+
+  let effGpuCount =
+    hardware === null
+      ? 0
+      : opts.gpuCount !== undefined
+        ? Math.trunc(opts.gpuCount)
+        : Math.trunc(hardware.gpu_count);
+  effGpuCount = Math.max(0, Math.min(8, effGpuCount));
+
+  let baseOverhead: number;
+  if (fmt === 'AWQ') {
+    baseOverhead = 0.95 + 0.032 * weightsGb;
+  } else if (fmt === 'MLX') {
+    baseOverhead = 0.45 + 0.015 * weightsGb;
+  } else {
+    baseOverhead = 0.45 + 0.012 * weightsGb;
+    if (flashAttention && contextTokens >= 32768) {
+      baseOverhead += 0.12;
     }
+  }
 
-    const cpuEff = EFFICIENCY_CPU[quant];
-    const effectiveCpuBw = cpuBwGbps * cpuEff;
-    const readGb = activeWeightsGb + kvReadGb;
-    let estTps = 0.0;
-    if (status !== 'OOM' && readGb > 0) {
-      estTps =
-        status === 'Smooth'
-          ? effectiveCpuBw / readGb
-          : (effectiveCpuBw / readGb) * 0.35;
-    }
+  let multiGpuCtxGb = 0.55 * Math.max(0, effGpuCount - 1);
+  let overheadGb = round2(baseOverhead + multiGpuCtxGb);
+  let totalVramGb = round2(weightsGb + kvGb + overheadGb);
 
+  const totalLayers = model.num_layers;
+  const osReserve = osRamReserveGb(systemRamGb);
+  const availableRamGb = round2(Math.max(1.0, systemRamGb - osReserve));
+
+  if (hardware === null || effGpuCount === 0) {
+    const cpuBw = cpu ? cpu.effective_bw_gbps : 55.0;
+    const fitsRig = totalVramGb <= availableRamGb;
+    const status: CompatStatus = fitsRig ? 'Partial Offload' : 'OOM';
+    const rawTps = fitsRig
+      ? (cpuBw * 0.58) / Math.max(0.35, activeWeightsGb + kvGb * 0.4)
+      : 0.0;
+    const [estTps, tpsLow, tpsHigh] = computeTpsBounds(rawTps, status);
     return {
-      quant,
-      kv_quant: kvQuant,
+      quant: normQuant,
+      format: fmt,
       context_tokens: contextTokens,
-      weights_gb: round2(weightsGb),
-      kv_cache_gb: round2(kvCacheGb),
-      overhead_gb: round2(overheadGb),
-      total_vram_gb: round2(totalVramGb),
+      weights_gb: weightsGb,
+      kv_cache_gb: kvGb,
+      overhead_gb: overheadGb,
+      total_vram_gb: totalVramGb,
+      effective_usable_vram_gb: 0,
+      headroom_gb: round2(availableRamGb - totalVramGb),
       status,
-      est_tps: round1(estTps),
+      speed_tier: classifySpeedTier(estTps, status),
+      est_tps: estTps,
+      est_tps_low: tpsLow,
+      est_tps_high: tpsHigh,
       gpu_layers_fit: 0,
-      total_layers: model.num_layers,
-      gpu_fraction: 0.0,
+      total_layers: totalLayers,
+      gpu_fraction: 0,
+      comm_overhead_pct: 0,
+      comm_warning: false,
+      raw_vram_gb: 0,
+      usable_vram_gb: 0,
+      system_ram_gb: systemRamGb,
+      available_ram_gb: availableRamGb,
+      spill_ram_gb: round2(totalVramGb),
+      fits_vram: false,
+      fits_rig: fitsRig,
+      bottleneck: fitsRig ? 'System RAM' : 'Insufficient Memory',
       gpu_count: 0,
       split_mode: splitMode,
-      usable_vram_gb: 0.0,
-      total_phys_vram_gb: 0.0,
-      offload_ram_gb: round2(totalVramGb),
-      usable_ram_gb: round2(usableRam),
-      is_cpu_only: true,
-      oom_reason: oomReason,
+      kv_quant: kvQuant,
+      reserve_profile: reserveProfile,
+      os_ram_reserve_gb: osReserve,
+      effective_bw_gbps: cpuBw,
+      active_params_b: activeParamsB,
     };
   }
 
-  const baseGpuCount = hardware.gpu_count || 1;
-  const effGpuCount = hardware.is_unified ? 1 : Math.max(1, reqGpuCount);
-  const scaleVram = effGpuCount / baseGpuCount;
-
-  const usable = hardware.usable_vram_gb * scaleVram;
-  const physVram = hardware.vram_gb * scaleVram;
-
-  const memForWeights = Math.max(0.0, usable - kvCacheGb - overheadGb);
-  const gpuFraction =
-    weightsGb > 0 ? Math.min(1.0, memForWeights / weightsGb) : 1.0;
-  const gpuLayersFit =
-    totalVramGb <= usable
-      ? model.num_layers
-      : Math.floor(model.num_layers * gpuFraction);
-  const offloadRamGb =
-    totalVramGb <= usable ? 0.0 : Math.max(0.0, totalVramGb - usable);
-  const usableRam =
-    systemRamGb !== null
-      ? Math.max(0.0, systemRamGb - osRamReserveGb(systemRamGb))
-      : 9999.0;
-
-  let status: CompatStatus;
-  let oomReason = '';
-  if (totalVramGb <= usable) {
-    status = 'Smooth';
-  } else if (hardware.is_unified) {
-    if (totalVramGb <= physVram * 0.92) {
-      status = 'Partial Offload';
-      oomReason = 'Exceeds safe unified wired ceiling; risks OS memory pressure.';
-    } else {
-      status = 'OOM';
-      oomReason = 'Exceeds usable unified memory capacity.';
-    }
-  } else if (systemRamGb !== null) {
-    if (gpuLayersFit < 1) {
-      status = 'OOM';
-      oomReason = 'KV cache & overhead alone exceed GPU VRAM.';
-    } else if (offloadRamGb > usableRam) {
-      status = 'OOM';
-      oomReason = 'Spill weights exceed available System RAM.';
-    } else {
-      status = 'Partial Offload';
-      oomReason = 'Remaining layers spill to System RAM over PCIe.';
-    }
-  } else {
-    if (totalVramGb <= usable * 2.0 && gpuFraction >= 0.35) {
-      status = 'Partial Offload';
-      oomReason = 'Remaining layers spill to System RAM over PCIe.';
-    } else {
-      status = 'OOM';
-      oomReason = 'Exceeds GPU VRAM practical offload threshold.';
-    }
+  if (hardware.is_unified) {
+    effGpuCount = 1;
+    multiGpuCtxGb = 0;
+    overheadGb = round2(baseOverhead);
+    totalVramGb = round2(weightsGb + kvGb + overheadGb);
   }
 
-  const eff = (EFFICIENCY_BY_BACKEND[hardware.backend] ?? EFFICIENCY_CUDA)[quant];
-  const multiFactor = splitScaleFactor(
+  const [rawVramGb, usableVram] = effectiveUsableVramGb(
+    hardware,
     effGpuCount,
-    splitMode,
-    Boolean(hardware.has_nvlink),
+    reserveProfile,
+    customUsableGb,
   );
-  const effectiveBw = hardware.bandwidth_gbps * eff * multiFactor;
+  const headroomGb = round2(usableVram - totalVramGb);
+  const tightThreshold = Math.max(1.0, usableVram * 0.05);
+  const fitsVram = totalVramGb <= usableVram;
 
-  let estTps = 0.0;
-  if (status === 'OOM') {
-    estTps = 0.0;
-  } else if (status === 'Smooth') {
-    estTps = effectiveBw / (activeWeightsGb + kvReadGb);
-  } else if (hardware.is_unified) {
-    estTps = (effectiveBw / (activeWeightsGb + kvReadGb)) * 0.55;
+  let gpuLayersFit: number;
+  let gpuFraction: number;
+  let spillRamGb: number;
+  let fitsRig: boolean;
+  let status: CompatStatus;
+
+  if (fitsVram) {
+    gpuLayersFit = totalLayers;
+    gpuFraction = 1.0;
+    spillRamGb = 0.0;
+    fitsRig = true;
+    status = headroomGb < tightThreshold ? 'Tight Fit' : 'Fits';
   } else {
-    const tGpu = (activeWeightsGb * gpuFraction + kvReadGb) / effectiveBw;
-    const cpuBw = Math.max(1.0, cpuBwGbps);
-    const tCpu = (activeWeightsGb * (1.0 - gpuFraction)) / cpuBw;
-    estTps = tGpu + tCpu > 0 ? 1.0 / (tGpu + tCpu) : 0.0;
+    const perLayerWeightGb = weightsGb / totalLayers;
+    const usableForWeights = Math.max(0.0, usableVram - overheadGb - kvGb);
+    gpuLayersFit = Math.max(
+      0,
+      Math.min(totalLayers - 1, Math.floor(usableForWeights / Math.max(0.02, perLayerWeightGb))),
+    );
+    gpuFraction = round3(gpuLayersFit / totalLayers);
+    spillRamGb = round2(Math.max(0.0, totalVramGb - usableVram));
+
+    if (hardware.is_unified) {
+      fitsRig = false;
+      status = 'OOM';
+    } else {
+      fitsRig = gpuFraction >= 0.15 && spillRamGb <= availableRamGb;
+      status = fitsRig ? 'Partial Offload' : 'OOM';
+    }
   }
+
+  const singleBw = hardware.bandwidth_gbps;
+  const hasNvlink = Boolean(hardware.has_nvlink);
+
+  let backendEff: number;
+  if (fmt === 'AWQ') {
+    backendEff = hardware.id.includes('t4') ? 0.58 : 0.68;
+  } else if (fmt === 'MLX') {
+    backendEff = hardware.is_unified ? 0.76 : 0.72;
+  } else if (hardware.backend === 'CUDA') {
+    backendEff = hardware.id.includes('t4') ? 0.62 : 0.72;
+  } else if (hardware.backend === 'Metal') {
+    backendEff = 0.72;
+  } else if (hardware.backend === 'ROCm') {
+    backendEff = 0.68;
+  } else if (hardware.backend === 'Vulkan') {
+    backendEff = 0.62;
+  } else {
+    backendEff = 0.58;
+  }
+
+  let effectiveBw: number;
+  let commLatencySec = 0.0;
+  let commOverheadPct = 0.0;
+  let commWarning = false;
+
+  if (effGpuCount === 1 || hardware.is_unified) {
+    effectiveBw = singleBw;
+  } else if (splitMode === 'tensor') {
+    const bwScaling = 1.0 + (effGpuCount - 1) * (hasNvlink ? 0.9 : 0.82);
+    effectiveBw = singleBw * bwScaling;
+    const perOpMs = hasNvlink ? 0.014 : 0.165;
+    commLatencySec =
+      (2.0 * totalLayers * perOpMs * (1.0 + 0.15 * Math.max(0, effGpuCount - 2))) / 1000.0;
+    commWarning = !hasNvlink;
+  } else {
+    const pipelineFactor = hasNvlink
+      ? 0.985
+      : Math.max(0.84, 1.0 - 0.045 * (effGpuCount - 1));
+    effectiveBw = singleBw * pipelineFactor;
+  }
+
+  const cpuBw = cpu ? cpu.effective_bw_gbps : 55.0;
+  const activeKvGb = kvGb * 0.35;
+
+  let rawTps: number;
+  let bottleneck: RigRunEstimate['bottleneck'];
+
+  if (status === 'OOM') {
+    rawTps = 0.0;
+    bottleneck = 'Insufficient Memory';
+  } else {
+    const gpuTime =
+      (activeWeightsGb * gpuFraction + activeKvGb * gpuFraction) /
+      Math.max(1.0, effectiveBw * backendEff);
+    const cpuTime =
+      gpuFraction < 1.0
+        ? (activeWeightsGb * (1.0 - gpuFraction) + activeKvGb * (1.0 - gpuFraction)) /
+          Math.max(1.0, cpuBw * 0.6)
+        : 0.0;
+    const totalTokSec = gpuTime + cpuTime + commLatencySec;
+    rawTps = 1.0 / Math.max(0.002, totalTokSec);
+
+    if (commLatencySec > 0 && totalTokSec > 0) {
+      commOverheadPct = round1((commLatencySec / totalTokSec) * 100.0);
+    }
+
+    if (gpuFraction < 1.0) {
+      bottleneck = 'PCIe / System RAM';
+    } else if (commWarning && commOverheadPct >= 20.0) {
+      bottleneck = 'PCIe All-Reduce';
+    } else {
+      bottleneck = 'VRAM';
+    }
+  }
+
+  const [estTps, tpsLow, tpsHigh] = computeTpsBounds(rawTps, status);
 
   return {
-    quant,
-    kv_quant: kvQuant,
+    quant: normQuant,
+    format: fmt,
     context_tokens: contextTokens,
-    weights_gb: round2(weightsGb),
-    kv_cache_gb: round2(kvCacheGb),
-    overhead_gb: round2(overheadGb),
-    total_vram_gb: round2(totalVramGb),
+    weights_gb: weightsGb,
+    kv_cache_gb: kvGb,
+    overhead_gb: overheadGb,
+    total_vram_gb: totalVramGb,
+    effective_usable_vram_gb: usableVram,
+    headroom_gb: headroomGb,
     status,
-    est_tps: round1(estTps),
+    speed_tier: classifySpeedTier(estTps, status),
+    est_tps: estTps,
+    est_tps_low: tpsLow,
+    est_tps_high: tpsHigh,
     gpu_layers_fit: gpuLayersFit,
-    total_layers: model.num_layers,
-    gpu_fraction: round3(gpuFraction),
+    total_layers: totalLayers,
+    gpu_fraction: gpuFraction,
+    comm_overhead_pct: commOverheadPct,
+    comm_warning: commWarning,
+    raw_vram_gb: rawVramGb,
+    usable_vram_gb: usableVram,
+    system_ram_gb: systemRamGb,
+    available_ram_gb: availableRamGb,
+    spill_ram_gb: spillRamGb,
+    fits_vram: fitsVram,
+    fits_rig: fitsRig,
+    bottleneck,
     gpu_count: effGpuCount,
     split_mode: splitMode,
-    usable_vram_gb: round2(usable),
-    total_phys_vram_gb: round2(physVram),
-    offload_ram_gb: round2(offloadRamGb),
-    usable_ram_gb: systemRamGb !== null ? round2(usableRam) : 0.0,
-    is_cpu_only: false,
-    oom_reason: oomReason,
+    kv_quant: kvQuant,
+    reserve_profile: reserveProfile,
+    os_ram_reserve_gb: osReserve,
+    effective_bw_gbps: round1(effectiveBw),
+    active_params_b: activeParamsB,
   };
 }
 
@@ -352,63 +489,131 @@ export function estimateRun(
   hardware: HardwareSpec,
   quant: QuantKey = 'Q4_K_M',
   contextTokens = 8192,
+  reserveProfile: ReserveProfile = 'desktop',
+  kvQuant: KvQuantKey = 'fp16',
+  format?: RuntimeFormat,
 ): RunEstimate {
-  const rig = estimateRigRun(model, hardware, {
+  const rig = estimateRigRun({
+    model,
+    hardware,
+    gpuCount: hardware.gpu_count,
+    systemRamGb: 64.0,
     quant,
+    format,
     contextTokens,
-    kvQuant: 'FP16',
-    gpuCount: hardware.gpu_count ?? 1,
+    kvQuant,
     splitMode: 'layer',
-    cpuBwGbps: CPU_OFFLOAD_BW_GBPS,
-    systemRamGb: null,
+    reserveProfile,
   });
+
   return {
     quant: rig.quant,
+    format: rig.format,
     context_tokens: rig.context_tokens,
     weights_gb: rig.weights_gb,
     kv_cache_gb: rig.kv_cache_gb,
     overhead_gb: rig.overhead_gb,
     total_vram_gb: rig.total_vram_gb,
+    effective_usable_vram_gb: rig.effective_usable_vram_gb,
+    headroom_gb: rig.headroom_gb,
     status: rig.status,
+    speed_tier: rig.speed_tier,
     est_tps: rig.est_tps,
+    est_tps_low: rig.est_tps_low,
+    est_tps_high: rig.est_tps_high,
     gpu_layers_fit: rig.gpu_layers_fit,
     total_layers: rig.total_layers,
     gpu_fraction: rig.gpu_fraction,
+    comm_overhead_pct: rig.comm_overhead_pct,
+    comm_warning: rig.comm_warning,
   };
+}
+
+export function maxFitContextDetails(
+  model: ModelSpec,
+  hardware: HardwareSpec,
+  quant: QuantKey = 'Q4_K_M',
+  reserveProfile: ReserveProfile = 'desktop',
+  kvQuant: KvQuantKey = 'fp16',
+): { contextTokens: number; totalVramGb: number; status: CompatStatus } {
+  const tiers = CONTEXT_LADDER.filter((t) => t <= model.max_context);
+  let bestCtx = 0;
+  let bestVram = 0;
+  let bestStatus: CompatStatus = 'OOM';
+  for (const ctx of tiers) {
+    const res = estimateRun(model, hardware, quant, ctx, reserveProfile, kvQuant);
+    if (res.status === 'Fits' || res.status === 'Tight Fit') {
+      bestCtx = ctx;
+      bestVram = res.total_vram_gb;
+      bestStatus = res.status;
+    } else {
+      break;
+    }
+  }
+  return { contextTokens: bestCtx, totalVramGb: bestVram, status: bestStatus };
 }
 
 export function maxSmoothContext(
   model: ModelSpec,
   hardware: HardwareSpec,
   quant: QuantKey = 'Q4_K_M',
+  reserveProfile: ReserveProfile = 'desktop',
+  kvQuant: KvQuantKey = 'fp16',
 ): number {
-  for (const ctx of CONTEXT_CHECKPOINTS) {
-    const est = estimateRun(model, hardware, quant, ctx);
-    if (est.status === 'Smooth' && ctx <= model.max_context) {
-      return ctx;
-    }
-  }
-  return 0;
+  return maxFitContextDetails(model, hardware, quant, reserveProfile, kvQuant).contextTokens;
 }
 
-export function formatContextLabel(tokens: number): string {
-  if (tokens >= 1024) {
-    return `${Math.round(tokens / 1024)}K`;
-  }
-  return String(tokens);
-}
+export function buildRuntimeCommand(params: {
+  model: ModelSpec;
+  hardware: HardwareSpec | null;
+  format: RuntimeFormat;
+  quant: QuantKey;
+  contextTokens: number;
+  kvQuant: KvQuantKey;
+  gpuCount: number;
+  splitMode: SplitMode;
+  gpuLayersFit: number;
+  fitsVram: boolean;
+}): { primaryLabel: string; command: string; secondaryCommand?: string } {
+  const {
+    model,
+    hardware,
+    format,
+    quant,
+    contextTokens,
+    kvQuant,
+    gpuCount,
+    splitMode,
+    gpuLayersFit,
+    fitsVram,
+  } = params;
 
-export function speedRating(
-  tps: number,
-  status: CompatStatus,
-  opts?: { isUnified?: boolean; isCpuOnly?: boolean },
-): string {
-  if (status === 'OOM' || tps <= 0) return 'Impractical (OOM)';
-  if (tps >= 50) return 'Blazing (>50 tok/s)';
-  if (tps >= 20) return 'Fast Interactive';
-  if (tps >= 8) return 'Readable Speed';
-  if (opts?.isCpuOnly) return 'Slow (CPU / RAM Bound)';
-  if (status === 'Smooth') return 'Slow (Bandwidth-Limited)';
-  if (opts?.isUnified) return 'Slow (Unified Swap Pressure)';
-  return 'Slow (PCIe / CPU Offload)';
+  if (format === 'AWQ') {
+    const awqRepo = model.awq_repo || model.hf_repo.replace('-GGUF', '-AWQ');
+    const tpFlag = gpuCount > 1 ? ` --tensor-parallel-size ${gpuCount}` : '';
+    const quantFlag = quant === 'FP8' ? '--quantization fp8' : '--quantization awq';
+    const kvFlag = kvQuant === 'q8_0' ? ' --kv-cache-dtype fp8' : '';
+    return {
+      primaryLabel: quant === 'FP8' ? 'vLLM FP8' : 'vLLM AWQ',
+      command: `vllm serve ${awqRepo} ${quantFlag} --max-model-len ${contextTokens}${tpFlag}${kvFlag}`,
+    };
+  }
+
+  if (format === 'MLX') {
+    const mlxRepo = model.mlx_repo || `mlx-community/${model.name}-4bit`;
+    return {
+      primaryLabel: 'mlx_lm (Apple Silicon)',
+      command: `mlx_lm.generate --model ${mlxRepo} --max-tokens 1024 --prompt "Explain KV cache sizing"`,
+    };
+  }
+
+  const ngl = fitsVram ? 99 : gpuLayersFit;
+  const faFlag = hardware && (hardware.backend === 'CUDA' || hardware.backend === 'Metal') ? '-fa on' : '-fa off';
+  const kvFlag = kvQuant !== 'fp16' ? ` --cache-type-k ${kvQuant} --cache-type-v ${kvQuant}` : '';
+  const splitFlag = gpuCount > 1 && splitMode === 'tensor' ? ' -sm row' : '';
+  return {
+    primaryLabel: 'llama.cpp CLI',
+    command: `llama-cli -hf ${model.hf_repo}:${quant} -ngl ${ngl} -c ${contextTokens} ${faFlag}${kvFlag}${splitFlag}`,
+    secondaryCommand: `OLLAMA_NUM_CTX=${contextTokens} ollama run ${model.ollama_tag}`,
+  };
 }

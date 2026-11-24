@@ -1,16 +1,22 @@
 ---
-import type { PageEntry } from '../types/vram';
+import type { VramPageEntry } from '../types/vram';
 import StatusBadge from './StatusBadge.astro';
-import { formatContextLabel, speedRating } from '../utils/physics';
+import SpeedBadge from './SpeedBadge.astro';
+import {
+  classifySpeedTier,
+  formatContextLabel,
+  formatTpsRange,
+  QUANT_BPW,
+} from '../utils/physics';
 
 interface Props {
-  entry: PageEntry;
+  entry: VramPageEntry;
 }
 
 const { entry } = Astro.props;
 const { model, hardware, default_result: res } = entry;
 
-const usable = hardware.usable_vram_gb;
+const usable = res.effective_usable_vram_gb ?? hardware.usable_vram_gb;
 const maxScale = Math.max(usable, res.total_vram_gb, 1);
 const weightsPct = Math.min(100, (res.weights_gb / maxScale) * 100);
 const kvPct = Math.min(100 - weightsPct, (res.kv_cache_gb / maxScale) * 100);
@@ -18,52 +24,61 @@ const overheadPct = Math.min(100 - weightsPct - kvPct, (res.overhead_gb / maxSca
 const ceilingPct = Math.min(100, (usable / maxScale) * 100);
 const utilPct = Math.round((res.total_vram_gb / usable) * 100);
 const initialCtxLabel = formatContextLabel(entry.default_context);
-const initialRating = speedRating(res.est_tps, res.status, {
-  isUnified: hardware.is_unified,
-  isCpuOnly: false,
-});
-const initialTpsText = res.status === 'OOM' ? 'OOM' : `${res.est_tps.toFixed(1)} tok/s`;
+const initialTier = res.speed_tier ?? classifySpeedTier(res.est_tps, res.status);
+const initialTpsText = formatTpsRange(
+  res.est_tps_low,
+  res.est_tps_high,
+  res.est_tps,
+  res.status,
+);
 const initialHeadroomText =
   res.total_vram_gb <= usable
     ? `${(usable - res.total_vram_gb).toFixed(2)} GB free headroom`
     : `${(res.total_vram_gb - usable).toFixed(2)} GB over ${hardware.backend} ceiling`;
 const initialVerdictLine =
-  res.status === 'Smooth'
-    ? `100% resident in ${hardware.backend} memory — zero CPU spill.`
-    : res.status === 'Partial Offload'
-      ? `Partial offload: ${res.gpu_layers_fit}/${res.total_layers} layers fit in VRAM; remainder spills to system RAM.`
-      : `Out of memory: ${res.total_vram_gb.toFixed(2)} GB required exceeds ${hardware.short_name}'s capacity.`;
-const initialNgl = res.status === 'Smooth' ? 99 : Math.max(1, res.gpu_layers_fit);
+  res.status === 'Fits'
+    ? `100% resident in ${hardware.backend} memory (${(usable - res.total_vram_gb).toFixed(2)} GB headroom).`
+    : res.status === 'Tight Fit'
+      ? `Tight margin: ${(usable - res.total_vram_gb).toFixed(2)} GB free (<5% buffer) — minimize desktop apps or cut KV to q8_0.`
+      : res.status === 'Partial Offload'
+        ? `Partial offload: ${res.gpu_layers_fit}/${res.total_layers} layers fit in VRAM; remainder spills to system RAM.`
+        : `Out of memory: ${res.total_vram_gb.toFixed(2)} GB required exceeds ${hardware.short_name}'s capacity.`;
+
+const initialNgl = res.status === 'Fits' || res.status === 'Tight Fit' ? 99 : Math.max(1, res.gpu_layers_fit);
 const gpuCount = hardware.gpu_count ?? 1;
-const splitModeSuffix = gpuCount > 1 ? ' --split-mode layer' : '';
-const initialLiveCmd = `llama-cli -hf ${model.hf_repo}:Q4_K_M -ngl ${initialNgl} -c ${entry.default_context} -fa on${splitModeSuffix}`;
+const initialLiveCmd = `llama-cli -hf ${model.hf_repo}:Q4_K_M -ngl ${initialNgl} -c ${entry.default_context} -fa on`;
 const gpuHubHref = `/gpu/${hardware.id}/`;
 const modelHubHref = `/model/${model.id}/`;
 const simulatorHref = `/calculator/?model=${encodeURIComponent(model.id)}&hw=${encodeURIComponent(hardware.id)}&gpus=${gpuCount}`;
-const initialOomRescueClass =
-  res.status === 'OOM'
-    ? 'mt-3 rounded-xl border border-rose-200 bg-rose-50/80 px-4 py-3.5'
-    : 'mt-3 hidden rounded-xl border border-rose-200 bg-rose-50/80 px-4 py-3.5';
+
 const weightsStyle = `width: ${weightsPct.toFixed(2)}%`;
 const kvStyle = `width: ${kvPct.toFixed(2)}%`;
 const overheadStyle = `width: ${overheadPct.toFixed(2)}%`;
 const ceilingStyle = `left: ${ceilingPct.toFixed(2)}%`;
 const ceilingTitle = `Usable Limit: ${usable} GB`;
 
-const quantOptions = [
-  { key: 'Q2_K', bpw: '3.00 bpw' },
-  { key: 'Q3_K_M', bpw: '3.90 bpw' },
-  { key: 'Q4_K_M', bpw: '4.85 bpw' },
-  { key: 'Q5_K_M', bpw: '5.70 bpw' },
-  { key: 'Q6_K', bpw: '6.60 bpw' },
-  { key: 'Q8_0', bpw: '8.50 bpw' },
-  { key: 'FP16', bpw: '16.0 bpw' },
+const formatTabs = [
+  { key: 'GGUF', label: 'GGUF', sub: 'llama.cpp', i18n: 'fmt.ggufShort' },
+  { key: 'AWQ', label: 'AWQ / FP8', sub: 'vLLM', i18n: 'fmt.awqShort' },
+  { key: 'MLX', label: 'MLX', sub: 'Apple Silicon', i18n: 'fmt.mlxShort' },
+] as const;
+
+const allQuantOptions = [
+  { key: 'Q4_K_M', fmt: 'GGUF', bpw: `${QUANT_BPW.Q4_K_M} bpw` },
+  { key: 'Q5_K_M', fmt: 'GGUF', bpw: `${QUANT_BPW.Q5_K_M} bpw` },
+  { key: 'Q6_K', fmt: 'GGUF', bpw: `${QUANT_BPW.Q6_K} bpw` },
+  { key: 'Q8_0', fmt: 'GGUF', bpw: `${QUANT_BPW.Q8_0} bpw` },
+  { key: 'FP16', fmt: 'GGUF', bpw: '16.0 bpw' },
+  { key: 'AWQ_4BIT', fmt: 'AWQ', bpw: '4.75 bpw' },
+  { key: 'FP8', fmt: 'AWQ', bpw: '8.20 bpw' },
+  { key: 'MLX_4BIT', fmt: 'MLX', bpw: '4.55 bpw' },
+  { key: 'MLX_8BIT', fmt: 'MLX', bpw: '8.25 bpw' },
 ] as const;
 
 const kvOptions = [
-  { key: 'FP16', label: 'FP16 KV' },
-  { key: 'Q8_0', label: 'Q8_0 (-50%)' },
-  { key: 'Q4_0', label: 'Q4_0 (-75%)' },
+  { key: 'fp16', label: 'FP16 KV' },
+  { key: 'q8_0', label: 'Q8_0 (-50%)' },
+  { key: 'q4_0', label: 'Q4_0 (-75%)' },
 ] as const;
 
 const cpuPresets = [
@@ -74,54 +89,25 @@ const cpuPresets = [
 ] as const;
 
 const gpuCountOptions = [1, 2, 3, 4] as const;
+const contextTicks = [4096, 8192, 16384, 32768, 49152, 65536];
 
 const calcPayload = JSON.stringify({
-  model: {
-    id: model.id,
-    name: model.name,
-    short_name: model.short_name,
-    family: model.family,
-    params_b: model.params_b,
-    active_params_b: model.active_params_b,
-    architecture: model.architecture,
-    num_layers: model.num_layers,
-    num_kv_heads: model.num_kv_heads,
-    head_dim: model.head_dim,
-    max_context: model.max_context,
-    ollama_tag: model.ollama_tag,
-    hf_repo: model.hf_repo,
-    gguf_file_q4: model.gguf_file_q4,
-    release_year: model.release_year,
-    use_cases: model.use_cases,
-  },
-  hardware: {
-    id: hardware.id,
-    name: hardware.name,
-    short_name: hardware.short_name,
-    vendor: hardware.vendor,
-    series: hardware.series,
-    gpu_count: gpuCount,
-    has_nvlink: Boolean(hardware.has_nvlink),
-    vram_gb: hardware.vram_gb,
-    usable_vram_gb: hardware.usable_vram_gb,
-    bandwidth_gbps: hardware.bandwidth_gbps,
-    memory_type: hardware.memory_type,
-    is_unified: hardware.is_unified,
-    backend: hardware.backend,
-    msrp_usd: hardware.msrp_usd,
-  },
+  model,
+  hardware,
   default_quant: 'Q4_K_M',
+  default_format: 'GGUF',
   default_context: entry.default_context,
-  default_kv_quant: 'FP16',
+  default_kv_quant: 'fp16',
   default_gpu_count: gpuCount,
 });
 
-const contextTicks = [4096, 8192, 16384, 32768, 49152, 65536];
-const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex items-center gap-1.5';
+const splitWrapClass = gpuCount > 1 ? '' : 'hidden';
+const tightWarnWrapClass = res.status === 'Tight Fit' ? 'mt-3' : 'mt-3 hidden';
+const oomRescueWrapClass = res.status === 'OOM' ? 'mt-3' : 'mt-3 hidden';
 
 const calcSubArgs = JSON.stringify({ hw: hardware.short_name });
 const unifiedNoteArgs = JSON.stringify({
-  usable,
+  usable: usable.toFixed(1),
   vram: hardware.vram_gb,
   bw: hardware.bandwidth_gbps,
 });
@@ -129,6 +115,7 @@ const layerResidencyArgs = JSON.stringify({ backend: hardware.backend });
 const oomAlertDescArgs = JSON.stringify({ hw: hardware.short_name });
 const modelsFitBtnArgs = JSON.stringify({ hw: hardware.short_name });
 const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
+const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vram_gb).toFixed(2) });
 ---
 
 <section
@@ -139,13 +126,13 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
   <div class="flex flex-col gap-3 border-b border-slate-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
     <div>
       <h2 class="text-lg font-bold tracking-tight text-slate-950" data-i18n="detail.calcTitle">
-        Interactive VRAM &amp; Speed Simulator
+        Interactive VRAM, Format &amp; Speed Simulator
       </h2>
       <p class="mt-0.5 text-sm text-slate-600" data-i18n="detail.calcSub" data-i18n-args={calcSubArgs}>
-        Toggle 7 GGUF quants, KV cache compression, context length, and Multi-GPU / CPU offload on {hardware.short_name}.
+        Switch GGUF, AWQ (vLLM), or MLX, adjust Daily Desktop vs Clean OS reserves, KV cache precision, context length, and Multi-GPU topology on {hardware.short_name}.
       </p>
     </div>
-    <div class="flex items-center gap-2.5 self-start sm:self-auto">
+    <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
       <a
         href={simulatorHref}
         data-i18n="detail.fullRigSim"
@@ -154,46 +141,119 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
         Full Rig Simulator -&gt;
       </a>
       <StatusBadge status={res.status} size="md" id="calc-status-badge" />
+      <SpeedBadge tier={initialTier} id="calc-speed-badge" short={true} />
     </div>
   </div>
 
-  <!-- Interactive Controls -->
-  <div class="mt-6 grid gap-6 lg:grid-cols-12">
-    <!-- 7-Tier Quant Selector -->
-    <div class="lg:col-span-6">
-      <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500" data-i18n="detail.quantFormat">
-        Quantization Format (7 GGUF Tiers)
-      </label>
-      <div
-        role="radiogroup"
-        aria-label="Quantization format"
-        class="mt-2.5 grid grid-cols-4 gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-1.5 sm:grid-cols-7"
-      >
-        {quantOptions.map((q) => {
-          const isActive = q.key === 'Q4_K_M';
-          const btnClass = isActive
-            ? 'flex flex-col items-center rounded-lg px-1.5 py-2 text-center transition-all cursor-pointer bg-blue-600 text-white shadow-xs'
-            : 'flex flex-col items-center rounded-lg px-1.5 py-2 text-center transition-all cursor-pointer text-slate-700 hover:bg-white hover:text-slate-950';
-          const subClass = isActive ? 'text-[10px] text-blue-100' : 'text-[10px] text-slate-500';
+  <!-- Format + OS Reserve Controls -->
+  <div class="mt-5 grid gap-4 border-b border-slate-100 pb-5 sm:grid-cols-2">
+    <div>
+      <span class="block text-xs font-semibold uppercase tracking-wider text-slate-500" data-i18n="fmt.title">
+        Runtime Format
+      </span>
+      <div class="mt-2 inline-flex flex-wrap rounded-xl border border-slate-200 bg-slate-50 p-1 gap-1" role="group" aria-label="Runtime format">
+        {formatTabs.map((ft) => {
+          const active = ft.key === 'GGUF';
+          const tabCls = active
+            ? 'rounded-lg px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer bg-slate-900 text-white'
+            : 'rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer text-slate-700 hover:bg-white';
           return (
-            <button
-              type="button"
-              role="radio"
-              aria-checked={isActive ? 'true' : 'false'}
-              data-quant-btn={q.key}
-              class={btnClass}
-            >
-              <span class="font-mono text-xs font-bold">{q.key}</span>
-              <span class={subClass}>
-                {q.bpw}
-              </span>
+            <button type="button" data-fmt-btn={ft.key} class={tabCls}>
+              <span data-i18n={ft.i18n}>{ft.label}</span>
             </button>
           );
         })}
       </div>
     </div>
 
-    <!-- Context Length Slider & KV Cache Quant -->
+    <div>
+      <span class="block text-xs font-semibold uppercase tracking-wider text-slate-500" data-i18n="reserve.title">
+        OS Reserve Profile
+      </span>
+      <div class="mt-2 flex flex-wrap items-center gap-2">
+        <div class="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1 gap-1" role="group" aria-label="OS Reserve profile">
+          <button
+            type="button"
+            data-reserve-btn="desktop"
+            data-i18n="reserve.desktop"
+            class="rounded-lg px-3 py-1.5 text-xs font-bold bg-blue-600 text-white cursor-pointer transition-colors"
+          >
+            Daily Desktop
+          </button>
+          <button
+            type="button"
+            data-reserve-btn="clean"
+            data-i18n="reserve.clean"
+            class="rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-white cursor-pointer transition-colors"
+          >
+            Clean OS
+          </button>
+          <button
+            type="button"
+            data-reserve-btn="custom"
+            data-i18n="reserve.custom"
+            class="rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-white cursor-pointer transition-colors"
+          >
+            Custom GB
+          </button>
+        </div>
+
+        <div id="calc-custom-reserve-wrap" class="hidden">
+          <label class="inline-flex items-center gap-1.5 text-xs text-slate-600">
+            <span class="sr-only" data-i18n="reserve.customLabel">Usable ceiling (GB)</span>
+            <input
+              id="calc-custom-usable-input"
+              type="number"
+              min="1"
+              max={hardware.vram_gb * 8}
+              step="0.5"
+              value={usable.toFixed(1)}
+              class="w-20 rounded-lg border border-slate-300 bg-white px-2.5 py-1 font-mono text-xs font-bold text-slate-900 focus:border-blue-600 focus:outline-none"
+            />
+            <span class="font-mono text-slate-500">GB</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quantization + Context Controls -->
+  <div class="mt-5 grid gap-6 lg:grid-cols-12">
+    <div class="lg:col-span-6">
+      <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500" data-i18n="detail.quantFormat">
+        Runtime Format &amp; Quantization
+      </label>
+      <div
+        role="radiogroup"
+        aria-label="Quantization format"
+        class="mt-2.5 flex flex-wrap gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-1.5"
+      >
+        {allQuantOptions.map((q) => {
+          const isActive = q.key === 'Q4_K_M';
+          const wrapVisible = q.fmt === 'GGUF' ? '' : 'hidden';
+          const btnClass = isActive
+            ? 'flex flex-col items-center rounded-lg px-3 py-2 text-center transition-all cursor-pointer bg-blue-600 text-white shadow-xs min-w-[76px]'
+            : 'flex flex-col items-center rounded-lg px-3 py-2 text-center transition-all cursor-pointer text-slate-700 hover:bg-white hover:text-slate-950 min-w-[76px]';
+          const subClass = isActive ? 'text-[10px] text-blue-100' : 'text-[10px] text-slate-500';
+          return (
+            <div data-quant-wrap={q.fmt} class={wrapVisible}>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={isActive ? 'true' : 'false'}
+                data-quant-btn={q.key}
+                data-quant-fmt={q.fmt}
+                class={btnClass}
+              >
+                <span class="font-mono text-xs font-bold">{q.key}</span>
+                <span class={subClass}>{q.bpw}</span>
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+
     <div class="lg:col-span-6">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <label for="calc-ctx-slider" class="text-xs font-semibold uppercase tracking-wider text-slate-500" data-i18n="detail.ctxWindowKv">
@@ -202,7 +262,7 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
         <div class="flex items-center gap-2">
           <div class="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5" role="group" aria-label="KV cache quantization">
             {kvOptions.map((kv) => {
-              const isKvActive = kv.key === 'FP16';
+              const isKvActive = kv.key === 'fp16';
               const kvBtnClass = isKvActive
                 ? 'rounded-md px-2 py-0.5 font-mono text-[11px] font-semibold transition-colors cursor-pointer bg-slate-900 text-white'
                 : 'rounded-md px-2 py-0.5 font-mono text-[11px] font-medium transition-colors cursor-pointer text-slate-600 hover:text-slate-950';
@@ -241,11 +301,7 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
               ? 'rounded-md px-2 py-1 font-mono text-xs transition-colors cursor-pointer bg-slate-900 font-semibold text-white'
               : 'rounded-md px-2 py-1 font-mono text-xs transition-colors cursor-pointer text-slate-500 hover:bg-slate-100 hover:text-slate-900';
             return (
-              <button
-                type="button"
-                data-ctx-preset={tick}
-                class={presetClass}
-              >
+              <button type="button" data-ctx-preset={tick} class={presetClass}>
                 {label}
               </button>
             );
@@ -277,24 +333,26 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
         </div>
 
         <div id="calc-split-wrap" class={splitWrapClass}>
-          <span class="font-semibold text-slate-600" data-i18n="detail.splitLabel">Split:</span>
-          <div class="inline-flex rounded-lg border border-slate-200 bg-white p-0.5" role="group" aria-label="Multi-GPU split mode">
-            <button
-              type="button"
-              data-split-btn="layer"
-              data-i18n="detail.splitLayer"
-              class="rounded-md px-2 py-0.5 font-mono text-xs font-bold bg-slate-900 text-white cursor-pointer"
-            >
-              Layer
-            </button>
-            <button
-              type="button"
-              data-split-btn="row"
-              data-i18n="detail.splitTensor"
-              class="rounded-md px-2 py-0.5 font-mono text-xs font-medium text-slate-600 hover:text-slate-950 cursor-pointer"
-            >
-              Tensor
-            </button>
+          <div class="flex items-center gap-1.5">
+            <span class="font-semibold text-slate-600" data-i18n="detail.splitLabel">Split:</span>
+            <div class="inline-flex rounded-lg border border-slate-200 bg-white p-0.5" role="group" aria-label="Multi-GPU split mode">
+              <button
+                type="button"
+                data-split-btn="layer"
+                data-i18n="detail.splitLayer"
+                class="rounded-md px-2 py-0.5 font-mono text-xs font-bold bg-slate-900 text-white cursor-pointer"
+              >
+                Layer
+              </button>
+              <button
+                type="button"
+                data-split-btn="tensor"
+                data-i18n="detail.splitTensor"
+                class="rounded-md px-2 py-0.5 font-mono text-xs font-medium text-slate-600 hover:text-slate-950 cursor-pointer"
+              >
+                Tensor
+              </button>
+            </div>
           </div>
         </div>
 
@@ -312,14 +370,13 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
       </div>
 
       <span id="calc-rig-tag" class="font-mono text-[11px] font-medium text-slate-500">
-        {gpuCount}x {hardware.short_name} · {usable} GB usable VRAM
+        {gpuCount}x {hardware.short_name} · {usable.toFixed(1)} GB usable VRAM
       </span>
     </div>
   ) : (
     <div class="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-xs text-slate-600">
-      <span data-i18n="detail.unifiedNote" data-i18n-args={unifiedNoteArgs}>
-        Unified Memory Rig (<strong class="font-mono text-slate-900">{usable} GB</strong> usable of{' '}
-        <strong class="font-mono text-slate-900">{hardware.vram_gb} GB</strong> physical · {hardware.bandwidth_gbps} GB/s).
+      <span id="calc-unified-note" data-i18n="detail.unifiedNote" data-i18n-args={unifiedNoteArgs}>
+        Unified Pool ({usable.toFixed(1)} GB usable in current reserve of {hardware.vram_gb} GB · {hardware.bandwidth_gbps} GB/s).
       </span>
       <a href={simulatorHref} class="font-semibold text-blue-600 hover:text-blue-800 transition-colors" data-i18n="detail.compareMultiGpu">
         Compare against 1x–8x GPUs or CPU-Only -&gt;
@@ -336,19 +393,19 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
           {res.total_vram_gb.toFixed(2)} GB
         </span>
         <span id="calc-util-pct" class="font-mono text-xs font-semibold text-slate-600 tabular-nums">
-          ({utilPct}% of {usable} GB)
+          ({utilPct}% of {usable.toFixed(1)} GB)
         </span>
       </div>
     </div>
 
     <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-      <p class="text-xs font-medium text-slate-500" data-i18n="detail.estDecodeSpeed">Est. Decode Speed</p>
+      <p class="text-xs font-medium text-slate-500" data-i18n="detail.estDecodeSpeed">Formula Speed Range</p>
       <div class="mt-1 flex items-baseline gap-2">
         <span id="calc-tps" class="font-mono text-2xl font-bold text-slate-950 tabular-nums">
           {initialTpsText}
         </span>
       </div>
-      <p id="calc-tps-rating" class="mt-0.5 text-xs text-slate-600">{initialRating}</p>
+      <p id="calc-tps-rating" class="mt-0.5 text-xs text-slate-600">{initialTier} · Formula (±15–25%)</p>
     </div>
 
     <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
@@ -380,38 +437,40 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
     </div>
   </div>
 
+  <!-- Tight Margin Warning -->
+  <div id="calc-tight-warn" class={tightWarnWrapClass} role="note">
+    <div class="rounded-xl border border-orange-200 bg-orange-50/80 px-4 py-3 text-xs text-orange-950">
+      <strong class="font-bold" data-i18n="warn.tightFitTitle">Tight Margin Warning (&lt;5% / &lt;1 GB free):</strong>{' '}
+      <span id="calc-tight-desc" data-i18n="warn.tightFitDesc" data-i18n-args={tightWarnDescArgs}>
+        Only {Math.max(0, usable - res.total_vram_gb).toFixed(2)} GB free headroom remains. Display compositor memory, CUDA context growth, or longer context may spill weights to CPU/RAM.
+      </span>
+    </div>
+  </div>
+
+  <!-- PCIe All-Reduce Warning -->
+  <div id="calc-pcie-warn" class="mt-3 hidden" role="note">
+    <div class="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-xs text-amber-950">
+      <strong class="font-bold" data-i18n="warn.pcieTpTitle">PCIe All-Reduce Synchronization Overhead:</strong>{' '}
+      <span id="calc-pcie-desc"></span>
+    </div>
+  </div>
+
   <!-- Stacked Memory Bar -->
-  <div class="mt-6 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+  <div class="mt-5 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
     <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
       <span class="font-semibold text-slate-700" data-i18n="detail.memAllocTitle">Memory Allocation vs Usable Budget</span>
       <span id="calc-ceiling-text" class="font-mono text-slate-600 tabular-nums">
-        Usable {hardware.backend} Ceiling: <strong class="text-slate-950">{usable} GB</strong> (of {hardware.vram_gb} GB physical)
+        Usable {hardware.backend} Ceiling: <strong class="text-slate-950">{usable.toFixed(1)} GB</strong> (of {hardware.vram_gb} GB physical)
       </span>
     </div>
 
     <div class="relative mt-3 h-5 w-full overflow-hidden rounded-lg bg-slate-200">
       <div class="flex h-full w-full">
-        <div
-          id="bar-weights"
-          class="h-full bg-blue-600 transition-all duration-150"
-          style={weightsStyle}
-          title="Model Weights"
-        ></div>
-        <div
-          id="bar-kv"
-          class="h-full bg-cyan-500 transition-all duration-150"
-          style={kvStyle}
-          title="KV Cache"
-        ></div>
-        <div
-          id="bar-overhead"
-          class="h-full bg-slate-500 transition-all duration-150"
-          style={overheadStyle}
-          title="Runtime Buffer"
-        ></div>
+        <div id="bar-weights" class="h-full bg-blue-600 transition-all duration-150" style={weightsStyle} title="Model Weights"></div>
+        <div id="bar-kv" class="h-full bg-cyan-500 transition-all duration-150" style={kvStyle} title="KV Cache"></div>
+        <div id="bar-overhead" class="h-full bg-slate-500 transition-all duration-150" style={overheadStyle} title="Runtime Buffer"></div>
       </div>
 
-      <!-- Usable Budget Marker -->
       <div
         id="bar-ceiling-marker"
         class="pointer-events-none absolute top-0 bottom-0 w-0.5 bg-slate-950"
@@ -436,7 +495,7 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
         </span>
         <span id="calc-legend-ceiling" class="inline-flex items-center gap-1.5">
           <span class="h-3 w-0.5 bg-slate-950"></span>
-          Usable Ceiling ({usable} GB)
+          Usable Ceiling ({usable.toFixed(1)} GB)
         </span>
       </div>
       <p id="calc-verdict-line" class="font-medium text-slate-800">
@@ -448,7 +507,7 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
   <!-- Live Synced CLI Preview -->
   <div class="mt-4 flex flex-col gap-2 rounded-xl bg-slate-950 px-4 py-3 text-slate-100 sm:flex-row sm:items-center sm:justify-between">
     <div class="min-w-0">
-      <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400" data-i18n="detail.liveFlags">
+      <span id="calc-live-cmd-label" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400" data-i18n="detail.liveFlags">
         Live Flags for Selected Config
       </span>
       <pre id="calc-live-cmd" class="mt-0.5 overflow-x-auto rounded font-mono text-xs text-emerald-300 transition-shadow">{initialLiveCmd}</pre>
@@ -456,7 +515,7 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
     <button
       type="button"
       data-copy-target="calc-live-cmd"
-      data-copy-label="Live llama-cli command"
+      data-copy-label="Live runtime command"
       class="inline-flex shrink-0 self-start items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer sm:self-center"
     >
       <span data-copy-icon="copy" aria-hidden="true">
@@ -475,39 +534,41 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
   </div>
 
   <!-- Live OOM Rescue Banner -->
-  <div id="calc-oom-rescue" class={initialOomRescueClass} role="region" aria-label="Out of Memory Recovery Suggestions">
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div class="text-xs leading-relaxed text-rose-900">
-        <strong class="font-bold" data-i18n="detail.oomAlertTitle">Out of Memory Alert:</strong>{' '}
-        <span data-i18n="detail.oomAlertDesc" data-i18n-args={oomAlertDescArgs}>
-          This quant and context combination exceeds {hardware.short_name}&apos;s capacity and will fail or thrash swap. Try Q3_K_M/Q2_K, enable Q8_0/Q4_0 KV cache, or add GPUs.
-        </span>
-      </div>
-      <div class="flex flex-wrap items-center gap-2 shrink-0">
-        <button
-          id="calc-reset-btn"
-          type="button"
-          data-i18n="detail.resetQ48k"
-          class="hidden rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 transition-colors cursor-pointer"
-        >
-          Reset to Q4_K_M @ 8K
-        </button>
-        <a
-          href={gpuHubHref}
-          data-i18n="detail.modelsFitBtn"
-          data-i18n-args={modelsFitBtnArgs}
-          class="rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-semibold text-rose-900 hover:bg-rose-100 transition-colors"
-        >
-          Models That Fit {hardware.short_name} -&gt;
-        </a>
-        <a
-          href={modelHubHref}
-          data-i18n="detail.smoothGpusBtn"
-          data-i18n-args={smoothGpusBtnArgs}
-          class="rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-semibold text-rose-900 hover:bg-rose-100 transition-colors"
-        >
-          Smooth GPUs for {model.short_name} -&gt;
-        </a>
+  <div id="calc-oom-rescue" class={oomRescueWrapClass}>
+    <div class="rounded-xl border border-rose-200 bg-rose-50/80 px-4 py-3.5" role="region" aria-label="Out of Memory Recovery Suggestions">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="text-xs leading-relaxed text-rose-900">
+          <strong class="font-bold" data-i18n="detail.oomAlertTitle">Out of Memory Alert:</strong>{' '}
+          <span data-i18n="detail.oomAlertDesc" data-i18n-args={oomAlertDescArgs}>
+            This format and context exceed {hardware.short_name} usable capacity under the active reserve profile.
+          </span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+          <button
+            id="calc-reset-btn"
+            type="button"
+            data-i18n="detail.resetQ48k"
+            class="hidden rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 transition-colors cursor-pointer"
+          >
+            Reset to Q4_K_M @ 8K
+          </button>
+          <a
+            href={gpuHubHref}
+            data-i18n="detail.modelsFitBtn"
+            data-i18n-args={modelsFitBtnArgs}
+            class="rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-semibold text-rose-900 hover:bg-rose-100 transition-colors"
+          >
+            Models That Fit {hardware.short_name} -&gt;
+          </a>
+          <a
+            href={modelHubHref}
+            data-i18n="detail.smoothGpusBtn"
+            data-i18n-args={smoothGpusBtnArgs}
+            class="rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-semibold text-rose-900 hover:bg-rose-100 transition-colors"
+          >
+            GPUs That Fit {model.short_name} -&gt;
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -516,17 +577,48 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
 </section>
 
 <script>
-  import { onLocaleChange, t, tStatus, translateSpeedRating } from '../utils/i18n';
-  import { estimateRigRun } from '../utils/physics';
-  import type { HardwareSpec, KvQuantKey, ModelSpec, QuantKey, SplitMode } from '../types/vram';
+  import { onLocaleChange, t, tSpeedTier, tStatus } from '../utils/i18n';
+  import {
+    buildRuntimeCommand,
+    defaultQuantForFormat,
+    estimateRigRun,
+    formatTpsRange,
+  } from '../utils/physics';
+  import type {
+    CpuSpec,
+    HardwareSpec,
+    KvQuantKey,
+    ModelSpec,
+    QuantKey,
+    ReserveProfile,
+    RuntimeFormat,
+    SpeedTier,
+    SplitMode,
+  } from '../types/vram';
 
   interface CalcPayload {
     model: ModelSpec;
     hardware: HardwareSpec;
     default_quant: QuantKey;
+    default_format: RuntimeFormat;
     default_context: number;
     default_kv_quant: KvQuantKey;
     default_gpu_count: number;
+  }
+
+  function makeSyntheticCpu(bw: number): CpuSpec {
+    return {
+      id: 'custom-offload-cpu',
+      name: `Host RAM (${bw} GB/s)`,
+      short_name: `Host ${bw} GB/s`,
+      vendor: 'Host',
+      memory_type: 'DDR5/DDR4',
+      channels: 2,
+      effective_bw_gbps: bw,
+      recommended_threads: 16,
+      simd: 'AVX2',
+      tier: 'Consumer DDR5',
+    };
   }
 
   function initDetailCalculator() {
@@ -535,15 +627,23 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
     const cfg = JSON.parse(configEl.textContent || '{}') as CalcPayload;
     const { model, hardware } = cfg;
 
+    let currentFormat: RuntimeFormat = cfg.default_format || 'GGUF';
     let currentQuant: QuantKey = cfg.default_quant || 'Q4_K_M';
+    let currentReserve: ReserveProfile = 'desktop';
+    let currentCustomUsable: number | null = null;
     let currentContext: number = Number(cfg.default_context || 8192);
-    let currentKvQuant: KvQuantKey = cfg.default_kv_quant || 'FP16';
+    let currentKvQuant: KvQuantKey = cfg.default_kv_quant || 'fp16';
     let currentGpuCount: number = Number(cfg.default_gpu_count || 1);
     let currentSplitMode: SplitMode = 'layer';
     let currentCpuBw = 35;
 
     const slider = document.getElementById('calc-ctx-slider') as HTMLInputElement | null;
     const ctxReadout = document.getElementById('calc-ctx-readout');
+    const fmtBtns = Array.from(document.querySelectorAll('[data-fmt-btn]'));
+    const reserveBtns = Array.from(document.querySelectorAll('[data-reserve-btn]'));
+    const customReserveWrap = document.getElementById('calc-custom-reserve-wrap');
+    const customUsableInput = document.getElementById('calc-custom-usable-input') as HTMLInputElement | null;
+    const quantWraps = Array.from(document.querySelectorAll('[data-quant-wrap]'));
     const quantBtns = Array.from(document.querySelectorAll('[data-quant-btn]'));
     const kvBtns = Array.from(document.querySelectorAll('[data-kv-btn]'));
     const presetBtns = Array.from(document.querySelectorAll('[data-ctx-preset]'));
@@ -552,8 +652,10 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
     const splitWrap = document.getElementById('calc-split-wrap');
     const cpuSelect = document.getElementById('calc-cpu-select') as HTMLSelectElement | null;
     const rigTagEl = document.getElementById('calc-rig-tag');
+    const unifiedNoteEl = document.getElementById('calc-unified-note');
 
     const statusBadge = document.getElementById('calc-status-badge');
+    const speedBadge = document.getElementById('calc-speed-badge');
     const totalVramEl = document.getElementById('calc-total-vram');
     const utilPctEl = document.getElementById('calc-util-pct');
     const tpsEl = document.getElementById('calc-tps');
@@ -573,83 +675,115 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
     const liveCmdEl = document.getElementById('calc-live-cmd');
     const oomRescueEl = document.getElementById('calc-oom-rescue');
     const resetBtnEl = document.getElementById('calc-reset-btn');
+    const tightWarnEl = document.getElementById('calc-tight-warn');
+    const tightDescEl = document.getElementById('calc-tight-desc');
+    const pcieWarnEl = document.getElementById('calc-pcie-warn');
+    const pcieDescEl = document.getElementById('calc-pcie-desc');
 
-    function updateBadge(status: string) {
+    function updateStatusBadge(status: string) {
       if (!statusBadge) return;
       const dot = statusBadge.querySelector('span:first-child');
       const label = statusBadge.querySelector('[data-status-label]');
-      if (label) label.textContent = tStatus(status);
-
-      statusBadge.classList.remove(
-        'border-emerald-200',
-        'bg-emerald-50',
-        'text-emerald-800',
-        'border-amber-200',
-        'bg-amber-50',
-        'text-amber-800',
-        'border-rose-200',
-        'bg-rose-50',
-        'text-rose-800',
-      );
-      if (dot) {
-        dot.classList.remove('bg-emerald-600', 'bg-amber-500', 'bg-rose-600');
+      if (label) {
+        label.textContent = tStatus(status);
+        label.setAttribute('data-i18n-status', status);
       }
 
-      if (status === 'Smooth') {
+      statusBadge.classList.remove(
+        'border-emerald-200', 'bg-emerald-50', 'text-emerald-800',
+        'border-orange-200', 'bg-orange-50', 'text-orange-800',
+        'border-amber-200', 'bg-amber-50', 'text-amber-800',
+        'border-rose-200', 'bg-rose-50', 'text-rose-800',
+      );
+      if (dot) {
+        dot.classList.remove('bg-emerald-600', 'bg-orange-500', 'bg-amber-500', 'bg-rose-500');
+      }
+
+      if (status === 'Fits') {
         statusBadge.classList.add('border-emerald-200', 'bg-emerald-50', 'text-emerald-800');
         if (dot) dot.classList.add('bg-emerald-600');
+      } else if (status === 'Tight Fit') {
+        statusBadge.classList.add('border-orange-200', 'bg-orange-50', 'text-orange-800');
+        if (dot) dot.classList.add('bg-orange-500');
       } else if (status === 'Partial Offload') {
         statusBadge.classList.add('border-amber-200', 'bg-amber-50', 'text-amber-800');
         if (dot) dot.classList.add('bg-amber-500');
       } else {
         statusBadge.classList.add('border-rose-200', 'bg-rose-50', 'text-rose-800');
-        if (dot) dot.classList.add('bg-rose-600');
+        if (dot) dot.classList.add('bg-rose-500');
       }
     }
 
+    function updateSpeedBadge(tier: SpeedTier) {
+      if (!speedBadge) return;
+      const label = speedBadge.querySelector('[data-tier-label]');
+      if (label) {
+        label.textContent = tSpeedTier(tier, true);
+        label.setAttribute('data-i18n-tier', tier);
+      }
+      speedBadge.classList.remove(
+        'border-sky-200', 'bg-sky-50', 'text-sky-800',
+        'border-indigo-200', 'bg-indigo-50', 'text-indigo-800',
+        'border-slate-200', 'bg-slate-100', 'text-slate-700',
+        'border-amber-200', 'bg-amber-50', 'text-amber-800',
+        'border-rose-200', 'bg-rose-50', 'text-rose-800',
+      );
+      if (tier === 'Fast') speedBadge.classList.add('border-sky-200', 'bg-sky-50', 'text-sky-800');
+      else if (tier === 'Interactive') speedBadge.classList.add('border-indigo-200', 'bg-indigo-50', 'text-indigo-800');
+      else if (tier === 'Readable') speedBadge.classList.add('border-slate-200', 'bg-slate-100', 'text-slate-700');
+      else if (tier === 'Slow') speedBadge.classList.add('border-amber-200', 'bg-amber-50', 'text-amber-800');
+      else speedBadge.classList.add('border-rose-200', 'bg-rose-50', 'text-rose-800');
+    }
+
     function render() {
-      const r = estimateRigRun(model, hardware, {
+      const r = estimateRigRun({
+        model,
+        hardware,
+        gpuCount: hardware.is_unified ? 1 : currentGpuCount,
+        cpu: makeSyntheticCpu(currentCpuBw),
+        systemRamGb: 64.0,
         quant: currentQuant,
+        format: currentFormat,
         contextTokens: currentContext,
         kvQuant: currentKvQuant,
-        gpuCount: hardware.is_unified ? 1 : currentGpuCount,
         splitMode: currentSplitMode,
-        cpuBwGbps: currentCpuBw,
-        systemRamGb: null,
+        reserveProfile: currentReserve,
+        customUsableGb: currentReserve === 'custom' ? currentCustomUsable : null,
       });
 
       const usable = r.usable_vram_gb;
-      const physTotal = r.total_phys_vram_gb;
+      const physTotal = r.raw_vram_gb;
       const ctxK = `${Math.round(currentContext / 1024)}K`;
 
       if (ctxReadout) {
         ctxReadout.textContent = `${ctxK} (${currentContext.toLocaleString()} tokens)`;
       }
 
-      updateBadge(r.status);
+      updateStatusBadge(r.status);
+      updateSpeedBadge((r.speed_tier ?? 'Readable') as SpeedTier);
 
       const utilPct = usable > 0 ? Math.round((r.total_vram_gb / usable) * 100) : 0;
       if (totalVramEl) totalVramEl.textContent = `${r.total_vram_gb.toFixed(2)} GB`;
-      if (utilPctEl) utilPctEl.textContent = t('detail.utilPct', { pct: utilPct, usable });
+      if (utilPctEl) utilPctEl.textContent = t('detail.utilPct', { pct: utilPct, usable: usable.toFixed(1) });
 
       if (tpsEl) {
-        tpsEl.textContent = r.status === 'OOM' ? t('status.oom') : `${r.est_tps.toFixed(1)} tok/s`;
+        tpsEl.textContent = formatTpsRange(r.est_tps_low, r.est_tps_high, r.est_tps, r.status);
       }
       if (tpsRatingEl) {
-        tpsRatingEl.textContent = translateSpeedRating(r.est_tps, r.status, {
-          isUnified: hardware.is_unified,
-          isCpuOnly: false,
-        });
+        tpsRatingEl.textContent =
+          r.status === 'OOM'
+            ? t('speed.oom')
+            : `${tSpeedTier(r.speed_tier ?? 'Readable', false)} · ${t('speed.formulaDesc')}`;
       }
       if (weightsEl) weightsEl.textContent = `${r.weights_gb.toFixed(2)} GB`;
       if (overheadEl) overheadEl.textContent = `+ ${r.overhead_gb.toFixed(2)} GB sys`;
-      if (kvEl) kvEl.textContent = `KV Cache: ${r.kv_cache_gb.toFixed(2)} GB (${currentKvQuant})`;
+      if (kvEl) kvEl.textContent = `KV Cache: ${r.kv_cache_gb.toFixed(2)} GB (${currentKvQuant.toUpperCase()})`;
       if (layersEl) layersEl.textContent = `${r.gpu_layers_fit} / ${r.total_layers}`;
 
       if (headroomEl) {
         headroomEl.textContent =
           r.total_vram_gb <= usable
-            ? t('sim.headroomFree', { gb: (usable - r.total_vram_gb).toFixed(2) })
+            ? t('sim.headroomFree', { gb: Math.max(0, usable - r.total_vram_gb).toFixed(2) })
             : t('detail.overCeiling', {
                 gb: (r.total_vram_gb - usable).toFixed(2),
                 backend: hardware.backend,
@@ -659,15 +793,22 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
       if (ceilingTextEl) {
         ceilingTextEl.textContent = t('detail.usableCeiling', {
           backend: hardware.backend,
-          usable,
-          phys: physTotal,
+          usable: usable.toFixed(1),
+          phys: physTotal.toFixed(1),
         });
       }
       if (legendCeilingEl) {
-        legendCeilingEl.innerHTML = `<span class="h-3 w-0.5 bg-slate-950"></span>${t('detail.usableLegend', { usable })}`;
+        legendCeilingEl.innerHTML = `<span class="h-3 w-0.5 bg-slate-950"></span>${t('detail.usableLegend', { usable: usable.toFixed(1) })}`;
       }
       if (rigTagEl) {
-        rigTagEl.textContent = `${r.gpu_count}x ${hardware.short_name} · ${usable} GB usable VRAM`;
+        rigTagEl.textContent = `${r.gpu_count}x ${hardware.short_name} · ${usable.toFixed(1)} GB usable VRAM`;
+      }
+      if (unifiedNoteEl) {
+        unifiedNoteEl.textContent = t('detail.unifiedNote', {
+          usable: usable.toFixed(1),
+          vram: hardware.vram_gb,
+          bw: hardware.bandwidth_gbps,
+        });
       }
 
       const maxScale = Math.max(usable, r.total_vram_gb, 1);
@@ -682,8 +823,11 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
       if (barCeiling) barCeiling.style.left = `${cPct.toFixed(2)}%`;
 
       if (verdictLine) {
-        if (r.status === 'Smooth') {
-          verdictLine.textContent = t('detail.verdictGpuSmooth', { backend: hardware.backend });
+        if (r.status === 'Fits' || r.status === 'Tight Fit') {
+          verdictLine.textContent = t('detail.verdictGpuSmooth', {
+            backend: hardware.backend,
+            margin: Math.max(0, usable - r.total_vram_gb).toFixed(2),
+          });
         } else if (r.status === 'Partial Offload') {
           verdictLine.textContent = t('detail.verdictPartial', {
             fit: r.gpu_layers_fit,
@@ -699,35 +843,83 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
         }
       }
 
+      if (tightWarnEl && tightDescEl) {
+        const showTight = r.status === 'Tight Fit';
+        tightWarnEl.classList.toggle('hidden', !showTight);
+        if (showTight) {
+          tightDescEl.textContent = t('warn.tightFitDesc', {
+            gb: Math.max(0, r.headroom_gb ?? usable - r.total_vram_gb).toFixed(2),
+          });
+        }
+      }
+
+      if (pcieWarnEl && pcieDescEl) {
+        const showPcie = Boolean(r.comm_warning) && (r.comm_overhead_pct ?? 0) > 0 && r.status !== 'OOM';
+        pcieWarnEl.classList.toggle('hidden', !showPcie);
+        if (showPcie) {
+          pcieDescEl.textContent = t('warn.pcieTpDesc', {
+            pct: Math.round(r.comm_overhead_pct ?? 0),
+            layers: model.num_layers,
+          });
+        }
+      }
+
       if (liveCmdEl) {
-        const ngl = r.status === 'Smooth' ? 99 : Math.max(1, r.gpu_layers_fit);
-        const splitFlag = r.gpu_count > 1 ? ` --split-mode ${currentSplitMode}` : '';
-        const kvTag = currentKvQuant.toLowerCase();
-        const kvFlag = currentKvQuant === 'FP16' ? '' : ` --cache-type-k ${kvTag} --cache-type-v ${kvTag}`;
-        liveCmdEl.textContent = `llama-cli -hf ${model.hf_repo}:${currentQuant} -ngl ${ngl} -c ${currentContext} -fa on${splitFlag}${kvFlag}`;
+        const cmd = buildRuntimeCommand({
+          model,
+          hardware,
+          format: currentFormat,
+          quant: currentQuant,
+          contextTokens: currentContext,
+          kvQuant: currentKvQuant,
+          gpuCount: r.gpu_count,
+          splitMode: currentSplitMode,
+          gpuLayersFit: r.gpu_layers_fit,
+          fitsVram: r.fits_vram,
+        });
+        liveCmdEl.textContent = cmd.command;
       }
 
       const defQuant = cfg.default_quant || 'Q4_K_M';
       const defCtx = Number(cfg.default_context || 8192);
       const defGpu = Number(cfg.default_gpu_count || 1);
       const isModified =
+        currentFormat !== 'GGUF' ||
         currentQuant !== defQuant ||
+        currentReserve !== 'desktop' ||
         currentContext !== defCtx ||
-        currentKvQuant !== 'FP16' ||
+        currentKvQuant !== 'fp16' ||
         currentGpuCount !== defGpu ||
         currentSplitMode !== 'layer' ||
         currentCpuBw !== 35;
 
-      if (oomRescueEl) {
-        oomRescueEl.classList.toggle('hidden', r.status !== 'OOM');
-      }
-      if (resetBtnEl) {
-        resetBtnEl.classList.toggle('hidden', !isModified);
-      }
+      if (oomRescueEl) oomRescueEl.classList.toggle('hidden', r.status !== 'OOM');
+      if (resetBtnEl) resetBtnEl.classList.toggle('hidden', !isModified);
+      if (splitWrap) splitWrap.classList.toggle('hidden', r.gpu_count <= 1);
+      if (customReserveWrap) customReserveWrap.classList.toggle('hidden', currentReserve !== 'custom');
 
-      if (splitWrap) {
-        splitWrap.classList.toggle('hidden', r.gpu_count <= 1);
-      }
+      fmtBtns.forEach((btn) => {
+        const active = btn.getAttribute('data-fmt-btn') === currentFormat;
+        btn.classList.toggle('bg-slate-900', active);
+        btn.classList.toggle('text-white', active);
+        btn.classList.toggle('font-bold', active);
+        btn.classList.toggle('text-slate-700', !active);
+        btn.classList.toggle('hover:bg-white', !active);
+      });
+
+      reserveBtns.forEach((btn) => {
+        const active = btn.getAttribute('data-reserve-btn') === currentReserve;
+        btn.classList.toggle('bg-blue-600', active);
+        btn.classList.toggle('text-white', active);
+        btn.classList.toggle('font-bold', active);
+        btn.classList.toggle('text-slate-700', !active);
+        btn.classList.toggle('hover:bg-white', !active);
+      });
+
+      quantWraps.forEach((wrap) => {
+        const matchFmt = wrap.getAttribute('data-quant-wrap') === currentFormat;
+        wrap.classList.toggle('hidden', !matchFmt);
+      });
 
       quantBtns.forEach((btn) => {
         const active = btn.getAttribute('data-quant-btn') === currentQuant;
@@ -763,6 +955,7 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
         btn.classList.toggle('text-white', active);
         btn.classList.toggle('font-medium', !active);
         btn.classList.toggle('text-slate-600', !active);
+        btn.classList.toggle('hover:text-slate-950', !active);
       });
 
       splitBtns.forEach((btn) => {
@@ -772,6 +965,7 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
         btn.classList.toggle('text-white', active);
         btn.classList.toggle('font-medium', !active);
         btn.classList.toggle('text-slate-600', !active);
+        btn.classList.toggle('hover:text-slate-950', !active);
       });
 
       presetBtns.forEach((btn) => {
@@ -786,6 +980,37 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
       });
     }
 
+    fmtBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const fmt = (btn.getAttribute('data-fmt-btn') as RuntimeFormat) || 'GGUF';
+        currentFormat = fmt;
+        currentQuant = defaultQuantForFormat(fmt);
+        render();
+      });
+    });
+
+    reserveBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const prof = (btn.getAttribute('data-reserve-btn') as ReserveProfile) || 'desktop';
+        currentReserve = prof;
+        if (prof === 'custom' && customUsableInput) {
+          currentCustomUsable = Number(customUsableInput.value || hardware.usable_vram_gb);
+        }
+        render();
+      });
+    });
+
+    if (customUsableInput) {
+      customUsableInput.addEventListener('input', () => {
+        const parsed = Number(customUsableInput.value);
+        if (!Number.isNaN(parsed) && parsed > 0) {
+          currentCustomUsable = parsed;
+          currentReserve = 'custom';
+          render();
+        }
+      });
+    }
+
     quantBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
         currentQuant = (btn.getAttribute('data-quant-btn') as QuantKey) || 'Q4_K_M';
@@ -795,7 +1020,7 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
 
     kvBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
-        currentKvQuant = (btn.getAttribute('data-kv-btn') as KvQuantKey) || 'FP16';
+        currentKvQuant = (btn.getAttribute('data-kv-btn') as KvQuantKey) || 'fp16';
         render();
       });
     });
@@ -838,9 +1063,12 @@ const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
 
     if (resetBtnEl) {
       resetBtnEl.addEventListener('click', () => {
+        currentFormat = 'GGUF';
         currentQuant = cfg.default_quant || 'Q4_K_M';
+        currentReserve = 'desktop';
+        currentCustomUsable = null;
         currentContext = Number(cfg.default_context || 8192);
-        currentKvQuant = 'FP16';
+        currentKvQuant = 'fp16';
         currentGpuCount = Number(cfg.default_gpu_count || 1);
         currentSplitMode = 'layer';
         currentCpuBw = 35;

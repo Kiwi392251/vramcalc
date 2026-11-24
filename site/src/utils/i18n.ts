@@ -12,7 +12,7 @@ import {
 } from '../i18n/types';
 import { zhCN } from '../i18n/zh-CN';
 import { zhTW } from '../i18n/zh-TW';
-import type { CompatStatus } from '../types/vram';
+import type { CompatStatus, SpeedTier } from '../types/vram';
 
 export { SUPPORTED_LOCALES };
 export type { LocaleCode, LocaleMeta, TranslationKey };
@@ -126,25 +126,39 @@ export function t(
 }
 
 export function tStatus(status: CompatStatus | string, locale?: LocaleCode): string {
-  if (status === 'Smooth') return t('status.smooth', undefined, locale);
+  if (status === 'Fits' || status === 'Smooth') return t('status.fits', undefined, locale);
+  if (status === 'Tight Fit') return t('status.tightFit', undefined, locale);
   if (status === 'Partial Offload') return t('status.partialOffload', undefined, locale);
   if (status === 'OOM') return t('status.oom', undefined, locale);
   return status;
 }
 
+export function tSpeedTier(
+  tier: SpeedTier | string,
+  short = false,
+  locale?: LocaleCode,
+): string {
+  if (tier === 'Fast') return t(short ? 'tier.fastShort' : 'tier.fast', undefined, locale);
+  if (tier === 'Interactive') return t(short ? 'tier.interactiveShort' : 'tier.interactive', undefined, locale);
+  if (tier === 'Readable') return t(short ? 'tier.readableShort' : 'tier.readable', undefined, locale);
+  if (tier === 'Slow') return t(short ? 'tier.slowShort' : 'tier.slow', undefined, locale);
+  if (tier === 'OOM') return t(short ? 'tier.oomShort' : 'tier.oom', undefined, locale);
+  return tier;
+}
+
 export function translateSpeedRating(
   tps: number,
-  status: CompatStatus,
+  status: CompatStatus | string,
   opts?: { isUnified?: boolean; isCpuOnly?: boolean },
   locale?: LocaleCode,
 ): string {
-  if (status === 'OOM') return t('speed.oom', undefined, locale);
-  if (tps >= 60.0) return t('speed.blazing', undefined, locale);
-  if (tps >= 25.0) return t('speed.fast', undefined, locale);
-  if (tps >= 10.0) return t('speed.usable', undefined, locale);
+  if (status === 'OOM' || tps <= 0) return t('speed.oom', undefined, locale);
+  if (tps >= 25.0) return t('speed.blazing', undefined, locale);
+  if (tps >= 12.0) return t('speed.fast', undefined, locale);
+  if (tps >= 6.0) return t('speed.usable', undefined, locale);
   if (opts?.isCpuOnly) return t('speed.slowCpu', undefined, locale);
-  if (status === 'Smooth') return t('speed.slowBw', undefined, locale);
-  return t('speed.slowOffload', undefined, locale);
+  if (status === 'Partial Offload') return t('speed.slowOffload', undefined, locale);
+  return t('speed.slowBw', undefined, locale);
 }
 
 export function applyTranslations(
@@ -184,6 +198,13 @@ export function applyTranslations(
     const status = el.getAttribute('data-i18n-status') || '';
     if (!status) return;
     el.textContent = tStatus(status, locale);
+  });
+
+  root.querySelectorAll('[data-i18n-tier]').forEach((el) => {
+    const tier = el.getAttribute('data-i18n-tier') || '';
+    if (!tier) return;
+    const short = el.getAttribute('data-i18n-tier-short') === 'true';
+    el.textContent = tSpeedTier(tier, short, locale);
   });
 }
 

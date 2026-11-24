@@ -1,13 +1,20 @@
 ---
 import catalogRaw from '../data/catalog_data.json';
 import pagesRaw from '../data/pages_data.json';
-import type { CatalogData, PageEntry } from '../types/vram';
+import type { CatalogData, VramPageEntry } from '../types/vram';
 import { groupCatalogHardware } from '../utils/hubs';
-import { estimateRigRun, formatContextLabel, speedRating } from '../utils/physics';
+import {
+  classifySpeedTier,
+  estimateRigRun,
+  formatContextLabel,
+  formatTpsRange,
+  QUANT_BPW,
+} from '../utils/physics';
 import StatusBadge from './StatusBadge.astro';
+import SpeedBadge from './SpeedBadge.astro';
 
 const catalog = catalogRaw as CatalogData;
-const curatedEntries = pagesRaw as PageEntry[];
+const curatedEntries = pagesRaw as VramPageEntry[];
 
 const sortedModels = [...catalog.models].sort((a, b) => a.params_b - b.params_b);
 const hwGroups = groupCatalogHardware(catalog.hardware);
@@ -28,27 +35,47 @@ const cpuGroups = cpuTiers
   .filter((g) => g.items.length > 0);
 
 const defaultModel =
-  catalog.models.find((m) => m.id === 'deepseek-r1-14b') ?? catalog.models[0];
+  catalog.models.find((m) => m.id === 'qwen3-14b') ??
+  catalog.models.find((m) => m.id === 'deepseek-r1-14b') ??
+  catalog.models[0];
 const defaultHw =
   catalog.hardware.find((h) => h.id === 'rtx-4070-12gb') ?? catalog.hardware[0];
 const defaultCpu = catalog.cpus[0];
 const defaultContext = 8192;
 const defaultRam = 32;
 
-const initRes = estimateRigRun(defaultModel, defaultHw, {
-  quant: 'Q4_K_M',
-  contextTokens: defaultContext,
-  kvQuant: 'FP16',
+const initRes = estimateRigRun({
+  model: defaultModel,
+  hardware: defaultHw,
   gpuCount: defaultHw.gpu_count ?? 1,
-  splitMode: 'layer',
-  cpuBwGbps: defaultCpu.effective_bw_gbps,
+  cpu: defaultCpu,
   systemRamGb: defaultRam,
+  quant: 'Q4_K_M',
+  format: 'GGUF',
+  contextTokens: defaultContext,
+  kvQuant: 'fp16',
+  splitMode: 'layer',
+  reserveProfile: 'desktop',
 });
 
 const curatedSlugMap: Record<string, string> = {};
 for (const e of curatedEntries) {
   curatedSlugMap[`${e.model.id}::${e.hardware.id}`] = e.slug;
 }
+const initCuratedSlug = curatedSlugMap[`${defaultModel.id}::${defaultHw.id}`];
+const initCuratedHref = initCuratedSlug
+  ? `/can-i-run/${initCuratedSlug}/`
+  : `/model/${defaultModel.id}/`;
+const initCuratedClass = initCuratedSlug
+  ? 'rounded-lg border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors'
+  : 'hidden rounded-lg border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors';
+
+const initVerdictLine =
+  initRes.status === 'Fits' || initRes.status === 'Tight Fit'
+    ? `Resident inside ${initRes.usable_vram_gb.toFixed(1)} GB usable GPU memory (${Math.max(0, initRes.usable_vram_gb - initRes.total_vram_gb).toFixed(2)} GB headroom).`
+    : initRes.status === 'Partial Offload'
+      ? `Remaining layers spill to System RAM (${initRes.spill_ram_gb.toFixed(2)} GB offloaded).`
+      : 'OOM: Exceeds memory capacity. Add GPUs, drop quant, compress KV cache, or trim context.';
 
 const payloadJson = JSON.stringify({
   models: catalog.models,
@@ -60,26 +87,36 @@ const payloadJson = JSON.stringify({
     hwId: defaultHw.id,
     cpuId: defaultCpu.id,
     ramGb: defaultRam,
+    format: 'GGUF',
     quant: 'Q4_K_M',
     contextTokens: defaultContext,
-    kvQuant: 'FP16',
+    kvQuant: 'fp16',
+    reserveProfile: 'desktop',
   },
 });
 
-const quantOptions = [
-  { key: 'Q2_K', bpw: '3.00 bpw' },
-  { key: 'Q3_K_M', bpw: '3.90 bpw' },
-  { key: 'Q4_K_M', bpw: '4.85 bpw' },
-  { key: 'Q5_K_M', bpw: '5.70 bpw' },
-  { key: 'Q6_K', bpw: '6.60 bpw' },
-  { key: 'Q8_0', bpw: '8.50 bpw' },
-  { key: 'FP16', bpw: '16.0 bpw' },
+const formatTabs = [
+  { key: 'GGUF', label: 'GGUF', i18n: 'fmt.ggufShort' },
+  { key: 'AWQ', label: 'AWQ / FP8', i18n: 'fmt.awqShort' },
+  { key: 'MLX', label: 'MLX', i18n: 'fmt.mlxShort' },
+] as const;
+
+const allQuantOptions = [
+  { key: 'Q4_K_M', fmt: 'GGUF', bpw: `${QUANT_BPW.Q4_K_M} bpw` },
+  { key: 'Q5_K_M', fmt: 'GGUF', bpw: `${QUANT_BPW.Q5_K_M} bpw` },
+  { key: 'Q6_K', fmt: 'GGUF', bpw: `${QUANT_BPW.Q6_K} bpw` },
+  { key: 'Q8_0', fmt: 'GGUF', bpw: `${QUANT_BPW.Q8_0} bpw` },
+  { key: 'FP16', fmt: 'GGUF', bpw: '16.0 bpw' },
+  { key: 'AWQ_4BIT', fmt: 'AWQ', bpw: '4.75 bpw' },
+  { key: 'FP8', fmt: 'AWQ', bpw: '8.20 bpw' },
+  { key: 'MLX_4BIT', fmt: 'MLX', bpw: '4.55 bpw' },
+  { key: 'MLX_8BIT', fmt: 'MLX', bpw: '8.25 bpw' },
 ] as const;
 
 const kvOptions = [
-  { key: 'FP16', label: 'FP16 KV' },
-  { key: 'Q8_0', label: 'Q8_0 (-50%)' },
-  { key: 'Q4_0', label: 'Q4_0 (-75%)' },
+  { key: 'fp16', label: 'FP16 KV' },
+  { key: 'q8_0', label: 'Q8_0 (-50%)' },
+  { key: 'q4_0', label: 'Q4_0 (-75%)' },
 ] as const;
 
 const gpuCounts = [1, 2, 3, 4, 6, 8] as const;
@@ -88,34 +125,52 @@ const contextTicks = [4096, 8192, 16384, 32768, 49152, 65536] as const;
 
 const presets = [
   {
+    label: 'A10 24GB (Gemma-3-27B AWQ)',
+    mode: 'gpu',
+    hw: 'nvidia-a10-24gb',
+    gpus: 1,
+    split: 'layer',
+    fmt: 'AWQ',
+    quant: 'AWQ_4BIT',
+    cpu: 'amd-epyc-9004-9005-12ch',
+    ram: 64,
+    model: 'gemma-3-27b',
+  },
+  {
+    label: 'Apple M4 16GB (Qwen3-8B MLX)',
+    mode: 'gpu',
+    hw: 'apple-m4-16gb',
+    gpus: 1,
+    split: 'layer',
+    fmt: 'MLX',
+    quant: 'MLX_4BIT',
+    cpu: 'default-ddr4-desktop',
+    ram: 16,
+    model: 'qwen3-8b',
+  },
+  {
+    label: '2x RTX 4090 (70B Tensor PCIe)',
+    mode: 'gpu',
+    hw: 'rtx-4090-24gb',
+    gpus: 2,
+    split: 'tensor',
+    fmt: 'GGUF',
+    quant: 'Q4_K_M',
+    cpu: 'amd-ryzen-7000-9000-ddr5-6000',
+    ram: 64,
+    model: 'llama-3.3-70b',
+  },
+  {
     label: '3x GTX 1080 8GB + DDR4',
     mode: 'gpu',
     hw: 'gtx-1080-8gb',
     gpus: 3,
     split: 'layer',
+    fmt: 'GGUF',
+    quant: 'Q4_K_M',
     cpu: 'intel-core-i5-i7-ddr4',
     ram: 32,
     model: 'mistral-small-24b',
-  },
-  {
-    label: 'Apple M4 16GB Unified',
-    mode: 'gpu',
-    hw: 'apple-m4-16gb',
-    gpus: 1,
-    split: 'layer',
-    cpu: 'default-ddr4-desktop',
-    ram: 16,
-    model: 'qwen3-14b',
-  },
-  {
-    label: '2x RTX 3090 48GB (Tensor Parallel)',
-    mode: 'gpu',
-    hw: 'rtx-3090-24gb',
-    gpus: 2,
-    split: 'row',
-    cpu: 'amd-ryzen-7000-9000-ddr5-6000',
-    ram: 64,
-    model: 'llama-3.3-70b',
   },
   {
     label: 'EPYC 12-Ch 256GB (CPU-Only)',
@@ -123,26 +178,33 @@ const presets = [
     hw: 'rtx-4070-12gb',
     gpus: 0,
     split: 'layer',
+    fmt: 'GGUF',
+    quant: 'Q4_K_M',
     cpu: 'amd-epyc-9004-9005-12ch',
     ram: 256,
     model: 'qwen3-30b-a3b',
   },
   {
-    label: '4x Tesla P40 96GB Homelab',
+    label: 'NVIDIA T4 16GB (Qwen3-8B AWQ)',
     mode: 'gpu',
-    hw: 'tesla-p40-24gb',
-    gpus: 4,
+    hw: 'nvidia-t4-16gb',
+    gpus: 1,
     split: 'layer',
-    cpu: 'dual-xeon-e5-v4-homelab',
-    ram: 128,
-    model: 'deepseek-r1-70b',
+    fmt: 'AWQ',
+    quant: 'AWQ_4BIT',
+    cpu: 'amd-epyc-9004-9005-12ch',
+    ram: 32,
+    model: 'qwen3-8b',
   },
 ] as const;
 
-const initRating = speedRating(initRes.est_tps, initRes.status, {
-  isUnified: defaultHw.is_unified,
-  isCpuOnly: false,
-});
+const initTier = initRes.speed_tier ?? classifySpeedTier(initRes.est_tps, initRes.status);
+const initTpsText = formatTpsRange(
+  initRes.est_tps_low,
+  initRes.est_tps_high,
+  initRes.est_tps,
+  initRes.status,
+);
 const initCtxLabel = formatContextLabel(defaultContext);
 const maxScale = Math.max(initRes.usable_vram_gb, initRes.total_vram_gb, 1);
 const wPct = Math.min(100, (initRes.weights_gb / maxScale) * 100);
@@ -166,7 +228,7 @@ const simRamNoteArgs = JSON.stringify({
 });
 ---
 
-<section id="rig-simulator" class="space-y-8">
+<section id="rig-simulator" class="min-w-0 max-w-full space-y-8">
   <!-- Quick Demo Presets + Share Bar -->
   <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
     <div class="flex flex-wrap items-center gap-2">
@@ -179,6 +241,8 @@ const simRamNoteArgs = JSON.stringify({
           data-p-hw={p.hw}
           data-p-gpus={p.gpus}
           data-p-split={p.split}
+          data-p-fmt={p.fmt}
+          data-p-quant={p.quant}
           data-p-cpu={p.cpu}
           data-p-ram={p.ram}
           data-p-model={p.model}
@@ -222,9 +286,9 @@ const simRamNoteArgs = JSON.stringify({
   </div>
 
   <!-- Main Builder Grid -->
-  <div class="grid gap-6 lg:grid-cols-12">
+  <div class="grid grid-cols-1 min-w-0 gap-6 lg:grid-cols-12">
     <!-- Left Column: Hardware + CPU/RAM + Custom GPU -->
-    <div class="lg:col-span-6 space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
+    <div class="min-w-0 lg:col-span-6 space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
       <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
         <div>
           <h2 class="text-base font-bold text-slate-950" data-i18n="sim.sec1Title">1. Hardware &amp; Multi-GPU Rig</h2>
@@ -317,12 +381,64 @@ const simRamNoteArgs = JSON.stringify({
               </button>
               <button
                 type="button"
-                data-sim-split="row"
+                data-sim-split="tensor"
                 data-i18n="sim.tensorParallel"
                 class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer"
               >
                 Tensor Parallel
               </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- OS Reserve Profile Controls -->
+        <div class="border-t border-slate-100 pt-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500" data-i18n="reserve.title">
+              OS Reserve Profile
+            </span>
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 gap-0.5" role="group" aria-label="OS reserve profile">
+                <button
+                  type="button"
+                  data-sim-reserve="desktop"
+                  data-i18n="reserve.desktop"
+                  class="rounded-md px-2.5 py-1 text-[11px] font-bold bg-blue-600 text-white cursor-pointer"
+                >
+                  Daily Desktop
+                </button>
+                <button
+                  type="button"
+                  data-sim-reserve="clean"
+                  data-i18n="reserve.clean"
+                  class="rounded-md px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:text-slate-950 cursor-pointer"
+                >
+                  Clean OS
+                </button>
+                <button
+                  type="button"
+                  data-sim-reserve="custom"
+                  data-i18n="reserve.custom"
+                  class="rounded-md px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:text-slate-950 cursor-pointer"
+                >
+                  Custom GB
+                </button>
+              </div>
+
+              <div id="sim-custom-reserve-wrap" class="hidden">
+                <label class="inline-flex items-center gap-1 text-xs">
+                  <input
+                    id="sim-custom-usable-input"
+                    type="number"
+                    min="1"
+                    max="2048"
+                    step="0.5"
+                    value={initRes.usable_vram_gb.toFixed(1)}
+                    class="w-18 rounded-lg border border-slate-300 bg-white px-2 py-0.5 font-mono text-xs font-bold text-slate-900"
+                  />
+                  <span class="font-mono text-[11px] text-slate-500">GB</span>
+                </label>
+              </div>
             </div>
           </div>
         </div>
@@ -437,7 +553,7 @@ const simRamNoteArgs = JSON.stringify({
     </div>
 
     <!-- Right Column: Model, Quant, KV Cache & Context -->
-    <div class="lg:col-span-6 space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
+    <div class="min-w-0 lg:col-span-6 space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
       <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
         <div>
           <h2 class="text-base font-bold text-slate-950" data-i18n="sim.sec2Title">2. Model, Quantization &amp; KV Context</h2>
@@ -469,42 +585,63 @@ const simRamNoteArgs = JSON.stringify({
         </select>
       </div>
 
-      <div id="sim-model-custom-wrap" class="hidden grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div>
-          <label for="sim-cm-params" class="block text-[11px] font-semibold text-slate-500" data-i18n="sim.cmParams">Params (B)</label>
-          <input id="sim-cm-params" type="number" min="0.5" max="1000" step="0.5" value="24" class="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 font-mono text-xs font-bold" />
-        </div>
-        <div>
-          <label for="sim-cm-layers" class="block text-[11px] font-semibold text-slate-500" data-i18n="sim.cmLayers">Layers</label>
-          <input id="sim-cm-layers" type="number" min="8" max="200" step="1" value="40" class="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 font-mono text-xs font-bold" />
-        </div>
-        <div>
-          <label for="sim-cm-kvheads" class="block text-[11px] font-semibold text-slate-500" data-i18n="sim.cmKvHeads">KV Heads</label>
-          <input id="sim-cm-kvheads" type="number" min="1" max="128" step="1" value="8" class="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 font-mono text-xs font-bold" />
-        </div>
-        <div>
-          <label for="sim-cm-headdim" class="block text-[11px] font-semibold text-slate-500" data-i18n="sim.cmHeadDim">Head Dim</label>
-          <input id="sim-cm-headdim" type="number" min="64" max="512" step="64" value="128" class="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 font-mono text-xs font-bold" />
+      <div id="sim-model-custom-wrap" class="hidden">
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div>
+            <label for="sim-cm-params" class="block text-[11px] font-semibold text-slate-500" data-i18n="sim.cmParams">Params (B)</label>
+            <input id="sim-cm-params" type="number" min="0.5" max="1000" step="0.5" value="24" class="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 font-mono text-xs font-bold" />
+          </div>
+          <div>
+            <label for="sim-cm-layers" class="block text-[11px] font-semibold text-slate-500" data-i18n="sim.cmLayers">Layers</label>
+            <input id="sim-cm-layers" type="number" min="8" max="200" step="1" value="40" class="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 font-mono text-xs font-bold" />
+          </div>
+          <div>
+            <label for="sim-cm-kvheads" class="block text-[11px] font-semibold text-slate-500" data-i18n="sim.cmKvHeads">KV Heads</label>
+            <input id="sim-cm-kvheads" type="number" min="1" max="128" step="1" value="8" class="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 font-mono text-xs font-bold" />
+          </div>
+          <div>
+            <label for="sim-cm-headdim" class="block text-[11px] font-semibold text-slate-500" data-i18n="sim.cmHeadDim">Head Dim</label>
+            <input id="sim-cm-headdim" type="number" min="64" max="512" step="64" value="128" class="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 font-mono text-xs font-bold" />
+          </div>
         </div>
       </div>
 
-      <!-- 7-Tier Quantization -->
-      <div>
-        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500" data-i18n="sim.weightQuant">
-          Weight Quantization (7 Tiers)
-        </label>
-        <div class="mt-2 grid grid-cols-4 gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-1.5 sm:grid-cols-7" role="radiogroup" aria-label="Weight quantization">
-          {quantOptions.map((q) => {
+      <!-- Runtime Format & Quantization -->
+      <div class="space-y-2.5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <label class="text-[11px] font-semibold uppercase tracking-wider text-slate-500" data-i18n="sim.weightQuant">
+            Runtime Format &amp; Quantization
+          </label>
+          <div class="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 gap-0.5" role="group" aria-label="Runtime format">
+            {formatTabs.map((ft) => {
+              const active = ft.key === 'GGUF';
+              const fCls = active
+                ? 'rounded-md px-2.5 py-0.5 text-[11px] font-bold bg-slate-900 text-white cursor-pointer'
+                : 'rounded-md px-2.5 py-0.5 text-[11px] font-semibold text-slate-600 hover:text-slate-950 cursor-pointer';
+              return (
+                <button type="button" data-sim-fmt={ft.key} data-i18n={ft.i18n} class={fCls}>
+                  {ft.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-1.5" role="radiogroup" aria-label="Weight quantization">
+          {allQuantOptions.map((q) => {
             const active = q.key === 'Q4_K_M';
+            const wrapVisible = q.fmt === 'GGUF' ? '' : 'hidden';
             const cls = active
-              ? 'flex flex-col items-center rounded-lg px-1.5 py-2 text-center transition-all cursor-pointer bg-blue-600 text-white shadow-xs'
-              : 'flex flex-col items-center rounded-lg px-1.5 py-2 text-center transition-all cursor-pointer text-slate-700 hover:bg-white hover:text-slate-950';
+              ? 'flex flex-col items-center rounded-lg px-3 py-2 text-center transition-all cursor-pointer bg-blue-600 text-white shadow-xs min-w-[78px]'
+              : 'flex flex-col items-center rounded-lg px-3 py-2 text-center transition-all cursor-pointer text-slate-700 hover:bg-white hover:text-slate-950 min-w-[78px]';
             const sub = active ? 'text-[10px] text-blue-100' : 'text-[10px] text-slate-500';
             return (
-              <button type="button" data-sim-quant={q.key} class={cls}>
-                <span class="font-mono text-xs font-bold">{q.key}</span>
-                <span class={sub}>{q.bpw}</span>
-              </button>
+              <div data-sim-quant-wrap={q.fmt} class={wrapVisible}>
+                <button type="button" data-sim-quant={q.key} data-sim-quant-fmt={q.fmt} class={cls}>
+                  <span class="font-mono text-xs font-bold">{q.key}</span>
+                  <span class={sub}>{q.bpw}</span>
+                </button>
+              </div>
             );
           })}
         </div>
@@ -519,7 +656,7 @@ const simRamNoteArgs = JSON.stringify({
           <div class="flex items-center gap-2">
             <div class="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5" role="group" aria-label="KV cache quantization">
               {kvOptions.map((kv) => {
-                const active = kv.key === 'FP16';
+                const active = kv.key === 'fp16';
                 const cls = active
                   ? 'rounded-md px-2 py-0.5 font-mono text-[11px] font-semibold bg-slate-900 text-white cursor-pointer'
                   : 'rounded-md px-2 py-0.5 font-mono text-[11px] font-medium text-slate-600 hover:text-slate-950 cursor-pointer';
@@ -563,7 +700,7 @@ const simRamNoteArgs = JSON.stringify({
   </div>
 
   <!-- Live Telemetry & Memory Visualization -->
-  <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-7" aria-label="Live Rig Simulation Output">
+  <section class="min-w-0 max-w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-7" aria-label="Live Rig Simulation Output">
     <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
       <div>
         <h2 id="sim-result-headline" class="text-lg font-bold tracking-tight text-slate-950">
@@ -576,13 +713,14 @@ const simRamNoteArgs = JSON.stringify({
       <div class="flex flex-wrap items-center gap-2">
         <a
           id="sim-curated-link"
-          href="/can-i-run/deepseek-r1-14b-on-rtx-4070-12gb/"
+          href={initCuratedHref}
           data-i18n="sim.readFullGuide"
-          class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
+          class={initCuratedClass}
         >
           Read Full Benchmark Guide -&gt;
         </a>
         <StatusBadge status={initRes.status} size="md" id="sim-status-badge" />
+        <SpeedBadge tier={initTier} id="sim-speed-badge" short={true} />
       </div>
     </div>
 
@@ -594,20 +732,20 @@ const simRamNoteArgs = JSON.stringify({
             {initRes.total_vram_gb.toFixed(2)} GB
           </span>
           <span id="sim-budget-pct" class="font-mono text-xs font-semibold text-slate-600 tabular-nums">
-            of {initRes.usable_vram_gb} GB
+            of {initRes.usable_vram_gb.toFixed(1)} GB
           </span>
         </div>
         <p id="sim-spill-note" class="mt-0.5 font-mono text-[11px] text-slate-500">0.00 GB spilled to System RAM</p>
       </div>
 
       <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-        <p class="text-xs font-medium text-slate-500" data-i18n="sim.kpiSpeed">Est. Decode Speed</p>
+        <p class="text-xs font-medium text-slate-500" data-i18n="sim.kpiSpeed">Est. Decode Speed (Formula Range)</p>
         <div class="mt-1 flex items-baseline gap-2">
           <span id="sim-tps" class="font-mono text-2xl font-bold text-slate-950 tabular-nums">
-            {initRes.est_tps.toFixed(1)} tok/s
+            {initTpsText}
           </span>
         </div>
-        <p id="sim-tps-rating" class="mt-0.5 text-xs text-slate-600">{initRating}</p>
+        <p id="sim-tps-rating" class="mt-0.5 text-xs text-slate-600">{initTier} · Formula Estimate (±15–25%)</p>
       </div>
 
       <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
@@ -634,8 +772,24 @@ const simRamNoteArgs = JSON.stringify({
           <span class="text-xs text-slate-500" data-i18n="sim.onGpu">on GPU</span>
         </div>
         <p id="sim-headroom" class="mt-0.5 text-xs text-slate-600 tabular-nums">
-          {(initRes.usable_vram_gb - initRes.total_vram_gb).toFixed(2)} GB free VRAM headroom
+          {Math.max(0, initRes.usable_vram_gb - initRes.total_vram_gb).toFixed(2)} GB free VRAM headroom
         </p>
+      </div>
+    </div>
+
+    <!-- Tight Margin Warning -->
+    <div id="sim-tight-warn" class="mt-4 hidden" role="note">
+      <div class="rounded-xl border border-orange-200 bg-orange-50/80 px-4 py-3 text-xs text-orange-950">
+        <strong class="font-bold" data-i18n="warn.tightFitTitle">Tight Margin Warning (&lt;5% / &lt;1 GB free):</strong>{' '}
+        <span id="sim-tight-desc"></span>
+      </div>
+    </div>
+
+    <!-- PCIe All-Reduce Synchronization Warning -->
+    <div id="sim-pcie-warn" class="mt-3 hidden" role="note">
+      <div class="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-xs text-amber-950">
+        <strong class="font-bold" data-i18n="warn.pcieTpTitle">PCIe All-Reduce Synchronization Overhead:</strong>{' '}
+        <span id="sim-pcie-desc"></span>
       </div>
     </div>
 
@@ -665,15 +819,15 @@ const simRamNoteArgs = JSON.stringify({
           <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-xs bg-slate-500"></span><span data-i18n="sim.legendBuffer">Buffer</span></span>
           <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-xs bg-amber-500"></span><span data-i18n="sim.legendSpill">RAM Spill</span></span>
         </div>
-        <p id="sim-verdict-line" class="font-medium text-slate-800" data-i18n="sim.verdictGpuSmooth">
-          Fits 100% inside usable GPU memory — zero CPU offload.
+        <p id="sim-verdict-line" class="font-medium text-slate-800">
+          {initVerdictLine}
         </p>
       </div>
     </div>
 
     <!-- Live CLI Commands Grid -->
-    <div class="mt-5 grid gap-3 lg:grid-cols-3">
-      <div class="flex flex-col justify-between rounded-xl bg-slate-950 p-4 text-slate-100">
+    <div class="mt-5 grid grid-cols-1 min-w-0 gap-3 lg:grid-cols-3">
+      <div class="flex min-w-0 max-w-full flex-col justify-between overflow-hidden rounded-xl bg-slate-950 p-4 text-slate-100">
         <div class="flex items-center justify-between gap-2">
           <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Ollama Env Launch</span>
           <button
@@ -685,58 +839,61 @@ const simRamNoteArgs = JSON.stringify({
             <span data-copy-text data-i18n="common.copy">Copy</span>
           </button>
         </div>
-        <pre id="sim-cmd-ollama" class="mt-2 overflow-x-auto font-mono text-xs text-emerald-300">OLLAMA_FLASH_ATTENTION=1 OLLAMA_NUM_CTX=8192 ollama run deepseek-r1:14b</pre>
+        <pre id="sim-cmd-ollama" class="mt-2 w-full max-w-full overflow-x-auto font-mono text-xs text-emerald-300">OLLAMA_FLASH_ATTENTION=1 OLLAMA_NUM_CTX=8192 ollama run qwen3:14b</pre>
       </div>
 
-      <div class="flex flex-col justify-between rounded-xl bg-slate-950 p-4 text-slate-100">
+      <div class="flex min-w-0 max-w-full flex-col justify-between overflow-hidden rounded-xl bg-slate-950 p-4 text-slate-100">
         <div class="flex items-center justify-between gap-2">
-          <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">llama-cli (Interactive)</span>
+          <span id="sim-cmd-primary-label" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">llama-cli (Interactive)</span>
           <button
             type="button"
             data-copy-target="sim-cmd-cli"
-            data-copy-label="llama-cli command"
+            data-copy-label="Primary launch command"
             class="inline-flex items-center gap-1 rounded border border-slate-700 bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-200 hover:bg-slate-700 cursor-pointer"
           >
             <span data-copy-text data-i18n="common.copy">Copy</span>
           </button>
         </div>
-        <pre id="sim-cmd-cli" class="mt-2 overflow-x-auto font-mono text-xs text-sky-300">llama-cli -hf bartowski/DeepSeek-R1-Distill-Qwen-14B-GGUF:Q4_K_M -ngl 99 -c 8192 -fa on</pre>
+        <pre id="sim-cmd-cli" class="mt-2 w-full max-w-full overflow-x-auto font-mono text-xs text-sky-300">llama-cli -hf bartowski/Qwen_Qwen3-14B-GGUF:Q4_K_M -ngl 99 -c 8192 -fa on</pre>
       </div>
 
-      <div class="flex flex-col justify-between rounded-xl bg-slate-950 p-4 text-slate-100">
+      <div class="flex min-w-0 max-w-full flex-col justify-between overflow-hidden rounded-xl bg-slate-950 p-4 text-slate-100">
         <div class="flex items-center justify-between gap-2">
-          <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">llama-server / API</span>
+          <span id="sim-cmd-alt-label" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">vLLM / MLX / Server</span>
           <button
             type="button"
             data-copy-target="sim-cmd-srv"
-            data-copy-label="llama-server command"
+            data-copy-label="Server or alt format command"
             class="inline-flex items-center gap-1 rounded border border-slate-700 bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-slate-200 hover:bg-slate-700 cursor-pointer"
           >
             <span data-copy-text data-i18n="common.copy">Copy</span>
           </button>
         </div>
-        <pre id="sim-cmd-srv" class="mt-2 overflow-x-auto font-mono text-xs text-indigo-300">llama-server -hf bartowski/DeepSeek-R1-Distill-Qwen-14B-GGUF:Q4_K_M -ngl 99 -c 8192 -fa on --host 127.0.0.1 --port 8080</pre>
+        <pre id="sim-cmd-srv" class="mt-2 w-full max-w-full overflow-x-auto font-mono text-xs text-indigo-300">llama-server -hf bartowski/Qwen_Qwen3-14B-GGUF:Q4_K_M -ngl 99 -c 8192 -fa on --host 127.0.0.1 --port 8080</pre>
       </div>
     </div>
   </section>
 
   <!-- Live 22-Model Rig Compatibility Scanner -->
-  <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6" aria-label="Full Model Catalog Compatibility Scan">
+  <section class="min-w-0 max-w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6" aria-label="Full Model Catalog Compatibility Scan">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <h2 id="sim-scan-title" class="text-lg font-bold tracking-tight text-slate-950">
           All {catalog.models.length} Models on This Rig (Live Scan)
         </h2>
         <p id="sim-scan-sub" class="mt-0.5 text-sm text-slate-600" data-i18n="sim.scanSub">
-          Automatically re-calculated for your selected GPU count, CPU/RAM offload pool, quantization, KV tier, and context window. Click any row to load it above.
+          Automatically recalculated for selected format, quant, reserve profile, GPU count, and KV tier. Click any row to load above.
         </p>
       </div>
       <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter rig scan by status">
         <button type="button" data-scan-status="all" class="rounded-full border border-slate-900 bg-slate-900 px-3 py-1 text-xs font-semibold text-white cursor-pointer">
           All ({catalog.models.length})
         </button>
-        <button type="button" data-scan-status="Smooth" data-i18n="status.smooth" class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer">
-          Smooth
+        <button type="button" data-scan-status="Fits" data-i18n="status.fits" class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer">
+          Fits
+        </button>
+        <button type="button" data-scan-status="Tight Fit" data-i18n="status.tightFit" class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer">
+          Tight Fit
         </button>
         <button type="button" data-scan-status="Partial Offload" data-i18n="status.partialOffload" class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer">
           Partial Offload
@@ -747,15 +904,15 @@ const simRamNoteArgs = JSON.stringify({
       </div>
     </div>
 
-    <div class="mt-4 overflow-x-auto rounded-xl border border-slate-200">
-      <table class="w-full min-w-[780px] border-collapse text-left text-sm">
+    <div class="mt-4 w-full max-w-full overflow-x-auto rounded-xl border border-slate-200">
+      <table class="w-full min-w-[820px] border-collapse text-left text-sm">
         <thead>
           <tr class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
             <th class="px-4 py-3" data-i18n="sim.colModel">Model</th>
-            <th class="px-4 py-3" data-i18n="sim.colStatus">Status</th>
+            <th class="px-4 py-3" data-i18n="sim.colStatus">Fit / Speed Tier</th>
             <th class="px-4 py-3" data-i18n="sim.colFootprint">Memory Footprint</th>
             <th class="px-4 py-3" data-i18n="sim.colLayers">GPU Layers</th>
-            <th class="px-4 py-3" data-i18n="sim.colSpeed">Est. Speed</th>
+            <th class="px-4 py-3" data-i18n="sim.colSpeed">Est. Range</th>
             <th class="px-4 py-3 text-right" data-i18n="sim.colAction">Action</th>
           </tr>
         </thead>
@@ -768,8 +925,15 @@ const simRamNoteArgs = JSON.stringify({
 </section>
 
 <script>
-  import { onLocaleChange, t, tStatus, translateSpeedRating } from '../utils/i18n';
-  import { estimateRigRun, formatContextLabel, osRamReserveGb, speedRating } from '../utils/physics';
+  import { onLocaleChange, t, tSpeedTier, tStatus } from '../utils/i18n';
+  import {
+    buildRuntimeCommand,
+    defaultQuantForFormat,
+    estimateRigRun,
+    formatContextLabel,
+    formatTpsRange,
+    osRamReserveGb,
+  } from '../utils/physics';
   import type {
     CompatStatus,
     CpuSpec,
@@ -778,6 +942,9 @@ const simRamNoteArgs = JSON.stringify({
     KvQuantKey,
     ModelSpec,
     QuantKey,
+    ReserveProfile,
+    RuntimeFormat,
+    SpeedTier,
     SplitMode,
   } from '../types/vram';
 
@@ -791,30 +958,43 @@ const simRamNoteArgs = JSON.stringify({
       hwId: string;
       cpuId: string;
       ramGb: number;
+      format: RuntimeFormat;
       quant: QuantKey;
       contextTokens: number;
       kvQuant: KvQuantKey;
+      reserveProfile: ReserveProfile;
     };
   }
 
   type RigMode = 'gpu' | 'cpu' | 'custom';
 
   function statusRank(s: CompatStatus): number {
-    if (s === 'Smooth') return 0;
-    if (s === 'Partial Offload') return 1;
-    return 2;
+    if (s === 'Fits') return 0;
+    if (s === 'Tight Fit') return 1;
+    if (s === 'Partial Offload') return 2;
+    return 3;
   }
 
   function badgeClasses(s: CompatStatus): string {
-    if (s === 'Smooth') return 'border-emerald-200 bg-emerald-50 text-emerald-800';
+    if (s === 'Fits') return 'border-emerald-200 bg-emerald-50 text-emerald-800';
+    if (s === 'Tight Fit') return 'border-orange-200 bg-orange-50 text-orange-800';
     if (s === 'Partial Offload') return 'border-amber-200 bg-amber-50 text-amber-800';
     return 'border-rose-200 bg-rose-50 text-rose-800';
   }
 
   function dotClass(s: CompatStatus): string {
-    if (s === 'Smooth') return 'bg-emerald-600';
+    if (s === 'Fits') return 'bg-emerald-600';
+    if (s === 'Tight Fit') return 'bg-orange-500';
     if (s === 'Partial Offload') return 'bg-amber-500';
-    return 'bg-rose-600';
+    return 'bg-rose-500';
+  }
+
+  function speedTierClasses(tier: SpeedTier): string {
+    if (tier === 'Fast') return 'border-sky-200 bg-sky-50 text-sky-800';
+    if (tier === 'Interactive') return 'border-indigo-200 bg-indigo-50 text-indigo-800';
+    if (tier === 'Readable') return 'border-slate-200 bg-slate-100 text-slate-700';
+    if (tier === 'Slow') return 'border-amber-200 bg-amber-50 text-amber-800';
+    return 'border-rose-200 bg-rose-50 text-rose-800';
   }
 
   function initRigSimulator() {
@@ -831,15 +1011,17 @@ const simRamNoteArgs = JSON.stringify({
     let modelId = payload.defaults.modelId;
     let cpuId = payload.defaults.cpuId;
     let ramGb = payload.defaults.ramGb;
-    let quant: QuantKey = payload.defaults.quant;
-    let kvQuant: KvQuantKey = payload.defaults.kvQuant;
+    let fmt: RuntimeFormat = payload.defaults.format || 'GGUF';
+    let quant: QuantKey = payload.defaults.quant || 'Q4_K_M';
+    let kvQuant: KvQuantKey = payload.defaults.kvQuant || 'fp16';
     let contextTokens = payload.defaults.contextTokens;
+    let reserveProfile: ReserveProfile = payload.defaults.reserveProfile || 'desktop';
+    let customUsableGb: number | null = null;
     let gpuCount = 1;
     let splitMode: SplitMode = 'layer';
     let useCustomModel = false;
-    let scanFilter: string = 'all';
+    let scanFilter = 'all';
 
-    // DOM elements
     const modeBtns = Array.from(document.querySelectorAll('[data-mode-btn]'));
     const panelGpu = document.getElementById('sim-panel-gpu');
     const panelCpuBanner = document.getElementById('sim-panel-cpu-banner');
@@ -852,6 +1034,9 @@ const simRamNoteArgs = JSON.stringify({
     const gpuLockNoteEl = document.getElementById('sim-gpu-lock-note');
     const splitBox = document.getElementById('sim-split-box');
     const splitBtns = Array.from(document.querySelectorAll('[data-sim-split]'));
+    const reserveBtns = Array.from(document.querySelectorAll('[data-sim-reserve]'));
+    const customReserveWrap = document.getElementById('sim-custom-reserve-wrap');
+    const customUsableInput = document.getElementById('sim-custom-usable-input') as HTMLInputElement | null;
     const gpuSummaryPill = document.getElementById('sim-gpu-summary-pill');
 
     const customVramEl = document.getElementById('sim-custom-vram') as HTMLInputElement | null;
@@ -872,6 +1057,8 @@ const simRamNoteArgs = JSON.stringify({
     const cmKvHeads = document.getElementById('sim-cm-kvheads') as HTMLInputElement | null;
     const cmHeadDim = document.getElementById('sim-cm-headdim') as HTMLInputElement | null;
 
+    const fmtBtns = Array.from(document.querySelectorAll('[data-sim-fmt]'));
+    const quantWraps = Array.from(document.querySelectorAll('[data-sim-quant-wrap]'));
     const quantBtns = Array.from(document.querySelectorAll('[data-sim-quant]'));
     const kvBtns = Array.from(document.querySelectorAll('[data-sim-kv]'));
     const ctxSlider = document.getElementById('sim-ctx-slider') as HTMLInputElement | null;
@@ -882,6 +1069,7 @@ const simRamNoteArgs = JSON.stringify({
     const sublineEl = document.getElementById('sim-result-subline');
     const curatedLinkEl = document.getElementById('sim-curated-link') as HTMLAnchorElement | null;
     const statusBadgeEl = document.getElementById('sim-status-badge');
+    const speedBadgeEl = document.getElementById('sim-speed-badge');
 
     const kpiMemLabelEl = document.getElementById('sim-kpi-mem-label');
     const totalGbEl = document.getElementById('sim-total-gb');
@@ -897,6 +1085,11 @@ const simRamNoteArgs = JSON.stringify({
     const ceilingTextEl = document.getElementById('sim-ceiling-text');
     const verdictLineEl = document.getElementById('sim-verdict-line');
 
+    const tightWarnEl = document.getElementById('sim-tight-warn');
+    const tightDescEl = document.getElementById('sim-tight-desc');
+    const pcieWarnEl = document.getElementById('sim-pcie-warn');
+    const pcieDescEl = document.getElementById('sim-pcie-desc');
+
     const barWeights = document.getElementById('sim-bar-weights');
     const barKv = document.getElementById('sim-bar-kv');
     const barOverhead = document.getElementById('sim-bar-overhead');
@@ -904,7 +1097,9 @@ const simRamNoteArgs = JSON.stringify({
     const barCeiling = document.getElementById('sim-bar-ceiling');
 
     const cmdOllama = document.getElementById('sim-cmd-ollama');
+    const cmdPrimaryLabel = document.getElementById('sim-cmd-primary-label');
     const cmdCli = document.getElementById('sim-cmd-cli');
+    const cmdAltLabel = document.getElementById('sim-cmd-alt-label');
     const cmdSrv = document.getElementById('sim-cmd-srv');
     const shareBtn = document.getElementById('sim-copy-url-btn');
     const resetBtn = document.getElementById('sim-reset-btn');
@@ -965,33 +1160,51 @@ const simRamNoteArgs = JSON.stringify({
       };
     }
 
-    function updateBadge(el: HTMLElement | null, status: CompatStatus) {
+    function updateStatusBadge(el: HTMLElement | null, status: CompatStatus) {
       if (!el) return;
       const dot = el.querySelector('span:first-child');
       const label = el.querySelector('[data-status-label]');
-      if (label) label.textContent = tStatus(status);
+      if (label) {
+        label.textContent = tStatus(status);
+        label.setAttribute('data-i18n-status', status);
+      }
       el.classList.remove(
-        'border-emerald-200',
-        'bg-emerald-50',
-        'text-emerald-800',
-        'border-amber-200',
-        'bg-amber-50',
-        'text-amber-800',
-        'border-rose-200',
-        'bg-rose-50',
-        'text-rose-800',
+        'border-emerald-200', 'bg-emerald-50', 'text-emerald-800',
+        'border-orange-200', 'bg-orange-50', 'text-orange-800',
+        'border-amber-200', 'bg-amber-50', 'text-amber-800',
+        'border-rose-200', 'bg-rose-50', 'text-rose-800',
       );
-      if (dot) dot.classList.remove('bg-emerald-600', 'bg-amber-500', 'bg-rose-600');
-      if (status === 'Smooth') {
+      if (dot) dot.classList.remove('bg-emerald-600', 'bg-orange-500', 'bg-amber-500', 'bg-rose-500');
+      if (status === 'Fits') {
         el.classList.add('border-emerald-200', 'bg-emerald-50', 'text-emerald-800');
         if (dot) dot.classList.add('bg-emerald-600');
+      } else if (status === 'Tight Fit') {
+        el.classList.add('border-orange-200', 'bg-orange-50', 'text-orange-800');
+        if (dot) dot.classList.add('bg-orange-500');
       } else if (status === 'Partial Offload') {
         el.classList.add('border-amber-200', 'bg-amber-50', 'text-amber-800');
         if (dot) dot.classList.add('bg-amber-500');
       } else {
         el.classList.add('border-rose-200', 'bg-rose-50', 'text-rose-800');
-        if (dot) dot.classList.add('bg-rose-600');
+        if (dot) dot.classList.add('bg-rose-500');
       }
+    }
+
+    function updateSpeedBadge(el: HTMLElement | null, tier: SpeedTier) {
+      if (!el) return;
+      const label = el.querySelector('[data-tier-label]');
+      if (label) {
+        label.textContent = tSpeedTier(tier, true);
+        label.setAttribute('data-i18n-tier', tier);
+      }
+      el.classList.remove(
+        'border-sky-200', 'bg-sky-50', 'text-sky-800',
+        'border-indigo-200', 'bg-indigo-50', 'text-indigo-800',
+        'border-slate-200', 'bg-slate-100', 'text-slate-700',
+        'border-amber-200', 'bg-amber-50', 'text-amber-800',
+        'border-rose-200', 'bg-rose-50', 'text-rose-800',
+      );
+      el.classList.add(...speedTierClasses(tier).split(' '));
     }
 
     function syncUrl() {
@@ -1013,9 +1226,11 @@ const simRamNoteArgs = JSON.stringify({
       }
       params.set('cpu', cpuId);
       params.set('ram', String(ramGb));
+      if (fmt !== 'GGUF') params.set('fmt', fmt);
       if (quant !== 'Q4_K_M') params.set('quant', quant);
+      if (reserveProfile !== 'desktop') params.set('reserve', reserveProfile);
       if (ctxSlider && Number(ctxSlider.value) !== 8192) params.set('ctx', String(contextTokens));
-      if (kvQuant !== 'FP16') params.set('kv', kvQuant);
+      if (kvQuant !== 'fp16') params.set('kv', kvQuant);
       const url = `${window.location.pathname}?${params.toString()}`;
       window.history.replaceState(null, '', url);
       if (shareBtn) {
@@ -1026,19 +1241,25 @@ const simRamNoteArgs = JSON.stringify({
     function renderScanner(hw: HardwareSpec | null, cpu: CpuSpec, effGpuCount: number) {
       if (!scanTbody) return;
       const scanResults = payload.models.map((m) => {
-        const res = estimateRigRun(m, hw, {
+        const res = estimateRigRun({
+          model: m,
+          hardware: hw,
+          gpuCount: effGpuCount,
+          cpu,
+          systemRamGb: hw?.is_unified ? hw.vram_gb : ramGb,
           quant,
+          format: fmt,
           contextTokens,
           kvQuant,
-          gpuCount: effGpuCount,
           splitMode,
-          cpuBwGbps: cpu.effective_bw_gbps,
-          systemRamGb: hw?.is_unified ? hw.vram_gb : ramGb,
+          reserveProfile,
+          customUsableGb: reserveProfile === 'custom' ? customUsableGb : null,
         });
         return { model: m, res };
       });
 
-      const smoothCnt = scanResults.filter((x) => x.res.status === 'Smooth').length;
+      const fitsCnt = scanResults.filter((x) => x.res.status === 'Fits').length;
+      const tightCnt = scanResults.filter((x) => x.res.status === 'Tight Fit').length;
       const partialCnt = scanResults.filter((x) => x.res.status === 'Partial Offload').length;
       const oomCnt = scanResults.filter((x) => x.res.status === 'OOM').length;
 
@@ -1051,9 +1272,11 @@ const simRamNoteArgs = JSON.stringify({
         btn.classList.toggle('border-slate-200', !active);
         btn.classList.toggle('bg-white', !active);
         btn.classList.toggle('text-slate-700', !active);
+        btn.classList.toggle('hover:bg-slate-50', !active);
 
         if (st === 'all') btn.textContent = t('status.allWithCount', { count: scanResults.length });
-        else if (st === 'Smooth') btn.textContent = t('status.smoothWithCount', { count: smoothCnt });
+        else if (st === 'Fits') btn.textContent = t('status.fitsWithCount', { count: fitsCnt });
+        else if (st === 'Tight Fit') btn.textContent = t('status.tightWithCount', { count: tightCnt });
         else if (st === 'Partial Offload') btn.textContent = t('status.partialWithCount', { count: partialCnt });
         else if (st === 'OOM') btn.textContent = t('status.oomWithCount', { count: oomCnt });
       });
@@ -1067,15 +1290,18 @@ const simRamNoteArgs = JSON.stringify({
           return b.res.est_tps - a.res.est_tps;
         });
 
-      const budget = hw === null ? Math.max(1, ramGb - osRamReserveGb(ramGb)) : Math.max(1, scanResults[0]?.res.usable_vram_gb || 1);
+      const budget = hw === null || effGpuCount === 0
+        ? Math.max(1, ramGb - osRamReserveGb(ramGb))
+        : Math.max(1, scanResults[0]?.res.usable_vram_gb || 1);
 
       scanTbody.innerHTML = sorted
         .map(({ model: m, res }) => {
           const isSelected = !useCustomModel && m.id === modelId;
           const rowBg = isSelected ? 'bg-blue-50/70' : 'hover:bg-slate-50/70';
-          const moeTag = m.active_params_b ? ` · ${m.active_params_b}B` : '';
-          const tpsStr = res.status === 'OOM' ? t('status.oom') : `${res.est_tps.toFixed(1)} tok/s`;
-          const layerStr = hw === null ? `0/${res.total_layers} (CPU)` : `${res.gpu_layers_fit}/${res.total_layers}`;
+          const moeTag = m.active_params_b ? ` · ${m.active_params_b}B active` : '';
+          const tier = (res.speed_tier ?? 'Readable') as SpeedTier;
+          const tpsStr = formatTpsRange(res.est_tps_low, res.est_tps_high, res.est_tps, res.status);
+          const layerStr = hw === null || effGpuCount === 0 ? `0/${res.total_layers} (CPU)` : `${res.gpu_layers_fit}/${res.total_layers}`;
           const curatedSlug =
             hw && !hw.is_unified && effGpuCount === (hw.gpu_count || 1)
               ? payload.curatedSlugs[`${m.id}::${hw.id}`]
@@ -1094,10 +1320,15 @@ const simRamNoteArgs = JSON.stringify({
                 <div class="font-mono text-xs text-slate-500">${m.params_b}B${moeTag} · ${m.architecture}</div>
               </td>
               <td class="px-4 py-3">
-                <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${badgeClasses(res.status)}">
-                  <span class="h-1.5 w-1.5 rounded-full ${dotClass(res.status)}"></span>
-                  ${tStatus(res.status)}
-                </span>
+                <div class="flex flex-wrap items-center gap-1">
+                  <span class="inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${badgeClasses(res.status)}">
+                    <span class="h-1.5 w-1.5 rounded-full ${dotClass(res.status)}"></span>
+                    ${tStatus(res.status)}
+                  </span>
+                  <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold ${speedTierClasses(tier)}">
+                    ${tSpeedTier(tier, true)}
+                  </span>
+                </div>
               </td>
               <td class="px-4 py-3 font-mono text-xs text-slate-800 tabular-nums">
                 ${res.total_vram_gb.toFixed(2)} / ${budget.toFixed(1)} GB
@@ -1136,33 +1367,27 @@ const simRamNoteArgs = JSON.stringify({
       const cpu = getActiveCpu();
       const model = getActiveModel();
 
-      const isSingleLocked = Boolean(
-        hw && (hw.is_unified || hw.category === 'Laptop GPU'),
-      );
-      if (mode === 'gpu' && isSingleLocked) {
-        gpuCount = 1;
-      }
+      const isSingleLocked = Boolean(hw && (hw.is_unified || hw.category === 'Laptop GPU'));
+      if (mode === 'gpu' && isSingleLocked) gpuCount = 1;
       const effGpuCount = mode === 'cpu' ? 0 : mode === 'custom' ? 1 : gpuCount;
+      const isCpuMode = effGpuCount === 0 || hw === null;
 
-      // Toggle panels
       if (panelGpu) panelGpu.classList.toggle('hidden', mode !== 'gpu');
       if (panelCpuBanner) panelCpuBanner.classList.toggle('hidden', mode !== 'cpu');
       if (panelCustom) panelCustom.classList.toggle('hidden', mode !== 'custom');
-      if (cpuRamSection) {
-        cpuRamSection.classList.toggle('opacity-60', Boolean(hw?.is_unified && mode === 'gpu'));
-      }
+      if (cpuRamSection) cpuRamSection.classList.toggle('opacity-60', Boolean(hw?.is_unified && mode === 'gpu'));
       if (modelPresetWrap) modelPresetWrap.classList.toggle('hidden', useCustomModel);
       if (modelCustomWrap) modelCustomWrap.classList.toggle('hidden', !useCustomModel);
+      if (customReserveWrap) customReserveWrap.classList.toggle('hidden', reserveProfile !== 'custom');
 
-      // Mode pills
       modeBtns.forEach((btn) => {
         const active = btn.getAttribute('data-mode-btn') === mode;
         btn.classList.toggle('bg-slate-950', active);
         btn.classList.toggle('text-white', active);
         btn.classList.toggle('text-slate-600', !active);
+        btn.classList.toggle('hover:text-slate-950', !active);
       });
 
-      // GPU count pills
       gpuCountBtns.forEach((btn) => {
         const val = Number(btn.getAttribute('data-sim-gpu-count') || 1);
         const disabled = isSingleLocked && val > 1;
@@ -1177,6 +1402,7 @@ const simRamNoteArgs = JSON.stringify({
         btn.classList.toggle('border-slate-200', !active);
         btn.classList.toggle('bg-slate-50', !active);
         btn.classList.toggle('text-slate-700', !active);
+        btn.classList.toggle('hover:bg-slate-100', !active);
       });
 
       if (gpuLockNoteEl) {
@@ -1189,9 +1415,7 @@ const simRamNoteArgs = JSON.stringify({
               : t('sim.lockReady');
       }
 
-      if (splitBox) {
-        splitBox.classList.toggle('hidden', effGpuCount <= 1);
-      }
+      if (splitBox) splitBox.classList.toggle('hidden', effGpuCount <= 1 || Boolean(hw?.is_unified));
 
       splitBtns.forEach((btn) => {
         const active = btn.getAttribute('data-sim-split') === splitMode;
@@ -1201,6 +1425,16 @@ const simRamNoteArgs = JSON.stringify({
         btn.classList.toggle('border-slate-200', !active);
         btn.classList.toggle('bg-slate-50', !active);
         btn.classList.toggle('text-slate-700', !active);
+        btn.classList.toggle('hover:bg-slate-100', !active);
+      });
+
+      reserveBtns.forEach((btn) => {
+        const active = btn.getAttribute('data-sim-reserve') === reserveProfile;
+        btn.classList.toggle('bg-blue-600', active);
+        btn.classList.toggle('text-white', active);
+        btn.classList.toggle('font-bold', active);
+        btn.classList.toggle('text-slate-600', !active);
+        btn.classList.toggle('hover:text-slate-950', !active);
       });
 
       ramBtns.forEach((btn) => {
@@ -1212,6 +1446,20 @@ const simRamNoteArgs = JSON.stringify({
         btn.classList.toggle('border-slate-200', !active);
         btn.classList.toggle('bg-slate-50', !active);
         btn.classList.toggle('text-slate-700', !active);
+        btn.classList.toggle('hover:bg-slate-100', !active);
+      });
+
+      fmtBtns.forEach((btn) => {
+        const active = btn.getAttribute('data-sim-fmt') === fmt;
+        btn.classList.toggle('bg-slate-900', active);
+        btn.classList.toggle('text-white', active);
+        btn.classList.toggle('font-bold', active);
+        btn.classList.toggle('text-slate-600', !active);
+        btn.classList.toggle('hover:text-slate-950', !active);
+      });
+
+      quantWraps.forEach((wrap) => {
+        wrap.classList.toggle('hidden', wrap.getAttribute('data-sim-quant-wrap') !== fmt);
       });
 
       quantBtns.forEach((btn) => {
@@ -1222,6 +1470,7 @@ const simRamNoteArgs = JSON.stringify({
         btn.classList.toggle('shadow-xs', active);
         btn.classList.toggle('text-slate-700', !active);
         btn.classList.toggle('hover:bg-white', !active);
+        btn.classList.toggle('hover:text-slate-950', !active);
         if (sub) {
           sub.classList.toggle('text-blue-100', active);
           sub.classList.toggle('text-slate-500', !active);
@@ -1234,6 +1483,7 @@ const simRamNoteArgs = JSON.stringify({
         btn.classList.toggle('text-white', active);
         btn.classList.toggle('font-semibold', active);
         btn.classList.toggle('text-slate-600', !active);
+        btn.classList.toggle('hover:text-slate-950', !active);
       });
 
       ctxPresetBtns.forEach((btn) => {
@@ -1242,27 +1492,34 @@ const simRamNoteArgs = JSON.stringify({
         btn.classList.toggle('text-white', active);
         btn.classList.toggle('font-semibold', active);
         btn.classList.toggle('text-slate-500', !active);
+        btn.classList.toggle('hover:bg-slate-100', !active);
+        btn.classList.toggle('hover:text-slate-900', !active);
       });
 
       const ctxLabel = formatContextLabel(contextTokens);
       if (ctxReadout) ctxReadout.textContent = `${ctxLabel} (${contextTokens.toLocaleString()} tokens)`;
 
-      const usableRam = Math.max(0, ramGb - osRamReserveGb(ramGb));
-      if (ramNoteEl) {
-        ramNoteEl.textContent = hw?.is_unified
-          ? t('sim.ramNoteUnified', { hw: hw.short_name, usable: hw.usable_vram_gb })
-          : t('sim.ramNoteDiscrete', { ram: ramGb, usable: usableRam, reserve: osRamReserveGb(ramGb) });
-      }
-
-      const r = estimateRigRun(model, hw, {
+      const r = estimateRigRun({
+        model,
+        hardware: hw,
+        gpuCount: effGpuCount,
+        cpu,
+        systemRamGb: hw?.is_unified ? hw.vram_gb : ramGb,
         quant,
+        format: fmt,
         contextTokens,
         kvQuant,
-        gpuCount: effGpuCount,
         splitMode,
-        cpuBwGbps: cpu.effective_bw_gbps,
-        systemRamGb: hw?.is_unified ? hw.vram_gb : ramGb,
+        reserveProfile,
+        customUsableGb: reserveProfile === 'custom' ? customUsableGb : null,
       });
+
+      const usableRam = r.available_ram_gb;
+      if (ramNoteEl) {
+        ramNoteEl.textContent = hw?.is_unified
+          ? t('sim.ramNoteUnified', { usable: r.usable_vram_gb.toFixed(1), ram: hw.vram_gb })
+          : t('sim.ramNoteDiscrete', { ram: ramGb, usable: usableRam.toFixed(1), reserve: r.os_ram_reserve_gb });
+      }
 
       const rigName =
         mode === 'cpu'
@@ -1275,17 +1532,17 @@ const simRamNoteArgs = JSON.stringify({
 
       if (gpuSummaryPill && hw && mode === 'gpu') {
         const splitDesc =
-          effGpuCount > 1
-            ? ` · ${splitMode === 'row' ? t('home.tensorParallel') : t('home.layerSplit')}`
+          effGpuCount > 1 && !hw.is_unified
+            ? ` · ${splitMode === 'tensor' ? t('home.tensorParallel') : t('home.layerSplit')}`
             : '';
-        gpuSummaryPill.textContent = `${effGpuCount}x ${hw.short_name} · ${r.usable_vram_gb} / ${r.total_phys_vram_gb} GB · ${hw.bandwidth_gbps} GB/s ${hw.backend}${splitDesc}`;
+        gpuSummaryPill.textContent = `${r.gpu_count}x ${hw.short_name} · ${r.usable_vram_gb.toFixed(1)} / ${r.raw_vram_gb.toFixed(1)} GB · ${hw.bandwidth_gbps} GB/s ${hw.backend}${splitDesc}`;
       }
 
       if (headlineEl) headlineEl.textContent = `${model.name} ${t('common.onPrefix', { hw: rigName })}`;
       if (sublineEl) {
-        const kvDesc = `${kvQuant} KV`;
-        const hostDesc = hw?.is_unified ? `${hw.memory_type}` : `${cpu.short_name} · ${ramGb} GB RAM`;
-        sublineEl.textContent = `${quant} @ ${ctxLabel} (${kvDesc}) · ${hostDesc}`;
+        const kvDesc = `${kvQuant.toUpperCase()} KV`;
+        const hostDesc = hw?.is_unified ? `${hw.memory_type} (${reserveProfile})` : `${cpu.short_name} · ${ramGb} GB RAM`;
+        sublineEl.textContent = `${fmt} ${quant} @ ${ctxLabel} (${kvDesc}) · ${hostDesc}`;
       }
 
       if (curatedLinkEl) {
@@ -1301,64 +1558,79 @@ const simRamNoteArgs = JSON.stringify({
         }
       }
 
-      updateBadge(statusBadgeEl, r.status);
+      updateStatusBadge(statusBadgeEl, r.status);
+      updateSpeedBadge(speedBadgeEl, (r.speed_tier ?? 'Readable') as SpeedTier);
 
-      const budget = r.is_cpu_only ? r.usable_ram_gb : r.usable_vram_gb;
-      if (kpiMemLabelEl) {
-        kpiMemLabelEl.textContent = r.is_cpu_only ? t('sim.kpiFootprintRam') : t('sim.kpiFootprintVram');
-      }
+      const budget = isCpuMode ? r.available_ram_gb : r.usable_vram_gb;
+      if (kpiMemLabelEl) kpiMemLabelEl.textContent = isCpuMode ? t('sim.kpiFootprintRam') : t('sim.kpiFootprintVram');
       if (totalGbEl) totalGbEl.textContent = `${r.total_vram_gb.toFixed(2)} GB`;
       if (budgetPctEl) budgetPctEl.textContent = t('sim.kpiOfBudget', { budget: budget.toFixed(1) });
       if (spillNoteEl) {
-        spillNoteEl.textContent = r.is_cpu_only
-          ? t('sim.spillCpuOnly', { max: r.usable_ram_gb })
-          : r.offload_ram_gb > 0
-            ? t('sim.spillRam', { gb: r.offload_ram_gb.toFixed(2), ram: ramGb })
+        spillNoteEl.textContent = isCpuMode
+          ? t('sim.spillCpuOnly', { max: r.available_ram_gb.toFixed(1) })
+          : r.spill_ram_gb > 0
+            ? t('sim.spillRam', { gb: r.spill_ram_gb.toFixed(2), ram: ramGb })
             : t('sim.spillZero');
       }
 
-      if (tpsEl) tpsEl.textContent = r.status === 'OOM' ? t('status.oom') : `${r.est_tps.toFixed(1)} tok/s`;
+      if (tpsEl) tpsEl.textContent = formatTpsRange(r.est_tps_low, r.est_tps_high, r.est_tps, r.status);
       if (tpsRatingEl) {
-        tpsRatingEl.textContent = translateSpeedRating(r.est_tps, r.status, {
-          isUnified: Boolean(hw?.is_unified),
-          isCpuOnly: r.is_cpu_only,
-        });
+        tpsRatingEl.textContent =
+          r.status === 'OOM'
+            ? t('speed.oom')
+            : `${tSpeedTier(r.speed_tier ?? 'Readable', false)} · ${t('speed.formulaDesc')}`;
       }
       if (weightsGbEl) weightsGbEl.textContent = `${r.weights_gb.toFixed(2)} GB`;
       if (overheadGbEl) overheadGbEl.textContent = `+ ${r.overhead_gb.toFixed(2)} GB`;
-      if (kvGbEl) kvGbEl.textContent = `KV Cache: ${r.kv_cache_gb.toFixed(2)} GB (${kvQuant})`;
+      if (kvGbEl) kvGbEl.textContent = `KV Cache: ${r.kv_cache_gb.toFixed(2)} GB (${kvQuant.toUpperCase()})`;
       if (layersEl) {
-        layersEl.textContent = r.is_cpu_only
-          ? `0 / ${r.total_layers}`
-          : `${r.gpu_layers_fit} / ${r.total_layers}`;
+        layersEl.textContent = isCpuMode ? `0 / ${r.total_layers}` : `${r.gpu_layers_fit} / ${r.total_layers}`;
       }
       if (headroomEl) {
-        headroomEl.textContent = r.status === 'OOM'
-          ? t('speed.oom')
-          : r.offload_ram_gb > 0
-            ? t('sim.headroomOffload', {
-                layers: r.total_layers - r.gpu_layers_fit,
-                bw: cpu.effective_bw_gbps,
-              })
-            : t('sim.headroomFree', { gb: (budget - r.total_vram_gb).toFixed(2) });
+        headroomEl.textContent =
+          r.status === 'OOM'
+            ? t('speed.oom')
+            : r.spill_ram_gb > 0
+              ? t('sim.headroomOffload', { layers: r.total_layers - r.gpu_layers_fit, bw: cpu.effective_bw_gbps })
+              : t('sim.headroomFree', { gb: Math.max(0, budget - r.total_vram_gb).toFixed(2) });
       }
 
       if (ceilingTextEl) {
-        ceilingTextEl.textContent = r.is_cpu_only
-          ? t('sim.ceilingCpu', { usable: r.usable_ram_gb, ram: ramGb })
-          : t('sim.ceilingGpu', { usable: r.usable_vram_gb, ram: usableRam });
+        ceilingTextEl.textContent = isCpuMode
+          ? t('sim.ceilingCpu', { usable: r.available_ram_gb.toFixed(1), ram: ramGb })
+          : t('sim.ceilingGpu', { usable: r.usable_vram_gb.toFixed(1), ram: usableRam.toFixed(1) });
       }
 
-      // Memory Bar
+      if (tightWarnEl && tightDescEl) {
+        const showTight = r.status === 'Tight Fit';
+        tightWarnEl.classList.toggle('hidden', !showTight);
+        if (showTight) {
+          tightDescEl.textContent = t('warn.tightFitDesc', {
+            gb: Math.max(0, r.headroom_gb ?? budget - r.total_vram_gb).toFixed(2),
+          });
+        }
+      }
+
+      if (pcieWarnEl && pcieDescEl) {
+        const showPcie = Boolean(r.comm_warning) && (r.comm_overhead_pct ?? 0) > 0 && r.status !== 'OOM';
+        pcieWarnEl.classList.toggle('hidden', !showPcie);
+        if (showPcie) {
+          pcieDescEl.textContent = t('warn.pcieTpDesc', {
+            pct: Math.round(r.comm_overhead_pct ?? 0),
+            layers: model.num_layers,
+          });
+        }
+      }
+
       const maxScale = Math.max(budget, r.total_vram_gb, 1);
-      const gpuPortion = r.is_cpu_only ? r.total_vram_gb : Math.min(r.total_vram_gb, budget);
-      const spillPortion = r.is_cpu_only ? 0 : Math.max(0, r.total_vram_gb - budget);
+      const gpuPortion = isCpuMode ? r.total_vram_gb : Math.min(r.total_vram_gb, budget);
+      const spillPortion = isCpuMode ? 0 : Math.max(0, r.total_vram_gb - budget);
       const baseScale = Math.max(r.weights_gb + r.kv_cache_gb + r.overhead_gb, 0.01);
       const fitRatio = gpuPortion / baseScale;
 
-      const wPct = Math.min(100, (r.weights_gb * fitRatio / maxScale) * 100);
-      const kPct = Math.min(100 - wPct, (r.kv_cache_gb * fitRatio / maxScale) * 100);
-      const oPct = Math.min(100 - wPct - kPct, (r.overhead_gb * fitRatio / maxScale) * 100);
+      const wPct = Math.min(100, ((r.weights_gb * fitRatio) / maxScale) * 100);
+      const kPct = Math.min(100 - wPct, ((r.kv_cache_gb * fitRatio) / maxScale) * 100);
+      const oPct = Math.min(100 - wPct - kPct, ((r.overhead_gb * fitRatio) / maxScale) * 100);
       const spPct = Math.min(100 - wPct - kPct - oPct, (spillPortion / maxScale) * 100);
       const cPct = Math.min(100, (budget / maxScale) * 100);
 
@@ -1369,43 +1641,64 @@ const simRamNoteArgs = JSON.stringify({
       if (barCeiling) barCeiling.style.left = `${cPct.toFixed(2)}%`;
 
       if (verdictLineEl) {
-        if (r.status === 'Smooth') {
-          verdictLineEl.textContent = r.is_cpu_only
-            ? t('sim.verdictCpuSmooth', { usable: r.usable_ram_gb, tps: r.est_tps.toFixed(1) })
-            : t('sim.verdictGpuSmooth');
+        if (r.status === 'Fits' || r.status === 'Tight Fit') {
+          verdictLineEl.textContent = t('sim.verdictGpuSmooth', {
+            usable: r.usable_vram_gb.toFixed(1),
+            margin: Math.max(0, r.headroom_gb ?? budget - r.total_vram_gb).toFixed(2),
+          });
         } else if (r.status === 'Partial Offload') {
-          verdictLineEl.textContent = t('sim.verdictPartial', { gb: r.offload_ram_gb.toFixed(2) });
+          verdictLineEl.textContent = isCpuMode
+            ? t('sim.verdictCpuSmooth', {
+                usable: r.available_ram_gb.toFixed(1),
+                tps: formatTpsRange(r.est_tps_low, r.est_tps_high, r.est_tps, r.status),
+              })
+            : t('sim.verdictPartial', { gb: r.spill_ram_gb.toFixed(2) });
         } else {
           verdictLineEl.textContent = t('sim.verdictOom');
         }
       }
 
-      // Live CLI commands
-      const ngl = r.is_cpu_only ? 0 : r.status === 'Smooth' ? 99 : Math.max(1, r.gpu_layers_fit);
-      const splitFlag = effGpuCount > 1 ? ` --split-mode ${splitMode}` : '';
-      const kvLower = kvQuant.toLowerCase();
-      const kvLlamaFlag = kvQuant === 'FP16' ? '' : ` --cache-type-k ${kvLower} --cache-type-v ${kvLower}`;
-      const threadFlag = r.is_cpu_only || r.offload_ram_gb > 0 ? ` -t ${cpu.recommended_threads}` : '';
-      const ollamaGpuEnv = r.is_cpu_only ? 'OLLAMA_NUM_GPU=0 ' : '';
-      const ollamaKvEnv = kvQuant === 'FP16' ? 'OLLAMA_FLASH_ATTENTION=1 ' : `OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=${kvLower} `;
-      const qLower = quant.toLowerCase();
-      const ollamaTag = quant === 'Q4_K_M' ? model.ollama_tag : `${model.ollama_tag} # quant ${qLower}`;
+      const cmdRes = buildRuntimeCommand({
+        model,
+        hardware: hw,
+        format: fmt,
+        quant,
+        contextTokens,
+        kvQuant,
+        gpuCount: r.gpu_count,
+        splitMode,
+        gpuLayersFit: r.gpu_layers_fit,
+        fitsVram: r.fits_vram,
+      });
+
+      const ngl = isCpuMode ? 0 : r.fits_vram ? 99 : Math.max(1, r.gpu_layers_fit);
+      const splitFlag = r.gpu_count > 1 && splitMode === 'tensor' ? ' -sm row' : '';
+      const kvLlamaFlag = kvQuant === 'fp16' ? '' : ` --cache-type-k ${kvQuant} --cache-type-v ${kvQuant}`;
+      const threadFlag = isCpuMode || r.spill_ram_gb > 0 ? ` -t ${cpu.recommended_threads}` : '';
+      const ollamaGpuEnv = isCpuMode ? 'OLLAMA_NUM_GPU=0 ' : '';
+      const ollamaKvEnv = kvQuant === 'fp16' ? 'OLLAMA_FLASH_ATTENTION=1 ' : `OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=${kvQuant} `;
 
       if (cmdOllama) {
-        cmdOllama.textContent = `${ollamaGpuEnv}${ollamaKvEnv}OLLAMA_NUM_CTX=${contextTokens} ollama run ${ollamaTag}`;
+        cmdOllama.textContent = `${ollamaGpuEnv}${ollamaKvEnv}OLLAMA_NUM_CTX=${contextTokens} ollama run ${model.ollama_tag}`;
       }
-      if (cmdCli) {
-        cmdCli.textContent = `llama-cli -hf ${model.hf_repo}:${quant} -ngl ${ngl} -c ${contextTokens} -fa on${splitFlag}${kvLlamaFlag}${threadFlag}`;
+      if (cmdPrimaryLabel) cmdPrimaryLabel.textContent = cmdRes.primaryLabel;
+      if (cmdCli) cmdCli.textContent = cmdRes.command;
+      if (cmdAltLabel) {
+        cmdAltLabel.textContent = fmt === 'AWQ' ? 'llama-cli Fallback' : fmt === 'MLX' ? 'vLLM AWQ Equivalent' : 'llama-server / API';
       }
       if (cmdSrv) {
-        cmdSrv.textContent = `llama-server -hf ${model.hf_repo}:${quant} -ngl ${ngl} -c ${contextTokens} -fa on${splitFlag}${kvLlamaFlag}${threadFlag} --host 127.0.0.1 --port 8080`;
+        if (fmt === 'AWQ') {
+          cmdSrv.textContent = `llama-cli -hf ${model.hf_repo}:Q4_K_M -ngl ${ngl} -c ${contextTokens} -fa on${splitFlag}${kvLlamaFlag}${threadFlag}`;
+        } else if (fmt === 'MLX') {
+          const awqRepo = model.awq_repo || model.hf_repo.replace('-GGUF', '-AWQ');
+          cmdSrv.textContent = `vllm serve ${awqRepo} --quantization awq --max-model-len ${contextTokens}`;
+        } else {
+          cmdSrv.textContent = `llama-server -hf ${model.hf_repo}:${quant} -ngl ${ngl} -c ${contextTokens} -fa on${splitFlag}${kvLlamaFlag}${threadFlag} --host 127.0.0.1 --port 8080`;
+        }
       }
 
       if (scanTitleEl) {
-        scanTitleEl.textContent = t('sim.scanTitle', {
-          count: payload.models.length,
-          rig: rigName,
-        });
+        scanTitleEl.textContent = t('sim.scanTitle', { count: payload.models.length, rig: rigName });
       }
 
       renderScanner(hw, cpu, effGpuCount);
@@ -1417,7 +1710,7 @@ const simRamNoteArgs = JSON.stringify({
       const mParam = p.get('mode') as RigMode | null;
       const hwParam = p.get('hw');
       const gpusParam = p.get('gpus');
-      const splitParam = p.get('split') as SplitMode | null;
+      const splitParam = p.get('split');
       const cpuParam = p.get('cpu');
       const ramParam = p.get('ram');
       const vramParam = p.get('vram');
@@ -1425,47 +1718,40 @@ const simRamNoteArgs = JSON.stringify({
       const backendParam = p.get('backend');
       const unifiedParam = p.get('unified');
       const modParam = p.get('model');
+      const fmtParam = p.get('fmt') as RuntimeFormat | null;
       const quantParam = p.get('quant') as QuantKey | null;
+      const resParam = p.get('reserve') as ReserveProfile | null;
       const ctxParam = p.get('ctx');
-      const kvParam = p.get('kv') as KvQuantKey | null;
+      const kvParam = p.get('kv');
 
       if (mParam && ['gpu', 'cpu', 'custom'].includes(mParam)) mode = mParam;
       if (hwParam && hwById.has(hwParam)) {
         hwId = hwParam;
         if (hwSelect) hwSelect.value = hwParam;
-        const matchedHw = hwById.get(hwParam)!;
-        gpuCount = matchedHw.gpu_count || 1;
+        gpuCount = hwById.get(hwParam)!.gpu_count || 1;
       }
       if (gpusParam && [0, 1, 2, 3, 4, 6, 8].includes(Number(gpusParam))) {
         const gNum = Number(gpusParam);
-        if (gNum === 0) {
-          mode = 'cpu';
-        } else {
-          gpuCount = gNum;
-        }
+        if (gNum === 0) mode = 'cpu';
+        else gpuCount = gNum;
       }
-      if (splitParam && ['layer', 'row'].includes(splitParam)) splitMode = splitParam;
+      if (splitParam === 'tensor' || splitParam === 'row') splitMode = 'tensor';
+      else if (splitParam === 'layer') splitMode = 'layer';
       if (cpuParam && cpuById.has(cpuParam)) {
         cpuId = cpuParam;
         if (cpuSelect) cpuSelect.value = cpuParam;
       }
       if (ramParam) {
         const rNum = Math.round(Number(ramParam));
-        if (Number.isFinite(rNum) && rNum >= 4 && rNum <= 2048) {
-          ramGb = rNum;
-        }
+        if (Number.isFinite(rNum) && rNum >= 4 && rNum <= 2048) ramGb = rNum;
       }
       if (vramParam && customVramEl) {
         const vNum = Number(vramParam);
-        if (Number.isFinite(vNum) && vNum >= 2 && vNum <= 2048) {
-          customVramEl.value = String(vNum);
-        }
+        if (Number.isFinite(vNum) && vNum >= 2 && vNum <= 2048) customVramEl.value = String(vNum);
       }
       if (bwParam && customBwEl) {
         const bNum = Number(bwParam);
-        if (Number.isFinite(bNum) && bNum >= 20 && bNum <= 8000) {
-          customBwEl.value = String(bNum);
-        }
+        if (Number.isFinite(bNum) && bNum >= 20 && bNum <= 8000) customBwEl.value = String(bNum);
       }
       if (backendParam && customBackendEl && ['CUDA', 'Metal', 'ROCm', 'Vulkan'].includes(backendParam)) {
         customBackendEl.value = backendParam;
@@ -1477,19 +1763,26 @@ const simRamNoteArgs = JSON.stringify({
         modelId = modParam;
         if (modelSelect) modelSelect.value = modParam;
       }
-      if (quantParam && ['Q2_K', 'Q3_K_M', 'Q4_K_M', 'Q5_K_M', 'Q6_K', 'Q8_0', 'FP16'].includes(quantParam)) {
+      if (fmtParam && ['GGUF', 'AWQ', 'MLX'].includes(fmtParam)) {
+        fmt = fmtParam;
+        quant = defaultQuantForFormat(fmtParam);
+      }
+      if (quantParam && ['Q4_K_M', 'Q5_K_M', 'Q6_K', 'Q8_0', 'FP16', 'AWQ_4BIT', 'FP8', 'MLX_4BIT', 'MLX_8BIT'].includes(quantParam)) {
         quant = quantParam;
+      }
+      if (resParam && ['desktop', 'clean', 'custom'].includes(resParam)) {
+        reserveProfile = resParam;
       }
       if (ctxParam && Number(ctxParam) >= 4096 && Number(ctxParam) <= 65536) {
         contextTokens = Number(ctxParam);
         if (ctxSlider) ctxSlider.value = String(contextTokens);
       }
-      if (kvParam && ['FP16', 'Q8_0', 'Q4_0'].includes(kvParam)) {
-        kvQuant = kvParam;
+      if (kvParam) {
+        const normKv = kvParam.toLowerCase();
+        if (normKv === 'fp16' || normKv === 'q8_0' || normKv === 'q4_0') kvQuant = normKv;
       }
     }
 
-    // Event bindings
     modeBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
         mode = (btn.getAttribute('data-mode-btn') as RigMode) || 'gpu';
@@ -1504,7 +1797,7 @@ const simRamNoteArgs = JSON.stringify({
         let currentVisible = false;
         Array.from(hwSelect.options).forEach((opt) => {
           const text = (opt.textContent + ' ' + opt.value).toLowerCase();
-          const ok = tokens.length === 0 || tokens.every((t) => text.includes(t));
+          const ok = tokens.length === 0 || tokens.every((tk) => text.includes(tk));
           opt.hidden = !ok;
           if (ok && !firstMatchId) firstMatchId = opt.value;
           if (ok && opt.value === hwSelect.value) currentVisible = true;
@@ -1516,8 +1809,7 @@ const simRamNoteArgs = JSON.stringify({
         if (!currentVisible && firstMatchId) {
           hwSelect.value = firstMatchId;
           hwId = firstMatchId;
-          const h = hwById.get(firstMatchId);
-          gpuCount = h?.gpu_count || 1;
+          gpuCount = hwById.get(firstMatchId)?.gpu_count || 1;
         }
         render();
       });
@@ -1526,8 +1818,7 @@ const simRamNoteArgs = JSON.stringify({
     if (hwSelect) {
       hwSelect.addEventListener('change', () => {
         hwId = hwSelect.value;
-        const h = hwById.get(hwId);
-        gpuCount = h?.gpu_count || 1;
+        gpuCount = hwById.get(hwId)?.gpu_count || 1;
         render();
       });
     }
@@ -1547,6 +1838,28 @@ const simRamNoteArgs = JSON.stringify({
       });
     });
 
+    reserveBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const p = (btn.getAttribute('data-sim-reserve') as ReserveProfile) || 'desktop';
+        reserveProfile = p;
+        if (p === 'custom' && customUsableInput) {
+          customUsableGb = Number(customUsableInput.value || 16);
+        }
+        render();
+      });
+    });
+
+    if (customUsableInput) {
+      customUsableInput.addEventListener('input', () => {
+        const parsed = Number(customUsableInput.value);
+        if (!Number.isNaN(parsed) && parsed > 0) {
+          customUsableGb = parsed;
+          reserveProfile = 'custom';
+          render();
+        }
+      });
+    }
+
     if (cpuSelect) {
       cpuSelect.addEventListener('change', () => {
         cpuId = cpuSelect.value;
@@ -1562,8 +1875,10 @@ const simRamNoteArgs = JSON.stringify({
     });
 
     [customVramEl, customBwEl, customBackendEl, customUnifiedEl].forEach((el) => {
-      if (el) el.addEventListener('input', render);
-      if (el) el.addEventListener('change', render);
+      if (el) {
+        el.addEventListener('input', render);
+        el.addEventListener('change', render);
+      }
     });
 
     if (modelSelect) {
@@ -1584,6 +1899,15 @@ const simRamNoteArgs = JSON.stringify({
       if (el) el.addEventListener('input', render);
     });
 
+    fmtBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const chosen = (btn.getAttribute('data-sim-fmt') as RuntimeFormat) || 'GGUF';
+        fmt = chosen;
+        quant = defaultQuantForFormat(chosen);
+        render();
+      });
+    });
+
     quantBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
         quant = (btn.getAttribute('data-sim-quant') as QuantKey) || 'Q4_K_M';
@@ -1593,7 +1917,7 @@ const simRamNoteArgs = JSON.stringify({
 
     kvBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
-        kvQuant = (btn.getAttribute('data-sim-kv') as KvQuantKey) || 'FP16';
+        kvQuant = (btn.getAttribute('data-sim-kv') as KvQuantKey) || 'fp16';
         render();
       });
     });
@@ -1615,7 +1939,8 @@ const simRamNoteArgs = JSON.stringify({
 
     scanFilterBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
-        scanFilter = btn.getAttribute('data-scan-status') || 'all';
+        const raw = btn.getAttribute('data-scan-status') || 'all';
+        scanFilter = raw === 'Smooth' ? 'Fits' : raw;
         render();
       });
     });
@@ -1630,6 +1955,9 @@ const simRamNoteArgs = JSON.stringify({
         }
         gpuCount = Number(btn.getAttribute('data-p-gpus') || 1);
         splitMode = (btn.getAttribute('data-p-split') as SplitMode) || 'layer';
+        const pFmt = (btn.getAttribute('data-p-fmt') as RuntimeFormat) || 'GGUF';
+        fmt = pFmt;
+        quant = (btn.getAttribute('data-p-quant') as QuantKey) || defaultQuantForFormat(pFmt);
         const pCpu = btn.getAttribute('data-p-cpu');
         if (pCpu && cpuById.has(pCpu)) {
           cpuId = pCpu;
@@ -1658,8 +1986,11 @@ const simRamNoteArgs = JSON.stringify({
         modelId = payload.defaults.modelId;
         cpuId = payload.defaults.cpuId;
         ramGb = payload.defaults.ramGb;
-        quant = payload.defaults.quant;
-        kvQuant = payload.defaults.kvQuant;
+        fmt = payload.defaults.format || 'GGUF';
+        quant = payload.defaults.quant || 'Q4_K_M';
+        kvQuant = payload.defaults.kvQuant || 'fp16';
+        reserveProfile = payload.defaults.reserveProfile || 'desktop';
+        customUsableGb = null;
         contextTokens = payload.defaults.contextTokens;
         gpuCount = hwById.get(hwId)?.gpu_count || 1;
         splitMode = 'layer';
