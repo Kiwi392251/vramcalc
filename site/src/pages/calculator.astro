@@ -1,0 +1,197 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import RigSimulator from '../components/RigSimulator.astro';
+import catalogRaw from '../data/catalog_data.json';
+import pagesRaw from '../data/pages_data.json';
+import type { CatalogData, PageEntry } from '../types/vram';
+
+const catalog = catalogRaw as CatalogData;
+const curatedEntries = pagesRaw as PageEntry[];
+const totalIndexed = curatedEntries.length;
+
+const pageTitle = `Multi-GPU (1x–8x), 7-Quant & CPU/RAM LLM Simulator — VRAMCalc.me`;
+const pageDescription = `Simulate local LLMs across ${catalog.hardware.length} GPUs (1x to 8x multi-GPU), 16 CPU/RAM memory profiles, 7 GGUF quants (Q2_K–FP16), and FP16/Q8_0/Q4_0 KV cache.`;
+const canonicalPath = '/calculator/';
+const ogTitle = `Multi-GPU & CPU/RAM LLM VRAM Simulator (${catalog.hardware.length} GPUs × ${catalog.models.length} LLMs)`;
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Home',
+      item: 'https://vramcalc.me/',
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Rig Simulator',
+      item: 'https://vramcalc.me/calculator/',
+    },
+  ],
+};
+
+const appSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'VRAMCalc.me Multi-GPU & CPU/RAM Rig Simulator',
+  url: 'https://vramcalc.me/calculator/',
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Linux, Windows, macOS',
+  description: pageDescription,
+};
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={pageDescription}
+  canonicalPath={canonicalPath}
+  totalPages={totalIndexed}
+  ogTitle={ogTitle}
+  ogDescription={pageDescription}
+  ogImage="/og/calculator.png"
+  ogImageAlt={ogTitle}
+  themeColor="#2563eb"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(appSchema)} />
+  </Fragment>
+
+  <article class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+    <nav aria-label="Breadcrumb" class="mb-4">
+      <ol class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-500">
+        <li>
+          <a href="/" class="hover:text-slate-900 transition-colors">Home</a>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li aria-current="page" class="text-slate-900 font-semibold">Rig Simulator</li>
+      </ol>
+    </nav>
+
+    <header class="mb-8 rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-xs sm:p-8">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="rounded-full border border-blue-500/40 bg-blue-500/15 px-2.5 py-0.5 font-mono text-xs font-semibold text-blue-300">
+          Multi-GPU · CPU · Custom Rig
+        </span>
+        <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 font-mono text-xs text-slate-300">
+          7 GGUF Quants · FP16 / Q8_0 / Q4_0 KV
+        </span>
+      </div>
+
+      <h1 class="mt-4 text-2xl font-extrabold tracking-tight text-white sm:text-4xl">
+        Universal Local AI Rig Simulator
+      </h1>
+      <p class="mt-3 max-w-3xl text-sm leading-relaxed text-slate-300 sm:text-base">
+        Test <strong class="text-white">1x to 8x multi-GPU</strong> rigs (e.g. 3x GTX 1080, 4x Tesla P40, Dual RTX 3090),{' '}
+        <strong class="text-white">CPU-only DDR4/DDR5/EPYC inference</strong>, or mixed custom VRAM setups across all{' '}
+        <strong class="text-white">{catalog.models.length} dense &amp; MoE LLMs</strong> and{' '}
+        <strong class="text-white">{catalog.hardware.length} accelerators</strong>.
+      </p>
+    </header>
+
+    <RigSimulator />
+  </article>
+
+  <!-- Accessible Copy Toast -->
+  <div
+    id="copy-toast"
+    role="status"
+    aria-live="polite"
+    class="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-slate-950 px-4 py-2.5 text-xs font-semibold text-white shadow-lg transition-all duration-200 opacity-0 pointer-events-none translate-y-2"
+  >
+    <span class="h-2 w-2 rounded-full bg-emerald-400" aria-hidden="true"></span>
+    <span id="copy-toast-text">Copied to clipboard</span>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+  (function () {
+    function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+      }
+      return new Promise((resolve, reject) => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try {
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          resolve();
+        } catch (err) {
+          document.body.removeChild(ta);
+          reject(err);
+        }
+      });
+    }
+
+    const toastEl = document.getElementById('copy-toast');
+    const toastTextEl = document.getElementById('copy-toast-text');
+    let toastTimer = null;
+
+    function showToast(label) {
+      if (!toastEl || !toastTextEl) return;
+      toastTextEl.textContent = label ? `Copied ${label} to clipboard` : 'Copied to clipboard';
+      toastEl.classList.remove('opacity-0', 'translate-y-2', 'pointer-events-none');
+      toastEl.classList.add('opacity-100', 'translate-y-0');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toastEl.classList.add('opacity-0', 'translate-y-2', 'pointer-events-none');
+        toastEl.classList.remove('opacity-100', 'translate-y-0');
+      }, 1800);
+    }
+
+    function flashButtonFeedback(btn, targetEl, label) {
+      const copyIcon = btn.querySelector('[data-copy-icon="copy"]');
+      const checkIcon = btn.querySelector('[data-copy-icon="check"]');
+      const textSpan = btn.querySelector('[data-copy-text]');
+      const origText = btn.dataset.origLabel || (textSpan ? textSpan.textContent : btn.textContent) || 'Copy';
+      btn.dataset.origLabel = origText;
+      if (btn._resetTimer) clearTimeout(btn._resetTimer);
+
+      if (copyIcon) copyIcon.classList.add('hidden');
+      if (checkIcon) checkIcon.classList.remove('hidden');
+      if (textSpan) textSpan.textContent = 'Copied ✓';
+      else btn.textContent = 'Copied ✓';
+      btn.classList.add('border-emerald-500/60', 'text-emerald-400');
+      if (targetEl) targetEl.classList.add('ring-2', 'ring-emerald-400/70');
+
+      showToast(label);
+
+      btn._resetTimer = setTimeout(() => {
+        if (copyIcon) copyIcon.classList.remove('hidden');
+        if (checkIcon) checkIcon.classList.add('hidden');
+        if (textSpan) textSpan.textContent = btn.dataset.origLabel || origText;
+        else btn.textContent = btn.dataset.origLabel || origText;
+        btn.classList.remove('border-emerald-500/60', 'text-emerald-400');
+        if (targetEl) targetEl.classList.remove('ring-2', 'ring-emerald-400/70');
+      }, 1800);
+    }
+
+    document.querySelectorAll('[data-copy-target]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-copy-target');
+        const label = btn.getAttribute('data-copy-label') || 'command';
+        const el = targetId ? document.getElementById(targetId) : null;
+        if (!el) return;
+        const text = (el.textContent || '').trim();
+        copyText(text).then(() => flashButtonFeedback(btn, el, label));
+      });
+    });
+
+    document.querySelectorAll('[data-copy-url]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const url = btn.getAttribute('data-copy-url') || window.location.href;
+        const label = btn.getAttribute('data-copy-label') || 'share URL';
+        copyText(url).then(() => flashButtonFeedback(btn, null, label));
+      });
+    });
+  })();
+</script>

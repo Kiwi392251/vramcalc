@@ -1,10 +1,11 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
+import catalogRaw from '../../data/catalog_data.json';
 import rawPagesData from '../../data/pages_data.json';
-import type { HardwareSpec, PageEntry } from '../../types/vram';
-import { formatContextLabel } from '../../utils/physics';
-import { buildHardwareFaq, buildHardwareHubs, type HardwareHub } from '../../utils/hubs';
+import type { CatalogData, HardwareSpec, PageEntry } from '../../types/vram';
+import { estimateRun, formatContextLabel, maxSmoothContext } from '../../utils/physics';
+import { buildHardwareFaq, buildHardwareHubs, statusRank, type HardwareHub } from '../../utils/hubs';
 
 export function getStaticPaths() {
   const allEntries = rawPagesData as PageEntry[];
@@ -39,6 +40,83 @@ const {
 
 const entries = sortedEntries;
 const faq = buildHardwareFaq(hub);
+const catalog = catalogRaw as CatalogData;
+
+// Build unified 22-model table (curated Full Guides + SSR Live Catalog calculations)
+const curatedByModelId = new Map(entries.map((e) => [e.model.id, e]));
+
+interface UnifiedModelRow {
+  model: CatalogData['models'][number];
+  isCurated: boolean;
+  href: string;
+  modelHubHref?: string;
+  status: PageEntry['default_result']['status'];
+  totalVramGb: number;
+  estTps: number;
+  gpuLayersFit: number;
+  totalLayers: number;
+  recQuant: string;
+  maxCtxLabel: string;
+}
+
+const curatedModelHubIds = new Set(entries.map((e) => e.model.id));
+// Note: check all 12 curated model hubs sitewide
+const allCuratedModelHubIds = new Set((rawPagesData as PageEntry[]).map((e) => e.model.id));
+
+const unifiedRows: UnifiedModelRow[] = catalog.models
+  .map((m) => {
+    const curated = curatedByModelId.get(m.id);
+    if (curated) {
+      const r = curated.default_result;
+      const recQ = curated.quant_table.find((x) => x.recommended)?.quant ?? 'Q4_K_M';
+      const maxCtx =
+        curated.context_analysis.max_smooth_context_q4 > 0
+          ? `${formatContextLabel(curated.context_analysis.max_smooth_context_q4)} Smooth`
+          : 'Needs Offload/Q2';
+      return {
+        model: curated.model,
+        isCurated: true,
+        href: `/can-i-run/${curated.slug}/`,
+        modelHubHref: `/model/${curated.model.id}/`,
+        status: r.status,
+        totalVramGb: r.total_vram_gb,
+        estTps: r.est_tps,
+        gpuLayersFit: r.gpu_layers_fit,
+        totalLayers: r.total_layers,
+        recQuant: recQ,
+        maxCtxLabel: maxCtx,
+      };
+    }
+
+    const r = estimateRun(m, hardware, 'Q4_K_M', 8192);
+    const maxCtxTokens = maxSmoothContext(m, hardware, 'Q4_K_M');
+    const maxCtx = maxCtxTokens > 0 ? `${formatContextLabel(maxCtxTokens)} Smooth` : 'Needs Offload/Q2';
+    return {
+      model: m,
+      isCurated: false,
+      href: `/calculator/?model=${encodeURIComponent(m.id)}&hw=${encodeURIComponent(hardware.id)}`,
+      modelHubHref: allCuratedModelHubIds.has(m.id) ? `/model/${m.id}/` : undefined,
+      status: r.status,
+      totalVramGb: r.total_vram_gb,
+      estTps: r.est_tps,
+      gpuLayersFit: r.gpu_layers_fit,
+      totalLayers: r.total_layers,
+      recQuant: 'Q4_K_M',
+      maxCtxLabel: maxCtx,
+    };
+  })
+  .sort((a, b) => {
+    const sr = statusRank(a.status) - statusRank(b.status);
+    if (sr !== 0) return sr;
+    if (b.model.params_b !== a.model.params_b) return b.model.params_b - a.model.params_b;
+    if (b.estTps !== a.estTps) return b.estTps - a.estTps;
+    return a.model.name.localeCompare(b.model.name);
+  });
+
+const allModelsCount = unifiedRows.length;
+const fullSmoothCount = unifiedRows.filter((r) => r.status === 'Smooth').length;
+const fullPartialCount = unifiedRows.filter((r) => r.status === 'Partial Offload').length;
+const fullOomCount = unifiedRows.filter((r) => r.status === 'OOM').length;
 
 const relatedHardware = allHardware
   .filter((h) => h.id !== hardware.id)
@@ -67,9 +145,17 @@ const topPickSummary =
     ? `${picks[0].entry.model.short_name} (${picks[0].entry.default_result.est_tps.toFixed(1)} tok/s)`
     : `${entries.length} tested models`;
 
+const isMultiCapable = !hardware.is_unified && hardware.category !== 'Laptop GPU';
+const simActionHref = isMultiCapable
+  ? `/calculator/?hw=${encodeURIComponent(hardware.id)}&gpus=2`
+  : `/calculator/?hw=${encodeURIComponent(hardware.id)}`;
+const simActionLabel = isMultiCapable
+  ? 'Simulate 2x / 3x / 4x Multi-GPU & CPU ->'
+  : 'Open 7-Quant & KV Simulator ->';
+
 const canonicalPath = `/gpu/${hardware.id}/`;
 const pageTitle = `Best Local AI Models for ${hardware.name} — VRAMCalc.me`;
-const pageDescription = `${hardware.name} packs ${hardware.usable_vram_gb} GB usable ${hardware.memory_type} (${hardware.bandwidth_gbps} GB/s). Explore ${entries.length} local LLM benchmarks (${smoothCount} Smooth), led by ${topPickSummary}.`;
+const pageDescription = `${hardware.name} packs ${hardware.usable_vram_gb} GB usable ${hardware.memory_type} (${hardware.bandwidth_gbps} GB/s). Check all ${allModelsCount} local LLM compatibility scores (${fullSmoothCount} Smooth at Q4_K_M @ 8K).`;
 
 const breadcrumbSchema = {
   '@context': 'https://schema.org',
@@ -123,10 +209,10 @@ const faqSchema = {
 };
 
 const statusFilters = [
-  { key: 'all', label: `All (${entries.length})` },
-  { key: 'Smooth', label: `Smooth (${smoothCount})` },
-  { key: 'Partial Offload', label: `Partial Offload (${partialCount})` },
-  { key: 'OOM', label: `OOM (${oomCount})` },
+  { key: 'all', label: `All (${allModelsCount})` },
+  { key: 'Smooth', label: `Smooth (${fullSmoothCount})` },
+  { key: 'Partial Offload', label: `Partial Offload (${fullPartialCount})` },
+  { key: 'OOM', label: `OOM (${fullOomCount})` },
 ] as const;
 const ogTitle = `${hardware.name}: ${smoothCount}/${entries.length} Local LLMs Run Smooth`;
 const ogDescription = `${hardware.usable_vram_gb} GB usable ${hardware.memory_type} (${hardware.bandwidth_gbps} GB/s). Top fit: ${topPickSummary}. Compare every tested model & CLI flags.`;
@@ -170,21 +256,30 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
 
     <!-- Dark Tech Hardware Spec Hero -->
     <header class="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-xs sm:p-8">
-      <div class="flex flex-wrap items-center gap-2">
-        <span class="rounded-full border border-blue-500/40 bg-blue-500/15 px-2.5 py-0.5 font-mono text-xs font-semibold text-blue-300">
-          {hardware.vendor} · {hardware.backend}
-        </span>
-        <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 font-mono text-xs text-slate-300">
-          {hardware.series}
-        </span>
-        {hardware.category && (
-          <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 font-mono text-xs text-slate-300">
-            {hardware.category}
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="rounded-full border border-blue-500/40 bg-blue-500/15 px-2.5 py-0.5 font-mono text-xs font-semibold text-blue-300">
+            {hardware.vendor} · {hardware.backend}
           </span>
-        )}
-        <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 font-mono text-xs text-emerald-300">
-          {hardware.memory_type}
-        </span>
+          <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 font-mono text-xs text-slate-300">
+            {hardware.series}
+          </span>
+          {hardware.category && (
+            <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 font-mono text-xs text-slate-300">
+              {hardware.category}
+            </span>
+          )}
+          <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 font-mono text-xs text-emerald-300">
+            {hardware.memory_type}
+          </span>
+        </div>
+
+        <a
+          href={simActionHref}
+          class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-500 transition-colors"
+        >
+          {simActionLabel}
+        </a>
       </div>
 
       <h1 class="mt-4 text-2xl font-extrabold tracking-tight text-white sm:text-4xl">
@@ -194,10 +289,10 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
       <p class="mt-3 max-w-3xl text-sm leading-relaxed text-slate-300 sm:text-base">
         With <strong class="text-white font-mono">{hardware.usable_vram_gb} GB</strong> of usable {hardware.backend} memory
         ({hardware.vram_gb} GB physical) and <strong class="text-white font-mono">{hardware.bandwidth_gbps} GB/s</strong> bandwidth,
-        this hub compares <strong class="text-white">{entries.length}</strong> benchmarked open-weight LLMs on{' '}
-        {hardware.short_name}: <span class="text-emerald-300 font-semibold">{smoothCount} Smooth</span>,{' '}
-        <span class="text-amber-300 font-semibold">{partialCount} Partial Offload</span>, and{' '}
-        <span class="text-rose-300 font-semibold">{oomCount} OOM</span> at Q4_K_M @ 8K.
+        this hub compares all <strong class="text-white">{allModelsCount}</strong> open-weight LLMs on{' '}
+        {hardware.short_name}: <span class="text-emerald-300 font-semibold">{fullSmoothCount} Smooth</span>,{' '}
+        <span class="text-amber-300 font-semibold">{fullPartialCount} Partial Offload</span>, and{' '}
+        <span class="text-rose-300 font-semibold">{fullOomCount} OOM</span> at Q4_K_M @ 8K.
       </p>
 
       <dl class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
@@ -220,9 +315,9 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
           </dd>
         </div>
         <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
-          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400">Model Compatibility</dt>
+          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400">Full 22-LLM Fit</dt>
           <dd class="mt-1 font-mono text-sm font-bold text-emerald-300 tabular-nums">
-            {smoothCount} Smooth · {partialCount} Offload
+            {fullSmoothCount} Smooth · {fullPartialCount} Offload
           </dd>
         </div>
         <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
@@ -234,7 +329,7 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
       </dl>
     </header>
 
-    <!-- Recommended Best Models -->
+    <!-- Recommended Best Models (Curated Deep-Dive Guides) -->
     {picks.length > 0 && (
       <section class="mt-10" aria-labelledby="recommended-models-heading">
         <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
@@ -321,15 +416,15 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
       </section>
     )}
 
-    <!-- Model Compatibility Table with Client-Side Status Filter -->
+    <!-- Unified 22-Model Compatibility Table (Curated Full Guides + Live Catalog Math) -->
     <section class="mt-10" aria-labelledby="gpu-models-table-heading">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 id="gpu-models-table-heading" class="text-xl font-bold tracking-tight text-slate-950">
-            All Benchmarked Models on {hardware.short_name}
+            All {allModelsCount} Catalog Models on {hardware.short_name}
           </h2>
           <p class="mt-1 text-sm text-slate-600">
-            Baseline metrics shown at <span class="font-mono text-slate-900">Q4_K_M @ 8K FP16 KV</span> against {hardware.usable_vram_gb} GB usable VRAM.
+            Full {allModelsCount}-model compatibility at <span class="font-mono text-slate-900">Q4_K_M @ 8K FP16 KV</span> against {hardware.usable_vram_gb} GB usable VRAM ({entries.length} Full Guides + {allModelsCount - entries.length} Live Catalog Specs).
           </p>
         </div>
 
@@ -349,7 +444,7 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
       </div>
 
       <div id="gpu-table-wrap" class="mt-4 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
-        <table class="w-full min-w-[800px] border-collapse text-left text-sm">
+        <table class="w-full min-w-[820px] border-collapse text-left text-sm">
           <thead>
             <tr class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
               <th class="px-4 py-3">Model</th>
@@ -362,71 +457,80 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            {sortedEntries.map((e) => {
-              const res = e.default_result;
-              const detailHref = `/can-i-run/${e.slug}/`;
-              const modelHubHref = `/model/${e.model.id}/`;
-              const tpsText = res.status === 'OOM' ? 'OOM' : `${res.est_tps.toFixed(1)} tok/s`;
-              const fillPct = Math.min(100, Math.round((res.total_vram_gb / hardware.usable_vram_gb) * 100));
+            {unifiedRows.map((row) => {
+              const tpsText = row.status === 'OOM' ? 'OOM' : `${row.estTps.toFixed(1)} tok/s`;
+              const fillPct = Math.min(100, Math.round((row.totalVramGb / hardware.usable_vram_gb) * 100));
               const fillColor =
-                res.status === 'Smooth'
+                row.status === 'Smooth'
                   ? 'bg-emerald-500'
-                  : res.status === 'Partial Offload'
+                  : row.status === 'Partial Offload'
                     ? 'bg-amber-500'
                     : 'bg-rose-500';
               const barClass = `h-full rounded-full ${fillColor}`;
               const barStyle = `width: ${fillPct}%`;
-              const recQuant = e.quant_table.find((r) => r.recommended)?.quant ?? 'Q4_K_M';
-              const maxCtx =
-                e.context_analysis.max_smooth_context_q4 > 0
-                  ? `${formatContextLabel(e.context_analysis.max_smooth_context_q4)} Smooth`
-                  : 'Needs Offload/Q2';
               const speedBadgeClass =
-                res.status === 'OOM'
+                row.status === 'OOM'
                   ? 'font-mono font-semibold text-rose-700 tabular-nums'
                   : 'font-mono font-bold text-slate-950 tabular-nums';
+              const actionClass = row.isCurated
+                ? 'inline-flex items-center rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors'
+                : 'inline-flex items-center rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700 transition-colors';
+              const actionText = row.isCurated ? 'Open Guide ->' : 'Simulate ->';
+              const moeLabel = row.model.active_params_b ? ` · MoE ${row.model.active_params_b}B active` : '';
 
               return (
-                <tr data-gpu-row data-status={res.status} class="hover:bg-slate-50/70 transition-colors">
+                <tr data-gpu-row data-status={row.status} class="hover:bg-slate-50/70 transition-colors">
                   <td class="px-4 py-3.5 align-top">
-                    <a href={detailHref} class="font-bold text-slate-950 hover:text-blue-600 transition-colors">
-                      {e.model.name}
-                    </a>
-                    <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                      <span class="font-mono">{e.model.params_b}B</span>
-                      <span>·</span>
-                      <a href={modelHubHref} class="hover:text-slate-900 underline decoration-slate-300 underline-offset-2">
-                        {e.model.family} Hub
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      <a href={row.href} class="font-bold text-slate-950 hover:text-blue-600 transition-colors">
+                        {row.model.name}
                       </a>
+                      {row.isCurated ? (
+                        <span class="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700">
+                          Full Guide
+                        </span>
+                      ) : (
+                        <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
+                          Live Calc
+                        </span>
+                      )}
+                    </div>
+                    <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                      <span class="font-mono">{row.model.params_b}B{moeLabel}</span>
+                      {row.modelHubHref && (
+                        <>
+                          <span>·</span>
+                          <a href={row.modelHubHref} class="hover:text-slate-900 underline decoration-slate-300 underline-offset-2">
+                            {row.model.family} Hub
+                          </a>
+                        </>
+                      )}
                     </div>
                   </td>
                   <td class="px-4 py-3.5 align-top">
-                    <StatusBadge status={res.status} />
+                    <StatusBadge status={row.status} />
                   </td>
                   <td class="px-4 py-3.5 align-top">
                     <div class="font-mono text-xs font-semibold text-slate-900 tabular-nums">
-                      {res.total_vram_gb.toFixed(2)} / {hardware.usable_vram_gb} GB
+                      {row.totalVramGb.toFixed(2)} / {hardware.usable_vram_gb} GB
                     </div>
                     <div class="mt-1.5 h-1.5 w-28 overflow-hidden rounded-full bg-slate-100">
                       <div class={barClass} style={barStyle}></div>
                     </div>
                   </td>
                   <td class="px-4 py-3.5 align-top font-mono text-slate-700 tabular-nums">
-                    {res.gpu_layers_fit}/{res.total_layers}
+                    {row.gpuLayersFit}/{row.totalLayers}
                   </td>
                   <td class="px-4 py-3.5 align-top">
                     <span class={speedBadgeClass}>{tpsText}</span>
                   </td>
                   <td class="px-4 py-3.5 align-top text-xs">
-                    <div class="font-mono font-semibold text-slate-900">Rec: {recQuant}</div>
-                    <div class="mt-0.5 text-slate-500">{maxCtx}</div>
+                    <div class="font-mono font-semibold text-slate-900">Rec: {row.recQuant}</div>
+                    <div class="mt-0.5 text-slate-500">{row.maxCtxLabel}</div>
                   </td>
                   <td class="px-4 py-3.5 align-top text-right">
-                    <a
-                      href={detailHref}
-                      class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors"
-                    >
-                      Open Calc -&gt;
+                    <a href={row.href} class={actionClass}>
+                      {actionText}
                     </a>
                   </td>
                 </tr>
@@ -448,7 +552,7 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
           type="button"
           class="mt-3 rounded-lg bg-slate-900 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 cursor-pointer"
         >
-          Show All ({entries.length})
+          Show All ({allModelsCount})
         </button>
       </div>
     </section>

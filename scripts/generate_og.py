@@ -1,4 +1,4 @@
-"""Generate 150 optimized 1200x630 Open Graph PNG preview cards for vramcalc.me."""
+"""Generate 200 optimized 1200x630 Open Graph PNG preview cards for vramcalc.me."""
 
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ OUT_DIR = ROOT / "site" / "public" / "og"
 SCRIPTS_DIR = ROOT / "scripts"
 
 sys.path.insert(0, str(SCRIPTS_DIR))
+import catalog  # noqa: E402
 import physics  # noqa: E402
 
 WIDTH = 1200
@@ -325,13 +326,29 @@ def main() -> None:
         palette_key="Blue",
         badge_label="COMPATIBILITY MATRIX",
         headline="Local AI LLM VRAM & Speed Calculator",
-        subtitle="Exact Q4_K_M / Q8_0 / FP16 footprints, KV-cache limits & tok/s across NVIDIA, Apple & AMD",
+        subtitle="7-Tier Quants (Q2_K–FP16), Multi-GPU (1x–8x) & CPU/RAM tok/s across NVIDIA, Apple, AMD & Intel",
         kpis=[
-            ("Benchmarks", f"{len(entries)} Pairings", f"{smooth_total} Smooth GPU runs", True),
-            ("Hardware Hubs", f"{len(by_hw)} GPUs & Macs", "RTX 50/40/30 · M1-M5 · Strix Halo", False),
-            ("Model Hubs", f"{len(by_mod)} Open LLMs", "DeepSeek-R1 · Qwen2.5 · Llama 3.3", False),
+            ("Full Guides", f"{len(entries)} Pairings", f"{smooth_total} Smooth GPU runs", True),
+            ("Catalog GPUs", f"{len(catalog.HARDWARE)} Devices", f"{len(by_hw)} Hardware Hubs · 1x-8x", False),
+            ("Open LLMs", f"{len(catalog.MODELS)} Models", "DeepSeek-R1 · Qwen3 · Gemma 3", False),
         ],
         url_path="vramcalc.me/",
+    )
+    generated += 1
+
+    # 1b. /calculator/ Rig Simulator OG card
+    render_og_card(
+        OUT_DIR / "calculator.png",
+        palette_key="Blue",
+        badge_label="CUSTOM RIG SIMULATOR",
+        headline="Multi-GPU, 7-Quant & CPU/RAM LLM Simulator",
+        subtitle="Test 1x–8x GPU layer/tensor splits, Q2_K–FP16 weights, Q8_0/Q4_0 KV cache & CPU-only inference",
+        kpis=[
+            ("Accelerators", f"{len(catalog.HARDWARE)} GPUs (1x-8x)", "NVIDIA · Apple · AMD · Intel", True),
+            ("Model Catalog", f"{len(catalog.MODELS)} Open LLMs", "Dense + MoE (Qwen3-30B-A3B)", False),
+            ("CPU & Memory", f"{len(catalog.CPUS)} CPU Profiles", "16–512 GB DDR4 / DDR5 / EPYC", False),
+        ],
+        url_path="vramcalc.me/calculator/",
     )
     generated += 1
 

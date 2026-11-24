@@ -1,11 +1,13 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import StatusBadge from '../components/StatusBadge.astro';
+import catalogRaw from '../data/catalog_data.json';
 import rawPagesData from '../data/pages_data.json';
-import type { PageEntry } from '../types/vram';
-import { statusRank } from '../utils/hubs';
+import type { CatalogData, PageEntry } from '../types/vram';
+import { groupCatalogHardware, statusRank } from '../utils/hubs';
 
 const PAGE_SIZE = 24;
+const catalog = catalogRaw as CatalogData;
 const rawEntries = rawPagesData as PageEntry[];
 
 function featuredTier(e: PageEntry): number {
@@ -31,61 +33,37 @@ const initialVisibleCount = Math.min(PAGE_SIZE, totalCount);
 const initialRemainingCount = Math.max(0, totalCount - initialVisibleCount);
 const initialProgressPct = totalCount > 0 ? Math.round((initialVisibleCount / totalCount) * 100) : 100;
 const initialProgressStyle = `width: ${initialProgressPct}%`;
-const paginationHiddenClass = initialRemainingCount > 0 ? 'mt-7 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between' : 'hidden';
+const paginationHiddenClass =
+  initialRemainingCount > 0
+    ? 'mt-7 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'
+    : 'hidden';
 const smoothCount = entries.filter((e) => e.default_result.status === 'Smooth').length;
 const partialCount = entries.filter((e) => e.default_result.status === 'Partial Offload').length;
 
-const uniqueModels = Array.from(
+// Full catalog lists for filter dropdowns & live calculations
+const allModelsSorted = [...catalog.models].sort((a, b) => a.name.localeCompare(b.name));
+const allHardwareSorted = [...catalog.hardware];
+const catalogGroups = groupCatalogHardware(allHardwareSorted);
+
+const uniqueHubModels = Array.from(
   new Map(entries.map((e) => [e.model.id, e.model])).values()
 ).sort((a, b) => a.name.localeCompare(b.name));
 
-const uniqueHardware = Array.from(
+const uniqueHubHardware = Array.from(
   new Map(entries.map((e) => [e.hardware.id, e.hardware])).values()
-);
+).sort((a, b) => a.name.localeCompare(b.name));
 
-function resolveHardwareGroup(h: PageEntry['hardware']): string {
-  if (h.vendor === 'Apple') return 'Apple Silicon Unified';
-  if (h.vendor === 'AMD') return 'AMD Radeon & Ryzen AI';
-  const cat = h.category;
-  if (cat === 'Laptop GPU' || h.series.includes('Laptop')) return 'NVIDIA Laptop RTX';
-  if (
-    cat === 'Multi-GPU' ||
-    cat === 'Workstation' ||
-    h.series.includes('Multi-GPU') ||
-    h.series.includes('Workstation')
-  ) {
-    return 'NVIDIA Multi-GPU & Workstation';
-  }
-  return 'NVIDIA Desktop RTX';
-}
+const uniqueHubModelCount = uniqueHubModels.length;
+const uniqueHubHwCount = uniqueHubHardware.length;
+const catalogModelCount = catalog.models.length;
+const catalogHwCount = catalog.hardware.length;
 
-const byName = (a: PageEntry['hardware'], b: PageEntry['hardware']) => a.name.localeCompare(b.name);
-const nvidiaDesktopHw = uniqueHardware
-  .filter((h) => resolveHardwareGroup(h) === 'NVIDIA Desktop RTX')
-  .sort(byName);
-const nvidiaWorkstationHw = uniqueHardware
-  .filter((h) => resolveHardwareGroup(h) === 'NVIDIA Multi-GPU & Workstation')
-  .sort(byName);
-const nvidiaLaptopHw = uniqueHardware
-  .filter((h) => resolveHardwareGroup(h) === 'NVIDIA Laptop RTX')
-  .sort(byName);
-const appleHardware = uniqueHardware
-  .filter((h) => resolveHardwareGroup(h) === 'Apple Silicon Unified')
-  .sort(byName);
-const amdHardware = uniqueHardware
-  .filter((h) => resolveHardwareGroup(h) === 'AMD Radeon & Ryzen AI')
-  .sort(byName);
-
-const hardwareGroups = [
-  { label: 'NVIDIA Desktop RTX', items: nvidiaDesktopHw },
-  { label: 'NVIDIA Multi-GPU & Workstation', items: nvidiaWorkstationHw },
-  { label: 'NVIDIA Laptop RTX', items: nvidiaLaptopHw },
-  { label: 'Apple Silicon Unified', items: appleHardware },
-  { label: 'AMD Radeon & Ryzen AI', items: amdHardware },
-].filter((g) => g.items.length > 0);
-
-const uniqueModelCount = uniqueModels.length;
-const uniqueHwCount = uniqueHardware.length;
+const curatedKeys = entries.map((e) => `${e.model.id}::${e.hardware.id}`);
+const homeCatalogPayload = JSON.stringify({
+  models: catalog.models,
+  hardware: catalog.hardware,
+  curatedKeys,
+});
 
 const websiteSchema = {
   '@context': 'https://schema.org',
@@ -93,7 +71,7 @@ const websiteSchema = {
   name: 'VRAMCalc.me',
   url: 'https://vramcalc.me/',
   description:
-    'Local AI LLM VRAM calculator and inference tokens/sec estimator across NVIDIA RTX, Apple Silicon, and AMD hardware.',
+    'Local AI LLM VRAM calculator and inference tokens/sec estimator across NVIDIA RTX, Apple Silicon, AMD Radeon, Intel Arc, Multi-GPU rigs, and CPU/RAM.',
 };
 
 const homeCollectionSchema = {
@@ -101,27 +79,32 @@ const homeCollectionSchema = {
   '@type': 'CollectionPage',
   name: 'Local AI Model VRAM & Inference Speed Matrix',
   url: 'https://vramcalc.me/',
-  description: `Compatibility matrix indexing ${totalCount} hardware x model configurations across ${uniqueHwCount} GPUs and ${uniqueModelCount} open-weight models.`,
+  description: `Compatibility matrix indexing ${totalCount} deep benchmark guides and live calculations across ${catalogHwCount} GPUs (1x-8x) and ${catalogModelCount} open-weight models.`,
   hasPart: [
     {
       '@type': 'CollectionPage',
-      name: `All Local AI GPUs (${uniqueHwCount} Hardware Hubs)`,
+      name: 'Multi-GPU & CPU/RAM Rig Simulator',
+      url: 'https://vramcalc.me/calculator/',
+    },
+    {
+      '@type': 'CollectionPage',
+      name: `All Local AI GPUs (${uniqueHubHwCount} Hardware Hubs)`,
       url: 'https://vramcalc.me/gpu/',
     },
     {
       '@type': 'CollectionPage',
-      name: `All Open-Weight LLMs (${uniqueModelCount} Model Hubs)`,
+      name: `All Open-Weight LLMs (${uniqueHubModelCount} Model Hubs)`,
       url: 'https://vramcalc.me/model/',
     },
   ],
 };
-const homeOgTitle = `Local AI LLM VRAM & Speed Calculator (${totalCount} Benchmarks) | VRAMCalc.me`;
-const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s across ${uniqueHwCount} GPUs & Macs (RTX 50/40/30, Apple M1–M5, Strix Halo) and ${uniqueModelCount} open LLMs.`;
+const homeOgTitle = `Local AI LLM VRAM & Speed Calculator (${catalogModelCount} Models × ${catalogHwCount} GPUs) | VRAMCalc.me`;
+const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x Multi-GPU & CPU/RAM tok/s across ${catalogHwCount} GPUs & Macs and ${catalogModelCount} open LLMs.`;
 ---
 
 <BaseLayout
   title="VRAMCalc.me — Local AI Model VRAM & Speed Calculator"
-  description="Check whether DeepSeek-R1, Qwen2.5-Coder, and Llama-3.3 run smoothly on Apple Silicon M1–M5, NVIDIA RTX 30/40/50 & Dual-GPU setups, or AMD Radeon / Strix Halo. Interactive VRAM and tokens/s benchmarks."
+  description="Check whether DeepSeek-R1, Qwen3, Qwen2.5-Coder, Gemma 3, and Llama run smoothly on Apple Silicon M1–M5, NVIDIA GTX/RTX (1x–8x), AMD Radeon / Strix Halo, Intel Arc, or CPU RAM."
   canonicalPath="/"
   totalPages={totalCount}
   ogTitle={homeOgTitle}
@@ -142,44 +125,52 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
           Local AI Model VRAM &amp; Inference Speed Matrix
         </h1>
         <p class="mt-3 text-base leading-relaxed text-slate-600">
-          Pick your open-weight model and NVIDIA RTX, Apple Silicon M1–M5, or AMD Radeon / Ryzen AI hardware to see
-          exact Q4_K_M / Q8_0 / FP16 memory footprints, KV-cache limits, offload layer counts, and realistic
+          Pick any of <strong class="text-slate-900">{catalogModelCount} models</strong> and{' '}
+          <strong class="text-slate-900">{catalogHwCount} GPUs &amp; Macs</strong>—or simulate{' '}
+          <strong class="text-slate-900">1x–8x multi-GPU rigs &amp; CPU/RAM offload</strong> across 7 GGUF quants
+          (<span class="font-mono text-slate-900">Q2_K–FP16</span>) and realistic{' '}
           <span class="font-mono text-slate-900">tokens/sec</span> throughput.
         </p>
 
         <div class="mt-5 flex flex-wrap items-center gap-3">
           <a
+            href="/calculator/"
+            class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-colors"
+          >
+            Multi-GPU &amp; CPU Rig Simulator -&gt;
+          </a>
+          <a
             href="/gpu/"
             class="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors"
           >
-            Browse {uniqueHwCount} GPU Hubs -&gt;
+            Browse {uniqueHubHwCount} GPU Hubs -&gt;
           </a>
           <a
             href="/model/"
             class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-800 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-colors"
           >
-            Browse {uniqueModelCount} Model Hubs -&gt;
+            Browse {uniqueHubModelCount} Model Hubs -&gt;
           </a>
         </div>
       </div>
 
       <dl class="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         <div class="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
-          <dt class="text-xs font-medium text-slate-500">Benchmarked Pairings</dt>
+          <dt class="text-xs font-medium text-slate-500">Full Benchmark Guides</dt>
           <dd class="mt-1 font-mono text-2xl font-bold text-slate-950 tabular-nums">{totalCount}</dd>
         </div>
         <div class="rounded-xl border border-emerald-200/80 bg-emerald-50/50 px-4 py-3">
-          <dt class="text-xs font-medium text-emerald-800">Smooth (Full GPU)</dt>
+          <dt class="text-xs font-medium text-emerald-800">Smooth Guides (8K Q4)</dt>
           <dd class="mt-1 font-mono text-2xl font-bold text-emerald-900 tabular-nums">{smoothCount}</dd>
         </div>
         <div class="rounded-xl border border-amber-200/80 bg-amber-50/50 px-4 py-3">
-          <dt class="text-xs font-medium text-amber-800">Partial Offload</dt>
+          <dt class="text-xs font-medium text-amber-800">Partial Offload Guides</dt>
           <dd class="mt-1 font-mono text-2xl font-bold text-amber-900 tabular-nums">{partialCount}</dd>
         </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
-          <dt class="text-xs font-medium text-slate-500">Models × Hardware</dt>
+          <dt class="text-xs font-medium text-slate-500">Live Catalog Engine</dt>
           <dd class="mt-1 font-mono text-2xl font-bold text-slate-950 tabular-nums">
-            {uniqueModelCount} × {uniqueHwCount}
+            {catalogModelCount} × {catalogHwCount}
           </dd>
         </div>
       </dl>
@@ -198,8 +189,8 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
             id="filter-model"
             class="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus:border-blue-600 focus:outline-none"
           >
-            <option value="all">All Models ({uniqueModelCount})</option>
-            {uniqueModels.map((m) => (
+            <option value="all">All Models ({catalogModelCount})</option>
+            {allModelsSorted.map((m) => (
               <option value={m.id}>{m.name} ({m.params_b}B)</option>
             ))}
           </select>
@@ -213,8 +204,9 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
             id="filter-hardware"
             class="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus:border-blue-600 focus:outline-none"
           >
-            <option value="all">All Hardware ({uniqueHwCount})</option>
-            {hardwareGroups.map((group) => (
+            <option value="all">All Hardware ({catalogHwCount} + CPU)</option>
+            <option value="cpu-only">CPU-Only (System RAM · No GPU)</option>
+            {catalogGroups.map((group) => (
               <optgroup label={group.label}>
                 {group.items.map((h) => (
                   <option value={h.id}>{h.name}</option>
@@ -232,7 +224,7 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
             <input
               id="filter-search"
               type="search"
-              placeholder="e.g. 5090, M5 Max, 9070 XT, Dual 3090..."
+              placeholder="e.g. m4 16g, 1080, p40, b580, qwen3..."
               class="w-full rounded-lg border border-slate-300 bg-white py-2 pl-3 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none"
             />
             <kbd
@@ -284,7 +276,7 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
           <span class="hidden h-4 w-px bg-slate-200 sm:inline-block" aria-hidden="true"></span>
 
           <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by vendor">
-            {(['all', 'NVIDIA', 'Apple', 'AMD'] as const).map((vnd) => {
+            {(['all', 'NVIDIA', 'Apple', 'AMD', 'Intel'] as const).map((vnd) => {
               const vBtnClass =
                 vnd === 'all'
                   ? 'rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border-blue-600 bg-blue-600 text-white'
@@ -304,7 +296,7 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
 
         <div class="flex items-center gap-3 text-xs text-slate-600">
           <span id="filter-count" class="font-mono tabular-nums">
-            Showing {initialVisibleCount} of {totalCount} configurations
+            Showing {initialVisibleCount} of {totalCount} full guides ({catalogModelCount}×{catalogHwCount} live)
           </span>
           <button
             id="filter-reset"
@@ -317,7 +309,7 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
       </div>
     </div>
 
-    <!-- Cards Grid (SSR Progressive Window: first 24 visible, all 106 crawlable in DOM) -->
+    <!-- Curated Deep-Dive Cards Grid (SSR Progressive Window: first 24 visible, all 141 crawlable in DOM) -->
     <div id="cards-grid" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {entries.map((entry, idx) => {
         const res = entry.default_result;
@@ -340,12 +332,14 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
           entry.model.name,
           entry.model.short_name,
           entry.model.family,
+          entry.hardware.id,
           entry.hardware.name,
           entry.hardware.short_name,
           entry.hardware.vendor,
           entry.hardware.series,
           entry.hardware.category || '',
           entry.hardware.backend,
+          entry.hardware.memory_type,
           res.status,
         ]
           .join(' ')
@@ -368,7 +362,12 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
           >
             <div>
               <div class="flex items-center justify-between gap-2">
-                <StatusBadge status={res.status} />
+                <div class="flex items-center gap-1.5">
+                  <StatusBadge status={res.status} />
+                  <span class="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700">
+                    Full Guide
+                  </span>
+                </div>
                 <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-600">
                   {entry.hardware.backend} · {entry.hardware.bandwidth_gbps} GB/s
                 </span>
@@ -423,11 +422,11 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
       })}
     </div>
 
-    <!-- Progressive Pagination Controls -->
+    <!-- Progressive Pagination Controls (Curated Guides) -->
     <div id="pagination-bar" class={paginationHiddenClass}>
       <div class="w-full sm:max-w-xs">
         <p id="pagination-summary" class="font-mono text-xs font-medium text-slate-600 tabular-nums">
-          Viewing {initialVisibleCount} of {totalCount} matching benchmarks
+          Viewing {initialVisibleCount} of {totalCount} matching guides
         </p>
         <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
           <div
@@ -456,23 +455,72 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
       </div>
     </div>
 
+    <!-- Live Full-Catalog Calculations (Populated when searching/filtering catalog hardware, models, Intel, or CPU) -->
+    <section id="live-calc-section" class="mt-8 hidden" aria-label="Live Catalog Estimates">
+      <div class="flex flex-col gap-3 rounded-2xl border border-blue-200 bg-blue-50/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="rounded-full bg-blue-600 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white">
+              Live Catalog Physics
+            </span>
+            <h2 id="live-calc-heading" class="text-sm font-bold text-slate-950">
+              Additional Live Catalog Estimates
+            </h2>
+          </div>
+          <p id="live-calc-sub" class="mt-1 text-xs text-slate-600">
+            Instant Q4_K_M @ 8K estimates across all {catalogModelCount} models &amp; {catalogHwCount} GPUs. Click any card to tweak 7 quants, KV cache, multi-GPU, or CPU offload.
+          </p>
+        </div>
+        <a
+          id="live-sim-cta"
+          href="/calculator/"
+          class="inline-flex shrink-0 items-center justify-center rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-colors"
+        >
+          Open in Multi-GPU / CPU Simulator -&gt;
+        </a>
+      </div>
+
+      <div id="live-calc-grid" class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
+
+      <div id="live-pagination-bar" class="mt-5 hidden flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs">
+        <span id="live-pagination-summary" class="font-mono text-slate-600 tabular-nums"></span>
+        <button
+          id="live-load-more-btn"
+          type="button"
+          class="rounded-lg bg-slate-900 px-3.5 py-1.5 font-semibold text-white hover:bg-slate-800 cursor-pointer"
+        >
+          Load More Live Estimates
+        </button>
+      </div>
+    </section>
+
     <!-- Empty Filter State -->
     <div
       id="empty-state"
       class="mt-8 hidden rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center"
     >
-      <p class="text-base font-semibold text-slate-900">No matching Model × Hardware benchmarks</p>
+      <p class="text-base font-semibold text-slate-900">No matching Model × Hardware configurations</p>
       <p class="mt-1 text-sm text-slate-500">
-        Try clearing your search query or switching the status / hardware filters.
+        Try clearing your search query or launch the custom Rig Simulator to model custom VRAM &amp; CPU setups.
       </p>
-      <button
-        id="empty-reset-btn"
-        type="button"
-        class="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 cursor-pointer"
-      >
-        Reset All Filters
-      </button>
+      <div class="mt-4 flex flex-wrap justify-center gap-2">
+        <button
+          id="empty-reset-btn"
+          type="button"
+          class="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 cursor-pointer"
+        >
+          Reset All Filters
+        </button>
+        <a
+          href="/calculator/"
+          class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+        >
+          Open Custom Rig Simulator -&gt;
+        </a>
+      </div>
     </div>
+
+    <script type="application/json" id="home-catalog-json" set:html={homeCatalogPayload}></script>
   </section>
 
   <!-- Aggregation Hubs Discovery -->
@@ -482,14 +530,14 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
       <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
         <div class="flex items-center justify-between gap-2">
           <h3 class="text-sm font-bold tracking-tight text-slate-950">
-            Model Hubs ({uniqueModelCount})
+            Model Hubs ({uniqueHubModelCount})
           </h3>
           <a href="/model/" class="text-xs font-semibold text-blue-600 hover:text-blue-800">
             View All -&gt;
           </a>
         </div>
         <div class="mt-3 flex flex-wrap gap-1.5">
-          {uniqueModels.map((m) => {
+          {uniqueHubModels.map((m) => {
             const mHref = `/model/${m.id}/`;
             return (
               <a
@@ -506,14 +554,14 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
       <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
         <div class="flex items-center justify-between gap-2">
           <h3 class="text-sm font-bold tracking-tight text-slate-950">
-            Hardware Hubs ({uniqueHwCount})
+            Hardware Hubs ({uniqueHubHwCount})
           </h3>
           <a href="/gpu/" class="text-xs font-semibold text-blue-600 hover:text-blue-800">
             View All -&gt;
           </a>
         </div>
         <div class="mt-3 flex flex-wrap gap-1.5">
-          {[...uniqueHardware].sort(byName).map((h) => {
+          {uniqueHubHardware.map((h) => {
             const hHref = `/gpu/${h.id}/`;
             return (
               <a
@@ -537,26 +585,26 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
       </h2>
       <div class="mt-4 grid gap-6 text-sm leading-relaxed text-slate-600 md:grid-cols-3">
         <div>
-          <h3 class="font-semibold text-slate-900">1. GGUF Weight Footprint</h3>
+          <h3 class="font-semibold text-slate-900">1. 7-Tier GGUF &amp; MoE Math</h3>
           <p class="mt-1.5">
-            Model weights scale with bits-per-weight (<span class="font-mono text-xs text-slate-800">Q4_K_M ≈ 4.85 bpw</span>,
-            <span class="font-mono text-xs text-slate-800">Q8_0 ≈ 8.50 bpw</span>,
-            <span class="font-mono text-xs text-slate-800">FP16 = 16.0 bpw</span>), plus a 0.5–2.0 GB CUDA or Metal compute graph buffer.
+            Total weights scale from <span class="font-mono text-xs text-slate-800">Q2_K (3.0 bpw)</span> through{' '}
+            <span class="font-mono text-xs text-slate-800">Q4_K_M (4.85)</span>,{' '}
+            <span class="font-mono text-xs text-slate-800">Q8_0 (8.50)</span> to{' '}
+            <span class="font-mono text-xs text-slate-800">FP16</span>, while MoE models compute speed using active parameters.
           </p>
         </div>
         <div>
-          <h3 class="font-semibold text-slate-900">2. GQA KV-Cache Scaling</h3>
+          <h3 class="font-semibold text-slate-900">2. GQA KV-Cache Compression</h3>
           <p class="mt-1.5">
-            Context memory is computed from exact model geometry:
-            <span class="font-mono text-xs text-slate-800">2 × layers × kv_heads × head_dim × tokens × 2 bytes</span>
-            for default FP16 KV cache, explaining why 70B models grow faster per 4K tokens than 7B–14B models.
+            KV cache uses exact layer geometry (<span class="font-mono text-xs text-slate-800">2 × layers × kv_heads × head_dim × ctx</span>)
+            with FP16, Q8_0 (-50%), or Q4_0 (-75%) KV options.
           </p>
         </div>
         <div>
-          <h3 class="font-semibold text-slate-900">3. Bandwidth-Bound Decode Speed</h3>
+          <h3 class="font-semibold text-slate-900">3. Multi-GPU &amp; CPU/RAM Bandwith</h3>
           <p class="mt-1.5">
-            Autoregressive LLM generation is memory-bandwidth limited. Smooth GPU runs divide effective memory bandwidth
-            (CUDA ~78% / Metal ~74% / ROCm ~70%, with ~0.92× scaling on dual-GPU setups) by active weights + KV reads; PCIe CPU offload incurs ~35 GB/s host RAM bottlenecks.
+            Smooth runs scale by CUDA/Metal/ROCm/Vulkan efficiency and Layer-Split or Tensor-Parallel scaling across{' '}
+            <span class="font-mono text-xs text-slate-800">1x–8x GPUs</span>; spill/CPU-only uses selected DDR4/DDR5/EPYC RAM speed.
           </p>
         </div>
       </div>
@@ -564,13 +612,48 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
   </section>
 </BaseLayout>
 
-<script is:inline>
-  (function () {
+<script>
+  import { estimateRigRun } from '../utils/physics';
+  import type { CatalogData, CompatStatus, HardwareSpec, ModelSpec, RigRunEstimate } from '../types/vram';
+
+  interface HomeCatalogPayload {
+    models: ModelSpec[];
+    hardware: HardwareSpec[];
+    curatedKeys: string[];
+  }
+
+  interface LiveItem {
+    model: ModelSpec;
+    hw: HardwareSpec | null;
+    res: RigRunEstimate;
+    rank: number;
+    simHref: string;
+  }
+
+  function rankOf(s: CompatStatus): number {
+    if (s === 'Smooth') return 0;
+    if (s === 'Partial Offload') return 1;
+    return 2;
+  }
+
+  function badgeClasses(s: CompatStatus): string {
+    if (s === 'Smooth') return 'border-emerald-200 bg-emerald-50 text-emerald-800';
+    if (s === 'Partial Offload') return 'border-amber-200 bg-amber-50 text-amber-800';
+    return 'border-rose-200 bg-rose-50 text-rose-800';
+  }
+
+  function dotClass(s: CompatStatus): string {
+    if (s === 'Smooth') return 'bg-emerald-600';
+    if (s === 'Partial Offload') return 'bg-amber-500';
+    return 'bg-rose-600';
+  }
+
+  function initMatrixPage() {
     const PAGE_SIZE = 24;
-    const modelSelect = document.getElementById('filter-model');
-    const hwSelect = document.getElementById('filter-hardware');
-    const searchInput = document.getElementById('filter-search');
-    const sortSelect = document.getElementById('filter-sort');
+    const modelSelect = document.getElementById('filter-model') as HTMLSelectElement | null;
+    const hwSelect = document.getElementById('filter-hardware') as HTMLSelectElement | null;
+    const searchInput = document.getElementById('filter-search') as HTMLInputElement | null;
+    const sortSelect = document.getElementById('filter-sort') as HTMLSelectElement | null;
     const statusButtons = Array.from(document.querySelectorAll('[data-status-btn]'));
     const vendorButtons = Array.from(document.querySelectorAll('[data-vendor-btn]'));
     const cards = Array.from(document.querySelectorAll('[data-card]'));
@@ -581,15 +664,50 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
     const cardsGrid = document.getElementById('cards-grid');
     const paginationBar = document.getElementById('pagination-bar');
     const paginationSummary = document.getElementById('pagination-summary');
-    const paginationFill = document.getElementById('pagination-bar-fill');
+    const paginationFill = document.getElementById('pagination-bar-fill') as HTMLElement | null;
     const loadMoreBtn = document.getElementById('load-more-btn');
     const showAllBtn = document.getElementById('show-all-btn');
+
+    const liveSection = document.getElementById('live-calc-section');
+    const liveHeading = document.getElementById('live-calc-heading');
+    const liveSub = document.getElementById('live-calc-sub');
+    const liveSimCta = document.getElementById('live-sim-cta') as HTMLAnchorElement | null;
+    const liveGrid = document.getElementById('live-calc-grid');
+    const livePagBar = document.getElementById('live-pagination-bar');
+    const livePagSummary = document.getElementById('live-pagination-summary');
+    const liveLoadMoreBtn = document.getElementById('live-load-more-btn');
+
+    const catalogEl = document.getElementById('home-catalog-json');
+    const catData: HomeCatalogPayload = catalogEl
+      ? (JSON.parse(catalogEl.textContent || '{}') as HomeCatalogPayload)
+      : { models: [], hardware: [], curatedKeys: [] };
+    const curatedKeySet = new Set(catData.curatedKeys || []);
 
     let selectedStatus = 'all';
     let selectedVendor = 'all';
     let visibleLimit = PAGE_SIZE;
+    let liveVisibleLimit = PAGE_SIZE;
     let currentSort = 'featured';
-    const total = cards.length;
+    const totalCurated = cards.length;
+    const totalCombinations = catData.models.length * catData.hardware.length;
+
+    // Precompute normalized search blobs for models & hardware
+    const modelSearchMap = new Map<string, string>();
+    for (const m of catData.models) {
+      modelSearchMap.set(
+        m.id,
+        [m.id, m.name, m.short_name, m.family, m.architecture].join(' ').toLowerCase(),
+      );
+    }
+    const hwSearchMap = new Map<string, string>();
+    for (const h of catData.hardware) {
+      hwSearchMap.set(
+        h.id,
+        [h.id, h.name, h.short_name, h.vendor, h.series, h.category || '', h.backend, h.memory_type]
+          .join(' ')
+          .toLowerCase(),
+      );
+    }
 
     function updateStatusPills() {
       statusButtons.forEach((b) => {
@@ -615,7 +733,7 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
       });
     }
 
-    function sortCardsInDom(sortMode) {
+    function sortCardsInDom(sortMode: string) {
       if (!cardsGrid) return;
       const sorted = [...cards].sort((a, b) => {
         if (sortMode === 'tps-desc') {
@@ -642,7 +760,7 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
       cardsGrid.appendChild(frag);
     }
 
-    function syncUrl(mVal, hVal, query, sortVal) {
+    function syncUrl(mVal: string, hVal: string, query: string, sortVal: string) {
       if (!window.history || !window.history.replaceState) return;
       const params = new URLSearchParams();
       if (query) params.set('q', query);
@@ -656,14 +774,236 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
       window.history.replaceState(null, '', targetUrl);
     }
 
+    function computeLiveCatalogMatches(
+      mVal: string,
+      hVal: string,
+      tokens: string[],
+      sortVal: string,
+    ): LiveItem[] {
+      const shouldActivate =
+        hVal !== 'all' || mVal !== 'all' || selectedVendor !== 'all' || tokens.length > 0;
+      if (!shouldActivate) return [];
+
+      const items: LiveItem[] = [];
+
+      if (hVal === 'cpu-only') {
+        if (selectedVendor !== 'all') return [];
+        for (const m of catData.models) {
+          if (mVal !== 'all' && m.id !== mVal) continue;
+          const mBlob = `${modelSearchMap.get(m.id) || ''} cpu system ram ddr5`.toLowerCase();
+          if (tokens.length > 0 && !tokens.every((t) => mBlob.includes(t))) continue;
+          const res = estimateRigRun(m, null, {
+            quant: 'Q4_K_M',
+            contextTokens: 8192,
+            kvQuant: 'FP16',
+            gpuCount: 0,
+            cpuBwGbps: 68,
+            systemRamGb: 64,
+          });
+          if (selectedStatus !== 'all' && res.status !== selectedStatus) continue;
+          items.push({
+            model: m,
+            hw: null,
+            res,
+            rank: rankOf(res.status),
+            simHref: `/calculator/?mode=cpu&cpu=amd-ryzen-7000-9000-ddr5-6000&ram=64&model=${encodeURIComponent(m.id)}`,
+          });
+        }
+      } else {
+        const candidateModels = catData.models.filter((m) => mVal === 'all' || m.id === mVal);
+        const candidateHw = catData.hardware.filter((h) => {
+          if (hVal !== 'all' && h.id !== hVal) return false;
+          if (selectedVendor !== 'all' && h.vendor !== selectedVendor) return false;
+          return true;
+        });
+
+        for (const h of candidateHw) {
+          const hBlob = hwSearchMap.get(h.id) || '';
+          for (const m of candidateModels) {
+            if (curatedKeySet.has(`${m.id}::${h.id}`)) continue;
+            const comboBlob = `${modelSearchMap.get(m.id) || ''} ${hBlob}`;
+            if (tokens.length > 0 && !tokens.every((t) => comboBlob.includes(t))) continue;
+
+            const res = estimateRigRun(m, h, {
+              quant: 'Q4_K_M',
+              contextTokens: 8192,
+              kvQuant: 'FP16',
+              gpuCount: h.gpu_count || 1,
+            });
+            if (selectedStatus !== 'all' && res.status !== selectedStatus) continue;
+            items.push({
+              model: m,
+              hw: h,
+              res,
+              rank: rankOf(res.status),
+              simHref: `/calculator/?model=${encodeURIComponent(m.id)}&hw=${encodeURIComponent(h.id)}`,
+            });
+          }
+        }
+      }
+
+      items.sort((a, b) => {
+        if (sortVal === 'tps-desc') {
+          if (b.res.est_tps !== a.res.est_tps) return b.res.est_tps - a.res.est_tps;
+          return a.rank - b.rank;
+        }
+        if (sortVal === 'vram-asc') {
+          if (a.res.total_vram_gb !== b.res.total_vram_gb) return a.res.total_vram_gb - b.res.total_vram_gb;
+          return b.res.est_tps - a.res.est_tps;
+        }
+        if (sortVal === 'params-desc') {
+          if (b.model.params_b !== a.model.params_b) return b.model.params_b - a.model.params_b;
+          if (a.rank !== b.rank) return a.rank - b.rank;
+          return b.res.est_tps - a.res.est_tps;
+        }
+        // Featured order: Smooth first -> Larger params -> Faster tok/s
+        if (a.rank !== b.rank) return a.rank - b.rank;
+        if (b.model.params_b !== a.model.params_b) return b.model.params_b - a.model.params_b;
+        return b.res.est_tps - a.res.est_tps;
+      });
+
+      return items;
+    }
+
+    function renderLiveCards(liveItems: LiveItem[], hVal: string, mVal: string, curatedMatchCount: number) {
+      if (!liveSection || !liveGrid) return;
+
+      if (liveItems.length === 0) {
+        liveSection.classList.add('hidden');
+        liveGrid.innerHTML = '';
+        if (livePagBar) livePagBar.classList.add('hidden');
+        return;
+      }
+
+      liveSection.classList.remove('hidden');
+
+      // Contextual Simulator CTA banner
+      const firstHw = liveItems[0]?.hw;
+      const singleHwMatch =
+        hVal !== 'all' && hVal !== 'cpu-only'
+          ? catData.hardware.find((h) => h.id === hVal)
+          : liveItems.every((x) => x.hw?.id === firstHw?.id)
+            ? firstHw
+            : null;
+
+      if (liveHeading && liveSimCta && liveSub) {
+        if (hVal === 'cpu-only') {
+          liveHeading.textContent = `${liveItems.length} Live CPU-Only Model Estimates (DDR5 64 GB RAM Baseline)`;
+          liveSub.textContent =
+            'Switch between 16 CPUs (DDR4, DDR5, Threadripper, EPYC 12-Ch) and 16–512 GB RAM in the Rig Simulator.';
+          liveSimCta.textContent = 'Customize CPU & RAM in Rig Simulator ->';
+          liveSimCta.href =
+            mVal !== 'all'
+              ? `/calculator/?mode=cpu&model=${encodeURIComponent(mVal)}&cpu=amd-ryzen-7000-9000-ddr5-6000&ram=64`
+              : '/calculator/?mode=cpu&cpu=amd-epyc-9004-9005-12ch&ram=256';
+        } else if (singleHwMatch) {
+          const multiCapable = !singleHwMatch.is_unified && singleHwMatch.category !== 'Laptop GPU';
+          liveHeading.textContent = `${curatedMatchCount} Full Guides + ${liveItems.length} Live Catalog Estimates for ${singleHwMatch.name}`;
+          liveSub.textContent = multiCapable
+            ? `Test all ${catData.models.length} models across 7 GGUF quants, KV compression, 1x–8x ${singleHwMatch.short_name} multi-GPU, or CPU offload.`
+            : `Showing full ${catData.models.length}-model coverage for ${singleHwMatch.short_name}. Open any card to adjust 7 quants & Q8_0/Q4_0 KV cache.`;
+          liveSimCta.textContent = multiCapable
+            ? `Try 2x / 3x / 4x ${singleHwMatch.short_name} in Simulator ->`
+            : `Open ${singleHwMatch.short_name} in Rig Simulator ->`;
+          liveSimCta.href = multiCapable
+            ? `/calculator/?hw=${encodeURIComponent(singleHwMatch.id)}&gpus=2`
+            : `/calculator/?hw=${encodeURIComponent(singleHwMatch.id)}`;
+        } else {
+          liveHeading.textContent = `${liveItems.length} Additional Live Catalog Estimates`;
+          liveSub.textContent = `Computed live across ${catData.models.length} models × ${catData.hardware.length} GPUs at Q4_K_M @ 8K. Open any card for 7 quants & Multi-GPU simulation.`;
+          liveSimCta.textContent = 'Open Multi-GPU / CPU Rig Simulator ->';
+          liveSimCta.href = mVal !== 'all' ? `/calculator/?model=${encodeURIComponent(mVal)}` : '/calculator/';
+        }
+      }
+
+      const slice = liveItems.slice(0, liveVisibleLimit);
+      liveGrid.innerHTML = slice
+        .map(({ model, hw, res, simHref }) => {
+          const budget = hw ? hw.usable_vram_gb : res.usable_ram_gb;
+          const pct = Math.min(100, Math.round((res.total_vram_gb / Math.max(1, budget)) * 100));
+          const barColor =
+            res.status === 'Smooth'
+              ? 'bg-emerald-500'
+              : res.status === 'Partial Offload'
+                ? 'bg-amber-500'
+                : 'bg-rose-500';
+          const tpsDisplay = res.status === 'OOM' ? 'OOM' : `${res.est_tps.toFixed(1)} tok/s`;
+          const hwTitle = hw ? hw.name : 'CPU-Only (DDR5 · 64 GB RAM)';
+          const hwChip = hw ? `${hw.backend} · ${hw.bandwidth_gbps} GB/s` : 'CPU · 68 GB/s';
+          const budgetLabel = hw ? `VRAM (Q4_K_M @ 8K)` : `RAM (Q4_K_M @ 8K)`;
+          const layersText = hw
+            ? `(${res.gpu_layers_fit}/${res.total_layers} layers)`
+            : `(CPU-only ${res.total_layers}L)`;
+          const moeLine = model.active_params_b
+            ? `${model.params_b}B MoE (${model.active_params_b}B active) · ${model.architecture}`
+            : `${model.params_b}B Params · ${model.architecture}`;
+
+          return `
+            <article class="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:border-blue-300 hover:shadow-md">
+              <div>
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-1.5">
+                    <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${badgeClasses(res.status)}">
+                      <span class="h-1.5 w-1.5 rounded-full ${dotClass(res.status)}"></span>
+                      ${res.status}
+                    </span>
+                    <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">Live Calc</span>
+                  </div>
+                  <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-600">${hwChip}</span>
+                </div>
+
+                <h3 class="mt-3.5 text-base font-bold tracking-tight text-slate-950 group-hover:text-blue-600 transition-colors">
+                  <a href="${simHref}" class="focus:outline-none">
+                    ${model.short_name}
+                    <span class="block text-sm font-semibold text-slate-600">on ${hwTitle}</span>
+                  </a>
+                </h3>
+
+                <p class="mt-1.5 font-mono text-xs text-slate-500">${moeLine}</p>
+              </div>
+
+              <div class="mt-4 pt-4 border-t border-slate-100">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-slate-500">${budgetLabel}</span>
+                  <span class="font-mono font-semibold text-slate-900 tabular-nums">${res.total_vram_gb.toFixed(1)} / ${budget.toFixed(1)} GB</span>
+                </div>
+                <div class="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div class="h-full rounded-full ${barColor}" style="width: ${pct}%"></div>
+                </div>
+
+                <div class="mt-3.5 flex items-center justify-between">
+                  <div class="flex items-baseline gap-1.5">
+                    <span class="font-mono text-lg font-bold text-slate-950 tabular-nums">${tpsDisplay}</span>
+                    <span class="text-[11px] text-slate-500 tabular-nums">${layersText}</span>
+                  </div>
+                  <a href="${simHref}" class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800">
+                    Simulate -&gt;
+                  </a>
+                </div>
+              </div>
+            </article>
+          `;
+        })
+        .join('');
+
+      const liveRemaining = Math.max(0, liveItems.length - slice.length);
+      if (livePagBar && livePagSummary && liveLoadMoreBtn) {
+        livePagBar.classList.toggle('hidden', liveRemaining === 0);
+        livePagSummary.textContent = `Showing ${slice.length} of ${liveItems.length} live catalog estimates`;
+        liveLoadMoreBtn.textContent = `Load ${Math.min(PAGE_SIZE, liveRemaining)} More (${liveRemaining} left)`;
+      }
+    }
+
     function applyFilters(resetPagination = true) {
       if (resetPagination) {
         visibleLimit = PAGE_SIZE;
+        liveVisibleLimit = PAGE_SIZE;
       }
 
       const mVal = modelSelect ? modelSelect.value : 'all';
       const hVal = hwSelect ? hwSelect.value : 'all';
-      const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+      const rawQuery = searchInput ? searchInput.value.trim() : '';
+      const tokens = rawQuery.toLowerCase().split(/\s+/).filter(Boolean);
       const sortVal = sortSelect ? sortSelect.value : 'featured';
 
       if (sortVal !== currentSort) {
@@ -675,14 +1015,19 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
         ? Array.from(cardsGrid.querySelectorAll('[data-card]'))
         : cards;
 
-      const matching = [];
+      const matching: Element[] = [];
       orderedCards.forEach((card) => {
         const matchModel = mVal === 'all' || card.getAttribute('data-model') === mVal;
-        const matchHw = hVal === 'all' || card.getAttribute('data-hardware') === hVal;
+        const matchHw =
+          hVal === 'all'
+            ? true
+            : hVal === 'cpu-only'
+              ? false
+              : card.getAttribute('data-hardware') === hVal;
         const matchStatus = selectedStatus === 'all' || card.getAttribute('data-status') === selectedStatus;
         const matchVendor = selectedVendor === 'all' || card.getAttribute('data-vendor') === selectedVendor;
         const searchBlob = card.getAttribute('data-search') || '';
-        const matchQuery = !query || searchBlob.includes(query);
+        const matchQuery = tokens.length === 0 || tokens.every((t) => searchBlob.includes(t));
 
         const isMatch = matchModel && matchHw && matchStatus && matchVendor && matchQuery;
         if (isMatch) {
@@ -697,19 +1042,33 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
         card.classList.toggle('hidden', i >= visibleLimit);
       });
 
+      const liveItems = computeLiveCatalogMatches(mVal, hVal, tokens, sortVal);
+      renderLiveCards(liveItems, hVal, mVal, matching.length);
+
       const remaining = Math.max(0, matching.length - shownCount);
+      const isFiltered =
+        mVal !== 'all' ||
+        hVal !== 'all' ||
+        selectedStatus !== 'all' ||
+        selectedVendor !== 'all' ||
+        sortVal !== 'featured' ||
+        tokens.length > 0;
+
       if (countEl) {
-        countEl.textContent =
-          matching.length === total
-            ? `Showing ${shownCount} of ${total} configurations`
-            : `Showing ${shownCount} of ${matching.length} matched (${total} total)`;
+        if (!isFiltered) {
+          countEl.textContent = `Showing ${shownCount} of ${totalCurated} full guides (${totalCombinations} live)`;
+        } else if (liveItems.length > 0) {
+          countEl.textContent = `${matching.length} Full Guides + ${liveItems.length} Live Estimates (${matching.length + liveItems.length} matched)`;
+        } else {
+          countEl.textContent = `Showing ${shownCount} of ${matching.length} matched (${totalCurated} guides)`;
+        }
       }
 
       if (paginationBar) {
         paginationBar.classList.toggle('hidden', remaining === 0);
       }
       if (paginationSummary) {
-        paginationSummary.textContent = `Viewing ${shownCount} of ${matching.length} matching benchmarks`;
+        paginationSummary.textContent = `Viewing ${shownCount} of ${matching.length} matching full guides`;
       }
       if (paginationFill) {
         const pct = matching.length > 0 ? Math.round((shownCount / matching.length) * 100) : 100;
@@ -720,18 +1079,12 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
         loadMoreBtn.textContent = `Load ${nextChunk} More (${remaining} left)`;
       }
 
-      const isFiltered =
-        mVal !== 'all' ||
-        hVal !== 'all' ||
-        selectedStatus !== 'all' ||
-        selectedVendor !== 'all' ||
-        sortVal !== 'featured' ||
-        query.length > 0;
+      const anyMatched = matching.length > 0 || liveItems.length > 0;
       if (resetBtn) resetBtn.classList.toggle('hidden', !isFiltered);
-      if (emptyState) emptyState.classList.toggle('hidden', matching.length > 0);
+      if (emptyState) emptyState.classList.toggle('hidden', anyMatched);
       if (cardsGrid) cardsGrid.classList.toggle('hidden', matching.length === 0);
 
-      syncUrl(mVal, hVal, searchInput ? searchInput.value.trim() : '', sortVal);
+      syncUrl(mVal, hVal, rawQuery, sortVal);
     }
 
     function hydrateFromUrl() {
@@ -753,7 +1106,7 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
         updateStatusPills();
         hadParam = true;
       }
-      if (vndParam && ['NVIDIA', 'Apple', 'AMD'].includes(vndParam)) {
+      if (vndParam && ['NVIDIA', 'Apple', 'AMD', 'Intel'].includes(vndParam)) {
         selectedVendor = vndParam;
         updateVendorPills();
         hadParam = true;
@@ -803,7 +1156,14 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
 
     if (showAllBtn) {
       showAllBtn.addEventListener('click', () => {
-        visibleLimit = total;
+        visibleLimit = totalCurated;
+        applyFilters(false);
+      });
+    }
+
+    if (liveLoadMoreBtn) {
+      liveLoadMoreBtn.addEventListener('click', () => {
+        liveVisibleLimit += PAGE_SIZE;
         applyFilters(false);
       });
     }
@@ -841,5 +1201,11 @@ const homeOgDescription = `Check exact Q4_K_M / Q8_0 / FP16 VRAM and tok/s acros
     });
 
     hydrateFromUrl();
-  })();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMatrixPage);
+  } else {
+    initMatrixPage();
+  }
 </script>

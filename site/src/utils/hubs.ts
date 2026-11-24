@@ -69,6 +69,7 @@ export function resolveHardwareGroup(h: HardwareSpec): HardwareGroup {
   if (
     h.category === 'Multi-GPU' ||
     h.category === 'Workstation' ||
+    h.category === 'Data Center' ||
     h.series.includes('Multi-GPU') ||
     h.series.includes('Workstation')
   ) {
@@ -78,6 +79,54 @@ export function resolveHardwareGroup(h: HardwareSpec): HardwareGroup {
     return 'Unified Memory';
   }
   return 'Desktop GPU';
+}
+
+export function classifyCatalogGroup(h: HardwareSpec): string {
+  if (h.vendor === 'Apple') return 'Apple Silicon Unified';
+  if (h.vendor === 'AMD') return 'AMD Radeon & Ryzen AI';
+  if (h.vendor === 'Intel') return 'Intel Arc';
+  if (h.category === 'Laptop GPU' || h.series.includes('Laptop')) {
+    return 'NVIDIA Laptop RTX';
+  }
+  if (
+    h.category === 'Multi-GPU' ||
+    h.category === 'Workstation' ||
+    h.category === 'Data Center' ||
+    h.series.includes('Multi-GPU') ||
+    h.series.includes('Workstation') ||
+    h.series.includes('Data Center')
+  ) {
+    return 'NVIDIA Multi-GPU & Workstation';
+  }
+  if (h.series.includes('GTX 10') || h.series.includes('RTX 20')) {
+    return 'NVIDIA Classic GTX & RTX 20';
+  }
+  return 'NVIDIA Desktop RTX';
+}
+
+export function groupCatalogHardware(items: HardwareSpec[]): { label: string; items: HardwareSpec[] }[] {
+  const order = [
+    'NVIDIA Desktop RTX',
+    'NVIDIA Classic GTX & RTX 20',
+    'NVIDIA Multi-GPU & Workstation',
+    'NVIDIA Laptop RTX',
+    'Apple Silicon Unified',
+    'AMD Radeon & Ryzen AI',
+    'Intel Arc',
+  ];
+  const byGroup = new Map<string, HardwareSpec[]>();
+  for (const h of items) {
+    const g = classifyCatalogGroup(h);
+    const list = byGroup.get(g);
+    if (list) list.push(h);
+    else byGroup.set(g, [h]);
+  }
+  return order
+    .map((label) => ({
+      label,
+      items: (byGroup.get(label) ?? []).sort((a, b) => a.name.localeCompare(b.name)),
+    }))
+    .filter((g) => g.items.length > 0);
 }
 
 export function buildHardwareHubs(allEntries: PageEntry[]): HardwareHub[] {

@@ -31,10 +31,12 @@ const socialDesc = ogDescription ?? description;
 const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://vramcalc.me').toString();
 const socialImageAlt = ogImageAlt ?? socialTitle;
 const isHome = canonicalPath === '/';
+const isCalc = canonicalPath.startsWith('/calculator');
 const isGpu = canonicalPath.startsWith('/gpu/');
 const isModel = canonicalPath.startsWith('/model/');
 
 const navMatrixClass = isHome ? 'text-blue-600 font-semibold' : 'hover:text-slate-950 transition-colors';
+const navCalcClass = isCalc ? 'text-blue-600 font-semibold' : 'hover:text-slate-950 transition-colors';
 const navGpuClass = isGpu ? 'text-blue-600 font-semibold' : 'hover:text-slate-950 transition-colors';
 const navModelClass = isModel ? 'text-blue-600 font-semibold' : 'hover:text-slate-950 transition-colors';
 ---
@@ -94,6 +96,7 @@ const navModelClass = isModel ? 'text-blue-600 font-semibold' : 'hover:text-slat
 
         <nav aria-label="Primary" class="flex items-center gap-4 sm:gap-5 text-sm font-medium text-slate-600">
           <a href="/" class={navMatrixClass}>Matrix</a>
+          <a href="/calculator/" class={navCalcClass}>Simulator</a>
           <a href="/gpu/" class={navGpuClass}>GPUs</a>
           <a href="/model/" class={navModelClass}>Models</a>
           <a href="/#methodology" class="hidden md:inline hover:text-slate-950 transition-colors">
@@ -124,6 +127,7 @@ const navModelClass = isModel ? 'text-blue-600 font-semibold' : 'hover:text-slat
         </div>
         <div class="flex flex-wrap items-center gap-4 text-xs font-medium text-slate-500 shrink-0">
           <a href="/" class="hover:text-slate-900 transition-colors">Matrix</a>
+          <a href="/calculator/" class="hover:text-slate-900 transition-colors">Rig Simulator</a>
           <a href="/gpu/" class="hover:text-slate-900 transition-colors">All GPUs</a>
           <a href="/model/" class="hover:text-slate-900 transition-colors">All Models</a>
           <a href="/sitemap-index.xml" class="hover:text-slate-900 transition-colors">Sitemap</a>
