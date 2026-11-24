@@ -77,6 +77,40 @@ const faqSchema = {
   })),
 };
 
+const gpuHubHref = `/gpu/${hardware.id}/`;
+const modelHubHref = `/model/${model.id}/`;
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Home',
+      item: 'https://vramcalc.me/',
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: hardware.short_name,
+      item: `https://vramcalc.me${gpuHubHref}`,
+    },
+    {
+      '@type': 'ListItem',
+      position: 3,
+      name: model.short_name,
+      item: `https://vramcalc.me${modelHubHref}`,
+    },
+    {
+      '@type': 'ListItem',
+      position: 4,
+      name: `${model.short_name} on ${hardware.short_name}`,
+      item: `https://vramcalc.me/can-i-run/${entry.slug}/`,
+    },
+  ],
+};
+
 const appOs =
   hardware.vendor === 'Apple'
     ? 'macOS'
@@ -102,18 +136,31 @@ const appSchema = {
   totalPages={allEntries.length}
 >
   <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
     <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
     <script type="application/ld+json" set:html={JSON.stringify(appSchema)} />
   </Fragment>
 
   <article class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
     <!-- Breadcrumbs -->
-    <nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
-      <a href="/" class="hover:text-slate-900 transition-colors">Home</a>
-      <span aria-hidden="true">/</span>
-      <a href="/" class="hover:text-slate-900 transition-colors">{model.family}</a>
-      <span aria-hidden="true">/</span>
-      <span class="text-slate-900 truncate">{model.short_name} on {hardware.short_name}</span>
+    <nav aria-label="Breadcrumb">
+      <ol class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-500">
+        <li>
+          <a href="/" class="hover:text-slate-900 transition-colors">Home</a>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li>
+          <a href={gpuHubHref} class="hover:text-slate-900 transition-colors">{hardware.short_name}</a>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li>
+          <a href={modelHubHref} class="hover:text-slate-900 transition-colors">{model.short_name}</a>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li aria-current="page" class="text-slate-900 font-semibold truncate">
+          {model.short_name} on {hardware.short_name}
+        </li>
+      </ol>
     </nav>
 
     <!-- Page Header -->
@@ -405,7 +452,7 @@ const appSchema = {
     <!-- Internal Linking Recommendations -->
     {recommendedLinks.length > 0 && (
       <section class="mt-12 border-t border-slate-200 pt-8" aria-labelledby="related-heading">
-        <div class="flex items-center justify-between gap-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 id="related-heading" class="text-xl font-bold tracking-tight text-slate-950">
               Compare Related Hardware &amp; Models
@@ -414,9 +461,23 @@ const appSchema = {
               Explore alternative GPUs for {model.short_name} or other open-weight models benchmarked on {hardware.short_name}.
             </p>
           </div>
-          <a href="/" class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0">
-            View Full Matrix -&gt;
-          </a>
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <a
+              href={gpuHubHref}
+              class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700 transition-colors"
+            >
+              All {hardware.short_name} Models
+            </a>
+            <a
+              href={modelHubHref}
+              class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700 transition-colors"
+            >
+              All {model.short_name} GPUs
+            </a>
+            <a href="/" class="text-xs font-semibold text-blue-600 hover:text-blue-800 ml-1">
+              View Full Matrix -&gt;
+            </a>
+          </div>
         </div>
 
         <div class="mt-4 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
