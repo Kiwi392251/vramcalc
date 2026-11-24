@@ -128,6 +128,9 @@ const statusFilters = [
   { key: 'Partial Offload', label: `Partial Offload (${partialCount})` },
   { key: 'OOM', label: `OOM (${oomCount})` },
 ] as const;
+const ogTitle = `${hardware.name}: ${smoothCount}/${entries.length} Local LLMs Run Smooth`;
+const ogDescription = `${hardware.usable_vram_gb} GB usable ${hardware.memory_type} (${hardware.bandwidth_gbps} GB/s). Top fit: ${topPickSummary}. Compare every tested model & CLI flags.`;
+const ogImage = `/og/gpu-${hardware.id}.png`;
 ---
 
 <BaseLayout
@@ -135,6 +138,11 @@ const statusFilters = [
   description={pageDescription}
   canonicalPath={canonicalPath}
   totalPages={totalSiteEntries}
+  ogTitle={ogTitle}
+  ogDescription={ogDescription}
+  ogImage={ogImage}
+  ogImageAlt={ogTitle}
+  themeColor="#2563eb"
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />

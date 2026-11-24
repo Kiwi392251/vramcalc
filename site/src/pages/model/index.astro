@@ -57,6 +57,8 @@ const itemListSchema = {
     url: `https://vramcalc.me/model/${h.model.id}/`,
   })),
 };
+const ogTitle = `All ${totalHubs} Open-Weight LLM VRAM Benchmarks | VRAMCalc.me`;
+const ogDescription = `See exact Q4_K_M / Q8_0 / FP16 VRAM requirements and ranked GPU speed across ${totalHubs} open-weight models (${minParams}B-${maxParams}B).`;
 ---
 
 <BaseLayout
@@ -64,6 +66,11 @@ const itemListSchema = {
   description={pageDescription}
   canonicalPath={canonicalPath}
   totalPages={totalConfigs}
+  ogTitle={ogTitle}
+  ogDescription={ogDescription}
+  ogImage="/og/model-index.png"
+  ogImageAlt={ogTitle}
+  themeColor="#2563eb"
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />

@@ -64,3 +64,9 @@ input[type="range"].vram-slider::-moz-range-thumb {
 details summary::-webkit-details-marker {
   display: none;
 }
+
+/* Defer off-screen card layout work at 100+ items */
+.matrix-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 270px;
+}

@@ -72,6 +72,8 @@ const groupFilters = [
   'Unified Memory',
   'Laptop GPU',
 ] as const;
+const ogTitle = `All ${totalHubs} Local AI GPUs & Macs Compared | VRAMCalc.me`;
+const ogDescription = `Compare usable VRAM, memory bandwidth, and Smooth LLM support across ${totalHubs} GPUs & Apple Silicon systems (${totalConfigs} benchmarks).`;
 ---
 
 <BaseLayout
@@ -79,6 +81,11 @@ const groupFilters = [
   description={pageDescription}
   canonicalPath={canonicalPath}
   totalPages={totalConfigs}
+  ogTitle={ogTitle}
+  ogDescription={ogDescription}
+  ogImage="/og/gpu-index.png"
+  ogImageAlt={ogTitle}
+  themeColor="#2563eb"
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />

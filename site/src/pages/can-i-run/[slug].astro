@@ -64,6 +64,87 @@ const maxSmoothCtxLabel =
     ? formatContextLabel(context_analysis.max_smooth_context_q4)
     : 'N/A (Exceeds Usable VRAM)';
 
+const showRetentionPanel = res.status === 'OOM' || res.status === 'Partial Offload';
+const isOom = res.status === 'OOM';
+
+const smoothSameHw = sameHwEntries
+  .filter((e) => e.default_result.status === 'Smooth')
+  .sort((a, b) => {
+    if (b.model.params_b !== a.model.params_b) return b.model.params_b - a.model.params_b;
+    return b.default_result.est_tps - a.default_result.est_tps;
+  })
+  .slice(0, 3);
+
+const smoothSameModel = sameModelEntries.filter((e) => e.default_result.status === 'Smooth');
+
+interface UpgradeHwPick {
+  role: string;
+  entry: PageEntry;
+}
+
+const upgradeHwPicks: UpgradeHwPick[] = [];
+const pickedUpgradeSlugs = new Set<string>();
+
+if (smoothSameModel.length > 0) {
+  const affordablePick = [...smoothSameModel].sort((a, b) => {
+    if (a.hardware.msrp_usd !== b.hardware.msrp_usd) {
+      return a.hardware.msrp_usd - b.hardware.msrp_usd;
+    }
+    return b.default_result.est_tps - a.default_result.est_tps;
+  })[0];
+  if (affordablePick) {
+    pickedUpgradeSlugs.add(affordablePick.slug);
+    upgradeHwPicks.push({ role: 'Most Affordable Smooth', entry: affordablePick });
+  }
+
+  const fastestPick = [...smoothSameModel].sort(
+    (a, b) => b.default_result.est_tps - a.default_result.est_tps
+  )[0];
+  if (fastestPick && !pickedUpgradeSlugs.has(fastestPick.slug)) {
+    pickedUpgradeSlugs.add(fastestPick.slug);
+    upgradeHwPicks.push({ role: 'Fastest Smooth', entry: fastestPick });
+  }
+
+  const unifiedPick = [...smoothSameModel]
+    .filter((e) => e.hardware.is_unified)
+    .sort((a, b) => b.default_result.est_tps - a.default_result.est_tps)[0];
+  if (unifiedPick && !pickedUpgradeSlugs.has(unifiedPick.slug)) {
+    pickedUpgradeSlugs.add(unifiedPick.slug);
+    upgradeHwPicks.push({ role: 'Unified Memory Smooth', entry: unifiedPick });
+  }
+
+  for (const extra of [...smoothSameModel].sort(
+    (a, b) => b.default_result.est_tps - a.default_result.est_tps
+  )) {
+    if (upgradeHwPicks.length >= 3) break;
+    if (!pickedUpgradeSlugs.has(extra.slug)) {
+      pickedUpgradeSlugs.add(extra.slug);
+      upgradeHwPicks.push({ role: 'Runner-Up Smooth', entry: extra });
+    }
+  }
+}
+
+const retentionWrapClass = isOom
+  ? 'mt-8 rounded-2xl border border-rose-200 bg-rose-50/60 p-5 sm:p-6'
+  : 'mt-8 rounded-2xl border border-amber-200 bg-amber-50/50 p-5 sm:p-6';
+const retentionBadgeClass = isOom
+  ? 'inline-flex items-center rounded-full border border-rose-200 bg-white px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-rose-700'
+  : 'inline-flex items-center rounded-full border border-amber-200 bg-white px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-amber-800';
+const retentionHeadline = isOom
+  ? `Out of Memory on ${hardware.short_name}: Smooth Alternatives & Upgrades`
+  : `PCIe Offload Bottleneck (${res.gpu_layers_fit}/${res.total_layers} GPU Layers): Smooth Alternatives`;
+const retentionLead = isOom
+  ? `${model.short_name} needs ${res.total_vram_gb.toFixed(2)} GB at 8K Q4_K_M vs ${hardware.usable_vram_gb} GB usable on ${hardware.short_name}. Pick a smaller Smooth model on this GPU or upgrade hardware below:`
+  : `Running ${model.short_name} on ${hardware.short_name} spills weights to system RAM (~${res.est_tps.toFixed(1)} tok/s). For 100% full-speed GPU residency without offloading, consider these verified Smooth options:`;
+
+const themeColor =
+  res.status === 'Smooth' ? '#10b981' : res.status === 'Partial Offload' ? '#f59e0b' : '#f43f5e';
+const ogSpeedSnippet = res.status === 'OOM' ? 'OOM' : `${res.est_tps.toFixed(1)} tok/s`;
+const ogTitle = `${model.short_name} on ${hardware.short_name}: ${res.status} (${ogSpeedSnippet})`;
+const ogDescription = `${res.status} @ Q4_K_M 8K: ${res.total_vram_gb.toFixed(2)}/${hardware.usable_vram_gb} GB usable (${res.gpu_layers_fit}/${res.total_layers} layers). Max Smooth Q4 context: ${maxSmoothCtxLabel}. Ollama & llama.cpp flags inside.`;
+const ogImage = `/og/run-${entry.slug}.png`;
+const shareUrl = `https://vramcalc.me/can-i-run/${entry.slug}/`;
+
 const faqSchema = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
@@ -165,6 +246,11 @@ const appSchema = {
   description={entry.meta_description}
   canonicalPath={`/can-i-run/${entry.slug}/`}
   totalPages={allEntries.length}
+  ogTitle={ogTitle}
+  ogDescription={ogDescription}
+  ogImage={ogImage}
+  ogImageAlt={ogTitle}
+  themeColor={themeColor}
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(gpuBreadcrumbSchema)} />
@@ -206,14 +292,39 @@ const appSchema = {
 
     <!-- Page Header -->
     <header class="mt-4">
-      <div class="flex flex-wrap items-center gap-2.5">
-        <StatusBadge status={res.status} size="md" />
-        <span class="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 font-mono text-xs font-medium text-slate-600">
-          {hardware.backend} · {hardware.memory_type}
-        </span>
-        <span class="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 font-mono text-xs font-medium text-slate-600">
-          {model.params_b}B Params · {model.num_layers} Layers
-        </span>
+      <div class="flex flex-wrap items-center justify-between gap-2.5">
+        <div class="flex flex-wrap items-center gap-2.5">
+          <StatusBadge status={res.status} size="md" />
+          <span class="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 font-mono text-xs font-medium text-slate-600">
+            {hardware.backend} · {hardware.memory_type}
+          </span>
+          <span class="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 font-mono text-xs font-medium text-slate-600">
+            {model.params_b}B Params · {model.num_layers} Layers
+          </span>
+        </div>
+
+        <button
+          type="button"
+          data-copy-url={shareUrl}
+          data-copy-label="Benchmark share link"
+          class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700 transition-colors cursor-pointer"
+        >
+          <span data-copy-icon="copy" aria-hidden="true">
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+          </span>
+          <span data-copy-icon="check" class="hidden" aria-hidden="true">
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </span>
+          <span data-copy-text>Share Benchmark</span>
+        </button>
       </div>
 
       <h1 class="mt-3.5 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
@@ -241,6 +352,146 @@ const appSchema = {
     <div class="mt-7">
       <VramCalculator entry={entry} />
     </div>
+
+    <!-- SSR OOM & Partial Offload Retention Panel -->
+    {showRetentionPanel && (
+      <section
+        id="oom-retention-panel"
+        aria-labelledby="retention-heading"
+        class={retentionWrapClass}
+      >
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class={retentionBadgeClass}>
+            {isOom ? 'Recommended Smooth Fixes' : 'Full-GPU Smooth Alternatives'}
+          </span>
+          <span class="font-mono text-xs text-slate-600">
+            Verified Smooth Fits Only
+          </span>
+        </div>
+
+        <h2 id="retention-heading" class="mt-2.5 text-lg font-bold tracking-tight text-slate-950 sm:text-xl">
+          {retentionHeadline}
+        </h2>
+        <p class="mt-1 text-sm text-slate-700">
+          {retentionLead}
+        </p>
+
+        <div class="mt-5 grid gap-5 lg:grid-cols-2">
+          <!-- Column 1: Smooth Alternative Models on Same Hardware -->
+          <div class="rounded-xl border border-slate-200/80 bg-white/95 p-4 shadow-xs flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                <h3 class="text-sm font-bold text-slate-950">
+                  Smooth Models on {hardware.short_name}
+                </h3>
+                <a href={gpuHubHref} class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0">
+                  All {hardware.short_name} -&gt;
+                </a>
+              </div>
+
+              {smoothSameHw.length > 0 ? (
+                <div class="mt-3 space-y-2.5">
+                  {smoothSameHw.map((alt) => {
+                    const altHref = `/can-i-run/${alt.slug}/`;
+                    return (
+                      <a
+                        href={altHref}
+                        class="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 hover:border-emerald-300 hover:bg-emerald-50/40 transition-colors"
+                      >
+                        <div class="min-w-0">
+                          <div class="flex items-center gap-2">
+                            <span class="font-bold text-sm text-slate-950 truncate">{alt.model.short_name}</span>
+                            <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                              Smooth
+                            </span>
+                          </div>
+                          <div class="mt-0.5 font-mono text-xs text-slate-500">
+                            {alt.default_result.total_vram_gb.toFixed(1)} / {alt.hardware.usable_vram_gb} GB · {alt.default_result.gpu_layers_fit}/{alt.default_result.total_layers}L
+                          </div>
+                        </div>
+                        <div class="text-right shrink-0">
+                          <div class="font-mono text-sm font-bold text-emerald-700 tabular-nums">
+                            {alt.default_result.est_tps.toFixed(1)} tok/s
+                          </div>
+                          <span class="text-[11px] font-semibold text-blue-600">Switch -&gt;</span>
+                        </div>
+                      </a>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p class="mt-3 text-xs text-slate-600">
+                  Inspect smaller 1.5B–7B GGUF models tested for {hardware.short_name} on the GPU hub.
+                </p>
+              )}
+            </div>
+
+            <div class="mt-3.5 border-t border-slate-100 pt-2.5 text-right">
+              <a href={gpuHubHref} class="text-xs font-semibold text-blue-600 hover:text-blue-800">
+                Explore All {hardware.short_name} Models -&gt;
+              </a>
+            </div>
+          </div>
+
+          <!-- Column 2: Smooth Upgrade Hardware for Same Model -->
+          <div class="rounded-xl border border-slate-200/80 bg-white/95 p-4 shadow-xs flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                <h3 class="text-sm font-bold text-slate-950">
+                  GPUs That Run {model.short_name} Smoothly
+                </h3>
+                <a href={modelHubHref} class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0">
+                  All {model.short_name} -&gt;
+                </a>
+              </div>
+
+              {upgradeHwPicks.length > 0 ? (
+                <div class="mt-3 space-y-2.5">
+                  {upgradeHwPicks.map((up) => {
+                    const upEntry = up.entry;
+                    const upHref = `/can-i-run/${upEntry.slug}/`;
+                    return (
+                      <a
+                        href={upHref}
+                        class="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 hover:border-blue-300 hover:bg-blue-50/40 transition-colors"
+                      >
+                        <div class="min-w-0">
+                          <div class="flex items-center gap-2">
+                            <span class="font-bold text-sm text-slate-950 truncate">{upEntry.hardware.short_name}</span>
+                            <span class="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-800">
+                              {up.role}
+                            </span>
+                          </div>
+                          <div class="mt-0.5 font-mono text-xs text-slate-500">
+                            {upEntry.hardware.usable_vram_gb} GB usable · ${upEntry.hardware.msrp_usd.toLocaleString()} MSRP
+                          </div>
+                        </div>
+                        <div class="text-right shrink-0">
+                          <div class="font-mono text-sm font-bold text-emerald-700 tabular-nums">
+                            {upEntry.default_result.est_tps.toFixed(1)} tok/s
+                          </div>
+                          <span class="text-[11px] font-semibold text-blue-600">Inspect -&gt;</span>
+                        </div>
+                      </a>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p class="mt-3 text-xs text-slate-600">
+                  Compare all tested hardware specs and offload speeds on the {model.short_name} leaderboard.
+                </p>
+              )}
+            </div>
+
+            <div class="mt-3.5 border-t border-slate-100 pt-2.5 text-right">
+              <a href={modelHubHref} class="text-xs font-semibold text-blue-600 hover:text-blue-800">
+                Compare All {smoothSameModel.length} Smooth GPUs -&gt;
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    )}
 
     <!-- Quantization Comparison Table -->
     <section class="mt-10" aria-labelledby="quant-table-heading">
@@ -334,9 +585,21 @@ const appSchema = {
               <button
                 type="button"
                 data-copy-target="cmd-ollama-env"
-                class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer"
+                data-copy-label="Ollama Env command"
+                class="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer"
               >
-                Copy Env Command
+                <span data-copy-icon="copy" aria-hidden="true">
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </span>
+                <span data-copy-icon="check" class="hidden" aria-hidden="true">
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </span>
+                <span data-copy-text>Copy Env Command</span>
               </button>
             </div>
 
@@ -347,19 +610,31 @@ const appSchema = {
                   <button
                     type="button"
                     data-copy-target="cmd-ollama-basic"
-                    class="font-semibold text-blue-400 hover:text-blue-300 cursor-pointer"
+                    data-copy-label="Ollama Run command"
+                    class="inline-flex items-center gap-1 rounded-md border border-slate-700 bg-slate-800 px-2.5 py-0.5 text-[11px] font-semibold normal-case tracking-normal text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer"
                   >
-                    Copy
+                    <span data-copy-icon="copy" aria-hidden="true">
+                      <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                      </svg>
+                    </span>
+                    <span data-copy-icon="check" class="hidden" aria-hidden="true">
+                      <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </span>
+                    <span data-copy-text>Copy Run</span>
                   </button>
                 </div>
-                <pre id="cmd-ollama-basic" class="mt-1 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs text-emerald-300">{commands.ollama_run}</pre>
+                <pre id="cmd-ollama-basic" class="mt-1.5 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs text-emerald-300 transition-shadow">{commands.ollama_run}</pre>
               </div>
 
               <div>
                 <div class="text-[11px] uppercase tracking-wider text-slate-400">
                   Flash Attention + Q8_0 KV Cache ({formatContextLabel(commands.recommended_ctx)})
                 </div>
-                <pre id="cmd-ollama-env" class="mt-1 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs text-sky-300 whitespace-pre-wrap break-all">{commands.ollama_env_cmd}</pre>
+                <pre id="cmd-ollama-env" class="mt-1.5 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs text-sky-300 whitespace-pre-wrap break-all transition-shadow">{commands.ollama_env_cmd}</pre>
               </div>
             </div>
           </div>
@@ -376,9 +651,21 @@ const appSchema = {
               <button
                 type="button"
                 data-copy-target="cmd-llama-cli"
-                class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer"
+                data-copy-label="llama-cli command"
+                class="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer"
               >
-                Copy llama-cli
+                <span data-copy-icon="copy" aria-hidden="true">
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </span>
+                <span data-copy-icon="check" class="hidden" aria-hidden="true">
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </span>
+                <span data-copy-text>Copy llama-cli</span>
               </button>
             </div>
 
@@ -387,7 +674,7 @@ const appSchema = {
                 <div class="text-[11px] uppercase tracking-wider text-slate-400">
                   Interactive Terminal (`llama-cli`)
                 </div>
-                <pre id="cmd-llama-cli" class="mt-1 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs text-emerald-300">{commands.llama_cli}</pre>
+                <pre id="cmd-llama-cli" class="mt-1.5 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs text-emerald-300 transition-shadow">{commands.llama_cli}</pre>
               </div>
 
               <div>
@@ -396,12 +683,24 @@ const appSchema = {
                   <button
                     type="button"
                     data-copy-target="cmd-llama-server"
-                    class="font-semibold text-blue-400 hover:text-blue-300 cursor-pointer"
+                    data-copy-label="llama-server command"
+                    class="inline-flex items-center gap-1 rounded-md border border-slate-700 bg-slate-800 px-2.5 py-0.5 text-[11px] font-semibold normal-case tracking-normal text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer"
                   >
-                    Copy
+                    <span data-copy-icon="copy" aria-hidden="true">
+                      <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                      </svg>
+                    </span>
+                    <span data-copy-icon="check" class="hidden" aria-hidden="true">
+                      <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </span>
+                    <span data-copy-text>Copy Server</span>
                   </button>
                 </div>
-                <pre id="cmd-llama-server" class="mt-1 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs text-sky-300">{commands.llama_server}</pre>
+                <pre id="cmd-llama-server" class="mt-1.5 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs text-sky-300 transition-shadow">{commands.llama_server}</pre>
               </div>
             </div>
           </div>
@@ -557,6 +856,17 @@ const appSchema = {
       </section>
     )}
   </article>
+
+  <!-- Accessible Floating Copy Toast -->
+  <div
+    id="copy-toast"
+    role="status"
+    aria-live="polite"
+    class="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-slate-950 px-4 py-2.5 text-xs font-semibold text-white shadow-lg transition-all duration-200 opacity-0 pointer-events-none translate-y-2"
+  >
+    <span class="h-2 w-2 rounded-full bg-emerald-400" aria-hidden="true"></span>
+    <span id="copy-toast-text">Copied to clipboard</span>
+  </div>
 </BaseLayout>
 
 <script is:inline>
@@ -584,21 +894,77 @@ const appSchema = {
       });
     }
 
+    const toastEl = document.getElementById('copy-toast');
+    const toastTextEl = document.getElementById('copy-toast-text');
+    let toastTimer = null;
+
+    function showToast(label) {
+      if (!toastEl || !toastTextEl) return;
+      toastTextEl.textContent = label ? `Copied ${label} to clipboard` : 'Copied to clipboard';
+      toastEl.classList.remove('opacity-0', 'translate-y-2', 'pointer-events-none');
+      toastEl.classList.add('opacity-100', 'translate-y-0');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toastEl.classList.add('opacity-0', 'translate-y-2', 'pointer-events-none');
+        toastEl.classList.remove('opacity-100', 'translate-y-0');
+      }, 1800);
+    }
+
+    function flashButtonFeedback(btn, targetEl, label) {
+      const copyIcon = btn.querySelector('[data-copy-icon="copy"]');
+      const checkIcon = btn.querySelector('[data-copy-icon="check"]');
+      const textSpan = btn.querySelector('[data-copy-text]');
+      const origText = btn.dataset.origLabel || (textSpan ? textSpan.textContent : btn.textContent) || 'Copy';
+      btn.dataset.origLabel = origText;
+
+      if (btn._resetTimer) clearTimeout(btn._resetTimer);
+
+      if (copyIcon) copyIcon.classList.add('hidden');
+      if (checkIcon) checkIcon.classList.remove('hidden');
+      if (textSpan) {
+        textSpan.textContent = 'Copied ✓';
+      } else {
+        btn.textContent = 'Copied ✓';
+      }
+      btn.classList.add('border-emerald-500/60', 'text-emerald-400');
+
+      if (targetEl) {
+        targetEl.classList.add('ring-2', 'ring-emerald-400/70');
+      }
+
+      showToast(label);
+
+      btn._resetTimer = setTimeout(() => {
+        if (copyIcon) copyIcon.classList.remove('hidden');
+        if (checkIcon) checkIcon.classList.add('hidden');
+        if (textSpan) {
+          textSpan.textContent = btn.dataset.origLabel || origText;
+        } else {
+          btn.textContent = btn.dataset.origLabel || origText;
+        }
+        btn.classList.remove('border-emerald-500/60', 'text-emerald-400');
+        if (targetEl) {
+          targetEl.classList.remove('ring-2', 'ring-emerald-400/70');
+        }
+      }, 1800);
+    }
+
     document.querySelectorAll('[data-copy-target]').forEach((btn) => {
-      const originalLabel = btn.textContent || 'Copy';
       btn.addEventListener('click', () => {
         const targetId = btn.getAttribute('data-copy-target');
+        const label = btn.getAttribute('data-copy-label') || 'command';
         const el = targetId ? document.getElementById(targetId) : null;
         if (!el) return;
         const text = (el.textContent || '').trim();
-        copyText(text).then(() => {
-          btn.textContent = 'Copied ✓';
-          btn.classList.add('text-emerald-300');
-          setTimeout(() => {
-            btn.textContent = originalLabel;
-            btn.classList.remove('text-emerald-300');
-          }, 1600);
-        });
+        copyText(text).then(() => flashButtonFeedback(btn, el, label));
+      });
+    });
+
+    document.querySelectorAll('[data-copy-url]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const url = btn.getAttribute('data-copy-url') || window.location.href;
+        const label = btn.getAttribute('data-copy-label') || 'share URL';
+        copyText(url).then(() => flashButtonFeedback(btn, null, label));
       });
     });
   })();

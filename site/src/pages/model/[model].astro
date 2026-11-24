@@ -128,6 +128,9 @@ const vendorFilters = [
   { key: 'Apple', label: 'Apple' },
   { key: 'AMD', label: 'AMD' },
 ] as const;
+const ogTitle = `${model.short_name} VRAM & GPU Rankings (${smoothCount} Smooth GPUs)`;
+const ogDescription = `Q4_K_M @ 8K uses ${q4VramLabel} (+${kvPer4k.toFixed(2)} GB KV/4K). Fastest tested: ${topHwSummary}. See full NVIDIA, Mac & AMD leaderboard.`;
+const ogImage = `/og/model-${model.id}.png`;
 ---
 
 <BaseLayout
@@ -135,6 +138,11 @@ const vendorFilters = [
   description={pageDescription}
   canonicalPath={canonicalPath}
   totalPages={totalSiteEntries}
+  ogTitle={ogTitle}
+  ogDescription={ogDescription}
+  ogImage={ogImage}
+  ogImageAlt={ogTitle}
+  themeColor="#2563eb"
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
