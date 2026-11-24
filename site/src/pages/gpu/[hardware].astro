@@ -2,39 +2,19 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
 import rawPagesData from '../../data/pages_data.json';
-import type { CompatStatus, HardwareSpec, PageEntry } from '../../types/vram';
+import type { HardwareSpec, PageEntry } from '../../types/vram';
 import { formatContextLabel } from '../../utils/physics';
+import { buildHardwareFaq, buildHardwareHubs, type HardwareHub } from '../../utils/hubs';
 
 export function getStaticPaths() {
   const allEntries = rawPagesData as PageEntry[];
-  const hwSpecMap = new Map<string, HardwareSpec>();
-  const hwEntriesMap = new Map<string, PageEntry[]>();
+  const hubs = buildHardwareHubs(allEntries);
+  const allHardware = hubs.map((h) => h.hardware);
 
-  for (const entry of allEntries) {
-    const hwId = entry.hardware.id;
-    const prev = hwSpecMap.get(hwId);
-    const merged: HardwareSpec = prev ? { ...prev, ...entry.hardware } : { ...entry.hardware };
-    if (prev?.category && !merged.category) merged.category = prev.category;
-    if (prev?.gpu_count !== undefined && merged.gpu_count === undefined) {
-      merged.gpu_count = prev.gpu_count;
-    }
-    hwSpecMap.set(hwId, merged);
-
-    const list = hwEntriesMap.get(hwId);
-    if (list) {
-      list.push(entry);
-    } else {
-      hwEntriesMap.set(hwId, [entry]);
-    }
-  }
-
-  const allHardware = Array.from(hwSpecMap.values());
-
-  return Array.from(hwEntriesMap.entries()).map(([hwId, entries]) => ({
-    params: { hardware: hwId },
+  return hubs.map((hub) => ({
+    params: { hardware: hub.hardware.id },
     props: {
-      hardware: hwSpecMap.get(hwId)!,
-      entries,
+      hub,
       allHardware,
       totalSiteEntries: allEntries.length,
     },
@@ -42,101 +22,23 @@ export function getStaticPaths() {
 }
 
 interface Props {
-  hardware: HardwareSpec;
-  entries: PageEntry[];
+  hub: HardwareHub;
   allHardware: HardwareSpec[];
   totalSiteEntries: number;
 }
 
-const { hardware, entries, allHardware, totalSiteEntries } = Astro.props;
+const { hub, allHardware, totalSiteEntries } = Astro.props;
+const {
+  hardware,
+  entries: sortedEntries,
+  smoothCount,
+  partialCount,
+  oomCount,
+  picks,
+} = hub;
 
-function statusRank(s: CompatStatus): number {
-  if (s === 'Smooth') return 0;
-  if (s === 'Partial Offload') return 1;
-  return 2;
-}
-
-const sortedEntries = [...entries].sort((a, b) => {
-  const sr = statusRank(a.default_result.status) - statusRank(b.default_result.status);
-  if (sr !== 0) return sr;
-  if (b.model.params_b !== a.model.params_b) return b.model.params_b - a.model.params_b;
-  if (b.default_result.est_tps !== a.default_result.est_tps) {
-    return b.default_result.est_tps - a.default_result.est_tps;
-  }
-  return a.model.name.localeCompare(b.model.name);
-});
-
-const smoothEntries = sortedEntries.filter((e) => e.default_result.status === 'Smooth');
-const partialEntries = sortedEntries.filter((e) => e.default_result.status === 'Partial Offload');
-const oomEntries = sortedEntries.filter((e) => e.default_result.status === 'OOM');
-
-const smoothCount = smoothEntries.length;
-const partialCount = partialEntries.length;
-const oomCount = oomEntries.length;
-
-interface RecommendedPick {
-  role: string;
-  accent: string;
-  entry: PageEntry;
-}
-
-const picks: RecommendedPick[] = [];
-const pickedSlugs = new Set<string>();
-
-if (smoothEntries.length > 0) {
-  const flagshipPick = [...smoothEntries].sort((a, b) => {
-    if (b.model.params_b !== a.model.params_b) return b.model.params_b - a.model.params_b;
-    return b.default_result.est_tps - a.default_result.est_tps;
-  })[0];
-  if (flagshipPick) {
-    pickedSlugs.add(flagshipPick.slug);
-    picks.push({
-      role: 'Flagship Quality Pick',
-      accent: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-      entry: flagshipPick,
-    });
-  }
-
-  const fastestPick = [...smoothEntries].sort(
-    (a, b) => b.default_result.est_tps - a.default_result.est_tps
-  )[0];
-  if (fastestPick && !pickedSlugs.has(fastestPick.slug)) {
-    pickedSlugs.add(fastestPick.slug);
-    picks.push({
-      role: 'Fastest Interactive Pick',
-      accent: 'border-blue-200 bg-blue-50 text-blue-800',
-      entry: fastestPick,
-    });
-  }
-
-  const codingPick = [...smoothEntries]
-    .filter((e) => e.model.family === 'Qwen2.5-Coder')
-    .sort((a, b) => {
-      if (b.model.params_b !== a.model.params_b) return b.model.params_b - a.model.params_b;
-      return b.default_result.est_tps - a.default_result.est_tps;
-    })[0];
-  if (codingPick && !pickedSlugs.has(codingPick.slug)) {
-    pickedSlugs.add(codingPick.slug);
-    picks.push({
-      role: 'Best Coding Pick',
-      accent: 'border-indigo-200 bg-indigo-50 text-indigo-800',
-      entry: codingPick,
-    });
-  }
-} else if (sortedEntries.length > 0) {
-  const viablePick =
-    partialEntries.length > 0
-      ? [...partialEntries].sort((a, b) => b.default_result.est_tps - a.default_result.est_tps)[0]
-      : [...sortedEntries].sort((a, b) => a.model.params_b - b.model.params_b)[0];
-  if (viablePick) {
-    pickedSlugs.add(viablePick.slug);
-    picks.push({
-      role: 'Closest Viable Run',
-      accent: 'border-amber-200 bg-amber-50 text-amber-800',
-      entry: viablePick,
-    });
-  }
-}
+const entries = sortedEntries;
+const faq = buildHardwareFaq(hub);
 
 const relatedHardware = allHardware
   .filter((h) => h.id !== hardware.id)
@@ -182,6 +84,12 @@ const breadcrumbSchema = {
     {
       '@type': 'ListItem',
       position: 2,
+      name: 'All GPUs',
+      item: 'https://vramcalc.me/gpu/',
+    },
+    {
+      '@type': 'ListItem',
+      position: 3,
       name: hardware.name,
       item: `https://vramcalc.me/gpu/${hardware.id}/`,
     },
@@ -198,6 +106,19 @@ const itemListSchema = {
     position: idx + 1,
     name: `${e.model.name} on ${hardware.short_name}`,
     url: `https://vramcalc.me/can-i-run/${e.slug}/`,
+  })),
+};
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faq.map((item) => ({
+    '@type': 'Question',
+    name: item.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: item.answer,
+    },
   })),
 };
 
@@ -218,6 +139,7 @@ const statusFilters = [
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
     <script type="application/ld+json" set:html={JSON.stringify(itemListSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   </Fragment>
 
   <article class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
@@ -229,7 +151,7 @@ const statusFilters = [
         </li>
         <li aria-hidden="true">/</li>
         <li>
-          <span class="text-slate-400">GPU Hubs</span>
+          <a href="/gpu/" class="hover:text-slate-900 transition-colors">All GPUs</a>
         </li>
         <li aria-hidden="true">/</li>
         <li aria-current="page" class="text-slate-900 font-semibold truncate">
@@ -523,6 +445,29 @@ const statusFilters = [
       </div>
     </section>
 
+    <!-- Hardware Hub FAQ -->
+    <section class="mt-10" aria-labelledby="gpu-faq-heading">
+      <h2 id="gpu-faq-heading" class="text-xl font-bold tracking-tight text-slate-950">
+        Frequently Asked Questions ({hardware.short_name})
+      </h2>
+      <div class="mt-4 space-y-3">
+        {faq.map((item, idx) => (
+          <details
+            open={idx < 2}
+            class="group rounded-xl border border-slate-200 bg-white px-5 py-4 open:border-blue-200"
+          >
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-950">
+              <span>{item.question}</span>
+              <span class="shrink-0 font-mono text-slate-400 group-open:rotate-45 transition-transform">+</span>
+            </summary>
+            <p class="mt-3 text-sm leading-relaxed text-slate-600">
+              {item.answer}
+            </p>
+          </details>
+        ))}
+      </div>
+    </section>
+
     <!-- Other Hardware Hubs -->
     {relatedHardware.length > 0 && (
       <section class="mt-12 border-t border-slate-200 pt-8" aria-labelledby="other-gpus-heading">
@@ -535,8 +480,8 @@ const statusFilters = [
               See how alternative {hardware.vendor} or peer VRAM configurations handle local LLMs.
             </p>
           </div>
-          <a href="/" class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0">
-            View Full Matrix -&gt;
+          <a href="/gpu/" class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0">
+            Browse All GPUs -&gt;
           </a>
         </div>
 

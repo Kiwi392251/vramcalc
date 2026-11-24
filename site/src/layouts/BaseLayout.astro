@@ -16,6 +16,13 @@ const {
 } = Astro.props;
 
 const canonicalUrl = new URL(canonicalPath, Astro.site ?? 'https://vramcalc.me').toString();
+const isHome = canonicalPath === '/';
+const isGpu = canonicalPath.startsWith('/gpu/');
+const isModel = canonicalPath.startsWith('/model/');
+
+const navMatrixClass = isHome ? 'text-blue-600 font-semibold' : 'hover:text-slate-950 transition-colors';
+const navGpuClass = isGpu ? 'text-blue-600 font-semibold' : 'hover:text-slate-950 transition-colors';
+const navModelClass = isModel ? 'text-blue-600 font-semibold' : 'hover:text-slate-950 transition-colors';
 ---
 
 <!doctype html>
@@ -60,13 +67,15 @@ const canonicalUrl = new URL(canonicalPath, Astro.site ?? 'https://vramcalc.me')
           </span>
         </a>
 
-        <nav aria-label="Primary" class="flex items-center gap-5 text-sm font-medium text-slate-600">
-          <a href="/" class="hover:text-slate-950 transition-colors">Compatibility Matrix</a>
-          <a href="/#methodology" class="hidden sm:inline hover:text-slate-950 transition-colors">
+        <nav aria-label="Primary" class="flex items-center gap-4 sm:gap-5 text-sm font-medium text-slate-600">
+          <a href="/" class={navMatrixClass}>Matrix</a>
+          <a href="/gpu/" class={navGpuClass}>GPUs</a>
+          <a href="/model/" class={navModelClass}>Models</a>
+          <a href="/#methodology" class="hidden md:inline hover:text-slate-950 transition-colors">
             VRAM Formula
           </a>
           {totalPages > 0 && (
-            <span class="hidden md:inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-600 tabular-nums">
+            <span class="hidden lg:inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-600 tabular-nums">
               <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
               {totalPages} configs indexed
             </span>
@@ -88,8 +97,10 @@ const canonicalUrl = new URL(canonicalPath, Astro.site ?? 'https://vramcalc.me')
             and memory-bandwidth-bound decode math. Actual throughput varies by driver version, Flash Attention, and PCIe topology.
           </p>
         </div>
-        <div class="flex items-center gap-4 text-xs font-medium text-slate-500 shrink-0">
-          <a href="/" class="hover:text-slate-900 transition-colors">All Benchmarks</a>
+        <div class="flex flex-wrap items-center gap-4 text-xs font-medium text-slate-500 shrink-0">
+          <a href="/" class="hover:text-slate-900 transition-colors">Matrix</a>
+          <a href="/gpu/" class="hover:text-slate-900 transition-colors">All GPUs</a>
+          <a href="/model/" class="hover:text-slate-900 transition-colors">All Models</a>
           <a href="/sitemap-index.xml" class="hover:text-slate-900 transition-colors">Sitemap</a>
         </div>
       </div>

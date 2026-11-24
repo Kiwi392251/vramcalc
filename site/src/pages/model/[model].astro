@@ -2,34 +2,19 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
 import rawPagesData from '../../data/pages_data.json';
-import type { CompatStatus, ModelSpec, PageEntry } from '../../types/vram';
+import type { ModelSpec, PageEntry } from '../../types/vram';
 import { formatContextLabel } from '../../utils/physics';
+import { buildModelFaq, buildModelHubs, type ModelHub } from '../../utils/hubs';
 
 export function getStaticPaths() {
   const allEntries = rawPagesData as PageEntry[];
-  const modelMap = new Map<string, ModelSpec>();
-  const modelEntriesMap = new Map<string, PageEntry[]>();
+  const hubs = buildModelHubs(allEntries);
+  const allModels = hubs.map((h) => h.model);
 
-  for (const entry of allEntries) {
-    const mId = entry.model.id;
-    if (!modelMap.has(mId)) {
-      modelMap.set(mId, entry.model);
-    }
-    const list = modelEntriesMap.get(mId);
-    if (list) {
-      list.push(entry);
-    } else {
-      modelEntriesMap.set(mId, [entry]);
-    }
-  }
-
-  const allModels = Array.from(modelMap.values());
-
-  return Array.from(modelEntriesMap.entries()).map(([mId, entries]) => ({
-    params: { model: mId },
+  return hubs.map((hub) => ({
+    params: { model: hub.model.id },
     props: {
-      model: modelMap.get(mId)!,
-      entries,
+      hub,
       allModels,
       totalSiteEntries: allEntries.length,
     },
@@ -37,105 +22,28 @@ export function getStaticPaths() {
 }
 
 interface Props {
-  model: ModelSpec;
-  entries: PageEntry[];
+  hub: ModelHub;
   allModels: ModelSpec[];
   totalSiteEntries: number;
 }
 
-const { model, entries, allModels, totalSiteEntries } = Astro.props;
+const { hub, allModels, totalSiteEntries } = Astro.props;
+const {
+  model,
+  entries: sortedEntries,
+  smoothCount,
+  partialCount,
+  oomCount,
+  fastestTps,
+  q4Row,
+  q8Row,
+  fp16Row,
+  kvPer4k,
+  topPicks,
+} = hub;
 
-function statusRank(s: CompatStatus): number {
-  if (s === 'Smooth') return 0;
-  if (s === 'Partial Offload') return 1;
-  return 2;
-}
-
-// Mandatory Sort: Smooth first -> est_tps descending -> usable_vram_gb desc -> bandwidth desc -> name
-const sortedEntries = [...entries].sort((a, b) => {
-  const sr = statusRank(a.default_result.status) - statusRank(b.default_result.status);
-  if (sr !== 0) return sr;
-  if (b.default_result.est_tps !== a.default_result.est_tps) {
-    return b.default_result.est_tps - a.default_result.est_tps;
-  }
-  if (b.hardware.usable_vram_gb !== a.hardware.usable_vram_gb) {
-    return b.hardware.usable_vram_gb - a.hardware.usable_vram_gb;
-  }
-  if (b.hardware.bandwidth_gbps !== a.hardware.bandwidth_gbps) {
-    return b.hardware.bandwidth_gbps - a.hardware.bandwidth_gbps;
-  }
-  return a.hardware.name.localeCompare(b.hardware.name);
-});
-
-const smoothEntries = sortedEntries.filter((e) => e.default_result.status === 'Smooth');
-const partialEntries = sortedEntries.filter((e) => e.default_result.status === 'Partial Offload');
-const oomEntries = sortedEntries.filter((e) => e.default_result.status === 'OOM');
-
-const smoothCount = smoothEntries.length;
-const partialCount = partialEntries.length;
-const oomCount = oomEntries.length;
-
-const fastestTps = Math.max(...sortedEntries.map((e) => e.default_result.est_tps), 1);
-
-const refEntry = sortedEntries[0];
-const q4Row = refEntry?.quant_table.find((r) => r.quant === 'Q4_K_M');
-const q8Row = refEntry?.quant_table.find((r) => r.quant === 'Q8_0');
-const fp16Row = refEntry?.quant_table.find((r) => r.quant === 'FP16');
-const kvPer4k = refEntry?.context_analysis.kv_gb_per_4k ?? 0;
-
-interface TopHardwarePick {
-  role: string;
-  accent: string;
-  entry: PageEntry;
-}
-
-const topPicks: TopHardwarePick[] = [];
-const pickedSlugs = new Set<string>();
-
-if (smoothEntries.length > 0) {
-  const fastestHw = smoothEntries[0];
-  if (fastestHw) {
-    pickedSlugs.add(fastestHw.slug);
-    topPicks.push({
-      role: 'Fastest Smooth Hardware',
-      accent: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-      entry: fastestHw,
-    });
-  }
-
-  const bestValueHw = [...smoothEntries].sort((a, b) => {
-    if (a.hardware.msrp_usd !== b.hardware.msrp_usd) {
-      return a.hardware.msrp_usd - b.hardware.msrp_usd;
-    }
-    return b.default_result.est_tps - a.default_result.est_tps;
-  })[0];
-  if (bestValueHw && !pickedSlugs.has(bestValueHw.slug)) {
-    pickedSlugs.add(bestValueHw.slug);
-    topPicks.push({
-      role: 'Best Value Smooth Pick',
-      accent: 'border-blue-200 bg-blue-50 text-blue-800',
-      entry: bestValueHw,
-    });
-  }
-
-  const bestUnifiedHw = smoothEntries.find((e) => e.hardware.is_unified);
-  if (bestUnifiedHw && !pickedSlugs.has(bestUnifiedHw.slug)) {
-    pickedSlugs.add(bestUnifiedHw.slug);
-    topPicks.push({
-      role: 'Best Unified Memory Pick',
-      accent: 'border-indigo-200 bg-indigo-50 text-indigo-800',
-      entry: bestUnifiedHw,
-    });
-  }
-} else if (sortedEntries.length > 0) {
-  const closestHw = sortedEntries[0];
-  pickedSlugs.add(closestHw.slug);
-  topPicks.push({
-    role: 'Closest Viable Hardware',
-    accent: 'border-amber-200 bg-amber-50 text-amber-800',
-    entry: closestHw,
-  });
-}
+const entries = sortedEntries;
+const faq = buildModelFaq(hub);
 
 const otherModels = allModels
   .filter((m) => m.id !== model.id)
@@ -169,6 +77,12 @@ const breadcrumbSchema = {
     {
       '@type': 'ListItem',
       position: 2,
+      name: 'All Models',
+      item: 'https://vramcalc.me/model/',
+    },
+    {
+      '@type': 'ListItem',
+      position: 3,
       name: model.name,
       item: `https://vramcalc.me/model/${model.id}/`,
     },
@@ -185,6 +99,19 @@ const itemListSchema = {
     position: idx + 1,
     name: `${model.short_name} on ${e.hardware.name}`,
     url: `https://vramcalc.me/can-i-run/${e.slug}/`,
+  })),
+};
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faq.map((item) => ({
+    '@type': 'Question',
+    name: item.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: item.answer,
+    },
   })),
 };
 
@@ -212,6 +139,7 @@ const vendorFilters = [
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
     <script type="application/ld+json" set:html={JSON.stringify(itemListSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   </Fragment>
 
   <article class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
@@ -223,7 +151,7 @@ const vendorFilters = [
         </li>
         <li aria-hidden="true">/</li>
         <li>
-          <span class="text-slate-400">Model Hubs</span>
+          <a href="/model/" class="hover:text-slate-900 transition-colors">All Models</a>
         </li>
         <li aria-hidden="true">/</li>
         <li aria-current="page" class="text-slate-900 font-semibold truncate">
@@ -562,6 +490,29 @@ const vendorFilters = [
       </div>
     </section>
 
+    <!-- Model Hub FAQ -->
+    <section class="mt-10" aria-labelledby="model-faq-heading">
+      <h2 id="model-faq-heading" class="text-xl font-bold tracking-tight text-slate-950">
+        Frequently Asked Questions ({model.short_name})
+      </h2>
+      <div class="mt-4 space-y-3">
+        {faq.map((item, idx) => (
+          <details
+            open={idx < 2}
+            class="group rounded-xl border border-slate-200 bg-white px-5 py-4 open:border-blue-200"
+          >
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-950">
+              <span>{item.question}</span>
+              <span class="shrink-0 font-mono text-slate-400 group-open:rotate-45 transition-transform">+</span>
+            </summary>
+            <p class="mt-3 text-sm leading-relaxed text-slate-600">
+              {item.answer}
+            </p>
+          </details>
+        ))}
+      </div>
+    </section>
+
     <!-- Other Model Hubs -->
     {otherModels.length > 0 && (
       <section class="mt-12 border-t border-slate-200 pt-8" aria-labelledby="other-models-heading">
@@ -574,8 +525,8 @@ const vendorFilters = [
               Compare hardware leaderboards across all {otherModels.length + 1} indexed LLM architectures.
             </p>
           </div>
-          <a href="/" class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0">
-            View Full Matrix -&gt;
+          <a href="/model/" class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0">
+            Browse All Models -&gt;
           </a>
         </div>
 
