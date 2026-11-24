@@ -17,6 +17,7 @@ export interface SearchableComboboxConfig {
   allowCustomNumeric?: boolean;
   parseCustomNumeric?: (raw: string) => number | null;
   formatCustomNumeric?: (num: number) => string;
+  formatCustomActionLabel?: (num: number) => string;
   onChange: (value: string, option: ComboboxOption | null) => void;
 }
 
@@ -48,6 +49,7 @@ export class SearchableCombobox {
   private allowCustomNumeric: boolean;
   private parseCustomNumeric?: (raw: string) => number | null;
   private formatCustomNumeric: (num: number) => string;
+  private formatCustomActionLabel: (num: number) => string;
   private onChange: (value: string, option: ComboboxOption | null) => void;
 
   private selectedValue: string;
@@ -83,6 +85,8 @@ export class SearchableCombobox {
     this.allowCustomNumeric = Boolean(config.allowCustomNumeric);
     this.parseCustomNumeric = config.parseCustomNumeric;
     this.formatCustomNumeric = config.formatCustomNumeric ?? ((n) => `${n} GB`);
+    this.formatCustomActionLabel =
+      config.formatCustomActionLabel ?? ((n) => `Use ${this.formatCustomNumeric(n)} (Custom)`);
     this.onChange = config.onChange;
 
     if (config.placeholder) {
@@ -366,8 +370,8 @@ export class SearchableCombobox {
       if (parsed !== null && !this.options.some((o) => o.value === String(parsed))) {
         const customOpt: ComboboxOption = {
           value: String(parsed),
-          label: `Use ${this.formatCustomNumeric(parsed)} (Custom)`,
-          group: 'Custom Memory Capacity',
+          label: this.formatCustomActionLabel(parsed),
+          group: undefined,
           badge: 'Custom',
           searchBlob: `${parsed} ${parsed}gb custom`,
         };
@@ -483,6 +487,21 @@ export class SearchableCombobox {
 
   public focus() {
     this.input.focus();
+  }
+
+  public setPlaceholder(text: string) {
+    this.input.placeholder = text;
+  }
+
+  public setEmptyText(text: string) {
+    this.emptyText = text;
+    if (this.isOpen && this.renderedItems.length === 0) {
+      this.renderList();
+    }
+  }
+
+  public setCustomActionFormatter(fn: (num: number) => string) {
+    this.formatCustomActionLabel = fn;
   }
 
   public getValue(): string {

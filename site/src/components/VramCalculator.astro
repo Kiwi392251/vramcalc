@@ -118,6 +118,17 @@ const calcPayload = JSON.stringify({
 
 const contextTicks = [4096, 8192, 16384, 32768, 49152, 65536];
 const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex items-center gap-1.5';
+
+const calcSubArgs = JSON.stringify({ hw: hardware.short_name });
+const unifiedNoteArgs = JSON.stringify({
+  usable,
+  vram: hardware.vram_gb,
+  bw: hardware.bandwidth_gbps,
+});
+const layerResidencyArgs = JSON.stringify({ backend: hardware.backend });
+const oomAlertDescArgs = JSON.stringify({ hw: hardware.short_name });
+const modelsFitBtnArgs = JSON.stringify({ hw: hardware.short_name });
+const smoothGpusBtnArgs = JSON.stringify({ model: model.short_name });
 ---
 
 <section
@@ -127,16 +138,17 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
 >
   <div class="flex flex-col gap-3 border-b border-slate-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
     <div>
-      <h2 class="text-lg font-bold tracking-tight text-slate-950">
+      <h2 class="text-lg font-bold tracking-tight text-slate-950" data-i18n="detail.calcTitle">
         Interactive VRAM &amp; Speed Simulator
       </h2>
-      <p class="mt-0.5 text-sm text-slate-600">
+      <p class="mt-0.5 text-sm text-slate-600" data-i18n="detail.calcSub" data-i18n-args={calcSubArgs}>
         Toggle 7 GGUF quants, KV cache compression, context length, and Multi-GPU / CPU offload on {hardware.short_name}.
       </p>
     </div>
     <div class="flex items-center gap-2.5 self-start sm:self-auto">
       <a
         href={simulatorHref}
+        data-i18n="detail.fullRigSim"
         class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors"
       >
         Full Rig Simulator -&gt;
@@ -149,7 +161,7 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
   <div class="mt-6 grid gap-6 lg:grid-cols-12">
     <!-- 7-Tier Quant Selector -->
     <div class="lg:col-span-6">
-      <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500" data-i18n="detail.quantFormat">
         Quantization Format (7 GGUF Tiers)
       </label>
       <div
@@ -184,7 +196,7 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
     <!-- Context Length Slider & KV Cache Quant -->
     <div class="lg:col-span-6">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <label for="calc-ctx-slider" class="text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <label for="calc-ctx-slider" class="text-xs font-semibold uppercase tracking-wider text-slate-500" data-i18n="detail.ctxWindowKv">
           Context Window &amp; KV Cache
         </label>
         <div class="flex items-center gap-2">
@@ -248,7 +260,7 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
     <div class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-xs">
       <div class="flex flex-wrap items-center gap-3">
         <div class="flex items-center gap-1.5">
-          <span class="font-semibold text-slate-600">GPUs:</span>
+          <span class="font-semibold text-slate-600" data-i18n="detail.gpusLabel">GPUs:</span>
           <div class="inline-flex rounded-lg border border-slate-200 bg-white p-0.5" role="group" aria-label="GPU count">
             {gpuCountOptions.map((n) => {
               const active = n === gpuCount;
@@ -265,11 +277,12 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
         </div>
 
         <div id="calc-split-wrap" class={splitWrapClass}>
-          <span class="font-semibold text-slate-600">Split:</span>
+          <span class="font-semibold text-slate-600" data-i18n="detail.splitLabel">Split:</span>
           <div class="inline-flex rounded-lg border border-slate-200 bg-white p-0.5" role="group" aria-label="Multi-GPU split mode">
             <button
               type="button"
               data-split-btn="layer"
+              data-i18n="detail.splitLayer"
               class="rounded-md px-2 py-0.5 font-mono text-xs font-bold bg-slate-900 text-white cursor-pointer"
             >
               Layer
@@ -277,6 +290,7 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
             <button
               type="button"
               data-split-btn="row"
+              data-i18n="detail.splitTensor"
               class="rounded-md px-2 py-0.5 font-mono text-xs font-medium text-slate-600 hover:text-slate-950 cursor-pointer"
             >
               Tensor
@@ -285,7 +299,7 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
         </div>
 
         <div class="flex items-center gap-1.5">
-          <label for="calc-cpu-select" class="font-semibold text-slate-600">Host Offload RAM:</label>
+          <label for="calc-cpu-select" class="font-semibold text-slate-600" data-i18n="detail.cpuOffloadLabel">Host Offload RAM:</label>
           <select
             id="calc-cpu-select"
             class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-800 focus:border-blue-600 focus:outline-none"
@@ -303,11 +317,11 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
     </div>
   ) : (
     <div class="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-xs text-slate-600">
-      <span>
+      <span data-i18n="detail.unifiedNote" data-i18n-args={unifiedNoteArgs}>
         Unified Memory Rig (<strong class="font-mono text-slate-900">{usable} GB</strong> usable of{' '}
         <strong class="font-mono text-slate-900">{hardware.vram_gb} GB</strong> physical · {hardware.bandwidth_gbps} GB/s).
       </span>
-      <a href={simulatorHref} class="font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+      <a href={simulatorHref} class="font-semibold text-blue-600 hover:text-blue-800 transition-colors" data-i18n="detail.compareMultiGpu">
         Compare against 1x–8x GPUs or CPU-Only -&gt;
       </a>
     </div>
@@ -316,7 +330,7 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
   <!-- Telemetry KPI Row -->
   <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
     <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-      <p class="text-xs font-medium text-slate-500">Estimated Total VRAM</p>
+      <p class="text-xs font-medium text-slate-500" data-i18n="detail.estTotalVram">Estimated Total VRAM</p>
       <div class="mt-1 flex items-baseline gap-2">
         <span id="calc-total-vram" class="font-mono text-2xl font-bold text-slate-950 tabular-nums">
           {res.total_vram_gb.toFixed(2)} GB
@@ -328,7 +342,7 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
     </div>
 
     <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-      <p class="text-xs font-medium text-slate-500">Est. Decode Speed</p>
+      <p class="text-xs font-medium text-slate-500" data-i18n="detail.estDecodeSpeed">Est. Decode Speed</p>
       <div class="mt-1 flex items-baseline gap-2">
         <span id="calc-tps" class="font-mono text-2xl font-bold text-slate-950 tabular-nums">
           {initialTpsText}
@@ -338,7 +352,7 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
     </div>
 
     <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-      <p class="text-xs font-medium text-slate-500">Weights + Buffer</p>
+      <p class="text-xs font-medium text-slate-500" data-i18n="detail.weightsBuffer">Weights + Buffer</p>
       <div class="mt-1 flex items-baseline gap-2">
         <span id="calc-weights-gb" class="font-mono text-xl font-bold text-slate-900 tabular-nums">
           {res.weights_gb.toFixed(2)} GB
@@ -353,12 +367,12 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
     </div>
 
     <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-      <p class="text-xs font-medium text-slate-500">{hardware.backend} Layer Residency</p>
+      <p class="text-xs font-medium text-slate-500" data-i18n="detail.layerResidency" data-i18n-args={layerResidencyArgs}>{hardware.backend} Layer Residency</p>
       <div class="mt-1 flex items-baseline gap-2">
         <span id="calc-layers" class="font-mono text-xl font-bold text-slate-900 tabular-nums">
           {res.gpu_layers_fit} / {res.total_layers}
         </span>
-        <span class="text-xs text-slate-500">layers on GPU</span>
+        <span class="text-xs text-slate-500" data-i18n="detail.layersOnGpu">layers on GPU</span>
       </div>
       <p id="calc-headroom" class="mt-0.5 text-xs text-slate-600 tabular-nums">
         {initialHeadroomText}
@@ -369,7 +383,7 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
   <!-- Stacked Memory Bar -->
   <div class="mt-6 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
     <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
-      <span class="font-semibold text-slate-700">Memory Allocation vs Usable Budget</span>
+      <span class="font-semibold text-slate-700" data-i18n="detail.memAllocTitle">Memory Allocation vs Usable Budget</span>
       <span id="calc-ceiling-text" class="font-mono text-slate-600 tabular-nums">
         Usable {hardware.backend} Ceiling: <strong class="text-slate-950">{usable} GB</strong> (of {hardware.vram_gb} GB physical)
       </span>
@@ -410,15 +424,15 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
       <div class="flex flex-wrap items-center gap-4">
         <span class="inline-flex items-center gap-1.5">
           <span class="h-2.5 w-2.5 rounded-xs bg-blue-600"></span>
-          Weights
+          <span data-i18n="sim.legendWeights">Weights</span>
         </span>
         <span class="inline-flex items-center gap-1.5">
           <span class="h-2.5 w-2.5 rounded-xs bg-cyan-500"></span>
-          KV Cache
+          <span data-i18n="sim.legendKv">KV Cache</span>
         </span>
         <span class="inline-flex items-center gap-1.5">
           <span class="h-2.5 w-2.5 rounded-xs bg-slate-500"></span>
-          Runtime Buffer
+          <span data-i18n="detail.runtimeBuffer">Runtime Buffer</span>
         </span>
         <span id="calc-legend-ceiling" class="inline-flex items-center gap-1.5">
           <span class="h-3 w-0.5 bg-slate-950"></span>
@@ -434,7 +448,7 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
   <!-- Live Synced CLI Preview -->
   <div class="mt-4 flex flex-col gap-2 rounded-xl bg-slate-950 px-4 py-3 text-slate-100 sm:flex-row sm:items-center sm:justify-between">
     <div class="min-w-0">
-      <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+      <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400" data-i18n="detail.liveFlags">
         Live Flags for Selected Config
       </span>
       <pre id="calc-live-cmd" class="mt-0.5 overflow-x-auto rounded font-mono text-xs text-emerald-300 transition-shadow">{initialLiveCmd}</pre>
@@ -456,7 +470,7 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
           <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
       </span>
-      <span data-copy-text>Copy Command</span>
+      <span data-copy-text data-i18n="detail.copyCommand">Copy Command</span>
     </button>
   </div>
 
@@ -464,25 +478,32 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
   <div id="calc-oom-rescue" class={initialOomRescueClass} role="region" aria-label="Out of Memory Recovery Suggestions">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div class="text-xs leading-relaxed text-rose-900">
-        <strong class="font-bold">Out of Memory Alert:</strong> This quant and context combination exceeds{' '}
-        <span class="font-mono font-semibold">{hardware.short_name}</span>&apos;s capacity and will fail or thrash swap. Try Q3_K_M/Q2_K, enable Q8_0/Q4_0 KV cache, or add GPUs.
+        <strong class="font-bold" data-i18n="detail.oomAlertTitle">Out of Memory Alert:</strong>{' '}
+        <span data-i18n="detail.oomAlertDesc" data-i18n-args={oomAlertDescArgs}>
+          This quant and context combination exceeds {hardware.short_name}&apos;s capacity and will fail or thrash swap. Try Q3_K_M/Q2_K, enable Q8_0/Q4_0 KV cache, or add GPUs.
+        </span>
       </div>
       <div class="flex flex-wrap items-center gap-2 shrink-0">
         <button
           id="calc-reset-btn"
           type="button"
+          data-i18n="detail.resetQ48k"
           class="hidden rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 transition-colors cursor-pointer"
         >
           Reset to Q4_K_M @ 8K
         </button>
         <a
           href={gpuHubHref}
+          data-i18n="detail.modelsFitBtn"
+          data-i18n-args={modelsFitBtnArgs}
           class="rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-semibold text-rose-900 hover:bg-rose-100 transition-colors"
         >
           Models That Fit {hardware.short_name} -&gt;
         </a>
         <a
           href={modelHubHref}
+          data-i18n="detail.smoothGpusBtn"
+          data-i18n-args={smoothGpusBtnArgs}
           class="rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-semibold text-rose-900 hover:bg-rose-100 transition-colors"
         >
           Smooth GPUs for {model.short_name} -&gt;
@@ -495,7 +516,8 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
 </section>
 
 <script>
-  import { estimateRigRun, speedRating } from '../utils/physics';
+  import { onLocaleChange, t, tStatus, translateSpeedRating } from '../utils/i18n';
+  import { estimateRigRun } from '../utils/physics';
   import type { HardwareSpec, KvQuantKey, ModelSpec, QuantKey, SplitMode } from '../types/vram';
 
   interface CalcPayload {
@@ -556,7 +578,7 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
       if (!statusBadge) return;
       const dot = statusBadge.querySelector('span:first-child');
       const label = statusBadge.querySelector('[data-status-label]');
-      if (label) label.textContent = status;
+      if (label) label.textContent = tStatus(status);
 
       statusBadge.classList.remove(
         'border-emerald-200',
@@ -608,13 +630,13 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
 
       const utilPct = usable > 0 ? Math.round((r.total_vram_gb / usable) * 100) : 0;
       if (totalVramEl) totalVramEl.textContent = `${r.total_vram_gb.toFixed(2)} GB`;
-      if (utilPctEl) utilPctEl.textContent = `(${utilPct}% of ${usable} GB)`;
+      if (utilPctEl) utilPctEl.textContent = t('detail.utilPct', { pct: utilPct, usable });
 
       if (tpsEl) {
-        tpsEl.textContent = r.status === 'OOM' ? 'OOM' : `${r.est_tps.toFixed(1)} tok/s`;
+        tpsEl.textContent = r.status === 'OOM' ? t('status.oom') : `${r.est_tps.toFixed(1)} tok/s`;
       }
       if (tpsRatingEl) {
-        tpsRatingEl.textContent = speedRating(r.est_tps, r.status, {
+        tpsRatingEl.textContent = translateSpeedRating(r.est_tps, r.status, {
           isUnified: hardware.is_unified,
           isCpuOnly: false,
         });
@@ -627,15 +649,22 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
       if (headroomEl) {
         headroomEl.textContent =
           r.total_vram_gb <= usable
-            ? `${(usable - r.total_vram_gb).toFixed(2)} GB free headroom`
-            : `${(r.total_vram_gb - usable).toFixed(2)} GB over ${hardware.backend} ceiling`;
+            ? t('sim.headroomFree', { gb: (usable - r.total_vram_gb).toFixed(2) })
+            : t('detail.overCeiling', {
+                gb: (r.total_vram_gb - usable).toFixed(2),
+                backend: hardware.backend,
+              });
       }
 
       if (ceilingTextEl) {
-        ceilingTextEl.innerHTML = `Usable ${hardware.backend} Ceiling: <strong class="text-slate-950">${usable} GB</strong> (of ${physTotal} GB physical)`;
+        ceilingTextEl.textContent = t('detail.usableCeiling', {
+          backend: hardware.backend,
+          usable,
+          phys: physTotal,
+        });
       }
       if (legendCeilingEl) {
-        legendCeilingEl.innerHTML = `<span class="h-3 w-0.5 bg-slate-950"></span>Usable Ceiling (${usable} GB)`;
+        legendCeilingEl.innerHTML = `<span class="h-3 w-0.5 bg-slate-950"></span>${t('detail.usableLegend', { usable })}`;
       }
       if (rigTagEl) {
         rigTagEl.textContent = `${r.gpu_count}x ${hardware.short_name} · ${usable} GB usable VRAM`;
@@ -654,12 +683,19 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
 
       if (verdictLine) {
         if (r.status === 'Smooth') {
-          verdictLine.textContent = `100% resident in ${hardware.backend} memory — zero CPU spill.`;
+          verdictLine.textContent = t('detail.verdictGpuSmooth', { backend: hardware.backend });
         } else if (r.status === 'Partial Offload') {
-          verdictLine.textContent = `Partial offload: ${r.gpu_layers_fit}/${r.total_layers} layers fit in VRAM; remainder spills to system RAM (${currentCpuBw} GB/s).`;
+          verdictLine.textContent = t('detail.verdictPartial', {
+            fit: r.gpu_layers_fit,
+            total: r.total_layers,
+            bw: currentCpuBw,
+          });
         } else {
           const rigPrefix = r.gpu_count > 1 ? `${r.gpu_count}x ${hardware.short_name}` : hardware.short_name;
-          verdictLine.textContent = `Out of memory: ${r.total_vram_gb.toFixed(2)} GB required exceeds ${rigPrefix}'s capacity.`;
+          verdictLine.textContent = t('detail.verdictOom', {
+            req: r.total_vram_gb.toFixed(2),
+            rig: rigPrefix,
+          });
         }
       }
 
@@ -814,6 +850,7 @@ const splitWrapClass = gpuCount > 1 ? 'flex items-center gap-1.5' : 'hidden flex
       });
     }
 
+    onLocaleChange(() => render());
     render();
   }
 

@@ -103,6 +103,20 @@ const homeCollectionSchema = {
 };
 const homeOgTitle = `Local AI LLM VRAM & Speed Calculator (${catalogModelCount} Models × ${catalogHwCount} GPUs) | VRAMCalc.me`;
 const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x Multi-GPU & CPU/RAM tok/s across ${catalogHwCount} GPUs & Macs and ${catalogModelCount} open LLMs.`;
+
+const heroDescArgs = JSON.stringify({ models: catalogModelCount, hw: catalogHwCount });
+const ctaGpusArgs = JSON.stringify({ count: uniqueHubHwCount });
+const ctaModelsArgs = JSON.stringify({ count: uniqueHubModelCount });
+const initCountArgs = JSON.stringify({
+  shown: initialVisibleCount,
+  total: totalCount,
+  models: catalogModelCount,
+  hw: catalogHwCount,
+});
+const initViewArgs = JSON.stringify({ shown: initialVisibleCount, total: totalCount });
+const initLoadArgs = JSON.stringify({ chunk: Math.min(PAGE_SIZE, initialRemainingCount), left: initialRemainingCount });
+const modelHubsArgs = JSON.stringify({ count: uniqueHubModelCount });
+const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
 ---
 
 <BaseLayout
@@ -124,33 +138,34 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
   <section class="border-b border-slate-200 bg-white">
     <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
       <div class="max-w-3xl">
-        <h1 class="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
+        <h1 class="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl" data-i18n="home.heroTitle">
           Local AI Model VRAM &amp; Inference Speed Matrix
         </h1>
-        <p class="mt-3 text-base leading-relaxed text-slate-600">
-          Pick any of <strong class="text-slate-900">{catalogModelCount} models</strong> and{' '}
-          <strong class="text-slate-900">{catalogHwCount} GPUs &amp; Macs</strong>—or simulate{' '}
-          <strong class="text-slate-900">1x–8x multi-GPU rigs &amp; CPU/RAM offload</strong> across 7 GGUF quants
-          (<span class="font-mono text-slate-900">Q2_K–FP16</span>) and realistic{' '}
-          <span class="font-mono text-slate-900">tokens/sec</span> throughput.
+        <p class="mt-3 text-base leading-relaxed text-slate-600" data-i18n="home.heroDesc" data-i18n-args={heroDescArgs}>
+          Pick any of {catalogModelCount} models and {catalogHwCount} GPUs &amp; Macs—or simulate 1x–8x multi-GPU rigs &amp; CPU/RAM offload across 7 GGUF quants (Q2_K–FP16) and realistic tokens/sec throughput.
         </p>
 
         <div class="mt-5 flex flex-wrap items-center gap-3">
           <a
             href="/calculator/"
             class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-colors"
+            data-i18n="home.ctaSimulator"
           >
             Multi-GPU &amp; CPU Rig Simulator -&gt;
           </a>
           <a
             href="/gpu/"
             class="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors"
+            data-i18n="home.ctaGpus"
+            data-i18n-args={ctaGpusArgs}
           >
             Browse {uniqueHubHwCount} GPU Hubs -&gt;
           </a>
           <a
             href="/model/"
             class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-800 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+            data-i18n="home.ctaModels"
+            data-i18n-args={ctaModelsArgs}
           >
             Browse {uniqueHubModelCount} Model Hubs -&gt;
           </a>
@@ -159,19 +174,19 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
 
       <dl class="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         <div class="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
-          <dt class="text-xs font-medium text-slate-500">Full Benchmark Guides</dt>
+          <dt class="text-xs font-medium text-slate-500" data-i18n="home.kpiGuides">Full Benchmark Guides</dt>
           <dd class="mt-1 font-mono text-2xl font-bold text-slate-950 tabular-nums">{totalCount}</dd>
         </div>
         <div class="rounded-xl border border-emerald-200/80 bg-emerald-50/50 px-4 py-3">
-          <dt class="text-xs font-medium text-emerald-800">Smooth Guides (8K Q4)</dt>
+          <dt class="text-xs font-medium text-emerald-800" data-i18n="home.kpiSmooth">Smooth Guides (8K Q4)</dt>
           <dd class="mt-1 font-mono text-2xl font-bold text-emerald-900 tabular-nums">{smoothCount}</dd>
         </div>
         <div class="rounded-xl border border-amber-200/80 bg-amber-50/50 px-4 py-3">
-          <dt class="text-xs font-medium text-amber-800">Partial Offload Guides</dt>
+          <dt class="text-xs font-medium text-amber-800" data-i18n="home.kpiPartial">Partial Offload Guides</dt>
           <dd class="mt-1 font-mono text-2xl font-bold text-amber-900 tabular-nums">{partialCount}</dd>
         </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
-          <dt class="text-xs font-medium text-slate-500">Live Catalog Engine</dt>
+          <dt class="text-xs font-medium text-slate-500" data-i18n="home.kpiLiveEngine">Live Catalog Engine</dt>
           <dd class="mt-1 font-mono text-2xl font-bold text-slate-950 tabular-nums">
             {catalogModelCount} × {catalogHwCount}
           </dd>
@@ -190,6 +205,8 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
             id="cb-cpu"
             label="CPU / Unified Chip"
             placeholder="Search i5/i7, Ryzen, Apple M1–M5..."
+            labelI18n="home.cpuLabel"
+            placeholderI18n="home.cpuPlaceholder"
           />
         </div>
 
@@ -198,6 +215,8 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
             id="cb-ram"
             label="RAM (GB)"
             placeholder="e.g. 32 GB"
+            labelI18n="home.ramLabel"
+            placeholderI18n="home.ramPlaceholder"
           />
         </div>
 
@@ -206,11 +225,17 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
             id="cb-gpu"
             label="GPU (Graphics Card)"
             placeholder="Search GPU or None (CPU-Only)..."
+            labelI18n="home.gpuLabel"
+            placeholderI18n="home.gpuPlaceholder"
           />
         </div>
 
         <div>
-          <label for="rig-gpu-count" class="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <label
+            for="rig-gpu-count"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-500"
+            data-i18n="home.qtyLabel"
+          >
             Qty
           </label>
           <select
@@ -240,6 +265,7 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
                 type="button"
                 data-home-split="layer"
                 class="rounded-md px-2.5 py-1 text-[11px] font-semibold bg-slate-900 text-white cursor-pointer"
+                data-i18n="home.layerSplit"
               >
                 Layer Split
               </button>
@@ -247,6 +273,7 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
                 type="button"
                 data-home-split="row"
                 class="rounded-md px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:text-slate-950 cursor-pointer"
+                data-i18n="home.tensorParallel"
               >
                 Tensor Parallel
               </button>
@@ -259,13 +286,14 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
       <div class="mt-4 flex flex-wrap items-center justify-between gap-2.5 border-t border-slate-100 pt-3.5">
         <div class="flex flex-wrap items-center gap-2.5">
           <div class="flex items-center gap-2">
-            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Model</span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500" data-i18n="home.modelLabel">Model</span>
             <div class="w-48 sm:w-56">
               <ComboboxField
                 id="cb-model"
                 label="Model"
                 placeholder="All Models"
                 compact={true}
+                labelI18n="home.modelLabel"
               />
             </div>
           </div>
@@ -278,10 +306,19 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
                 st === 'all'
                   ? 'rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-900 bg-slate-900 text-white'
                   : 'rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100';
+              const stI18nKey =
+                st === 'all'
+                  ? 'status.allStatuses'
+                  : st === 'Smooth'
+                    ? 'status.smooth'
+                    : st === 'Partial Offload'
+                      ? 'status.partialOffload'
+                      : 'status.oom';
               return (
                 <button
                   type="button"
                   data-status-btn={st}
+                  data-i18n={stI18nKey}
                   class={btnClass}
                 >
                   {st === 'all' ? 'All Statuses' : st}
@@ -293,27 +330,28 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
 
         <div class="flex flex-wrap items-center gap-2.5 text-xs text-slate-600">
           <div class="flex items-center gap-1.5">
-            <label for="filter-sort" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            <label for="filter-sort" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400" data-i18n="home.sortLabel">
               Sort
             </label>
             <select
               id="filter-sort"
               class="h-8 rounded-lg border border-slate-300 bg-white px-2 text-xs font-medium text-slate-900 focus:border-blue-600 focus:outline-none"
             >
-              <option value="featured">Recommended</option>
-              <option value="tps-desc">Fastest tok/s</option>
-              <option value="vram-asc">Lowest VRAM</option>
-              <option value="params-desc">Largest Model</option>
+              <option value="featured" data-i18n="home.sortRecommended">Recommended</option>
+              <option value="tps-desc" data-i18n="home.sortFastest">Fastest tok/s</option>
+              <option value="vram-asc" data-i18n="home.sortLowestVram">Lowest VRAM</option>
+              <option value="params-desc" data-i18n="home.sortLargestModel">Largest Model</option>
             </select>
           </div>
 
-          <span id="filter-count" class="font-mono tabular-nums">
+          <span id="filter-count" class="font-mono tabular-nums" data-i18n="home.countInitial" data-i18n-args={initCountArgs}>
             {initialVisibleCount} / {totalCount} guides · {catalogModelCount}×{catalogHwCount} live
           </span>
           <button
             id="filter-reset"
             type="button"
             class="hidden font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
+            data-i18n="common.reset"
           >
             Reset
           </button>
@@ -357,6 +395,10 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
           .join(' ')
           .toLowerCase();
 
+        const hwOnArgs = JSON.stringify({ hw: entry.hardware.name });
+        const layerArgs = JSON.stringify({ fit: res.gpu_layers_fit, total: res.total_layers });
+        const statusAttrs = res.status === 'OOM' ? 'status.oom' : undefined;
+
         return (
           <article
             data-card
@@ -376,7 +418,10 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-1.5">
                   <StatusBadge status={res.status} />
-                  <span class="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700">
+                  <span
+                    class="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700"
+                    data-i18n="common.fullGuide"
+                  >
                     Full Guide
                   </span>
                 </div>
@@ -388,7 +433,11 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
               <h2 class="mt-3.5 text-base font-bold tracking-tight text-slate-950 group-hover:text-blue-600 transition-colors">
                 <a href={detailHref} class="focus:outline-none">
                   {entry.model.short_name}
-                  <span class="block text-sm font-semibold text-slate-600">
+                  <span
+                    class="block text-sm font-semibold text-slate-600"
+                    data-i18n="common.onPrefix"
+                    data-i18n-args={hwOnArgs}
+                  >
                     on {entry.hardware.name}
                   </span>
                 </a>
@@ -401,7 +450,7 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
 
             <div class="mt-4 pt-4 border-t border-slate-100">
               <div class="flex items-center justify-between text-xs">
-                <span class="text-slate-500">VRAM ({entry.default_quant} @ 8K)</span>
+                <span class="text-slate-500" data-i18n="common.vram8kLabel">VRAM ({entry.default_quant} @ 8K)</span>
                 <span class="font-mono font-semibold text-slate-900 tabular-nums">
                   {res.total_vram_gb.toFixed(1)} / {usable} GB
                 </span>
@@ -412,10 +461,14 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
 
               <div class="mt-3.5 flex items-center justify-between">
                 <div class="flex items-baseline gap-1.5">
-                  <span class="font-mono text-lg font-bold text-slate-950 tabular-nums">
+                  <span class="font-mono text-lg font-bold text-slate-950 tabular-nums" data-i18n={statusAttrs}>
                     {tpsDisplay}
                   </span>
-                  <span class="text-[11px] text-slate-500 tabular-nums">
+                  <span
+                    class="text-[11px] text-slate-500 tabular-nums"
+                    data-i18n="common.layersCount"
+                    data-i18n-args={layerArgs}
+                  >
                     ({res.gpu_layers_fit}/{res.total_layers} layers)
                   </span>
                 </div>
@@ -423,9 +476,9 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
                 <a
                   href={detailHref}
                   class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800"
+                  data-i18n="common.openCalc"
                 >
-                  Open Calc
-                  <span aria-hidden="true">-&gt;</span>
+                  Open Calc -&gt;
                 </a>
               </div>
             </div>
@@ -437,7 +490,12 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
     <!-- Progressive Pagination Controls (Curated Guides) -->
     <div id="pagination-bar" class={paginationHiddenClass}>
       <div class="w-full sm:max-w-xs">
-        <p id="pagination-summary" class="font-mono text-xs font-medium text-slate-600 tabular-nums">
+        <p
+          id="pagination-summary"
+          class="font-mono text-xs font-medium text-slate-600 tabular-nums"
+          data-i18n="home.viewingGuides"
+          data-i18n-args={initViewArgs}
+        >
           Viewing {initialVisibleCount} of {totalCount} matching guides
         </p>
         <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
@@ -454,6 +512,8 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
           id="load-more-btn"
           type="button"
           class="rounded-lg bg-slate-950 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors cursor-pointer"
+          data-i18n="home.loadMoreGuides"
+          data-i18n-args={initLoadArgs}
         >
           Load 24 More ({initialRemainingCount} left)
         </button>
@@ -461,6 +521,7 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
           id="show-all-btn"
           type="button"
           class="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700 transition-colors cursor-pointer"
+          data-i18n="home.showAllRemaining"
         >
           Show All Remaining
         </button>
@@ -516,8 +577,8 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
       id="empty-state"
       class="mt-6 hidden rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center"
     >
-      <p class="text-base font-semibold text-slate-900">No matching Model × Rig configurations</p>
-      <p class="mt-1 text-sm text-slate-500">
+      <p class="text-base font-semibold text-slate-900" data-i18n="home.emptyTitle">No matching Model × Rig configurations</p>
+      <p class="mt-1 text-sm text-slate-500" data-i18n="home.emptyDesc">
         Try relaxing the status filter, adding GPU capacity, or launch the full Rig Simulator.
       </p>
       <div class="mt-4 flex flex-wrap justify-center gap-2">
@@ -525,6 +586,7 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
           id="empty-reset-btn"
           type="button"
           class="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 cursor-pointer"
+          data-i18n="common.resetAll"
         >
           Reset All Filters
         </button>
@@ -532,6 +594,7 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
           id="empty-sim-link"
           href="/calculator/"
           class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+          data-i18n="home.emptySimBtn"
         >
           Open Custom Rig Simulator -&gt;
         </a>
@@ -547,10 +610,10 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
     <div class="grid gap-4 md:grid-cols-2">
       <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
         <div class="flex items-center justify-between gap-2">
-          <h3 class="text-sm font-bold tracking-tight text-slate-950">
+          <h3 class="text-sm font-bold tracking-tight text-slate-950" data-i18n="home.modelHubsHeading" data-i18n-args={modelHubsArgs}>
             Model Hubs ({uniqueHubModelCount})
           </h3>
-          <a href="/model/" class="text-xs font-semibold text-blue-600 hover:text-blue-800">
+          <a href="/model/" class="text-xs font-semibold text-blue-600 hover:text-blue-800" data-i18n="common.viewAll">
             View All -&gt;
           </a>
         </div>
@@ -571,10 +634,10 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
 
       <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
         <div class="flex items-center justify-between gap-2">
-          <h3 class="text-sm font-bold tracking-tight text-slate-950">
+          <h3 class="text-sm font-bold tracking-tight text-slate-950" data-i18n="home.hwHubsHeading" data-i18n-args={hwHubsArgs}>
             Hardware Hubs ({uniqueHubHwCount})
           </h3>
-          <a href="/gpu/" class="text-xs font-semibold text-blue-600 hover:text-blue-800">
+          <a href="/gpu/" class="text-xs font-semibold text-blue-600 hover:text-blue-800" data-i18n="common.viewAll">
             View All -&gt;
           </a>
         </div>
@@ -598,31 +661,26 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
   <!-- Estimation Formula & Methodology -->
   <section id="methodology" class="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
     <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
-      <h2 class="text-lg font-bold tracking-tight text-slate-950">
+      <h2 class="text-lg font-bold tracking-tight text-slate-950" data-i18n="home.methodTitle">
         How VRAMCalc.me Estimates Memory &amp; Tokens/sec
       </h2>
       <div class="mt-4 grid gap-6 text-sm leading-relaxed text-slate-600 md:grid-cols-3">
         <div>
-          <h3 class="font-semibold text-slate-900">1. 7-Tier GGUF &amp; MoE Math</h3>
-          <p class="mt-1.5">
-            Total weights scale from <span class="font-mono text-xs text-slate-800">Q2_K (3.0 bpw)</span> through{' '}
-            <span class="font-mono text-xs text-slate-800">Q4_K_M (4.85)</span>,{' '}
-            <span class="font-mono text-xs text-slate-800">Q8_0 (8.50)</span> to{' '}
-            <span class="font-mono text-xs text-slate-800">FP16</span>, while MoE models compute speed using active parameters.
+          <h3 class="font-semibold text-slate-900" data-i18n="home.method1Title">1. 7-Tier GGUF &amp; MoE Math</h3>
+          <p class="mt-1.5" data-i18n="home.method1Desc">
+            Total weights scale from Q2_K (3.0 bpw) through Q4_K_M (4.85), Q8_0 (8.50) to FP16, while MoE models compute speed using active parameters.
           </p>
         </div>
         <div>
-          <h3 class="font-semibold text-slate-900">2. GQA KV-Cache Compression</h3>
-          <p class="mt-1.5">
-            KV cache uses exact layer geometry (<span class="font-mono text-xs text-slate-800">2 × layers × kv_heads × head_dim × ctx</span>)
-            with FP16, Q8_0 (-50%), or Q4_0 (-75%) KV options.
+          <h3 class="font-semibold text-slate-900" data-i18n="home.method2Title">2. GQA KV-Cache Compression</h3>
+          <p class="mt-1.5" data-i18n="home.method2Desc">
+            KV cache uses exact layer geometry (2 × layers × kv_heads × head_dim × ctx) with FP16, Q8_0 (-50%), or Q4_0 (-75%) KV options.
           </p>
         </div>
         <div>
-          <h3 class="font-semibold text-slate-900">3. Multi-GPU &amp; CPU/RAM Bandwith</h3>
-          <p class="mt-1.5">
-            Smooth runs scale by CUDA/Metal/ROCm/Vulkan efficiency and Layer-Split or Tensor-Parallel scaling across{' '}
-            <span class="font-mono text-xs text-slate-800">1x–8x GPUs</span>; spill/CPU-only uses selected DDR4/DDR5/EPYC RAM speed.
+          <h3 class="font-semibold text-slate-900" data-i18n="home.method3Title">3. Multi-GPU &amp; CPU/RAM Bandwidth</h3>
+          <p class="mt-1.5" data-i18n="home.method3Desc">
+            Smooth runs scale by CUDA/Metal/ROCm/Vulkan efficiency and Layer-Split or Tensor-Parallel scaling across 1x–8x GPUs; spill/CPU-only uses selected DDR4/DDR5/EPYC RAM speed.
           </p>
         </div>
       </div>
@@ -633,6 +691,7 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
 <script>
   import { SearchableCombobox, type ComboboxOption } from '../utils/combobox';
   import { groupCatalogHardware } from '../utils/hubs';
+  import { getLocale, onLocaleChange, t, tStatus } from '../utils/i18n';
   import { estimateRigRun, osRamReserveGb } from '../utils/physics';
   import {
     buildSimulatorUrl,
@@ -786,40 +845,43 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
     }
 
     // Build CPU options (Unified Silicon + x86 Tiers)
-    const cpuOptions: ComboboxOption[] = [];
-    for (const soc of socProfiles) {
-      cpuOptions.push({
-        value: `soc:${soc.id}`,
-        label: soc.name,
-        group: 'Unified Memory Chips (CPU + RAM · GPU = None)',
-        sublabel: `Tiers: ${soc.ramTiers.join(' / ')} GB · ${soc.backend} ${soc.bwLabel}`,
-        badge: `${soc.backend} Unified`,
-        searchBlob: soc.searchBlob,
-      });
-    }
-
-    const cpuTiers = [
-      'Consumer DDR5',
-      'Consumer DDR4',
-      'Laptop LPDDR5X',
-      'Workstation HEDT',
-      'Server EPYC / Xeon',
-    ] as const;
-    for (const tier of cpuTiers) {
-      for (const c of catData.cpus) {
-        if (c.tier !== tier) continue;
-        const aliases = (c.search_aliases || []).join(' ');
-        cpuOptions.push({
-          value: `x86:${c.id}`,
-          label: c.name,
-          group: `${tier} (Discrete / System RAM)`,
-          sublabel: `${c.memory_type} · ${c.channels}-Ch · ${c.simd}`,
-          badge: `${c.effective_bw_gbps} GB/s`,
-          searchBlob: [c.id, c.name, c.short_name, c.vendor, c.tier, c.memory_type, aliases]
-            .join(' ')
-            .toLowerCase(),
+    function buildCpuOptions(): ComboboxOption[] {
+      const opts: ComboboxOption[] = [];
+      for (const soc of socProfiles) {
+        opts.push({
+          value: `soc:${soc.id}`,
+          label: soc.name,
+          group: t('home.grpUnified'),
+          sublabel: `${soc.ramTiers.join(' / ')} GB · ${soc.backend} ${soc.bwLabel}`,
+          badge: `${soc.backend} Unified`,
+          searchBlob: soc.searchBlob,
         });
       }
+
+      const cpuTiers = [
+        { tier: 'Consumer DDR5', groupKey: 'home.grpDdr5' as const },
+        { tier: 'Consumer DDR4', groupKey: 'home.grpDdr4' as const },
+        { tier: 'Laptop LPDDR5X', groupKey: 'home.grpLaptopCpu' as const },
+        { tier: 'Workstation HEDT', groupKey: 'home.grpWorkstationCpu' as const },
+        { tier: 'Server EPYC / Xeon', groupKey: 'home.grpServerCpu' as const },
+      ];
+      for (const { tier, groupKey } of cpuTiers) {
+        for (const c of catData.cpus) {
+          if (c.tier !== tier) continue;
+          const aliases = (c.search_aliases || []).join(' ');
+          opts.push({
+            value: `x86:${c.id}`,
+            label: c.name,
+            group: t(groupKey),
+            sublabel: `${c.memory_type} · ${c.channels}-Ch · ${c.simd}`,
+            badge: `${c.effective_bw_gbps} GB/s`,
+            searchBlob: [c.id, c.name, c.short_name, c.vendor, c.tier, c.memory_type, aliases]
+              .join(' ')
+              .toLowerCase(),
+          });
+        }
+      }
+      return opts;
     }
 
     function buildRamOptions(soc: UnifiedSocProfile | null): ComboboxOption[] {
@@ -830,7 +892,7 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
           opts.push({
             value: String(gb),
             label: `${gb} GB`,
-            group: `${soc.shortName} Official Tiers`,
+            group: t('home.grpSocTiers', { soc: soc.shortName }),
             badge: sku ? `${sku.bandwidth_gbps} GB/s` : 'Unified',
             searchBlob: `${gb} ${gb}gb ${gb}g unified official ${soc.shortName}`.toLowerCase(),
           });
@@ -840,8 +902,8 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
           opts.push({
             value: String(gb),
             label: `${gb} GB`,
-            group: 'Custom / Other Capacities (or type any GB)',
-            badge: 'Custom',
+            group: t('home.grpCustomRam'),
+            badge: `${gb} GB`,
             searchBlob: `${gb} ${gb}gb ${gb}g custom`.toLowerCase(),
           });
         }
@@ -850,8 +912,8 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
           opts.push({
             value: String(gb),
             label: `${gb} GB`,
-            group: 'System RAM (or type any GB)',
-            badge: `${Math.max(0, gb - osRamReserveGb(gb))}G usable`,
+            group: t('home.grpSystemRam'),
+            badge: t('home.usableShort', { gb: Math.max(0, gb - osRamReserveGb(gb)) }),
             searchBlob: `${gb} ${gb}gb ${gb}g ram system memory`.toLowerCase(),
           });
         }
@@ -859,77 +921,104 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
       return opts;
     }
 
-    const gpuGroupTitleMap: Record<string, string> = {
-      'NVIDIA Multi-GPU & Workstation': 'NVIDIA Workstation & Data Center',
-      'AMD Radeon & Ryzen AI': 'AMD Radeon & Instinct',
+    const gpuGroupKeyMap: Record<
+      string,
+      | 'home.grpGpuDesktopNvidia'
+      | 'home.grpGpuClassicNvidia'
+      | 'home.grpGpuWorkstationNvidia'
+      | 'home.grpGpuLaptopNvidia'
+      | 'home.grpGpuAmd'
+      | 'home.grpGpuIntel'
+      | 'home.grpGpuUnified'
+    > = {
+      'NVIDIA Desktop RTX': 'home.grpGpuDesktopNvidia',
+      'NVIDIA Classic GTX & RTX 20': 'home.grpGpuClassicNvidia',
+      'NVIDIA Multi-GPU & Workstation': 'home.grpGpuWorkstationNvidia',
+      'NVIDIA Laptop RTX': 'home.grpGpuLaptopNvidia',
+      'AMD Radeon & Ryzen AI': 'home.grpGpuAmd',
+      'Intel Arc': 'home.grpGpuIntel',
+      'Apple Silicon Unified': 'home.grpGpuUnified',
     };
 
-    const gpuOptions: ComboboxOption[] = [
-      {
-        value: 'none',
-        label: 'None — CPU-Only (System RAM)',
-        group: 'No Discrete GPU',
-        sublabel: 'Run model weights & KV cache strictly in host System RAM',
-        badge: 'CPU-Only',
-        searchBlob: 'none no gpu cpu only system ram integrated ddr4 ddr5',
-      },
-    ];
+    function buildGpuOptions(): ComboboxOption[] {
+      const opts: ComboboxOption[] = [
+        {
+          value: 'none',
+          label: t('home.noneCpuOnly'),
+          group: t('home.grpNoGpu'),
+          sublabel: t('home.noneCpuOnlySub'),
+          badge: 'CPU-Only',
+          searchBlob: 'none no gpu cpu only system ram integrated ddr4 ddr5',
+        },
+      ];
 
-    for (const grp of discreteGroupList) {
-      const grpTitle = gpuGroupTitleMap[grp.label] || grp.label;
-      for (const h of grp.items) {
-        gpuOptions.push({
-          value: h.id,
-          label: h.name,
-          group: grpTitle,
-          sublabel: `${h.vram_gb} GB ${h.memory_type} (${h.usable_vram_gb} GB usable)`,
-          badge: `${h.bandwidth_gbps} GB/s`,
-          searchBlob: hwSearchMap.get(h.id) || h.name.toLowerCase(),
+      for (const grp of discreteGroupList) {
+        const gKey = gpuGroupKeyMap[grp.label];
+        const grpTitle = gKey ? t(gKey) : grp.label;
+        for (const h of grp.items) {
+          opts.push({
+            value: h.id,
+            label: h.name,
+            group: grpTitle,
+            sublabel: t('home.vramLineSub', {
+              vram: h.vram_gb,
+              mem: h.memory_type,
+              usable: h.usable_vram_gb,
+            }),
+            badge: `${h.bandwidth_gbps} GB/s`,
+            searchBlob: hwSearchMap.get(h.id) || h.name.toLowerCase(),
+          });
+        }
+      }
+
+      for (const sku of catData.hardware) {
+        if (!sku.is_unified) continue;
+        opts.push({
+          value: `uni:${sku.id}`,
+          label: sku.name,
+          group: t('home.grpGpuUnified'),
+          sublabel: t('home.unifiedChipNote', {
+            ram: Math.round(sku.vram_gb),
+            backend: sku.backend,
+          }),
+          badge: `${sku.bandwidth_gbps} GB/s`,
+          searchBlob: `${hwSearchMap.get(sku.id) || ''} unified macbook mac studio mac mini`.toLowerCase(),
         });
       }
-    }
-
-    for (const sku of catData.hardware) {
-      if (!sku.is_unified) continue;
-      gpuOptions.push({
-        value: `uni:${sku.id}`,
-        label: sku.name,
-        group: 'Unified Memory Chips (Auto-sets CPU + RAM · GPU -> None)',
-        sublabel: `Shared ${Math.round(sku.vram_gb)} GB Unified Pool · ${sku.backend} (GPU set to None)`,
-        badge: `${sku.bandwidth_gbps} GB/s`,
-        searchBlob: `${hwSearchMap.get(sku.id) || ''} unified macbook mac studio mac mini`.toLowerCase(),
-      });
+      return opts;
     }
 
     const allModelsSorted = [...catData.models].sort((a, b) => a.name.localeCompare(b.name));
-    const modelOptions: ComboboxOption[] = [
-      {
-        value: 'all',
-        label: `All Models (${catData.models.length})`,
-        group: 'Model Selection',
-        searchBlob: 'all models clear reset any',
-      },
-      ...allModelsSorted.map((m) => ({
-        value: m.id,
-        label: `${m.short_name} (${m.params_b}B)`,
-        group: m.family,
-        sublabel: m.active_params_b
-          ? `${m.name} · MoE ${m.active_params_b}B active`
-          : `${m.name} · ${m.architecture}`,
-        badge: m.active_params_b ? `${m.active_params_b}B act` : `${m.params_b}B`,
-        searchBlob: [
-          m.id,
-          m.name,
-          m.short_name,
-          m.family,
-          m.architecture,
-          `${m.params_b}b`,
-          m.active_params_b ? `moe ${m.active_params_b}b` : 'dense',
-        ]
-          .join(' ')
-          .toLowerCase(),
-      })),
-    ];
+    function buildModelOptions(): ComboboxOption[] {
+      return [
+        {
+          value: 'all',
+          label: t('home.allModels', { count: catData.models.length }),
+          group: t('home.grpModelSel'),
+          searchBlob: 'all models clear reset any',
+        },
+        ...allModelsSorted.map((m) => ({
+          value: m.id,
+          label: `${m.short_name} (${m.params_b}B)`,
+          group: m.family,
+          sublabel: m.active_params_b
+            ? `${m.name} · MoE ${m.active_params_b}B`
+            : `${m.name} · ${m.architecture}`,
+          badge: m.active_params_b ? `${m.active_params_b}B` : `${m.params_b}B`,
+          searchBlob: [
+            m.id,
+            m.name,
+            m.short_name,
+            m.family,
+            m.architecture,
+            `${m.params_b}b`,
+            m.active_params_b ? `moe ${m.active_params_b}b` : 'dense',
+          ]
+            .join(' ')
+            .toLowerCase(),
+        })),
+      ];
+    }
 
     function getActiveUnifiedSoc(): UnifiedSocProfile | null {
       if (!selectedCpuVal.startsWith('soc:')) return null;
@@ -949,25 +1038,26 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
       const hw = selectedGpuVal && selectedGpuVal !== 'none' ? hwById.get(selectedGpuVal) ?? null : null;
 
       if (soc) {
-        gpuCountSelect.innerHTML = '<option value="0">None</option>';
+        gpuCountSelect.innerHTML = `<option value="0">${escapeHtml(t('home.qtyNone'))}</option>`;
         gpuCountSelect.value = '0';
         gpuCountSelect.disabled = true;
       } else if (selectedGpuVal === 'none' || !hw) {
         gpuCountSelect.innerHTML =
           selectedGpuVal === 'none'
-            ? '<option value="0">None</option>'
+            ? `<option value="0">${escapeHtml(t('home.qtyNone'))}</option>`
             : '<option value="0">—</option>';
         gpuCountSelect.value = '0';
         gpuCountSelect.disabled = true;
       } else if (!isMultiGpuCapable(hw)) {
         gpuCount = 1;
-        gpuCountSelect.innerHTML = '<option value="1">1× Laptop</option>';
+        gpuCountSelect.innerHTML = `<option value="1">${escapeHtml(t('home.qtyLaptop'))}</option>`;
         gpuCountSelect.value = '1';
         gpuCountSelect.disabled = true;
       } else {
-        gpuCountSelect.innerHTML = GPU_COUNT_OPTIONS.map(
-          (n) => `<option value="${n}">${n === 1 ? '1× GPU' : `${n}× GPUs`}</option>`,
-        ).join('');
+        gpuCountSelect.innerHTML = GPU_COUNT_OPTIONS.map((n) => {
+          const txt = n === 1 ? t('home.qtySingle') : t('home.qtyMulti', { n });
+          return `<option value="${n}">${escapeHtml(txt)}</option>`;
+        }).join('');
         gpuCountSelect.disabled = false;
         gpuCountSelect.value = String(gpuCount);
       }
@@ -1003,16 +1093,29 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
       if (soc) {
         const ram = selectedRamGb ?? soc.defaultRamGb;
         const { hw: resolvedHw, isExactCatalogSku } = resolveUnifiedHardware(soc, ram);
-        const tag = isExactCatalogSku ? '' : ' (Custom RAM Estimate)';
+        const tag = isExactCatalogSku ? '' : t('home.ctxUnifiedCustomTag');
         contextBar.classList.remove('hidden');
         splitToggleEl.classList.add('hidden');
-        contextTextEl.textContent = `Unified Memory Pool: ${soc.shortName} · ${ram} GB Shared RAM (${resolvedHw.usable_vram_gb} GB usable @ ${resolvedHw.bandwidth_gbps} GB/s ${resolvedHw.backend})${tag} — Discrete GPU set to None.`;
+        contextTextEl.textContent = t('home.ctxUnified', {
+          soc: soc.shortName,
+          ram,
+          usable: resolvedHw.usable_vram_gb,
+          bw: resolvedHw.bandwidth_gbps,
+          backend: resolvedHw.backend,
+          custom: tag,
+        });
       } else if (hw && gpuCount >= 2 && isMultiGpuCapable(hw)) {
         const totalVram = Math.round(hw.vram_gb * gpuCount * 10) / 10;
         const usableVram = Math.round(hw.usable_vram_gb * gpuCount * 10) / 10;
         contextBar.classList.remove('hidden');
         splitToggleEl.classList.remove('hidden');
-        contextTextEl.textContent = `Multi-GPU Rig: ${gpuCount}× ${hw.short_name} = ${totalVram} GB VRAM (${usableVram} GB usable) · ${hw.bandwidth_gbps} GB/s/card`;
+        contextTextEl.textContent = t('home.ctxMultiGpu', {
+          n: gpuCount,
+          hw: hw.short_name,
+          total: totalVram,
+          usable: usableVram,
+          bw: hw.bandwidth_gbps,
+        });
         updateSplitToggleUi();
       } else if (selectedGpuVal === 'none') {
         const cpu = getActiveX86Cpu();
@@ -1020,7 +1123,11 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
         const usableRam = Math.max(0, ram - osRamReserveGb(ram));
         contextBar.classList.remove('hidden');
         splitToggleEl.classList.add('hidden');
-        contextTextEl.textContent = `CPU-Only Mode (-ngl 0): ${cpu.short_name} · ${ram} GB RAM (${usableRam} GB usable after OS reserve) — Discrete GPU set to None.`;
+        contextTextEl.textContent = t('home.ctxCpuOnly', {
+          cpu: cpu.short_name,
+          ram,
+          usable: usableRam,
+        });
       } else {
         contextBar.classList.add('hidden');
         splitToggleEl.classList.add('hidden');
@@ -1030,20 +1137,21 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
     // Instantiate Comboboxes
     const cpuCombo = new SearchableCombobox({
       root: cpuRoot,
-      options: cpuOptions,
-      placeholder: 'Search i5/i7, Ryzen, Apple M1–M5...',
-      emptyText: 'No matching CPU or Unified Silicon found',
+      options: buildCpuOptions(),
+      placeholder: t('home.cpuPlaceholder'),
+      emptyText: t('home.cpuEmpty'),
       onChange: (val) => applyCpuSelection(val),
     });
 
     const ramCombo = new SearchableCombobox({
       root: ramRoot,
       options: buildRamOptions(null),
-      placeholder: 'e.g. 32 GB',
-      emptyText: 'Type an integer GB (4–2048), e.g. 48',
+      placeholder: t('home.ramPlaceholder'),
+      emptyText: t('home.ramEmpty'),
       allowCustomNumeric: true,
       parseCustomNumeric: parseRamGb,
       formatCustomNumeric: (n) => `${n} GB`,
+      formatCustomActionLabel: (n) => t('home.customRamUse', { ram: n }),
       onChange: (val) => {
         selectedRamGb = val ? parseRamGb(val) : null;
         updateContextBar();
@@ -1053,19 +1161,19 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
 
     const gpuCombo = new SearchableCombobox({
       root: gpuRoot,
-      options: gpuOptions,
-      placeholder: 'Search GPU or None (CPU-Only)...',
-      emptyText: 'No matching GPU found',
+      options: buildGpuOptions(),
+      placeholder: t('home.gpuPlaceholder'),
+      emptyText: t('home.gpuEmpty'),
       onChange: (val) => applyGpuSelection(val, false),
     });
 
     const modelCombo = new SearchableCombobox({
       root: modelRoot,
-      options: modelOptions,
-      placeholder: `All Models (${catData.models.length})`,
+      options: buildModelOptions(),
+      placeholder: t('home.allModels', { count: catData.models.length }),
       emptyValue: 'all',
       initialValue: 'all',
-      emptyText: 'No matching model found',
+      emptyText: t('home.modelEmpty'),
       onChange: (val) => {
         selectedModel = val || 'all';
         applyFilters(true);
@@ -1086,7 +1194,7 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
 
       selectedGpuVal = '';
       gpuCount = 1;
-      gpuCombo.setDisplayOverride('None — Unified Memory (Auto)', true, false);
+      gpuCombo.setDisplayOverride(t('home.noneUnifiedAuto'), true, false);
       syncGpuQtyControl();
       updateContextBar();
       applyFilters(true);
@@ -1270,6 +1378,8 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
     function syncUrl() {
       if (!window.history || !window.history.replaceState) return;
       const params = new URLSearchParams();
+      const activeLang = new URLSearchParams(window.location.search).get('lang');
+      if (activeLang) params.set('lang', activeLang);
       if (selectedCpuVal) params.set('cpu', selectedCpuVal);
       if (selectedRamGb !== null) params.set('ram', String(selectedRamGb));
       if (selectedGpuVal) params.set('gpu', selectedGpuVal);
@@ -1330,8 +1440,11 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
           simHref: `/calculator/?model=${encodeURIComponent(model.id)}&hw=${encodeURIComponent(h.id)}`,
           gpuCountLabel: '',
           chipLabel: `${h.backend} · ${h.bandwidth_gbps} GB/s`,
-          hwSubtitle: `on ${h.name}`,
-          layersText: `(${res.gpu_layers_fit}/${res.total_layers} layers)`,
+          hwSubtitle: t('common.onPrefix', { hw: h.name }),
+          layersText: t('common.layersCount', {
+            fit: res.gpu_layers_fit,
+            total: res.total_layers,
+          }),
         });
       }
       sortLiveItems(items, currentSort);
@@ -1396,8 +1509,8 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
           ? `${rig.hw.backend} · ${rig.hw.bandwidth_gbps} GB/s`
           : `CPU · ${rig.cpu.effective_bw_gbps} GB/s`;
         const layersText = res.is_cpu_only
-          ? `(CPU-only ${res.total_layers}L)`
-          : `(${res.gpu_layers_fit}/${res.total_layers} layers)`;
+          ? t('common.cpuOnlyLayers', { total: res.total_layers })
+          : t('common.layersCount', { fit: res.gpu_layers_fit, total: res.total_layers });
 
         items.push({
           model: m,
@@ -1408,7 +1521,7 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
           guideSlug,
           gpuCountLabel: rig.effGpuCount > 1 ? `${rig.effGpuCount}× ` : '',
           chipLabel,
-          hwSubtitle: `on ${rig.rigTitle}`,
+          hwSubtitle: t('common.onPrefix', { hw: rig.rigTitle }),
           layersText,
         });
       }
@@ -1460,17 +1573,28 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
       if (liveBadge && liveHeading && liveSub && liveSimCta) {
         if (isRigMode && bannerMeta) {
           const guideCount = items.filter((x) => Boolean(x.guideSlug)).length;
-          liveBadge.textContent = 'Live Rig Matrix';
-          liveHeading.textContent = `${items.length} Model${items.length === 1 ? '' : 's'} on ${bannerMeta.rigTitle}`;
-          liveSub.textContent = `${bannerMeta.allSmooth} Smooth · ${bannerMeta.allPartial} Partial Offload · ${bannerMeta.allOom} OOM @ Q4_K_M 8K (${guideCount} Full Guides included). Click any card for 7 quants & KV tuning.`;
-          liveSimCta.textContent = 'Open Full Rig in Simulator ->';
+          liveBadge.textContent = t('home.badgeRig');
+          liveHeading.textContent =
+            items.length === 1
+              ? t('home.headingRigModelOne', { rig: bannerMeta.rigTitle })
+              : t('home.headingRigModels', { count: items.length, rig: bannerMeta.rigTitle });
+          liveSub.textContent = t('home.subRigSummary', {
+            smooth: bannerMeta.allSmooth,
+            partial: bannerMeta.allPartial,
+            oom: bannerMeta.allOom,
+            guides: guideCount,
+          });
+          liveSimCta.textContent = t('home.openRigSim');
           liveSimCta.href = bannerMeta.rigSimHref;
         } else {
           const model = modelById.get(selectedModel);
-          liveBadge.textContent = 'Live Catalog Physics';
-          liveHeading.textContent = `${items.length} Additional GPUs for ${model ? model.short_name : 'Selected Model'}`;
-          liveSub.textContent = `Instant Q4_K_M @ 8K estimates across catalog GPUs beyond full guides. Click any card to customize 7 quants & multi-GPU.`;
-          liveSimCta.textContent = 'Open in Rig Simulator ->';
+          liveBadge.textContent = t('home.badgeCatalog');
+          liveHeading.textContent = t('home.headingAdditionalGpus', {
+            count: items.length,
+            model: model ? model.short_name : '',
+          });
+          liveSub.textContent = t('home.subAdditionalGpus');
+          liveSimCta.textContent = t('common.openFullSim');
           liveSimCta.href =
             selectedModel !== 'all'
               ? `/calculator/?model=${encodeURIComponent(selectedModel)}`
@@ -1489,23 +1613,31 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
               : res.status === 'Partial Offload'
                 ? 'bg-amber-500'
                 : 'bg-rose-500';
-          const tpsDisplay = res.status === 'OOM' ? 'OOM' : `${res.est_tps.toFixed(1)} tok/s`;
-          const budgetLabel = res.is_cpu_only ? 'RAM (Q4_K_M @ 8K)' : 'VRAM (Q4_K_M @ 8K)';
+          const tpsDisplay =
+            res.status === 'OOM' ? escapeHtml(t('status.oom')) : `${res.est_tps.toFixed(1)} tok/s`;
+          const budgetLabel = res.is_cpu_only ? t('common.ram8kLabel') : t('common.vram8kLabel');
           const moeLine = model.active_params_b
-            ? `${model.params_b}B MoE (${model.active_params_b}B active) · ${model.architecture}`
-            : `${model.params_b}B Params · ${model.architecture}`;
+            ? t('common.moeLine', {
+                params: model.params_b,
+                active: model.active_params_b,
+                arch: model.architecture,
+              })
+            : t('common.denseLine', {
+                params: model.params_b,
+                arch: model.architecture,
+              });
 
           const primaryHref = guideSlug ? `/can-i-run/${encodeURIComponent(guideSlug)}/` : simHref;
           const kindBadge = guideSlug
-            ? '<span class="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700">Full Guide</span>'
-            : '<span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">Live Calc</span>';
+            ? `<span class="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700">${escapeHtml(t('common.fullGuide'))}</span>`
+            : `<span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">${escapeHtml(t('common.liveCalc'))}</span>`;
 
           const footerActions = guideSlug
             ? `<div class="flex items-center gap-2.5">
-                 <a href="${simHref}" class="text-[11px] font-medium text-slate-500 hover:text-blue-600">Sim</a>
-                 <a href="${primaryHref}" class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800">Open Guide -&gt;</a>
+                 <a href="${simHref}" class="text-[11px] font-medium text-slate-500 hover:text-blue-600">${escapeHtml(t('common.simShort'))}</a>
+                 <a href="${primaryHref}" class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800">${escapeHtml(t('common.openGuide'))}</a>
                </div>`
-            : `<a href="${simHref}" class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800">Simulate -&gt;</a>`;
+            : `<a href="${simHref}" class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800">${escapeHtml(t('common.simulate'))}</a>`;
 
           return `
             <article class="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:border-blue-300 hover:shadow-md">
@@ -1514,7 +1646,7 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
                   <div class="flex items-center gap-1.5">
                     <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${badgeClasses(res.status)}">
                       <span class="h-1.5 w-1.5 rounded-full ${dotClass(res.status)}"></span>
-                      ${res.status}
+                      ${escapeHtml(tStatus(res.status))}
                     </span>
                     ${kindBadge}
                   </div>
@@ -1533,7 +1665,7 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
 
               <div class="mt-4 pt-4 border-t border-slate-100">
                 <div class="flex items-center justify-between text-xs">
-                  <span class="text-slate-500">${budgetLabel}</span>
+                  <span class="text-slate-500">${escapeHtml(budgetLabel)}</span>
                   <span class="font-mono font-semibold text-slate-900 tabular-nums">${res.total_vram_gb.toFixed(1)} / ${budget.toFixed(1)} GB</span>
                 </div>
                 <div class="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
@@ -1556,8 +1688,14 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
       const liveRemaining = Math.max(0, items.length - slice.length);
       if (livePagBar && livePagSummary && liveLoadMoreBtn) {
         livePagBar.classList.toggle('hidden', liveRemaining === 0);
-        livePagSummary.textContent = `Showing ${slice.length} of ${items.length} live estimates`;
-        liveLoadMoreBtn.textContent = `Load ${Math.min(PAGE_SIZE, liveRemaining)} More (${liveRemaining} left)`;
+        livePagSummary.textContent = t('home.showingLive', {
+          shown: slice.length,
+          total: items.length,
+        });
+        liveLoadMoreBtn.textContent = t('home.loadMoreGuides', {
+          chunk: Math.min(PAGE_SIZE, liveRemaining),
+          left: liveRemaining,
+        });
       }
     }
 
@@ -1584,7 +1722,7 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
         renderLiveCards(rigResult.items, true, rigResult);
 
         if (countEl) {
-          countEl.textContent = `${rigResult.items.length} models matched (Q4 @ 8K)`;
+          countEl.textContent = t('home.countRig', { count: rigResult.items.length });
         }
         if (emptySimLink) {
           emptySimLink.href = rigResult.rigSimHref;
@@ -1631,11 +1769,22 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
 
       if (countEl) {
         if (!isFiltered) {
-          countEl.textContent = `${shownCount} / ${totalCurated} guides · ${catData.models.length}×${catData.hardware.length} live`;
+          countEl.textContent = t('home.countInitial', {
+            shown: shownCount,
+            total: totalCurated,
+            models: catData.models.length,
+            hw: catData.hardware.length,
+          });
         } else if (modelLiveItems.length > 0) {
-          countEl.textContent = `${matching.length} guides + ${modelLiveItems.length} live GPUs`;
+          countEl.textContent = t('home.countModelPlusLive', {
+            guides: matching.length,
+            live: modelLiveItems.length,
+          });
         } else {
-          countEl.textContent = `${shownCount} / ${matching.length} matched`;
+          countEl.textContent = t('home.countMatched', {
+            shown: shownCount,
+            matched: matching.length,
+          });
         }
       }
 
@@ -1643,7 +1792,10 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
         paginationBar.classList.toggle('hidden', remaining === 0);
       }
       if (paginationSummary) {
-        paginationSummary.textContent = `Viewing ${shownCount} of ${matching.length} matching full guides`;
+        paginationSummary.textContent = t('home.viewingGuides', {
+          shown: shownCount,
+          total: matching.length,
+        });
       }
       if (paginationFill) {
         const pct = matching.length > 0 ? Math.round((shownCount / matching.length) * 100) : 100;
@@ -1651,7 +1803,10 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
       }
       if (loadMoreBtn) {
         const nextChunk = Math.min(PAGE_SIZE, remaining);
-        loadMoreBtn.textContent = `Load ${nextChunk} More (${remaining} left)`;
+        loadMoreBtn.textContent = t('home.loadMoreGuides', {
+          chunk: nextChunk,
+          left: remaining,
+        });
       }
 
       const anyMatched = matching.length > 0 || modelLiveItems.length > 0;
@@ -1680,7 +1835,7 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
           cpuCombo.setValue(selectedCpuVal);
           ramCombo.setOptions(buildRamOptions(soc), false);
           ramCombo.setValue(String(selectedRamGb), `${selectedRamGb} GB`);
-          gpuCombo.setDisplayOverride('None — Unified Memory (Auto)', true, false);
+          gpuCombo.setDisplayOverride(t('home.noneUnifiedAuto'), true, false);
           return true;
         }
       }
@@ -1825,7 +1980,7 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
         ramCombo.setOptions(buildRamOptions(activeSoc), false);
         ramCombo.setValue(String(effRam), `${effRam} GB`);
         selectedGpuVal = '';
-        gpuCombo.setDisplayOverride('None — Unified Memory (Auto)', true, false);
+        gpuCombo.setDisplayOverride(t('home.noneUnifiedAuto'), true, false);
       } else {
         if (selectedCpuVal) cpuCombo.setValue(selectedCpuVal);
         if (selectedRamGb !== null) {
@@ -1844,6 +1999,8 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
       updateContextBar();
       if (hadParam) {
         applyFilters(true);
+      } else if (getLocale() !== 'en') {
+        applyFilters(false);
       }
     }
 
@@ -1927,6 +2084,37 @@ const homeOgDescription = `Check exact 7-tier quant (Q2_K–FP16) VRAM, 1x–8x 
           gpuCombo.focus();
         }
       }
+    });
+
+    onLocaleChange(() => {
+      cpuCombo.setOptions(buildCpuOptions(), false);
+      cpuCombo.setPlaceholder(t('home.cpuPlaceholder'));
+      cpuCombo.setEmptyText(t('home.cpuEmpty'));
+      if (selectedCpuVal) cpuCombo.setValue(selectedCpuVal);
+
+      ramCombo.setOptions(buildRamOptions(getActiveUnifiedSoc()), false);
+      ramCombo.setPlaceholder(t('home.ramPlaceholder'));
+      ramCombo.setEmptyText(t('home.ramEmpty'));
+      ramCombo.setCustomActionFormatter((n) => t('home.customRamUse', { ram: n }));
+      if (selectedRamGb !== null) ramCombo.setValue(String(selectedRamGb), `${selectedRamGb} GB`);
+
+      gpuCombo.setOptions(buildGpuOptions(), false);
+      gpuCombo.setPlaceholder(t('home.gpuPlaceholder'));
+      gpuCombo.setEmptyText(t('home.gpuEmpty'));
+      if (getActiveUnifiedSoc()) {
+        gpuCombo.setDisplayOverride(t('home.noneUnifiedAuto'), true, false);
+      } else if (selectedGpuVal) {
+        gpuCombo.setValue(selectedGpuVal);
+      }
+
+      modelCombo.setOptions(buildModelOptions(), false);
+      modelCombo.setPlaceholder(t('home.allModels', { count: catData.models.length }));
+      modelCombo.setEmptyText(t('home.modelEmpty'));
+      modelCombo.setValue(selectedModel);
+
+      syncGpuQtyControl();
+      updateContextBar();
+      applyFilters(false);
     });
 
     syncGpuQtyControl();

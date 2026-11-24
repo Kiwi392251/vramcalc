@@ -161,6 +161,18 @@ const faqSchema = {
 const gpuHubHref = `/gpu/${hardware.id}/`;
 const modelHubHref = `/model/${model.id}/`;
 
+const detailTitleArgs = JSON.stringify({ model: model.name, hw: hardware.name });
+const detailModelHubArgs = JSON.stringify({ model: model.short_name });
+const detailOnHwArgs = JSON.stringify({ hw: hardware.short_name });
+const retBadgeI18nKey = isOom ? 'detail.retFixes' : 'detail.retAlts';
+const retSmoothModelsArgs = JSON.stringify({ hw: hardware.short_name });
+const retAllHwArgs = JSON.stringify({ hw: hardware.short_name });
+const retGpusSmoothArgs = JSON.stringify({ model: model.short_name });
+const retAllModelArgs = JSON.stringify({ model: model.short_name });
+const retExploreHwArgs = JSON.stringify({ hw: hardware.short_name });
+const retCompareSmoothArgs = JSON.stringify({ count: smoothSameModel.length });
+const quantTableSubArgs = JSON.stringify({ hw: hardware.short_name });
+
 const gpuBreadcrumbSchema = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
@@ -265,11 +277,11 @@ const appSchema = {
       <nav aria-label="Breadcrumb">
         <ol class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-500">
           <li>
-            <a href="/" class="hover:text-slate-900 transition-colors">Home</a>
+            <a href="/" class="hover:text-slate-900 transition-colors" data-i18n="common.home">Home</a>
           </li>
           <li aria-hidden="true">/</li>
           <li>
-            <a href="/gpu/" class="hover:text-slate-900 transition-colors">All GPUs</a>
+            <a href="/gpu/" class="hover:text-slate-900 transition-colors" data-i18n="nav.gpus">All GPUs</a>
           </li>
           <li aria-hidden="true">/</li>
           <li>
@@ -277,13 +289,15 @@ const appSchema = {
           </li>
           <li aria-hidden="true">/</li>
           <li aria-current="page" class="text-slate-900 font-semibold truncate">
-            {model.short_name} on {hardware.short_name}
+            {model.short_name} <span data-i18n="common.onPrefix" data-i18n-args={detailOnHwArgs}>on {hardware.short_name}</span>
           </li>
         </ol>
       </nav>
 
       <a
         href={modelHubHref}
+        data-i18n="detail.modelHubPill"
+        data-i18n-args={detailModelHubArgs}
         class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[11px] font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700 transition-colors"
       >
         Model Hub: {model.short_name} -&gt;
@@ -323,11 +337,11 @@ const appSchema = {
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
           </span>
-          <span data-copy-text>Share Benchmark</span>
+          <span data-copy-text data-i18n="common.shareBenchmark">Share Benchmark</span>
         </button>
       </div>
 
-      <h1 class="mt-3.5 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
+      <h1 class="mt-3.5 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-4xl" data-i18n="detail.canIRunTitle" data-i18n-args={detailTitleArgs}>
         Can I Run {model.name} on {hardware.name}?
       </h1>
 
@@ -337,13 +351,13 @@ const appSchema = {
 
       <div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-600">
         <span class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono">
-          Hardware Budget: <strong class="text-slate-950">{hardware.usable_vram_gb} GB</strong> / {hardware.vram_gb} GB
+          <span data-i18n="detail.hwBudget">Hardware Budget:</span> <strong class="text-slate-950">{hardware.usable_vram_gb} GB</strong> / {hardware.vram_gb} GB
         </span>
         <span class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono">
-          Bandwidth: <strong class="text-slate-950">{hardware.bandwidth_gbps} GB/s</strong>
+          <span data-i18n="detail.bandwidth">Bandwidth:</span> <strong class="text-slate-950">{hardware.bandwidth_gbps} GB/s</strong>
         </span>
         <span class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-mono">
-          GQA KV Geometry: <strong class="text-slate-950">{model.num_kv_heads} heads × {model.head_dim} dim</strong>
+          <span data-i18n="detail.kvGeometry">GQA KV Geometry:</span> <strong class="text-slate-950">{model.num_kv_heads} × {model.head_dim}</strong>
         </span>
       </div>
     </header>
@@ -361,10 +375,10 @@ const appSchema = {
         class={retentionWrapClass}
       >
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <span class={retentionBadgeClass}>
+          <span class={retentionBadgeClass} data-i18n={retBadgeI18nKey}>
             {isOom ? 'Recommended Smooth Fixes' : 'Full-GPU Smooth Alternatives'}
           </span>
-          <span class="font-mono text-xs text-slate-600">
+          <span class="font-mono text-xs text-slate-600" data-i18n="detail.retVerified">
             Verified Smooth Fits Only
           </span>
         </div>
@@ -381,10 +395,10 @@ const appSchema = {
           <div class="rounded-xl border border-slate-200/80 bg-white/95 p-4 shadow-xs flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-                <h3 class="text-sm font-bold text-slate-950">
+                <h3 class="text-sm font-bold text-slate-950" data-i18n="detail.retSmoothModelsOn" data-i18n-args={retSmoothModelsArgs}>
                   Smooth Models on {hardware.short_name}
                 </h3>
-                <a href={gpuHubHref} class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0">
+                <a href={gpuHubHref} class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0" data-i18n="detail.retAllHw" data-i18n-args={retAllHwArgs}>
                   All {hardware.short_name} -&gt;
                 </a>
               </div>
@@ -401,7 +415,7 @@ const appSchema = {
                         <div class="min-w-0">
                           <div class="flex items-center gap-2">
                             <span class="font-bold text-sm text-slate-950 truncate">{alt.model.short_name}</span>
-                            <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                            <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800" data-i18n="status.smooth">
                               Smooth
                             </span>
                           </div>
@@ -413,7 +427,7 @@ const appSchema = {
                           <div class="font-mono text-sm font-bold text-emerald-700 tabular-nums">
                             {alt.default_result.est_tps.toFixed(1)} tok/s
                           </div>
-                          <span class="text-[11px] font-semibold text-blue-600">Switch -&gt;</span>
+                          <span class="text-[11px] font-semibold text-blue-600" data-i18n="common.switch">Switch -&gt;</span>
                         </div>
                       </a>
                     );
@@ -427,7 +441,7 @@ const appSchema = {
             </div>
 
             <div class="mt-3.5 border-t border-slate-100 pt-2.5 text-right">
-              <a href={gpuHubHref} class="text-xs font-semibold text-blue-600 hover:text-blue-800">
+              <a href={gpuHubHref} class="text-xs font-semibold text-blue-600 hover:text-blue-800" data-i18n="detail.retExploreHw" data-i18n-args={retExploreHwArgs}>
                 Explore All {hardware.short_name} Models -&gt;
               </a>
             </div>
@@ -437,10 +451,10 @@ const appSchema = {
           <div class="rounded-xl border border-slate-200/80 bg-white/95 p-4 shadow-xs flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-                <h3 class="text-sm font-bold text-slate-950">
+                <h3 class="text-sm font-bold text-slate-950" data-i18n="detail.retGpusSmooth" data-i18n-args={retGpusSmoothArgs}>
                   GPUs That Run {model.short_name} Smoothly
                 </h3>
-                <a href={modelHubHref} class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0">
+                <a href={modelHubHref} class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0" data-i18n="detail.retAllModel" data-i18n-args={retAllModelArgs}>
                   All {model.short_name} -&gt;
                 </a>
               </div>
@@ -470,7 +484,7 @@ const appSchema = {
                           <div class="font-mono text-sm font-bold text-emerald-700 tabular-nums">
                             {upEntry.default_result.est_tps.toFixed(1)} tok/s
                           </div>
-                          <span class="text-[11px] font-semibold text-blue-600">Inspect -&gt;</span>
+                          <span class="text-[11px] font-semibold text-blue-600" data-i18n="common.inspect">Inspect -&gt;</span>
                         </div>
                       </a>
                     );
@@ -484,7 +498,7 @@ const appSchema = {
             </div>
 
             <div class="mt-3.5 border-t border-slate-100 pt-2.5 text-right">
-              <a href={modelHubHref} class="text-xs font-semibold text-blue-600 hover:text-blue-800">
+              <a href={modelHubHref} class="text-xs font-semibold text-blue-600 hover:text-blue-800" data-i18n="detail.retCompareSmooth" data-i18n-args={retCompareSmoothArgs}>
                 Compare All {smoothSameModel.length} Smooth GPUs -&gt;
               </a>
             </div>
@@ -497,27 +511,27 @@ const appSchema = {
     <section class="mt-10" aria-labelledby="quant-table-heading">
       <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 id="quant-table-heading" class="text-xl font-bold tracking-tight text-slate-950">
+          <h2 id="quant-table-heading" class="text-xl font-bold tracking-tight text-slate-950" data-i18n="detail.quantTableTitle">
             Quantization Comparison Table (8K Context)
           </h2>
-          <p class="mt-1 text-sm text-slate-600">
+          <p class="mt-1 text-sm text-slate-600" data-i18n="detail.quantTableSub" data-i18n-args={quantTableSubArgs}>
             Static GGUF footprint breakdown across Q4_K_M through FP16 on {hardware.short_name}.
           </p>
         </div>
-        <span class="text-xs font-mono text-slate-500">KV Cache @ 8K FP16</span>
+        <span class="text-xs font-mono text-slate-500" data-i18n="detail.kvNoteHeader">KV Cache @ 8K FP16</span>
       </div>
 
       <div class="mt-4 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
         <table class="w-full min-w-[760px] border-collapse text-left text-sm">
           <thead>
             <tr class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              <th class="px-4 py-3">Quant</th>
-              <th class="px-4 py-3">Weights</th>
-              <th class="px-4 py-3">Total VRAM (8K)</th>
-              <th class="px-4 py-3">GPU Layers</th>
-              <th class="px-4 py-3">Est. Speed</th>
-              <th class="px-4 py-3">Status</th>
-              <th class="px-4 py-3">Practical Notes</th>
+              <th class="px-4 py-3" data-i18n="detail.colQuant">Quant</th>
+              <th class="px-4 py-3" data-i18n="detail.colWeights">Weights</th>
+              <th class="px-4 py-3" data-i18n="detail.colTotalVram">Total VRAM (8K)</th>
+              <th class="px-4 py-3" data-i18n="detail.colGpuLayers">GPU Layers</th>
+              <th class="px-4 py-3" data-i18n="detail.colEstSpeed">Est. Speed</th>
+              <th class="px-4 py-3" data-i18n="detail.colStatus">Status</th>
+              <th class="px-4 py-3" data-i18n="detail.colNotes">Practical Notes</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
@@ -530,7 +544,7 @@ const appSchema = {
                   <div class="flex items-center gap-2">
                     <span class="font-mono font-bold text-slate-950">{row.quant}</span>
                     {row.recommended && (
-                      <span class="rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                      <span class="rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white" data-i18n="common.recommended">
                         Recommended
                       </span>
                     )}
@@ -547,7 +561,7 @@ const appSchema = {
                   {row.gpu_layers_fit}/{row.total_layers}
                 </td>
                 <td class="px-4 py-3.5 align-top font-mono font-semibold text-slate-900 tabular-nums">
-                  {rowTps}
+                  <span data-i18n={row.status === 'OOM' ? 'status.oom' : undefined}>{rowTps}</span>
                 </td>
                 <td class="px-4 py-3.5 align-top">
                   <StatusBadge status={row.status} />
@@ -565,12 +579,12 @@ const appSchema = {
 
     <!-- One-Click Copy Launch Commands -->
     <section class="mt-10" aria-labelledby="commands-heading">
-      <h2 id="commands-heading" class="text-xl font-bold tracking-tight text-slate-950">
+      <h2 id="commands-heading" class="text-xl font-bold tracking-tight text-slate-950" data-i18n="detail.cmdTitle">
         One-Click Launch Commands (Ollama &amp; llama.cpp)
       </h2>
       <p class="mt-1 text-sm text-slate-600">
-        Pre-tuned flags for {hardware.name} using optimal <span class="font-mono text-slate-900">-ngl {commands.recommended_ngl}</span> and
-        <span class="font-mono text-slate-900">{formatContextLabel(commands.recommended_ctx)}</span> context.
+        {hardware.name} · <span class="font-mono text-slate-900">-ngl {commands.recommended_ngl}</span> ·{' '}
+        <span class="font-mono text-slate-900">{formatContextLabel(commands.recommended_ctx)}</span>
       </p>
 
       <div class="mt-4 grid gap-4 lg:grid-cols-2">
@@ -599,14 +613,14 @@ const appSchema = {
                     <polyline points="20 6 9 17 4 12"></polyline>
                   </svg>
                 </span>
-                <span data-copy-text>Copy Env Command</span>
+                <span data-copy-text data-i18n="detail.copyEnvCmd">Copy Env Command</span>
               </button>
             </div>
 
             <div class="mt-3.5 space-y-3">
               <div>
                 <div class="flex items-center justify-between text-[11px] uppercase tracking-wider text-slate-400">
-                  <span>Standard Run</span>
+                  <span data-i18n="detail.stdRun">Standard Run</span>
                   <button
                     type="button"
                     data-copy-target="cmd-ollama-basic"
@@ -624,7 +638,7 @@ const appSchema = {
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
                     </span>
-                    <span data-copy-text>Copy Run</span>
+                    <span data-copy-text data-i18n="detail.copyRun">Copy Run</span>
                   </button>
                 </div>
                 <pre id="cmd-ollama-basic" class="mt-1.5 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs text-emerald-300 transition-shadow">{commands.ollama_run}</pre>
@@ -665,13 +679,13 @@ const appSchema = {
                     <polyline points="20 6 9 17 4 12"></polyline>
                   </svg>
                 </span>
-                <span data-copy-text>Copy llama-cli</span>
+                <span data-copy-text data-i18n="detail.copyLlamaCli">Copy llama-cli</span>
               </button>
             </div>
 
             <div class="mt-3.5 space-y-3">
               <div>
-                <div class="text-[11px] uppercase tracking-wider text-slate-400">
+                <div class="text-[11px] uppercase tracking-wider text-slate-400" data-i18n="detail.interactiveCli">
                   Interactive Terminal (`llama-cli`)
                 </div>
                 <pre id="cmd-llama-cli" class="mt-1.5 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs text-emerald-300 transition-shadow">{commands.llama_cli}</pre>
@@ -679,7 +693,7 @@ const appSchema = {
 
               <div>
                 <div class="flex items-center justify-between text-[11px] uppercase tracking-wider text-slate-400">
-                  <span>Local API Server (`llama-server`)</span>
+                  <span data-i18n="detail.localApiServer">Local API Server (`llama-server`)</span>
                   <button
                     type="button"
                     data-copy-target="cmd-llama-server"
@@ -697,7 +711,7 @@ const appSchema = {
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
                     </span>
-                    <span data-copy-text>Copy Server</span>
+                    <span data-copy-text data-i18n="detail.copyServer">Copy Server</span>
                   </button>
                 </div>
                 <pre id="cmd-llama-server" class="mt-1.5 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs text-sky-300 transition-shadow">{commands.llama_server}</pre>
@@ -710,25 +724,25 @@ const appSchema = {
 
     <!-- Context Bottleneck & Optimization Analysis -->
     <section class="mt-10 rounded-2xl border border-slate-200 bg-white p-6 sm:p-7" aria-labelledby="bottleneck-heading">
-      <h2 id="bottleneck-heading" class="text-xl font-bold tracking-tight text-slate-950">
+      <h2 id="bottleneck-heading" class="text-xl font-bold tracking-tight text-slate-950" data-i18n="detail.bottleneckTitle">
         Context Window &amp; Memory Bottleneck Analysis
       </h2>
 
       <dl class="mt-4 grid gap-3 sm:grid-cols-3">
         <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-          <dt class="text-xs font-medium text-slate-500">KV Cache per 4K Tokens (FP16)</dt>
+          <dt class="text-xs font-medium text-slate-500" data-i18n="detail.kvPer4k">KV Cache per 4K Tokens (FP16)</dt>
           <dd class="mt-1 font-mono text-lg font-bold text-slate-950 tabular-nums">
             +{context_analysis.kv_gb_per_4k.toFixed(2)} GB / 4K
           </dd>
         </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-          <dt class="text-xs font-medium text-slate-500">Max Smooth Context (Q4_K_M)</dt>
+          <dt class="text-xs font-medium text-slate-500" data-i18n="detail.maxSmoothCtx">Max Smooth Context (Q4_K_M)</dt>
           <dd class="mt-1 font-mono text-lg font-bold text-slate-950 tabular-nums">
             {maxSmoothCtxLabel}
           </dd>
         </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-          <dt class="text-xs font-medium text-slate-500">Hardware Memory Bus</dt>
+          <dt class="text-xs font-medium text-slate-500" data-i18n="detail.hwMemBus">Hardware Memory Bus</dt>
           <dd class="mt-1 font-mono text-lg font-bold text-slate-950 tabular-nums">
             {hardware.bandwidth_gbps} GB/s
           </dd>
@@ -741,7 +755,7 @@ const appSchema = {
 
       <div class="mt-6 grid gap-6 md:grid-cols-2">
         <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
-          <h3 class="text-sm font-bold text-slate-950">Key Bottleneck Signals</h3>
+          <h3 class="text-sm font-bold text-slate-950" data-i18n="detail.keySignals">Key Bottleneck Signals</h3>
           <ul class="mt-2.5 space-y-2 text-sm text-slate-700">
             {context_analysis.key_points.map((pt) => (
               <li class="flex items-start gap-2">
@@ -753,7 +767,7 @@ const appSchema = {
         </div>
 
         <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
-          <h3 class="text-sm font-bold text-slate-950">Recommended Optimizations</h3>
+          <h3 class="text-sm font-bold text-slate-950" data-i18n="detail.recOpts">Recommended Optimizations</h3>
           <ul class="mt-2.5 space-y-2 text-sm text-slate-700">
             {context_analysis.optimization_tips.map((tip) => (
               <li class="flex items-start gap-2">
@@ -768,7 +782,7 @@ const appSchema = {
 
     <!-- Dedicated FAQ -->
     <section class="mt-10" aria-labelledby="faq-heading">
-      <h2 id="faq-heading" class="text-xl font-bold tracking-tight text-slate-950">
+      <h2 id="faq-heading" class="text-xl font-bold tracking-tight text-slate-950" data-i18n="detail.faqTitle">
         Frequently Asked Questions
       </h2>
       <div class="mt-4 space-y-3">
@@ -794,27 +808,31 @@ const appSchema = {
       <section class="mt-12 border-t border-slate-200 pt-8" aria-labelledby="related-heading">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 id="related-heading" class="text-xl font-bold tracking-tight text-slate-950">
+            <h2 id="related-heading" class="text-xl font-bold tracking-tight text-slate-950" data-i18n="detail.relatedTitle">
               Compare Related Hardware &amp; Models
             </h2>
             <p class="mt-1 text-sm text-slate-600">
-              Explore alternative GPUs for {model.short_name} or other open-weight models benchmarked on {hardware.short_name}.
+              {model.short_name} · {hardware.short_name}
             </p>
           </div>
           <div class="flex flex-wrap items-center gap-2 shrink-0">
             <a
               href={gpuHubHref}
               class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700 transition-colors"
+              data-i18n="detail.retAllHw"
+              data-i18n-args={retAllHwArgs}
             >
-              All {hardware.short_name} Models
+              All {hardware.short_name} -&gt;
             </a>
             <a
               href={modelHubHref}
               class="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700 transition-colors"
+              data-i18n="detail.retAllModel"
+              data-i18n-args={retAllModelArgs}
             >
-              All {model.short_name} GPUs
+              All {model.short_name} -&gt;
             </a>
-            <a href="/" class="text-xs font-semibold text-blue-600 hover:text-blue-800 ml-1">
+            <a href="/" class="text-xs font-semibold text-blue-600 hover:text-blue-800 ml-1" data-i18n="detail.viewFullMatrix">
               View Full Matrix -&gt;
             </a>
           </div>
@@ -827,6 +845,7 @@ const appSchema = {
               rel.default_result.status === 'OOM'
                 ? 'OOM'
                 : `${rel.default_result.est_tps.toFixed(1)} tok/s`;
+            const relHwArgs = JSON.stringify({ hw: rel.hardware.short_name });
             return (
             <a
               href={relHref}
@@ -840,14 +859,15 @@ const appSchema = {
                   </span>
                 </div>
                 <p class="mt-2.5 text-sm font-bold text-slate-950">
-                  {rel.model.short_name} on {rel.hardware.short_name}
+                  {rel.model.short_name}{' '}
+                  <span data-i18n="common.onPrefix" data-i18n-args={relHwArgs}>on {rel.hardware.short_name}</span>
                 </p>
               </div>
               <div class="mt-3 flex items-center justify-between text-xs text-slate-600">
-                <span class="font-mono tabular-nums">
+                <span class="font-mono tabular-nums" data-i18n={rel.default_result.status === 'OOM' ? 'status.oom' : undefined}>
                   {relTps}
                 </span>
-                <span class="font-semibold text-blue-600">Compare -&gt;</span>
+                <span class="font-semibold text-blue-600" data-i18n="common.compare">Compare -&gt;</span>
               </div>
             </a>
             );
@@ -865,107 +885,6 @@ const appSchema = {
     class="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-slate-950 px-4 py-2.5 text-xs font-semibold text-white shadow-lg transition-all duration-200 opacity-0 pointer-events-none translate-y-2"
   >
     <span class="h-2 w-2 rounded-full bg-emerald-400" aria-hidden="true"></span>
-    <span id="copy-toast-text">Copied to clipboard</span>
+    <span id="copy-toast-text" data-i18n="common.copiedToast">Copied to clipboard</span>
   </div>
 </BaseLayout>
-
-<script is:inline>
-  (function () {
-    function copyText(text) {
-      if (navigator.clipboard && window.isSecureContext) {
-        return navigator.clipboard.writeText(text);
-      }
-      return new Promise((resolve, reject) => {
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        ta.style.position = 'fixed';
-        ta.style.left = '-9999px';
-        document.body.appendChild(ta);
-        ta.focus();
-        ta.select();
-        try {
-          document.execCommand('copy');
-          document.body.removeChild(ta);
-          resolve();
-        } catch (err) {
-          document.body.removeChild(ta);
-          reject(err);
-        }
-      });
-    }
-
-    const toastEl = document.getElementById('copy-toast');
-    const toastTextEl = document.getElementById('copy-toast-text');
-    let toastTimer = null;
-
-    function showToast(label) {
-      if (!toastEl || !toastTextEl) return;
-      toastTextEl.textContent = label ? `Copied ${label} to clipboard` : 'Copied to clipboard';
-      toastEl.classList.remove('opacity-0', 'translate-y-2', 'pointer-events-none');
-      toastEl.classList.add('opacity-100', 'translate-y-0');
-      if (toastTimer) clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => {
-        toastEl.classList.add('opacity-0', 'translate-y-2', 'pointer-events-none');
-        toastEl.classList.remove('opacity-100', 'translate-y-0');
-      }, 1800);
-    }
-
-    function flashButtonFeedback(btn, targetEl, label) {
-      const copyIcon = btn.querySelector('[data-copy-icon="copy"]');
-      const checkIcon = btn.querySelector('[data-copy-icon="check"]');
-      const textSpan = btn.querySelector('[data-copy-text]');
-      const origText = btn.dataset.origLabel || (textSpan ? textSpan.textContent : btn.textContent) || 'Copy';
-      btn.dataset.origLabel = origText;
-
-      if (btn._resetTimer) clearTimeout(btn._resetTimer);
-
-      if (copyIcon) copyIcon.classList.add('hidden');
-      if (checkIcon) checkIcon.classList.remove('hidden');
-      if (textSpan) {
-        textSpan.textContent = 'Copied ✓';
-      } else {
-        btn.textContent = 'Copied ✓';
-      }
-      btn.classList.add('border-emerald-500/60', 'text-emerald-400');
-
-      if (targetEl) {
-        targetEl.classList.add('ring-2', 'ring-emerald-400/70');
-      }
-
-      showToast(label);
-
-      btn._resetTimer = setTimeout(() => {
-        if (copyIcon) copyIcon.classList.remove('hidden');
-        if (checkIcon) checkIcon.classList.add('hidden');
-        if (textSpan) {
-          textSpan.textContent = btn.dataset.origLabel || origText;
-        } else {
-          btn.textContent = btn.dataset.origLabel || origText;
-        }
-        btn.classList.remove('border-emerald-500/60', 'text-emerald-400');
-        if (targetEl) {
-          targetEl.classList.remove('ring-2', 'ring-emerald-400/70');
-        }
-      }, 1800);
-    }
-
-    document.querySelectorAll('[data-copy-target]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const targetId = btn.getAttribute('data-copy-target');
-        const label = btn.getAttribute('data-copy-label') || 'command';
-        const el = targetId ? document.getElementById(targetId) : null;
-        if (!el) return;
-        const text = (el.textContent || '').trim();
-        copyText(text).then(() => flashButtonFeedback(btn, el, label));
-      });
-    });
-
-    document.querySelectorAll('[data-copy-url]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const url = btn.getAttribute('data-copy-url') || window.location.href;
-        const label = btn.getAttribute('data-copy-label') || 'share URL';
-        copyText(url).then(() => flashButtonFeedback(btn, null, label));
-      });
-    });
-  })();
-</script>

@@ -4,9 +4,11 @@ interface Props {
   label: string;
   placeholder: string;
   compact?: boolean;
+  labelI18n?: string;
+  placeholderI18n?: string;
 }
 
-const { id, label, placeholder, compact = false } = Astro.props;
+const { id, label, placeholder, compact = false, labelI18n, placeholderI18n } = Astro.props;
 
 const inputId = `${id}-input`;
 const listId = `${id}-list`;
@@ -19,11 +21,11 @@ const listClasses =
 
 <div>
   {compact ? (
-    <label for={inputId} class="sr-only">
+    <label for={inputId} class="sr-only" data-i18n={labelI18n}>
       {label}
     </label>
   ) : (
-    <label for={inputId} class="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+    <label for={inputId} class="block text-xs font-semibold uppercase tracking-wider text-slate-500" data-i18n={labelI18n}>
       {label}
     </label>
   )}
@@ -31,6 +33,7 @@ const listClasses =
     <input
       id={inputId}
       data-cb-input
+      data-i18n-placeholder={placeholderI18n}
       type="text"
       role="combobox"
       aria-autocomplete="list"
