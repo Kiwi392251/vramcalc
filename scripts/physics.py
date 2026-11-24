@@ -1,7 +1,7 @@
-"""Deterministic LLM VRAM, Context, Offload, and Throughput Physics Engine (v3.1).
+"""Deterministic LLM VRAM, Context, Offload, and Throughput Physics Engine (v3.2).
 
 Keep constants and formulas strictly synchronized with `site/src/utils/physics.ts`.
-All token/s outputs are honest formula estimate ranges (~low-high tok/s), never raw measured telemetry.
+All token/s outputs are calibrated formula estimate ranges (~low-high tok/s), never raw measured telemetry.
 """
 
 from __future__ import annotations
@@ -32,7 +32,7 @@ ReserveProfile = Literal["desktop", "clean", "custom"]
 CompatStatus = Literal["Fits", "Tight Fit", "Partial Offload", "OOM"]
 SpeedTier = Literal["Fast", "Interactive", "Readable", "Slow", "OOM"]
 
-ENGINE_VERSION = "v3.1"
+ENGINE_VERSION = "v3.2"
 
 QUANT_SPECS: dict[QuantKey, dict[str, object]] = {
     "Q4_K_M": {"bpw": 4.85, "format": "GGUF", "label": "4.85 bpw · Balanced 4-bit GGUF"},
@@ -434,25 +434,50 @@ def estimate_rig_run(
             fits_rig = gpu_fraction >= 0.15 and spill_ram_gb <= available_ram_gb
             status = "Partial Offload" if fits_rig else "OOM"
 
-    # Throughput / Bandwidth calculation
+    # Throughput / Bandwidth calculation (Physics v3.2 calibrated model)
     single_bw = float(hardware["bandwidth_gbps"])
     backend = hardware["backend"]
+    hid = hardware["id"]
     has_nvlink = bool(hardware.get("has_nvlink", False))
+    kv_layers = int(model.get("kv_layers") or total_layers)
+    is_moe = active_params_b < model["params_b"] * 0.9
+    is_hybrid = kv_layers < total_layers
+    is_legacy_gpu = any(tag in hid for tag in ("t4", "p40", "gtx-10", "rtx-20", "v100"))
 
     if fmt == "AWQ":
-        backend_eff = 0.58 if "t4" in hardware["id"] else 0.68
+        backend_eff = 0.48 if is_legacy_gpu else 0.66
     elif fmt == "MLX":
-        backend_eff = 0.76 if hardware["is_unified"] else 0.72
+        size_bonus = 0.08 if weights_gb >= 25.0 else (0.03 if weights_gb >= 12.0 else 0.0)
+        backend_eff = (0.78 + size_bonus) if hardware["is_unified"] else 0.72
     elif backend == "CUDA":
-        backend_eff = 0.62 if "t4" in hardware["id"] else 0.72
+        backend_eff = 0.58 if is_legacy_gpu else 0.75
     elif backend == "Metal":
-        backend_eff = 0.72
+        size_bonus = 0.05 if weights_gb >= 25.0 else 0.0
+        backend_eff = 0.76 + size_bonus
     elif backend == "ROCm":
-        backend_eff = 0.68
+        backend_eff = 0.70
     elif backend == "Vulkan":
         backend_eff = 0.62
     else:
-        backend_eff = 0.58
+        backend_eff = 0.60
+
+    if is_moe:
+        backend_eff *= 0.68
+
+    if fmt == "AWQ":
+        layer_ms = 0.080 if is_legacy_gpu else 0.050
+    elif fmt == "MLX":
+        layer_ms = 0.030
+    else:
+        layer_ms = 0.022
+    if is_moe:
+        layer_ms += 0.055
+
+    if is_hybrid:
+        deltanet_layers = total_layers - kv_layers
+        hybrid_ms = deltanet_layers * (0.110 if fmt == "MLX" else 0.015)
+    else:
+        hybrid_ms = 0.0
 
     comm_latency_sec = 0.0
     comm_overhead_pct = 0.0
@@ -473,7 +498,10 @@ def estimate_rig_run(
         effective_bw = single_bw * pipeline_factor
 
     cpu_bw = float(cpu["effective_bw_gbps"]) if cpu is not None else 55.0
-    active_kv_gb = kv_gb * 0.35
+    active_kv_gb = kv_gb * 0.85
+    ctx_k = context_tokens / 1024.0
+    attn_ms = (0.00018 * kv_layers * (ctx_k ** 1.35)) if context_tokens >= 8192 else 0.0
+    overhead_sec = (total_layers * layer_ms + hybrid_ms + attn_ms) / 1000.0
 
     if status == "OOM":
         raw_tps = 0.0
@@ -488,7 +516,7 @@ def estimate_rig_run(
             if gpu_fraction < 1.0
             else 0.0
         )
-        total_tok_sec = gpu_time + cpu_time + comm_latency_sec
+        total_tok_sec = gpu_time + cpu_time + comm_latency_sec + overhead_sec
         raw_tps = 1.0 / max(0.002, total_tok_sec)
 
         if comm_latency_sec > 0 and total_tok_sec > 0:
@@ -602,18 +630,21 @@ def estimate_run(
     }
 
 
-def max_fit_context_details(
+def max_fit_context_full(
     model: ModelSpec,
     hardware: HardwareSpec,
     quant: QuantKey = "Q4_K_M",
     reserve_profile: ReserveProfile = "desktop",
     kv_quant: KvQuantKey = "fp16",
-) -> tuple[int, float, CompatStatus]:
-    """Return (max_ctx_tokens, total_vram_gb_at_max_ctx, status_at_max_ctx)."""
+) -> dict[str, object]:
+    """Return full max fit context metrics including speed range AT max fit context."""
     tiers = [t for t in CONTEXT_LADDER if t <= model["max_context"]]
     best_ctx = 0
     best_vram = 0.0
     best_status: CompatStatus = "OOM"
+    best_low = 0
+    best_high = 0
+    best_tier: SpeedTier = "OOM"
     for ctx in tiers:
         res = estimate_run(
             model,
@@ -627,9 +658,37 @@ def max_fit_context_details(
             best_ctx = ctx
             best_vram = res["total_vram_gb"]
             best_status = res["status"]
+            best_low = res["est_tps_low"]
+            best_high = res["est_tps_high"]
+            best_tier = res["speed_tier"]
         else:
             break
-    return best_ctx, best_vram, best_status
+    return {
+        "context_tokens": best_ctx,
+        "total_vram_gb": best_vram,
+        "status": best_status,
+        "est_tps_low": best_low,
+        "est_tps_high": best_high,
+        "speed_tier": best_tier,
+    }
+
+
+def max_fit_context_details(
+    model: ModelSpec,
+    hardware: HardwareSpec,
+    quant: QuantKey = "Q4_K_M",
+    reserve_profile: ReserveProfile = "desktop",
+    kv_quant: KvQuantKey = "fp16",
+) -> tuple[int, float, CompatStatus]:
+    """Return (max_ctx_tokens, total_vram_gb_at_max_ctx, status_at_max_ctx)."""
+    full = max_fit_context_full(
+        model, hardware, quant=quant, reserve_profile=reserve_profile, kv_quant=kv_quant
+    )
+    return (
+        int(full["context_tokens"]),  # type: ignore[arg-type]
+        float(full["total_vram_gb"]),  # type: ignore[arg-type]
+        full["status"],  # type: ignore[return-value]
+    )
 
 
 def max_smooth_context(

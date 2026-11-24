@@ -164,6 +164,11 @@ export interface BenchmarkAnchor {
   gen_tps_low: number;
   gen_tps_high: number;
   backend: string;
+  date: string;
+  prompt_spec: string;
+  runtime_version: string;
+  repro_cmd: string;
+  verification_tier: 'framework_thread' | 'community_report';
   source_label: string;
   source_url: string;
   notes: string;
@@ -183,6 +188,16 @@ export interface ContextAnalysis {
   optimization_tips: string[];
 }
 
+export interface AltFormatSummary {
+  format: RuntimeFormat;
+  quant: QuantKey;
+  total_vram_gb: number;
+  status: CompatStatus;
+  est_tps_low: number;
+  est_tps_high: number;
+  speed_tier: SpeedTier;
+}
+
 export interface VramPageEntry {
   slug: string;
   title: string;
@@ -200,6 +215,10 @@ export interface VramPageEntry {
   max_fit_context?: number;
   max_fit_total_vram_gb?: number;
   max_fit_status?: CompatStatus;
+  max_fit_tps_low?: number;
+  max_fit_tps_high?: number;
+  max_fit_speed_tier?: SpeedTier;
+  alt_format_summary?: AltFormatSummary;
   faq: FaqItem[];
   related_slugs: string[];
 }

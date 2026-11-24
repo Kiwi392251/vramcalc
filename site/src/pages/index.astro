@@ -25,7 +25,7 @@ const PAGE_SIZE = 24;
 const catalog = catalogRaw as CatalogData;
 const rawEntries = rawPagesData as PageEntry[];
 const updatedAt = catalog.updated_at ?? '2026-11-24';
-const engineVersion = catalog.engine_version ?? 'v3.1';
+const engineVersion = catalog.engine_version ?? 'v3.2';
 
 const FEATURED_TOP_SLUGS = [
   'qwen3.8-27b-on-nvidia-a10-24gb',
@@ -99,12 +99,24 @@ const curatedSlugs: Record<string, string> = {};
 for (const e of entries) {
   curatedSlugs[`${e.model.id}::${e.hardware.id}`] = e.slug;
 }
+const measuredAnchors = getReferenceBenchmarks({});
+const measuredNote = getBenchmarksMethodologyNote();
+const measuredByPair = new Map<string, (typeof measuredAnchors)[number]>();
+const measuredPairs: Record<string, string> = {};
+for (const anc of measuredAnchors) {
+  const pk = `${anc.model_id}::${anc.hardware_id}`;
+  if (!measuredByPair.has(pk)) {
+    measuredByPair.set(pk, anc);
+    measuredPairs[pk] = `${anc.gen_tps_low}–${anc.gen_tps_high} tok/s measured`;
+  }
+}
 const homeCatalogPayload = JSON.stringify({
   models: catalog.models,
   hardware: catalog.hardware,
   cpus: catalog.cpus,
   curatedKeys,
   curatedSlugs,
+  measuredPairs,
 });
 
 const websiteSchema = {
@@ -146,13 +158,6 @@ const homeOgDescription = `Check GGUF, AWQ & MLX VRAM fit, max safe context, Tig
 const curatedSlugMap = new Map(Object.entries(curatedSlugs));
 const modelCatalogMap = new Map(catalog.models.map((m) => [m.id, m]));
 const hwCatalogMap = new Map(catalog.hardware.map((h) => [h.id, h]));
-const measuredAnchors = getReferenceBenchmarks({});
-const measuredNote = getBenchmarksMethodologyNote();
-const measuredByPair = new Map<string, (typeof measuredAnchors)[number]>();
-for (const anc of measuredAnchors) {
-  const pk = `${anc.model_id}::${anc.hardware_id}`;
-  if (!measuredByPair.has(pk)) measuredByPair.set(pk, anc);
-}
 
 const measuredRows = measuredAnchors
   .map((anc) => {
@@ -195,18 +200,30 @@ const staticIndexRows = entries.map((e) => {
   const speedTier: SpeedTier = res.speed_tier ?? classifySpeedTier(res.est_tps, res.status);
   const tpsText = formatTpsRange(res.est_tps_low, res.est_tps_high, res.est_tps, res.status);
   const hasMaxFit = Boolean(e.max_fit_context && e.max_fit_context > 0 && e.max_fit_total_vram_gb);
-  const maxFitText = hasMaxFit
-    ? `${formatContextLabel(e.max_fit_context!)} (${e.max_fit_total_vram_gb!.toFixed(1)} GB)`
-    : 'Offload req.';
+  const hasMaxFitSpeed = Boolean(hasMaxFit && e.max_fit_tps_high && e.max_fit_tps_high > 0);
+  const maxFitText = hasMaxFitSpeed
+    ? `${formatContextLabel(e.max_fit_context!)} (${e.max_fit_total_vram_gb!.toFixed(1)} GB · ~${e.max_fit_tps_low}–${e.max_fit_tps_high} tok/s)`
+    : hasMaxFit
+      ? `${formatContextLabel(e.max_fit_context!)} (${e.max_fit_total_vram_gb!.toFixed(1)} GB)`
+      : 'Offload req.';
+  const alt = e.alt_format_summary;
+  const altText = alt
+    ? `${alt.format}: ${alt.total_vram_gb.toFixed(1)} GB · ${
+        alt.status === 'OOM' ? 'OOM' : `~${alt.est_tps_low}–${alt.est_tps_high} tok/s`
+      }`
+    : '—';
+  const isMeasured = measuredByPair.has(`${e.model.id}::${e.hardware.id}`);
   return {
     href: `/can-i-run/${e.slug}/`,
     modelShort: e.model.short_name,
     hwShort: e.hardware.name,
     vramText: `${res.total_vram_gb.toFixed(1)} / ${usable.toFixed(1)} GB`,
+    altText,
     maxFitText,
     status: res.status,
     speedTier,
     tpsText,
+    isMeasured,
     layersText: `${res.gpu_layers_fit}/${res.total_layers}`,
   };
 });
@@ -532,6 +549,7 @@ const staticIndexSubArgs = JSON.stringify({
           entry.hardware.memory_type,
           res.status,
           speedTier,
+          'uncensored abliterated heretic dolphin',
         ]
           .join(' ')
           .toLowerCase();
@@ -544,11 +562,43 @@ const staticIndexSubArgs = JSON.stringify({
         );
         const maxFitCtxLabel = hasMaxFit ? formatContextLabel(entry.max_fit_context!) : '';
         const maxFitGbStr = hasMaxFit ? entry.max_fit_total_vram_gb!.toFixed(1) : '';
-        const maxFitArgs = hasMaxFit ? JSON.stringify({ ctx: maxFitCtxLabel, gb: maxFitGbStr }) : undefined;
+        const hasMaxFitSpeed = Boolean(hasMaxFit && entry.max_fit_tps_high && entry.max_fit_tps_high > 0);
+        const maxFitI18nKey = hasMaxFitSpeed
+          ? 'common.maxFitWithSpeed'
+          : hasMaxFit
+            ? 'common.maxFitLabel'
+            : 'common.maxFitNone';
+        const maxFitArgs = hasMaxFitSpeed
+          ? JSON.stringify({
+              ctx: maxFitCtxLabel,
+              gb: maxFitGbStr,
+              low: entry.max_fit_tps_low,
+              high: entry.max_fit_tps_high,
+            })
+          : hasMaxFit
+            ? JSON.stringify({ ctx: maxFitCtxLabel, gb: maxFitGbStr })
+            : undefined;
+        const maxFitDisplayText = hasMaxFitSpeed
+          ? `Max Fit: ${maxFitCtxLabel} (${maxFitGbStr} GB · ~${entry.max_fit_tps_low}–${entry.max_fit_tps_high} tok/s)`
+          : hasMaxFit
+            ? `Max Fit: ${maxFitCtxLabel} (${maxFitGbStr} GB)`
+            : 'Max Fit: Offload req.';
+        const altFmt = entry.alt_format_summary;
+        const altLabelPrefix = altFmt ? (altFmt.format === 'MLX' ? 'MLX 4-bit' : 'AWQ 4-bit') : '';
+        const altSpeedStr = altFmt
+          ? altFmt.status === 'OOM'
+            ? 'OOM'
+            : `~${altFmt.est_tps_low}–${altFmt.est_tps_high} tok/s`
+          : '';
+        const altLineText = altFmt
+          ? `${altLabelPrefix}: ${altFmt.total_vram_gb.toFixed(1)} GB · ${altSpeedStr}`
+          : '';
         const cardMeasured = measuredByPair.get(`${entry.model.id}::${entry.hardware.id}`);
         const cardMeasuredText = cardMeasured
           ? `${cardMeasured.gen_tps_low}–${cardMeasured.gen_tps_high} tok/s measured`
           : '';
+        const showMeasuredBadge = Boolean(cardMeasured);
+        const showFormulaOnlyBadge = !cardMeasured && res.status !== 'OOM';
 
         return (
           <article
@@ -611,26 +661,27 @@ const staticIndexSubArgs = JSON.stringify({
                 <div class={fillBarClass} style={fillStyle}></div>
               </div>
               <div class="mt-1.5 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 tabular-nums">
-                {hasMaxFit ? (
-                  <span data-i18n="common.maxFitLabel" data-i18n-args={maxFitArgs}>
-                    Max Fit: {maxFitCtxLabel} ({maxFitGbStr} GB)
-                  </span>
-                ) : (
-                  <span data-i18n="common.maxFitNone">Max Fit: Offload req.</span>
-                )}
+                <span data-i18n={maxFitI18nKey} data-i18n-args={maxFitArgs}>
+                  {maxFitDisplayText}
+                </span>
                 <div class="flex items-center gap-1.5 shrink-0">
-                  {cardMeasured && (
+                  {showMeasuredBadge && (
                     <span class="rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-800">
                       {cardMeasuredText}
                     </span>
                   )}
-                  {res.status !== 'OOM' && (
-                    <span class="font-mono text-[10px] text-slate-400" data-i18n="speed.formulaEst">
-                      Formula est.
+                  {showFormulaOnlyBadge && (
+                    <span class="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-mono text-[10px] text-slate-500" data-i18n="speed.formulaOnly">
+                      Formula only (unverified)
                     </span>
                   )}
                 </div>
               </div>
+              {altFmt && (
+                <div class="mt-1 font-mono text-[11px] text-slate-600 tabular-nums">
+                  {altLineText}
+                </div>
+              )}
 
               <div class="mt-3 flex items-center justify-between">
                 <div class="flex items-baseline gap-1.5">
@@ -794,7 +845,7 @@ const staticIndexSubArgs = JSON.stringify({
             </span>
           </div>
           <p class="mt-1 text-xs text-slate-600" data-i18n="home.measuredSub" data-i18n-args={measuredSubArgs}>
-            Side-by-side comparison of {measuredRows.length} published community measured runs against Physics {engineVersion} bandwidth formula ranges (batch=1 decode).
+            Side-by-side comparison of {measuredRows.length} reproducible community &amp; framework runs (batch=1 decode, including Qwen3-30B-A3B MoE) against calibrated Physics {engineVersion} formula ranges.
           </p>
         </div>
         <span class="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-[11px] text-slate-600">
@@ -803,30 +854,31 @@ const staticIndexSubArgs = JSON.stringify({
       </div>
 
       <div class="mt-4 w-full max-w-full overflow-x-auto rounded-xl border border-slate-200">
-        <table class="w-full min-w-[760px] border-collapse text-left text-xs">
+        <table class="w-full min-w-[920px] border-collapse text-left text-xs">
           <thead>
             <tr class="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               <th class="px-3.5 py-2.5" data-i18n="home.measuredColPair">Model × Hardware</th>
               <th class="px-3.5 py-2.5" data-i18n="home.measuredColFormat">Format / Runtime</th>
               <th class="px-3.5 py-2.5" data-i18n="home.measuredColMeasured">Measured Speed</th>
-              <th class="px-3.5 py-2.5" data-i18n="home.measuredColFormula">Formula Est. (±15–25%)</th>
+              <th class="px-3.5 py-2.5" data-i18n="home.measuredColFormula">Formula Est. (±15–20%)</th>
+              <th class="px-3.5 py-2.5" data-i18n="home.measuredColRepro">Date · Prompt · Repro</th>
               <th class="px-3.5 py-2.5" data-i18n="home.measuredColSource">Source</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             {measuredRows.map((row) => (
               <tr class="hover:bg-slate-50/70 transition-colors">
-                <td class="px-3.5 py-2.5">
+                <td class="px-3.5 py-2.5 align-top">
                   <a href={row.pairHref} class="font-bold text-slate-950 hover:text-blue-600">
                     {row.model.short_name}
                   </a>
                   <div class="text-[11px] text-slate-500">{row.hardware.name}</div>
                 </td>
-                <td class="px-3.5 py-2.5 font-mono text-slate-700">
+                <td class="px-3.5 py-2.5 align-top font-mono text-slate-700">
                   <div>{row.anc.format} · {row.anc.quant} @ {row.ctxLabel}</div>
                   <div class="text-[11px] text-slate-500">{row.anc.backend}</div>
                 </td>
-                <td class="px-3.5 py-2.5">
+                <td class="px-3.5 py-2.5 align-top">
                   <span
                     class="inline-flex items-center rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono font-bold text-emerald-800"
                     data-i18n="speed.measuredUnit"
@@ -835,10 +887,19 @@ const staticIndexSubArgs = JSON.stringify({
                     {row.measuredText}
                   </span>
                 </td>
-                <td class="px-3.5 py-2.5 font-mono text-slate-700">
+                <td class="px-3.5 py-2.5 align-top font-mono text-slate-700">
                   {row.formulaText}
                 </td>
-                <td class="px-3.5 py-2.5 text-[11px]">
+                <td class="px-3.5 py-2.5 align-top">
+                  <div class="font-mono text-[11px] text-slate-700">
+                    {row.anc.date} · {row.anc.prompt_spec}
+                  </div>
+                  <div class="text-[10px] text-slate-500">{row.anc.runtime_version}</div>
+                  <code class="mt-0.5 block max-w-[260px] truncate rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-700" title={row.anc.repro_cmd}>
+                    {row.anc.repro_cmd}
+                  </code>
+                </td>
+                <td class="px-3.5 py-2.5 align-top text-[11px]">
                   <a
                     href={row.anc.source_url}
                     target="_blank"
@@ -872,7 +933,7 @@ const staticIndexSubArgs = JSON.stringify({
         </a>
       </div>
       <div class="mt-3 w-full max-w-full overflow-x-auto rounded-xl border border-slate-200">
-        <table class="w-full min-w-[680px] border-collapse text-left text-xs">
+        <table class="w-full min-w-[780px] border-collapse text-left text-xs">
           <thead>
             <tr class="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               <th class="px-3 py-2" data-i18n="home.modelTableModel">Model</th>
@@ -880,6 +941,7 @@ const staticIndexSubArgs = JSON.stringify({
               <th class="px-3 py-2" data-i18n="home.modelTableAwq">AWQ 4-bit @ 8K</th>
               <th class="px-3 py-2" data-i18n="home.modelTableKv">KV / 4K</th>
               <th class="px-3 py-2" data-i18n="home.modelTableFits">Fits GPUs</th>
+              <th class="px-3 py-2" data-i18n="home.modelTableFastest">Fastest GPU (8K)</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
@@ -889,6 +951,9 @@ const staticIndexSubArgs = JSON.stringify({
               const q4Gb = hub.q4Row.total_vram_gb.toFixed(1);
               const awqGb = hub.awqRow.total_vram_gb.toFixed(1);
               const kvStr = hub.kvPer4k.toFixed(2);
+              const fastestCellText = hub.fastestRow
+                ? `${hub.fastestRow.hardware.short_name} · ${hub.fastestTpsText}`
+                : hub.fastestTpsText;
               return (
                 <tr class="hover:bg-slate-50/70 transition-colors">
                   <td class="px-3 py-2">
@@ -902,6 +967,9 @@ const staticIndexSubArgs = JSON.stringify({
                   <td class="px-3 py-2 font-mono text-slate-600 tabular-nums">+{kvStr} GB</td>
                   <td class="px-3 py-2 font-mono font-semibold text-emerald-700 tabular-nums">
                     {fitCount} / {uniqueHubHwCount}
+                  </td>
+                  <td class="px-3 py-2 font-mono text-slate-800 tabular-nums">
+                    {fastestCellText}
                   </td>
                 </tr>
               );
@@ -949,18 +1017,19 @@ const staticIndexSubArgs = JSON.stringify({
             Complete Static Compatibility Index (All {totalCount} Curated Pairings · Zero-JS)
           </h3>
           <p class="mt-0.5 text-xs text-slate-600" data-i18n="home.staticIndexSub" data-i18n-args={staticIndexSubArgs}>
-            Full static HTML index of all {totalCount} curated guides below, plus {catalogModelCount} Model Hub pages × {catalogHwCount} GPU Hub pages ({catalogModelCount * catalogHwCount} static combinations verifiable without JavaScript).
+            All {totalCount} curated guides below include full @8K, @Max Fit &amp; AWQ/MLX speeds directly on this page. The remaining {catalogModelCount * catalogHwCount} full-matrix speed rows live statically across the {catalogModelCount} Model Hub pages (103 GPUs each) and {catalogHwCount} GPU Hub pages (23 models each) — 1 click away, zero JS required.
           </p>
         </div>
       </div>
       <div class="mt-3 w-full max-w-full max-h-[420px] overflow-auto rounded-xl border border-slate-200">
-        <table class="w-full min-w-[780px] border-collapse text-left text-xs">
+        <table class="w-full min-w-[940px] border-collapse text-left text-xs">
           <thead class="sticky top-0 z-10 bg-slate-50">
             <tr class="border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               <th class="px-3 py-2" data-i18n="home.modelTableModel">Model</th>
               <th class="px-3 py-2" data-i18n="hub.colHardware">Hardware</th>
               <th class="px-3 py-2" data-i18n="detail.colStatus">Fit / Speed</th>
               <th class="px-3 py-2" data-i18n="common.vram8kLabel">VRAM @ 8K</th>
+              <th class="px-3 py-2">AWQ / MLX @ 8K</th>
               <th class="px-3 py-2" data-i18n="hub.bestQuantMaxCtx">Max Fit</th>
               <th class="px-3 py-2" data-i18n="sim.colSpeed">Est. Range</th>
               <th class="px-3 py-2 text-right" data-i18n="sim.colAction">Guide</th>
@@ -978,8 +1047,20 @@ const staticIndexSubArgs = JSON.stringify({
                   </div>
                 </td>
                 <td class="px-3 py-2 font-mono text-slate-700 tabular-nums">{row.vramText}</td>
+                <td class="px-3 py-2 font-mono text-[11px] text-slate-600 tabular-nums">{row.altText}</td>
                 <td class="px-3 py-2 font-mono text-slate-600 tabular-nums">{row.maxFitText}</td>
-                <td class="px-3 py-2 font-mono font-semibold text-slate-900 tabular-nums">{row.tpsText}</td>
+                <td class="px-3 py-2">
+                  <div class="font-mono font-semibold text-slate-900 tabular-nums">{row.tpsText}</div>
+                  {row.isMeasured ? (
+                    <span class="mt-0.5 inline-block rounded border border-emerald-200 bg-emerald-50 px-1 py-0.5 font-mono text-[9px] font-semibold text-emerald-800" data-i18n="speed.measuredBadge">
+                      Measured
+                    </span>
+                  ) : (
+                    <span class="mt-0.5 inline-block font-mono text-[9px] text-slate-400" data-i18n="speed.formulaEst">
+                      Formula est.
+                    </span>
+                  )}
+                </td>
                 <td class="px-3 py-2 text-right">
                   <a href={row.href} class="font-semibold text-blue-600 hover:text-blue-800" data-i18n="common.openGuide">
                     Open Guide -&gt;
@@ -998,7 +1079,7 @@ const staticIndexSubArgs = JSON.stringify({
     <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <h2 class="text-lg font-bold tracking-tight text-slate-950" data-i18n="home.methodTitle">
-          Physics Engine {engineVersion}: Transparent Formula Ranges vs Measured Benchmarks
+          Physics Engine {engineVersion}: Calibrated Formulas vs Verified Benchmarks
         </h2>
         <span
           class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-mono text-[11px] font-medium text-slate-600"
@@ -1016,17 +1097,26 @@ const staticIndexSubArgs = JSON.stringify({
           </p>
         </div>
         <div>
-          <h3 class="font-semibold text-slate-900" data-i18n="home.method2Title">2. Runtime Formats &amp; Context Alignment</h3>
+          <h3 class="font-semibold text-slate-900" data-i18n="home.method2Title">2. Inline AWQ/MLX + Separate @8K vs @Max Fit Speeds</h3>
           <p class="mt-1.5" data-i18n="home.method2Desc">
-            Compute exact footprint across GGUF (llama.cpp), 4-bit AWQ / FP8 (vLLM Marlin), and 4/8-bit Apple MLX (mlx-lm), always pairing the @8K baseline with the full footprint required at Max Fit context.
+            Every guide reports GGUF (llama.cpp), vLLM AWQ 4-bit, or Apple MLX 4-bit VRAM + speeds side-by-side, and separates 8K decode speed from @Max Fit long-context speed after KV-read and attention scaling.
           </p>
         </div>
         <div>
-          <h3 class="font-semibold text-slate-900" data-i18n="home.method3Title">3. Multi-GPU PCIe Sync &amp; Reference Anchors</h3>
+          <h3 class="font-semibold text-slate-900" data-i18n="home.method3Title">3. Multi-GPU PCIe Sync &amp; Reproducible Anchors</h3>
           <p class="mt-1.5" data-i18n="home.method3Desc">
-            Token throughput is reported as a ±15–25% formula estimate range rather than false 0.1 tok/s precision. Multi-GPU Tensor Parallel on PCIe includes 2×per-layer All-Reduce latency penalties, alongside verified community reference benchmarks.
+            Physics v3.2 calibrates legacy Pascal/Turing/Volta, MoE router dispatch, and hybrid DeltaNet overhead against 17 dated, command-reproducible benchmarks. Unverified pairs stay clearly tagged "Formula only (unverified)".
           </p>
         </div>
+      </div>
+
+      <div class="mt-5 rounded-xl border border-indigo-200 bg-indigo-50/70 p-4 text-xs leading-relaxed text-indigo-950">
+        <div class="font-bold text-indigo-950" data-i18n="home.uncensoredTitle">
+          Uncensored / Abliterated / Heretic Models (1:1 Drop-In)
+        </div>
+        <p class="mt-1 text-indigo-900/90" data-i18n="home.uncensoredDesc">
+          Community uncensored, abliterated, and Heretic fine-tunes use identical layer counts, hidden dimensions, and GQA KV geometry as the base checkpoints above — apply the same @8K VRAM, Max Fit context, and tok/s estimates directly (allow ~±3–5% for custom imatrix quant variance).
+        </p>
       </div>
     </div>
   </section>
@@ -1073,6 +1163,7 @@ const staticIndexSubArgs = JSON.stringify({
     cpus: CpuSpec[];
     curatedKeys: string[];
     curatedSlugs: Record<string, string>;
+    measuredPairs?: Record<string, string>;
   }
 
   interface LiveItem {
@@ -1174,6 +1265,7 @@ const staticIndexSubArgs = JSON.stringify({
 
     const curatedKeySet = new Set(catData.curatedKeys || []);
     const curatedSlugMap = new Map<string, string>(Object.entries(catData.curatedSlugs || {}));
+    const measuredPairMap = new Map<string, string>(Object.entries(catData.measuredPairs || {}));
     const hwById = new Map(catData.hardware.map((h) => [h.id, h]));
     const cpuById = new Map(catData.cpus.map((c) => [c.id, c]));
     const modelById = new Map(catData.models.map((m) => [m.id, m]));
@@ -1379,6 +1471,7 @@ const staticIndexSubArgs = JSON.stringify({
             m.architecture,
             `${m.params_b}b`,
             m.active_params_b ? `moe ${m.active_params_b}b` : 'dense',
+            'uncensored abliterated heretic dolphin',
           ]
             .join(' ')
             .toLowerCase(),
@@ -1805,12 +1898,19 @@ const staticIndexSubArgs = JSON.stringify({
         if (selectedStatus !== 'all' && res.status !== selectedStatus) continue;
         const maxFit = maxFitContextDetails(model, h, 'Q4_K_M', 'desktop', 'fp16');
         const maxFitLabel =
-          maxFit.contextTokens > 0
-            ? t('common.maxFitLabel', {
+          maxFit.contextTokens > 0 && maxFit.estTpsHigh > 0
+            ? t('common.maxFitWithSpeed', {
                 ctx: formatContextLabel(maxFit.contextTokens),
                 gb: maxFit.totalVramGb.toFixed(1),
+                low: maxFit.estTpsLow,
+                high: maxFit.estTpsHigh,
               })
-            : t('common.maxFitNone');
+            : maxFit.contextTokens > 0
+              ? t('common.maxFitLabel', {
+                  ctx: formatContextLabel(maxFit.contextTokens),
+                  gb: maxFit.totalVramGb.toFixed(1),
+                })
+              : t('common.maxFitNone');
         items.push({
           model,
           hw: h,
@@ -1904,12 +2004,19 @@ const staticIndexSubArgs = JSON.stringify({
         if (rig.hw && res.gpu_count === 1) {
           const maxFit = maxFitContextDetails(m, rig.hw, 'Q4_K_M', 'desktop', 'fp16');
           maxFitLabel =
-            maxFit.contextTokens > 0
-              ? t('common.maxFitLabel', {
+            maxFit.contextTokens > 0 && maxFit.estTpsHigh > 0
+              ? t('common.maxFitWithSpeed', {
                   ctx: formatContextLabel(maxFit.contextTokens),
                   gb: maxFit.totalVramGb.toFixed(1),
+                  low: maxFit.estTpsLow,
+                  high: maxFit.estTpsHigh,
                 })
-              : t('common.maxFitNone');
+              : maxFit.contextTokens > 0
+                ? t('common.maxFitLabel', {
+                    ctx: formatContextLabel(maxFit.contextTokens),
+                    gb: maxFit.totalVramGb.toFixed(1),
+                  })
+                : t('common.maxFitNone');
         } else if (res.comm_warning) {
           maxFitLabel = `PCIe TP · -${Math.round(res.comm_overhead_pct || 0)}% sync`;
         } else if (res.headroom_gb > 0) {
@@ -2016,7 +2123,7 @@ const staticIndexSubArgs = JSON.stringify({
 
       const slice = items.slice(0, liveVisibleLimit);
       liveGrid.innerHTML = slice
-        .map(({ model, res, simHref, guideSlug, chipLabel, hwSubtitle, layersText, maxFitLabel }) => {
+        .map(({ model, hw, res, simHref, guideSlug, chipLabel, hwSubtitle, layersText, maxFitLabel }) => {
           const isCpuOnly = res.gpu_count === 0;
           const budget = isCpuOnly ? res.available_ram_gb : res.usable_vram_gb;
           const pct = Math.min(100, Math.round((res.total_vram_gb / Math.max(1, budget)) * 100));
@@ -2034,9 +2141,11 @@ const staticIndexSubArgs = JSON.stringify({
               ? escapeHtml(t('status.oom'))
               : escapeHtml(formatTpsRange(res.est_tps_low, res.est_tps_high, res.est_tps, res.status));
           const budgetLabel = isCpuOnly ? t('common.ram8kLabel') : t('common.vram8kLabel');
-          const formulaTag =
-            res.status !== 'OOM'
-              ? `<span class="shrink-0 font-mono text-[10px] text-slate-400">${escapeHtml(t('speed.formulaEst'))}</span>`
+          const measuredText = hw && !isCpuOnly ? measuredPairMap.get(`${model.id}::${hw.id}`) : undefined;
+          const formulaTag = measuredText
+            ? `<span class="shrink-0 rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-800">${escapeHtml(measuredText)}</span>`
+            : res.status !== 'OOM'
+              ? `<span class="shrink-0 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-mono text-[10px] text-slate-500">${escapeHtml(t('speed.formulaOnly'))}</span>`
               : '';
           const moeLine = model.active_params_b
             ? t('common.moeLine', {

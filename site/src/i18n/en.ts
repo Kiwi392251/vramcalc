@@ -94,6 +94,7 @@ export const en = {
   'common.vram8kLabel': 'VRAM @ 8K',
   'common.ram8kLabel': 'RAM @ 8K',
   'common.maxFitLabel': 'Max Fit: {ctx} ({gb} GB)',
+  'common.maxFitWithSpeed': 'Max Fit: {ctx} ({gb} GB · ~{low}–{high} tok/s)',
   'common.maxFitNone': 'Max Fit: Offload req.',
   'common.updated': 'Updated {date}',
   'common.layersCount': '({fit}/{total} layers)',
@@ -106,7 +107,8 @@ export const en = {
 
   // Speed & Benchmark Anchors
   'speed.formulaEst': 'Formula est.',
-  'speed.formulaDesc': 'Formula Estimate (±15–25%)',
+  'speed.formulaOnly': 'Formula only (unverified)',
+  'speed.formulaDesc': 'Formula Estimate (±15–20%)',
   'speed.refBenchmark': 'Measured Community Benchmarks',
   'speed.measuredBadge': 'Measured',
   'speed.measuredUnit': '{low}–{high} tok/s measured',
@@ -212,30 +214,35 @@ export const en = {
   'home.hwHubsHeading': 'All {count} Hardware Hubs',
   'home.measuredTitle': 'Measured Community Benchmarks vs Formula Estimates',
   'home.measuredSub':
-    'Side-by-side comparison of {count} published community measured runs against Physics v3.1 bandwidth formula ranges (batch=1 decode).',
+    'Side-by-side comparison of {count} reproducible community & framework runs (batch=1 decode, including Qwen3-30B-A3B MoE) against calibrated Physics v3.2 formula ranges.',
   'home.measuredColPair': 'Model × Hardware',
   'home.measuredColFormat': 'Format / Runtime',
   'home.measuredColMeasured': 'Measured Speed',
-  'home.measuredColFormula': 'Formula Est. (±15–25%)',
+  'home.measuredColFormula': 'Formula Est. (±15–20%)',
+  'home.measuredColRepro': 'Date · Prompt · Repro',
   'home.measuredColSource': 'Source',
   'home.staticIndexTitle': 'Complete Static Compatibility Index (All {guides} Curated Pairings · Zero-JS)',
   'home.staticIndexSub':
-    'Full static HTML index of all {guides} curated guides below, plus {models} Model Hub pages × {hw} GPU Hub pages ({combos} static combinations verifiable without JavaScript).',
+    'All {guides} curated guides below include full @8K, @Max Fit & AWQ/MLX speeds directly on this page. The remaining {combos} full-matrix speed rows live statically across the {models} Model Hub pages (103 GPUs each) and {hw} GPU Hub pages (23 models each) — 1 click away, zero JS required.',
   'home.modelTableModel': 'Model',
   'home.modelTableQ4': 'Q4_K_M @ 8K',
   'home.modelTableAwq': 'AWQ 4-bit @ 8K',
   'home.modelTableKv': 'KV / 4K',
   'home.modelTableFits': 'Fits GPUs',
-  'home.methodTitle': 'Physics Engine v3.1: Transparent Formula Ranges vs Measured Benchmarks',
+  'home.modelTableFastest': 'Fastest GPU (8K)',
+  'home.methodTitle': 'Physics Engine v3.2: Calibrated Formulas vs Verified Benchmarks',
   'home.method1Title': '1. Fit Status vs Independent Speed Tiers',
   'home.method1Desc':
     'VRAM Fit checks weight (GGUF/AWQ/MLX) + GQA KV + per-card CUDA overhead against Daily Desktop or Clean OS reserves, flagging <5% / <1 GB headroom as Tight Fit. Speed is scored separately: Fast (>=25), Interactive (12–24), Readable (6–11), Slow (<6 tok/s).',
-  'home.method2Title': '2. Runtime Formats & Context Alignment',
+  'home.method2Title': '2. Inline AWQ/MLX + Separate @8K vs @Max Fit Speeds',
   'home.method2Desc':
-    'Compute exact footprint across GGUF (llama.cpp), 4-bit AWQ / FP8 (vLLM Marlin), and 4/8-bit Apple MLX (mlx-lm), always pairing the @8K baseline with the full footprint required at Max Fit context.',
-  'home.method3Title': '3. Multi-GPU PCIe Sync & Reference Anchors',
+    'Every guide reports GGUF (llama.cpp), vLLM AWQ 4-bit, or Apple MLX 4-bit VRAM + speeds side-by-side, and separates 8K decode speed from @Max Fit long-context speed after KV-read and attention scaling.',
+  'home.method3Title': '3. Multi-GPU PCIe Sync & Reproducible Anchors',
   'home.method3Desc':
-    'Token throughput is reported as a ±15–25% formula estimate range rather than false 0.1 tok/s precision. Multi-GPU Tensor Parallel on PCIe includes 2×per-layer All-Reduce latency penalties, alongside verified community reference benchmarks.',
+    'Physics v3.2 calibrates legacy Pascal/Turing/Volta, MoE router dispatch, and hybrid DeltaNet overhead against 17 dated, command-reproducible benchmarks. Unverified pairs stay clearly tagged "Formula only (unverified)".',
+  'home.uncensoredTitle': 'Uncensored / Abliterated / Heretic Models (1:1 Drop-In)',
+  'home.uncensoredDesc':
+    'Community uncensored, abliterated, and Heretic fine-tunes use identical layer counts, hidden dimensions, and GQA KV geometry as the base checkpoints above — apply the same @8K VRAM, Max Fit context, and tok/s estimates directly (allow ~±3–5% for custom imatrix quant variance).',
 
   // Calculator / Simulator page
   'sim.breadcrumb': 'Rig Simulator',

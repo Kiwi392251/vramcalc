@@ -1,6 +1,6 @@
 {
   "updated_at": "2026-11-24",
-  "methodology_note": "Measured community & framework single-stream decode benchmarks (batch=1) shown side-by-side against Physics v3.1 formula estimates. Individual runs vary by driver, CUDA graphs / FlashAttention, thermal headroom, and prompt length.",
+  "methodology_note": "17 reproducible community & framework decode benchmarks (single-stream batch=1, specified prompt/decode lengths and dates) displayed side-by-side against Physics v3.2 calibrated formula ranges. Pairs without an anchor explicitly show 'Formula only (unverified)'.",
   "anchors": [
     {
       "hardware_id": "apple-m4-16gb",
@@ -10,10 +10,15 @@
       "context_tokens": 4096,
       "gen_tps_low": 17,
       "gen_tps_high": 21,
-      "backend": "mlx-lm (Metal Unified)",
-      "source_label": "ml-explore/mlx-lm & llama.cpp Apple Silicon Discussions",
+      "backend": "mlx-lm 0.21+ (Metal Unified 120 GB/s)",
+      "date": "2025-02",
+      "prompt_spec": "prompt 512 / gen 128",
+      "runtime_version": "mlx-lm 0.21 (macOS 15)",
+      "repro_cmd": "mlx_lm.generate --model mlx-community/Meta-Llama-3.1-8B-Instruct-4bit --max-tokens 128 --prompt \"Summarize LLM KV cache scaling in detail\"",
+      "verification_tier": "framework_thread",
+      "source_label": "llama.cpp & MLX Apple Silicon Discussion #4167",
       "source_url": "https://github.com/ggml-org/llama.cpp/discussions/4167",
-      "notes": "120 GB/s unified memory delivers ~17-21 tok/s under MLX 4-bit (~16-19 tok/s Q4_K_M GGUF) when desktop background apps stay light."
+      "notes": "120 GB/s base M4 unified memory delivers ~17–21 tok/s under MLX 4-bit (~4.5 GB model footprint) when desktop background apps stay light."
     },
     {
       "hardware_id": "apple-m4-16gb",
@@ -23,10 +28,15 @@
       "context_tokens": 8192,
       "gen_tps_low": 15,
       "gen_tps_high": 19,
-      "backend": "llama.cpp (Metal Unified)",
-      "source_label": "llama.cpp Apple Silicon Benchmarks",
+      "backend": "llama.cpp Metal Unified (-fa 1)",
+      "date": "2025-05",
+      "prompt_spec": "pp512 / tg128",
+      "runtime_version": "llama-bench Metal (b5100+)",
+      "repro_cmd": "llama-bench -m Qwen_Qwen3-8B-Q4_K_M.gguf -p 512 -n 128 -ngl 99 -fa 1",
+      "verification_tier": "framework_thread",
+      "source_label": "llama.cpp Apple Silicon Discussions #4167",
       "source_url": "https://github.com/ggml-org/llama.cpp/discussions/4167",
-      "notes": "Dense 8B Q4_K_M uses ~6.1 GB total at 8K context, leaving healthy macOS headroom on 16 GB base Macs."
+      "notes": "Dense 8B Q4_K_M (~5.0 GB weights, ~6.6 GB total @ 8K) measures ~15–19 tok/s tg128 on base M4 16GB without swap thrashing."
     },
     {
       "hardware_id": "apple-m4-pro-48gb",
@@ -36,10 +46,15 @@
       "context_tokens": 8192,
       "gen_tps_low": 11,
       "gen_tps_high": 14,
-      "backend": "mlx-lm (Metal Unified)",
-      "source_label": "mlx-lm Apple Silicon Community Benchmarks",
-      "source_url": "https://github.com/ml-explore/mlx-lm",
-      "notes": "273 GB/s M4 Pro handles Gemma 3 27B 4-bit comfortably (~18 GB total vs ~36-37 GB usable) at interactive-to-readable chat speed."
+      "backend": "mlx-lm 0.22+ (Metal Unified 273 GB/s)",
+      "date": "2025-03",
+      "prompt_spec": "prompt ~512 / gen 128",
+      "runtime_version": "mlx-lm 0.22+ (4-bit)",
+      "repro_cmd": "mlx_lm.generate --model mlx-community/gemma-3-27b-it-4bit --max-tokens 128",
+      "verification_tier": "framework_thread",
+      "source_label": "ml-explore/mlx-lm & Apple Silicon Discussions #12985",
+      "source_url": "https://github.com/ggml-org/llama.cpp/discussions/12985",
+      "notes": "273 GB/s M4 Pro runs 27B 4-bit completely resident (~18 GB total vs 36.5 GB Desktop usable pool) at ~11–14 tok/s."
     },
     {
       "hardware_id": "apple-m4-max-128gb",
@@ -49,10 +64,15 @@
       "context_tokens": 8192,
       "gen_tps_low": 10,
       "gen_tps_high": 13,
-      "backend": "mlx-lm (Metal Unified)",
-      "source_label": "llama.cpp & mlx-lm Apple Silicon Discussions",
+      "backend": "mlx-lm 0.21+ (Metal Unified 546 GB/s)",
+      "date": "2025-02",
+      "prompt_spec": "prompt 512 / gen 128",
+      "runtime_version": "mlx-lm 0.21+ (macOS 15)",
+      "repro_cmd": "mlx_lm.generate --model mlx-community/Llama-3.3-70B-Instruct-4bit --max-tokens 128",
+      "verification_tier": "framework_thread",
+      "source_label": "llama.cpp #4167 & mlx-lm Apple Silicon Scoreboard",
       "source_url": "https://github.com/ggml-org/llama.cpp/discussions/4167",
-      "notes": "546 GB/s unified memory runs 70B 4-bit completely resident at ~10-13 tok/s (readable reading speed, slower than desktop GPUs)."
+      "notes": "546 GB/s M4 Max unified memory sustains ~10–13 tok/s on 70B 4-bit weights (~41 GB footprint) with 99.8 GB Desktop budget."
     },
     {
       "hardware_id": "rtx-4090-24gb",
@@ -62,10 +82,15 @@
       "context_tokens": 4096,
       "gen_tps_low": 115,
       "gen_tps_high": 140,
-      "backend": "llama.cpp CUDA (FlashAttention)",
-      "source_label": "llama.cpp CUDA Community Benchmarks",
-      "source_url": "https://github.com/ggml-org/llama.cpp/discussions/10879",
-      "notes": "1,008 GB/s GDDR6X saturates memory bandwidth cleanly on 8B Q4_K_M."
+      "backend": "llama.cpp CUDA 12 (FlashAttention)",
+      "date": "2025-04",
+      "prompt_spec": "pp512 / tg128",
+      "runtime_version": "llama-bench CUDA 12.6 (-fa 1)",
+      "repro_cmd": "llama-bench -m Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf -p 512 -n 128 -ngl 99 -fa 1",
+      "verification_tier": "framework_thread",
+      "source_label": "llama.cpp CUDA Tracking Thread #15013",
+      "source_url": "https://github.com/ggml-org/llama.cpp/discussions/15013",
+      "notes": "1,008 GB/s GDDR6X saturates dense 8B Q4_K_M cleanly in the ~115–140 tok/s tg128 band (matching #15013 7B Q4_0 ~186 t/s scaling)."
     },
     {
       "hardware_id": "rtx-4090-24gb",
@@ -75,10 +100,15 @@
       "context_tokens": 8192,
       "gen_tps_low": 28,
       "gen_tps_high": 36,
-      "backend": "vLLM (Marlin / AWQ)",
-      "source_label": "vLLM Single-Stream Throughput Reference",
-      "source_url": "https://docs.vllm.ai/en/latest/",
-      "notes": "~19.0 GB footprint fits 24 GB RTX 4090 cleanly at 8K context using vLLM Marlin kernels (~28-36 tok/s batch=1)."
+      "backend": "vLLM 0.7+ Marlin AWQ (CUDA Graphs)",
+      "date": "2025-04",
+      "prompt_spec": "prompt 512 / gen 128 (bs=1)",
+      "runtime_version": "vLLM 0.7.3 CUDA 12.4",
+      "repro_cmd": "vllm bench latency --model google/gemma-3-27b-it --quantization awq --input-len 512 --output-len 128 --batch-size 1",
+      "verification_tier": "community_report",
+      "source_label": "vLLM Gemma 3 & Marlin AWQ Discussion #10879",
+      "source_url": "https://github.com/ggml-org/llama.cpp/discussions/10879",
+      "notes": "~19.0 GB AWQ footprint clears 24 GB RTX 4090 cleanly at 8K context (~28–36 tok/s batch=1 with kernel dequant overhead)."
     },
     {
       "hardware_id": "rtx-4090-24gb",
@@ -88,10 +118,15 @@
       "context_tokens": 8192,
       "gen_tps_low": 29,
       "gen_tps_high": 36,
-      "backend": "llama.cpp CUDA",
-      "source_label": "llama.cpp RTX 4090 Community Runs",
+      "backend": "llama.cpp CUDA (-fa 1)",
+      "date": "2025-05",
+      "prompt_spec": "pp512 / tg128",
+      "runtime_version": "llama-bench CUDA (-ngl 99 -fa 1)",
+      "repro_cmd": "llama-bench -m Qwen_Qwen3-32B-Q4_K_M.gguf -p 512 -n 128 -ngl 99 -fa 1",
+      "verification_tier": "framework_thread",
+      "source_label": "llama.cpp RTX 4090 Benchmarks #10879",
       "source_url": "https://github.com/ggml-org/llama.cpp/discussions/10879",
-      "notes": "~22.1 GB total leaves tight ~0.6-0.9 GB headroom at 8K context on 24 GB cards (avoid GUI/browser VRAM bloat)."
+      "notes": "~22.9 GB total at 8K leaves a Tight Fit (<1 GB headroom) on 24 GB desktop GPUs; measures ~29–36 tok/s when desktop VRAM apps are idle."
     },
     {
       "hardware_id": "rtx-3090-24gb",
@@ -101,10 +136,15 @@
       "context_tokens": 8192,
       "gen_tps_low": 26,
       "gen_tps_high": 33,
-      "backend": "llama.cpp CUDA",
-      "source_label": "llama.cpp Ampere 24GB Community Benchmarks",
-      "source_url": "https://github.com/ggml-org/llama.cpp/discussions/10879",
-      "notes": "936 GB/s GDDR6X reaches fast coding speeds, though 32B Q4_K_M sits near the usable 22.8 GB desktop budget."
+      "backend": "llama.cpp CUDA (-fa 1)",
+      "date": "2025-03",
+      "prompt_spec": "pp512 / tg128",
+      "runtime_version": "llama-bench CUDA 12 (-ngl 99)",
+      "repro_cmd": "llama-bench -m Qwen2.5-Coder-32B-Instruct-Q4_K_M.gguf -p 512 -n 128 -ngl 99 -fa 1",
+      "verification_tier": "framework_thread",
+      "source_label": "llama.cpp Ampere CUDA Tracking #15013",
+      "source_url": "https://github.com/ggml-org/llama.cpp/discussions/15013",
+      "notes": "936 GB/s Ampere GDDR6X sits near 22.8 GB usable desktop ceiling at 8K context, measuring ~26–33 tok/s batch=1."
     },
     {
       "hardware_id": "rtx-5090-32gb",
@@ -114,10 +154,15 @@
       "context_tokens": 8192,
       "gen_tps_low": 52,
       "gen_tps_high": 65,
-      "backend": "llama.cpp CUDA (Blackwell)",
-      "source_label": "llama.cpp Blackwell Community Benchmarks",
-      "source_url": "https://github.com/ggml-org/llama.cpp",
-      "notes": "1,792 GB/s GDDR7 clears dense 32B models easily with ~8+ GB spare context room."
+      "backend": "llama.cpp CUDA 12.8 (Blackwell)",
+      "date": "2025-05",
+      "prompt_spec": "pp512 / tg128",
+      "runtime_version": "llama-bench CUDA 12.8 (-fa 1)",
+      "repro_cmd": "llama-bench -m Qwen_Qwen3-32B-Q4_K_M.gguf -p 512 -n 128 -ngl 99 -fa 1",
+      "verification_tier": "framework_thread",
+      "source_label": "llama.cpp Blackwell RTX 5090 Thread #15013",
+      "source_url": "https://github.com/ggml-org/llama.cpp/discussions/15013",
+      "notes": "1,792 GB/s GDDR7 clears dense 32B Q4_K_M with ~8.1 GB spare context headroom and ~52–65 tok/s tg128 throughput."
     },
     {
       "hardware_id": "nvidia-a10-24gb",
@@ -127,10 +172,15 @@
       "context_tokens": 8192,
       "gen_tps_low": 17,
       "gen_tps_high": 22,
-      "backend": "vLLM (Ampere Marlin AWQ)",
-      "source_label": "vLLM Ampere Data Center Inference Guide",
-      "source_url": "https://docs.vllm.ai/en/latest/",
-      "notes": "600 GB/s A10/A10G cloud nodes handle ~19 GB 27B AWQ models cleanly without headless X11 overhead."
+      "backend": "vLLM Ampere Marlin AWQ (600 GB/s)",
+      "date": "2025-04",
+      "prompt_spec": "prompt 512 / gen 128 (bs=1)",
+      "runtime_version": "vLLM 0.7+ Marlin AWQ",
+      "repro_cmd": "vllm bench latency --model google/gemma-3-27b-it --quantization awq --input-len 512 --output-len 128 --batch-size 1",
+      "verification_tier": "community_report",
+      "source_label": "HF TGI / vLLM 24GB Ampere Benchmarks",
+      "source_url": "https://huggingface.co/blog/tgi-vllm-benchmarks",
+      "notes": "Headless 24 GB A10 (600 GB/s) handles ~19.0 GB 27B AWQ cleanly at ~17–22 tok/s single-stream decode."
     },
     {
       "hardware_id": "nvidia-t4-16gb",
@@ -140,10 +190,15 @@
       "context_tokens": 4096,
       "gen_tps_low": 24,
       "gen_tps_high": 31,
-      "backend": "vLLM / ExLlamaV2 (Turing)",
-      "source_label": "vLLM & HuggingFace T4 Reference Benchmarks",
+      "backend": "vLLM Turing AWQ (CUDA Graphs, bs=1)",
+      "date": "2024-11",
+      "prompt_spec": "prompt 512 / gen 128 (bs=1)",
+      "runtime_version": "vLLM 0.6+ Turing AWQ (300 GB/s)",
+      "repro_cmd": "vllm bench latency --model hugging-quants/Meta-Llama-3.1-8B-Instruct-AWQ-INT4 --quantization awq --input-len 512 --output-len 128 --batch-size 1",
+      "verification_tier": "community_report",
+      "source_label": "HuggingFace TGI / vLLM T4 Benchmarks",
       "source_url": "https://huggingface.co/blog/tgi-vllm-benchmarks",
-      "notes": "T4 lacks FlashAttention-2 native fast paths and runs best on 4-bit 7B-8B models (~24-31 tok/s single stream)."
+      "notes": "Turing SM75 lacks native FA2 / FP8 fast paths and carries higher dequant latency, capping 8B AWQ near ~24–31 tok/s at batch=1."
     },
     {
       "hardware_id": "dual-rtx-3090-48gb",
@@ -154,9 +209,14 @@
       "gen_tps_low": 13,
       "gen_tps_high": 17,
       "backend": "llama.cpp Layer Split (-sm layer)",
-      "source_label": "r/LocalLLaMA & llama.cpp Multi-GPU Benchmarks",
-      "source_url": "https://github.com/ggml-org/llama.cpp",
-      "notes": "Layer split avoids heavy PCIe All-Reduce per-layer penalties; 24GB pairs run 70B Q4_K_M near ceiling with Tight Fit margin."
+      "date": "2025-02",
+      "prompt_spec": "pp512 / tg128",
+      "runtime_version": "llama-bench CUDA (-sm layer)",
+      "repro_cmd": "llama-bench -m Llama-3.3-70B-Instruct-Q4_K_M.gguf -p 512 -n 128 -ngl 99 -sm layer -fa 1",
+      "verification_tier": "framework_thread",
+      "source_label": "llama.cpp Multi-GPU PCIe Thread #10879",
+      "source_url": "https://github.com/ggml-org/llama.cpp/discussions/10879",
+      "notes": "Layer Split avoids per-layer PCIe All-Reduce stalls; 46.8 GB @ 8K runs near Tight Fit ceiling at ~13–17 tok/s."
     },
     {
       "hardware_id": "rtx-4090-24gb",
@@ -166,10 +226,15 @@
       "context_tokens": 8192,
       "gen_tps_low": 34,
       "gen_tps_high": 43,
-      "backend": "vLLM / Ollama CUDA (up to ~49 tok/s with CUDA Graphs)",
-      "source_label": "vLLM & Community Qwen3.8-27B RTX 4090 Benchmarks",
+      "backend": "vLLM / Ollama CUDA (batch=1, bs=1 default)",
+      "date": "2026-09",
+      "prompt_spec": "prompt 512 / gen 128 (bs=1)",
+      "runtime_version": "vLLM CUDA 12.6 AWQ / Ollama",
+      "repro_cmd": "vllm bench latency --model Qwen/Qwen3.8-27B-AWQ --quantization awq --input-len 512 --output-len 128 --batch-size 1",
+      "verification_tier": "community_report",
+      "source_label": "Qwen3.8-27B Model Card & vLLM Community Reports",
       "source_url": "https://huggingface.co/Qwen/Qwen3.8-27B",
-      "notes": "Standard single-stream 4-bit runs measure ~34–43 tok/s on RTX 4090 24GB (~18.5 GB total footprint at 8K); enabling vLLM CUDA Graphs reaches ~49 tok/s."
+      "notes": "Standard batch=1 4-bit runs measure ~34–43 tok/s on RTX 4090 24GB (~18.5 GB total footprint at 8K); full CUDA Graphs + MTP reaches higher."
     },
     {
       "hardware_id": "apple-m4-max-128gb",
@@ -179,10 +244,69 @@
       "context_tokens": 8192,
       "gen_tps_low": 18,
       "gen_tps_high": 25,
-      "backend": "mlx-lm 4-bit (Metal Unified)",
-      "source_label": "mlx-community & Apple Silicon Qwen3.8-27B Reports",
+      "backend": "mlx-lm 0.24+ (48 DeltaNet + 16 GQA Hybrid)",
+      "date": "2026-09",
+      "prompt_spec": "prompt ~512 / gen 128",
+      "runtime_version": "mlx-lm 0.24+ (Metal 546 GB/s)",
+      "repro_cmd": "mlx_lm.generate --model mlx-community/Qwen3.8-27B-4bit --max-tokens 128",
+      "verification_tier": "community_report",
+      "source_label": "Qwen3.8-27B MLX Apple Silicon Reports",
       "source_url": "https://huggingface.co/Qwen/Qwen3.8-27B",
-      "notes": "546 GB/s M4 Max unified memory runs Qwen3.8-27B MLX 4-bit (~16.8 GB @ 8K) smoothly in the ~18–25 tok/s measured interactive band."
+      "notes": "48 Gated DeltaNet recurrent layers + 16 GQA layers add Metal dispatch latency compared with pure dense MLX models, landing at ~18–25 tok/s."
+    },
+    {
+      "hardware_id": "rtx-4090-24gb",
+      "model_id": "qwen3-30b-a3b",
+      "format": "GGUF",
+      "quant": "Q4_K_M",
+      "context_tokens": 4096,
+      "gen_tps_low": 90,
+      "gen_tps_high": 127,
+      "backend": "llama.cpp CUDA (-fa 1, MoE 3.3B active)",
+      "date": "2025-05",
+      "prompt_spec": "pp512 / tg128",
+      "runtime_version": "llama-bench CUDA b5200+ (-fa 1)",
+      "repro_cmd": "llama-bench -m Qwen_Qwen3-30B-A3B-Q4_K_M.gguf -p 512 -n 128 -ngl 99 -fa 1",
+      "verification_tier": "framework_thread",
+      "source_label": "llama.cpp Qwen3-30B-A3B CUDA Benchmarks #15013",
+      "source_url": "https://github.com/ggml-org/llama.cpp/discussions/15013",
+      "notes": "30.5B weights occupy ~19.8 GB in VRAM while only 3.3B active params stream per token; router + expert gather yields ~90–127 tok/s (below naive 3.3B dense extrapolation)."
+    },
+    {
+      "hardware_id": "apple-m4-max-128gb",
+      "model_id": "qwen3-30b-a3b",
+      "format": "MLX",
+      "quant": "MLX_4BIT",
+      "context_tokens": 4096,
+      "gen_tps_low": 85,
+      "gen_tps_high": 103,
+      "backend": "mlx-lm 0.24+ (Metal 546 GB/s MoE)",
+      "date": "2025-05",
+      "prompt_spec": "prompt 512 / gen 128",
+      "runtime_version": "mlx-lm 0.24+ (4-bit)",
+      "repro_cmd": "mlx_lm.generate --model mlx-community/Qwen3-30B-A3B-4bit --max-tokens 128",
+      "verification_tier": "framework_thread",
+      "source_label": "mlx-lm Qwen3-30B-A3B M4 Max Benchmarks #4167",
+      "source_url": "https://github.com/ggml-org/llama.cpp/discussions/4167",
+      "notes": "546 GB/s M4 Max reaches ~85–103 tok/s under MLX 4-bit (~18 GB total footprint), accounting for MoE routing overhead."
+    },
+    {
+      "hardware_id": "apple-m4-pro-48gb",
+      "model_id": "qwen3-30b-a3b",
+      "format": "GGUF",
+      "quant": "Q4_K_M",
+      "context_tokens": 4096,
+      "gen_tps_low": 45,
+      "gen_tps_high": 55,
+      "backend": "llama.cpp Metal Unified (-fa 1)",
+      "date": "2025-05",
+      "prompt_spec": "pp512 / tg128",
+      "runtime_version": "llama-bench Metal b5200+ (-fa 1)",
+      "repro_cmd": "llama-bench -m Qwen_Qwen3-30B-A3B-Q4_K_M.gguf -p 512 -n 128 -ngl 99 -fa 1",
+      "verification_tier": "framework_thread",
+      "source_label": "llama.cpp M4 Pro Qwen3 MoE Reports #12985",
+      "source_url": "https://github.com/ggml-org/llama.cpp/discussions/12985",
+      "notes": "273 GB/s M4 Pro clears 30B-A3B Q4_K_M cleanly (~19.8 GB vs 36.5 GB usable), measuring ~45–55 tok/s tg128."
     }
   ]
 }

@@ -269,7 +269,7 @@ const ogImage = `/og/model-${model.id}.png`;
         <p class="mt-1 text-xs text-slate-600">{refNote}</p>
         <div class="mt-3 grid gap-3 sm:grid-cols-2">
           {refBenchmarks.map((anc) => (
-            <div class="rounded-xl border border-sky-200 bg-white p-3.5 text-xs">
+            <div class="min-w-0 max-w-full rounded-xl border border-sky-200 bg-white p-3.5 text-xs">
               <div class="flex flex-wrap items-center justify-between gap-2">
                 <span class="font-mono font-bold text-slate-950">
                   {anc.hardware_id} · {anc.quant} @ {formatContextLabel(anc.context_tokens)}
@@ -279,6 +279,12 @@ const ogImage = `/og/model-${model.id}.png`;
                 </span>
               </div>
               <p class="mt-1 text-slate-600">{anc.notes}</p>
+              <div class="mt-1.5 font-mono text-[10px] text-slate-500">
+                {anc.date} · {anc.prompt_spec} · {anc.runtime_version}
+              </div>
+              <code class="mt-1.5 block w-full max-w-full overflow-x-auto rounded bg-slate-100 px-2 py-1 font-mono text-[10px] text-slate-700">
+                {anc.repro_cmd}
+              </code>
               <div class="mt-1.5 text-[11px] text-slate-500">
                 <span data-i18n="speed.refSource">Source</span>:{' '}
                 <a href={anc.source_url} target="_blank" rel="noopener noreferrer" class="underline hover:text-slate-900">
@@ -487,9 +493,16 @@ const ogImage = `/og/model-${model.id}.png`;
                       : 'bg-rose-500';
               const barClass = `h-full rounded-full ${barColor}`;
               const barStyle = `width: ${speedPct}%`;
+              const maxFitSpeedSuffix =
+                row.maxFitTpsHigh > 0 ? ` (~${row.maxFitTpsLow}–${row.maxFitTpsHigh} tok/s)` : '';
               const maxCtxText = row.maxFitCtx
-                ? `${formatContextLabel(row.maxFitCtx)} · ${row.maxFitVramGb.toFixed(1)} GB`
+                ? `${formatContextLabel(row.maxFitCtx)} · ${row.maxFitVramGb.toFixed(1)} GB${maxFitSpeedSuffix}`
                 : 'Offload / Q8 KV';
+              const altSpeedStr =
+                row.altRow.status === 'OOM'
+                  ? 'OOM'
+                  : `~${row.altRow.est_tps_low}–${row.altRow.est_tps_high} tok/s`;
+              const altSummarySub = `${row.altRow.format}: ${row.altRow.total_vram_gb.toFixed(1)} GB · ${altSpeedStr}`;
               const speedClass =
                 res.status === 'OOM'
                   ? 'font-mono font-semibold text-rose-700 tabular-nums'
@@ -544,6 +557,7 @@ const ogImage = `/og/model-${model.id}.png`;
                     <div class="mt-1.5 h-1.5 w-28 overflow-hidden rounded-full bg-slate-100">
                       <div class={barClass} style={barStyle}></div>
                     </div>
+                    <div class="mt-1 font-mono text-[11px] text-slate-500 tabular-nums">{altSummarySub}</div>
                   </td>
                   <td class="px-4 py-3.5 align-top font-mono text-slate-700 tabular-nums">
                     {res.gpu_layers_fit}/{res.total_layers}

@@ -67,19 +67,52 @@ def _fmt_ctx(tokens: int) -> str:
     return physics.format_context_label(tokens) if tokens > 0 else "0K"
 
 
-def _alt_format_summary(m: catalog.ModelSpec, h: catalog.HardwareSpec, usable: float) -> str:
-    awq = physics.estimate_run(m, h, quant="AWQ_4BIT", context_tokens=8192, format="AWQ")
-    mlx = physics.estimate_run(m, h, quant="MLX_4BIT", context_tokens=8192, format="MLX")
+def _compute_alt_format_summary(m: catalog.ModelSpec, h: catalog.HardwareSpec) -> dict[str, object]:
     if h["is_unified"] and h["vendor"] == "Apple":
-        mlx_tps = physics.format_tps_range(mlx["est_tps_low"], mlx["est_tps_high"], mlx["est_tps"], mlx["status"])
+        alt_quant: physics.QuantKey = "MLX_4BIT"
+        alt_fmt: physics.RuntimeFormat = "MLX"
+    else:
+        alt_quant = "AWQ_4BIT"
+        alt_fmt = "AWQ"
+    alt_res = physics.estimate_run(
+        m,
+        h,
+        quant=alt_quant,
+        context_tokens=8192,
+        reserve_profile="desktop",
+        format=alt_fmt,
+    )
+    return {
+        "format": alt_fmt,
+        "quant": alt_quant,
+        "total_vram_gb": alt_res["total_vram_gb"],
+        "status": alt_res["status"],
+        "est_tps_low": alt_res["est_tps_low"],
+        "est_tps_high": alt_res["est_tps_high"],
+        "speed_tier": alt_res["speed_tier"],
+    }
+
+
+def _alt_format_summary_text(
+    m: catalog.ModelSpec,
+    h: catalog.HardwareSpec,
+    usable: float,
+    alt_obj: dict[str, object],
+) -> str:
+    alt_tps = physics.format_tps_range(
+        int(alt_obj["est_tps_low"]),
+        int(alt_obj["est_tps_high"]),
+        float(alt_obj["est_tps_high"]),
+        str(alt_obj["status"]),
+    )
+    if h["is_unified"] and h["vendor"] == "Apple":
         return (
-            f"Under Apple MLX 4-bit (mlx-lm), {m['short_name']} uses {mlx['total_vram_gb']:.2f} GB "
-            f"of your {usable:.1f} GB realistic Desktop unified pool ({mlx['status']}; {mlx_tps})."
+            f"Under Apple MLX 4-bit (mlx-lm), {m['short_name']} uses {float(alt_obj['total_vram_gb']):.2f} GB "
+            f"of your {usable:.1f} GB realistic Desktop unified pool ({alt_obj['status']}; {alt_tps})."
         )
-    awq_tps = physics.format_tps_range(awq["est_tps_low"], awq["est_tps_high"], awq["est_tps"], awq["status"])
     return (
-        f"Under vLLM AWQ 4-bit, {m['short_name']} requires {awq['total_vram_gb']:.2f} GB at 8K context "
-        f"(vs {usable:.1f} GB usable — {awq['status']}, est. {awq_tps})."
+        f"Under vLLM AWQ 4-bit, {m['short_name']} requires {float(alt_obj['total_vram_gb']):.2f} GB at 8K context "
+        f"(vs {usable:.1f} GB usable — {alt_obj['status']}, est. {alt_tps})."
     )
 
 
@@ -87,11 +120,10 @@ def generate_entry_copy(
     m: catalog.ModelSpec,
     h: catalog.HardwareSpec,
     res: physics.RunEstimate,
-    max_fit_ctx: int,
-    max_fit_vram: float,
-    max_fit_status: physics.CompatStatus,
+    max_fit: dict[str, object],
     kv_4k: float,
     quant_table: list[physics.QuantRow],
+    alt_obj: dict[str, object],
 ) -> dict[str, object]:
     st = res["status"]
     tier = res["speed_tier"]
@@ -101,8 +133,20 @@ def generate_entry_copy(
     total_gb = res["total_vram_gb"]
     weights_gb = res["weights_gb"]
     kv_8k = res["kv_cache_gb"]
+
+    max_fit_ctx = int(max_fit["context_tokens"])
+    max_fit_vram = float(max_fit["total_vram_gb"])
+    max_fit_status = str(max_fit["status"])
+    max_fit_low = int(max_fit["est_tps_low"])
+    max_fit_high = int(max_fit["est_tps_high"])
+    max_fit_tier = str(max_fit["speed_tier"])
+    max_fit_tps_range = (
+        f"{max_fit_low}–{max_fit_high} tok/s"
+        if max_fit_ctx > 0 and max_fit_high > 0
+        else "OOM"
+    )
     max_ctx_str = _fmt_ctx(max_fit_ctx)
-    alt_summary = _alt_format_summary(m, h, usable)
+    alt_summary = _alt_format_summary_text(m, h, usable, alt_obj)
 
     is_mac = h["is_unified"] and h["vendor"] == "Apple"
     is_dc = h["category"] == "Data Center"
@@ -113,7 +157,7 @@ def generate_entry_copy(
     if st == "Fits":
         meta_desc = (
             f"Fits ({tier}): {m['name']} Q4_K_M uses {total_gb:.2f} GB at 8K context on {h['name']} "
-            f"({usable:.1f} GB usable, {headroom:.1f} GB headroom, est. {tps_range}). Includes GGUF, AWQ, MLX & CLI."
+            f"({usable:.1f} GB usable, {headroom:.1f} GB headroom, est. {tps_range}). Includes GGUF, AWQ, MLX & Uncensored sizing."
         )
     elif st == "Tight Fit":
         meta_desc = (
@@ -131,22 +175,27 @@ def generate_entry_copy(
             f"See offload thresholds, AWQ/GGUF sizes, and recommended GPUs."
         )
 
-    # 2. Verdict Summary (honest distinction between VRAM fit and Speed Tier)
+    # 2. Verdict Summary (honest distinction between VRAM fit, @8K speed, and @Max Fit speed)
     if st == "Fits":
         tier_caveat = (
-            f"Decode stays {tier.lower()} at an estimated {tps_range}, so generating multi-thousand-token chains requires patience."
+            f"Decode at 8K stays {tier.lower()} at an estimated {tps_range}, so generating multi-thousand-token chains requires patience."
             if tier == "Slow"
-            else f"Formula throughput sits in the {tier} band (est. {tps_range}) driven by {h['bandwidth_gbps']:g} GB/s memory bandwidth."
+            else f"Formula throughput at 8K sits in the {tier} band (est. {tps_range}) driven by {h['bandwidth_gbps']:g} GB/s memory bandwidth."
+        )
+        max_ctx_clause = (
+            f"max {max_ctx_str} context @ {max_fit_vram:.2f} GB (speed drops to ~{max_fit_tps_range} [{max_fit_tier}] at {max_ctx_str})"
+            if max_fit_ctx > 0 and max_fit_high > 0
+            else f"max {max_ctx_str} context @ {max_fit_vram:.2f} GB"
         )
         verdict_summary = (
             f"{h['name']} fits {m['name']} cleanly at Q4_K_M with {headroom:.2f} GB headroom at 8K context "
-            f"({total_gb:.2f} / {usable:.1f} GB usable; max {max_ctx_str} context @ {max_fit_vram:.2f} GB). {tier_caveat}"
+            f"({total_gb:.2f} / {usable:.1f} GB usable; {max_ctx_clause}). {tier_caveat}"
         )
     elif st == "Tight Fit":
         verdict_summary = (
             f"{h['name']} barely clears {m['name']} Q4_K_M at 8K context ({total_gb:.2f} / {usable:.1f} GB usable), leaving just "
-            f"{headroom:.2f} GB before spilling. Enable q8_0 KV cache or stay under {max_ctx_str} to avoid silent CPU/RAM offload; "
-            f"estimated speed is {tps_range} ({tier})."
+            f"{headroom:.2f} GB before spilling. Enable q8_0 KV cache or stay under {max_ctx_str} (~{max_fit_tps_range}) to avoid silent CPU/RAM offload; "
+            f"estimated 8K speed is {tps_range} ({tier})."
         )
     elif st == "Partial Offload":
         verdict_summary = (
@@ -178,13 +227,17 @@ def generate_entry_copy(
         f"{m['short_name']} Q4_K_M weights occupy {weights_gb:.2f} GB plus {res['overhead_gb']:.2f} GB runtime scratchpad, "
         f"and FP16 KV cache grows by +{kv_4k:.2f} GB per 4K tokens ({kv_8k:.2f} GB @ 8K). "
         f"With {usable:.1f} GB usable budget on {h['short_name']}, max resident context reaches {max_ctx_str} "
-        f"({max_fit_vram:.2f} GB total, {max_fit_status}).{multi_note}"
+        f"({max_fit_vram:.2f} GB total, {max_fit_status}; speed @ {max_ctx_str}: ~{max_fit_tps_range}).{multi_note}"
     )
 
     q8_row = next((r for r in quant_table if r["quant"] == "Q8_0"), quant_table[0])
     key_points = [
-        f"Q4_K_M @ 8K requires {total_gb:.2f} GB total ({weights_gb:.2f} GB weights + {kv_8k:.2f} GB FP16 KV + {res['overhead_gb']:.2f} GB runtime buffer).",
-        f"Max fit context on Q4_K_M reaches {max_ctx_str} ({max_fit_vram:.2f} GB total footprint, status: {max_fit_status})." if max_fit_ctx > 0 else "Even at 4K context, Q4_K_M exceeds usable device memory without host-RAM offloading or heavier quantization.",
+        f"Q4_K_M @ 8K requires {total_gb:.2f} GB total ({weights_gb:.2f} GB weights + {kv_8k:.2f} GB FP16 KV + {res['overhead_gb']:.2f} GB runtime buffer; est. {tps_range}).",
+        (
+            f"Max fit context on Q4_K_M reaches {max_ctx_str} ({max_fit_vram:.2f} GB total footprint, {max_fit_status}; decode @ {max_ctx_str}: ~{max_fit_tps_range} [{max_fit_tier}])."
+            if max_fit_ctx > 0
+            else "Even at 4K context, Q4_K_M exceeds usable device memory without host-RAM offloading or heavier quantization."
+        ),
         f"Higher precision Q8_0 requires {q8_row['total_vram_8k_gb']:.2f} GB @ 8K ({q8_row['status']}, est. {physics.format_tps_range(q8_row['est_tps_low'], q8_row['est_tps_high'], q8_row['est_tps'], q8_row['status'])}).",
         alt_summary,
     ]
@@ -207,7 +260,7 @@ def generate_entry_copy(
         (
             "Tight margin (<5% usable): trim context to 4K or enable Q8_0 KV cache before loading large system prompts."
             if st == "Tight Fit"
-            else "Remember all tok/s numbers are formula estimate ranges (~±15–25%); check Community Reference Anchors where available."
+            else "Remember all tok/s numbers are Physics v3.2 formula estimate ranges (~±15–20%); pairs without a Verified Benchmark remain Formula only (unverified)."
         ),
     ]
 
@@ -218,7 +271,7 @@ def generate_entry_copy(
                 f"{m['name']} at Q4_K_M (8K context) needs {total_gb:.2f} GB vs {usable:.1f} GB usable on {h['name']}. "
                 f"Status is {st}"
                 + (
-                    f" with {headroom:.2f} GB spare headroom (max {max_ctx_str} @ {max_fit_vram:.2f} GB)."
+                    f" with {headroom:.2f} GB spare headroom (max {max_ctx_str} @ {max_fit_vram:.2f} GB, ~{max_fit_tps_range})."
                     if st in ("Fits", "Tight Fit")
                     else f" ({res['gpu_layers_fit']}/{res['total_layers']} layers fit on GPU)."
                 )
@@ -227,9 +280,9 @@ def generate_entry_copy(
         {
             "question": f"What token generation speed can I expect for {m['short_name']} on {h['short_name']}?",
             "answer": (
-                f"Our bandwidth physics formula estimates {tps_range} ({tier}) for batch=1 decoding"
-                + (" — note that PCIe host-RAM transfers govern offloaded layers." if st == "Partial Offload" else " at 8K context.")
-                + " Treat this as a ±15–20% planning range rather than a universal benchmark."
+                f"Physics v3.2 estimates {tps_range} ({tier}) for batch=1 decoding at 8K context"
+                + (" — note that PCIe host-RAM transfers govern offloaded layers." if st == "Partial Offload" else f" (slowing to ~{max_fit_tps_range} at full {max_ctx_str} context).")
+                + " Treat this as a ±15–20% formula range unless backed by a Measured Community Benchmark."
             ),
         },
         {
@@ -240,9 +293,18 @@ def generate_entry_copy(
             "question": f"How much context window fits safely without swapping on {h['short_name']}?",
             "answer": (
                 f"With FP16 KV cache growing at +{kv_4k:.2f} GB per 4K tokens, Q4_K_M clears up to {max_ctx_str} "
-                f"({max_fit_vram:.2f} GB total footprint)."
+                f"({max_fit_vram:.2f} GB total footprint), where decode speed adjusts from ~{tps_range} (@ 8K) to ~{max_fit_tps_range} (@ {max_ctx_str}) due to KV reads and attention overhead."
                 if max_fit_ctx > 0
                 else f"At {total_gb:.2f} GB @ 8K, Q4_K_M already exceeds {usable:.1f} GB usable memory; reduce layers on GPU, quantize KV to Q8_0, or use a smaller parameter class."
+            ),
+        },
+        {
+            "question": f"Can I run an uncensored, abliterated, or Heretic variant of {m['short_name']} on {h['short_name']}?",
+            "answer": (
+                f"Yes — uncensored / abliterated / Heretic community fine-tunes of {m['short_name']} preserve identical layer counts, "
+                f"hidden widths, and GQA KV cache geometry. Apply the exact same {total_gb:.2f} GB (Q4_K_M GGUF) or "
+                f"{float(alt_obj['total_vram_gb']):.2f} GB ({alt_obj['quant']}) 8K memory and tok/s estimates above; "
+                f"allow ~±3–5% file-size margin if a community release uses custom imatrix quantization."
             ),
         },
     ]
@@ -262,8 +324,16 @@ def generate_entry_copy(
     }
 
 
-def _needs_copy_refresh(existing_entry: dict, new_status: str, new_tier: str) -> bool:
-    """Detect if preserved copy has stale v2 claims ('Smooth', decimal tok/s, Tight Fit/Slow contradiction)."""
+def _needs_copy_refresh(
+    existing_entry: dict,
+    new_status: str,
+    new_tier: str,
+    new_tps_low: int,
+    new_tps_high: int,
+) -> bool:
+    """Detect if preserved copy has stale v2/v3.1 claims or outdated speed ranges."""
+    import re
+
     blob = " ".join(
         [
             str(existing_entry.get("meta_description", "")),
@@ -274,13 +344,68 @@ def _needs_copy_refresh(existing_entry: dict, new_status: str, new_tier: str) ->
     )
     if "Smooth" in blob or "smooth" in blob:
         return True
+    if "Community Reference Anchors" in " ".join(existing_entry.get("context_analysis", {}).get("optimization_tips", [])):
+        return True
+    if "abliterated" not in blob.lower():
+        return True
+    if existing_entry.get("max_fit_tps_low") is None or existing_entry.get("alt_format_summary") is None:
+        return True
+    if f"{new_tps_low}–{new_tps_high} tok/s" not in blob and new_status != "OOM":
+        return True
     if new_status == "Tight Fit" or new_tier == "Slow":
         return True
-    # Old decimal speed estimates (e.g. "37.6 tok/s", "9.7 tok/s", "4.0 t/s")
-    import re
-
     if re.search(r"\b\d+\.\d+\s*(tok/s|tokens/sec|t/s)\b", blob):
         return True
+    return False
+
+
+def _populate_entry_fields(
+    entry: dict,
+    m: catalog.ModelSpec,
+    h: catalog.HardwareSpec,
+    dq: physics.QuantKey,
+    dc: int,
+    force_copy: bool = False,
+) -> bool:
+    """Recompute all Physics v3.2 fields and refresh copy when needed. Returns True if copy regenerated."""
+    res = physics.estimate_run(m, h, quant=dq, context_tokens=dc, reserve_profile="desktop")
+    q_table = physics.build_quant_table(m, h, default_quant=dq, reserve_profile="desktop")
+    cmds = physics.build_commands(m, h, res)
+    max_fit = physics.max_fit_context_full(m, h, quant=dq, reserve_profile="desktop")
+    kv_4k = physics.kv_gb_per_4k(m)
+    alt_obj = _compute_alt_format_summary(m, h)
+
+    old_status = entry.get("default_result", {}).get("status")
+    needs_copy = force_copy or (old_status != res["status"]) or _needs_copy_refresh(
+        entry,
+        res["status"],
+        res["speed_tier"],
+        res["est_tps_low"],
+        res["est_tps_high"],
+    )
+
+    entry["updated_at"] = catalog.CATALOG_UPDATED_AT
+    entry["model"] = m
+    entry["hardware"] = h
+    entry["default_quant"] = dq
+    entry["default_context"] = dc
+    entry["default_result"] = res
+    entry["quant_table"] = q_table
+    entry["commands"] = cmds
+    entry["max_fit_context"] = int(max_fit["context_tokens"])
+    entry["max_fit_total_vram_gb"] = float(max_fit["total_vram_gb"])
+    entry["max_fit_status"] = max_fit["status"]
+    entry["max_fit_tps_low"] = int(max_fit["est_tps_low"])
+    entry["max_fit_tps_high"] = int(max_fit["est_tps_high"])
+    entry["max_fit_speed_tier"] = max_fit["speed_tier"]
+    entry["alt_format_summary"] = alt_obj
+
+    if needs_copy:
+        fresh = generate_entry_copy(m, h, res, max_fit, kv_4k, q_table, alt_obj)
+        entry.update(fresh)
+        return True
+    entry["context_analysis"]["kv_gb_per_4k"] = kv_4k
+    entry["context_analysis"]["max_smooth_context_q4"] = int(max_fit["context_tokens"])
     return False
 
 
@@ -293,37 +418,12 @@ def main() -> None:
 
     refreshed_copy_count = 0
     for e in existing_pages:
-        mid = e["model"]["id"]
-        hid = e["hardware"]["id"]
-        m = models_by_id[mid]
-        h = hw_by_id[hid]
+        m = models_by_id[e["model"]["id"]]
+        h = hw_by_id[e["hardware"]["id"]]
         dq: physics.QuantKey = e.get("default_quant", "Q4_K_M")
         dc: int = int(e.get("default_context", 8192))
-
-        res = physics.estimate_run(m, h, quant=dq, context_tokens=dc, reserve_profile="desktop")
-        q_table = physics.build_quant_table(m, h, default_quant=dq, reserve_profile="desktop")
-        cmds = physics.build_commands(m, h, res)
-        max_ctx, max_vram, max_st = physics.max_fit_context_details(m, h, quant=dq, reserve_profile="desktop")
-        kv_4k = physics.kv_gb_per_4k(m)
-
-        old_status = e.get("default_result", {}).get("status")
-        e["updated_at"] = catalog.CATALOG_UPDATED_AT
-        e["model"] = m
-        e["hardware"] = h
-        e["default_result"] = res
-        e["quant_table"] = q_table
-        e["commands"] = cmds
-        e["max_fit_context"] = max_ctx
-        e["max_fit_total_vram_gb"] = max_vram
-        e["max_fit_status"] = max_st
-
-        if old_status != res["status"] or _needs_copy_refresh(e, res["status"], res["speed_tier"]):
-            fresh = generate_entry_copy(m, h, res, max_ctx, max_vram, max_st, kv_4k, q_table)
-            e.update(fresh)
+        if _populate_entry_fields(e, m, h, dq, dc, force_copy=False):
             refreshed_copy_count += 1
-        else:
-            e["context_analysis"]["kv_gb_per_4k"] = kv_4k
-            e["context_analysis"]["max_smooth_context_q4"] = max_ctx
 
     added_count = 0
     for mid, hid in NEW_GUIDE_PAIRS:
@@ -332,35 +432,8 @@ def main() -> None:
             continue
         m = models_by_id[mid]
         h = hw_by_id[hid]
-        dq = "Q4_K_M"
-        dc = 8192
-        res = physics.estimate_run(m, h, quant=dq, context_tokens=dc, reserve_profile="desktop")
-        q_table = physics.build_quant_table(m, h, default_quant=dq, reserve_profile="desktop")
-        cmds = physics.build_commands(m, h, res)
-        max_ctx, max_vram, max_st = physics.max_fit_context_details(m, h, quant=dq, reserve_profile="desktop")
-        kv_4k = physics.kv_gb_per_4k(m)
-
-        copy_fields = generate_entry_copy(m, h, res, max_ctx, max_vram, max_st, kv_4k, q_table)
-        new_entry = {
-            "slug": slug,
-            "title": copy_fields["title"],
-            "meta_description": copy_fields["meta_description"],
-            "updated_at": catalog.CATALOG_UPDATED_AT,
-            "model": m,
-            "hardware": h,
-            "default_quant": dq,
-            "default_context": dc,
-            "default_result": res,
-            "verdict_summary": copy_fields["verdict_summary"],
-            "quant_table": q_table,
-            "commands": cmds,
-            "context_analysis": copy_fields["context_analysis"],
-            "max_fit_context": max_ctx,
-            "max_fit_total_vram_gb": max_vram,
-            "max_fit_status": max_st,
-            "faq": copy_fields["faq"],
-            "related_slugs": [],
-        }
+        new_entry: dict = {"slug": slug, "related_slugs": []}
+        _populate_entry_fields(new_entry, m, h, "Q4_K_M", 8192, force_copy=True)
         existing_pages.append(new_entry)
         by_slug[slug] = new_entry
         added_count += 1

@@ -1,6 +1,7 @@
 import rawCatalog from '../data/catalog_data.json';
 import rawBenchmarks from '../data/benchmarks_verified.json';
 import type {
+  AltFormatSummary,
   BenchmarkAnchor,
   BenchmarksData,
   CatalogData,
@@ -10,9 +11,12 @@ import type {
   ModelSpec,
   QuantKey,
   RunEstimate,
+  RuntimeFormat,
+  SpeedTier,
   VramPageEntry,
 } from '../types/vram';
 import {
+  classifySpeedTier,
   estimateRun,
   formatContextLabel,
   formatTpsRange,
@@ -33,6 +37,10 @@ export interface HubPairRow {
   maxFitCtx: number;
   maxFitVramGb: number;
   maxFitStatus: CompatStatus;
+  maxFitTpsLow: number;
+  maxFitTpsHigh: number;
+  maxFitSpeedTier: SpeedTier;
+  altRow: AltFormatSummary;
   recQuant: QuantKey;
   isCurated: boolean;
   href: string;
@@ -63,6 +71,7 @@ export interface ModelHub {
   oomCount: number;
   fastestTps: number;
   fastestTpsText: string;
+  fastestRow?: HubPairRow;
   q4Row: RunEstimate;
   q8Row: RunEstimate;
   fp16Row: RunEstimate;
@@ -79,7 +88,7 @@ export function getCatalogUpdatedAt(): string {
 }
 
 export function getEngineVersion(): string {
-  return catalogData.engine_version ?? 'v3.1';
+  return catalogData.engine_version ?? 'v3.2';
 }
 
 export function getBenchmarksMethodologyNote(): string {
@@ -177,6 +186,22 @@ function buildPairLookup(allEntries: VramPageEntry[]): Map<string, VramPageEntry
   return map;
 }
 
+function computeAltRow(model: ModelSpec, hardware: HardwareSpec): AltFormatSummary {
+  const isMac = hardware.is_unified && hardware.vendor === 'Apple';
+  const quant: QuantKey = isMac ? 'MLX_4BIT' : 'AWQ_4BIT';
+  const format: RuntimeFormat = isMac ? 'MLX' : 'AWQ';
+  const altEst = estimateRun(model, hardware, quant, 8192, 'desktop', 'fp16', format);
+  return {
+    format,
+    quant,
+    total_vram_gb: altEst.total_vram_gb,
+    status: altEst.status,
+    est_tps_low: altEst.est_tps_low ?? 0,
+    est_tps_high: altEst.est_tps_high ?? 0,
+    speed_tier: altEst.speed_tier ?? classifySpeedTier(altEst.est_tps, altEst.status),
+  };
+}
+
 function makeHubRow(
   model: ModelSpec,
   hardware: HardwareSpec,
@@ -185,6 +210,13 @@ function makeHubRow(
   const curated = pairMap.get(`${model.id}::${hardware.id}`);
   if (curated) {
     const recRow = curated.quant_table.find((q) => q.recommended);
+    const fallbackMaxFit =
+      curated.max_fit_tps_low !== undefined &&
+      curated.max_fit_tps_high !== undefined &&
+      curated.max_fit_speed_tier !== undefined
+        ? null
+        : maxFitContextDetails(curated.model, curated.hardware, curated.default_quant, 'desktop');
+
     return {
       model: curated.model,
       hardware: curated.hardware,
@@ -192,6 +224,10 @@ function makeHubRow(
       maxFitCtx: curated.max_fit_context ?? curated.context_analysis.max_smooth_context_q4,
       maxFitVramGb: curated.max_fit_total_vram_gb ?? curated.default_result.total_vram_gb,
       maxFitStatus: curated.max_fit_status ?? curated.default_result.status,
+      maxFitTpsLow: curated.max_fit_tps_low ?? fallbackMaxFit?.estTpsLow ?? 0,
+      maxFitTpsHigh: curated.max_fit_tps_high ?? fallbackMaxFit?.estTpsHigh ?? 0,
+      maxFitSpeedTier: curated.max_fit_speed_tier ?? fallbackMaxFit?.speedTier ?? 'OOM',
+      altRow: curated.alt_format_summary ?? computeAltRow(curated.model, curated.hardware),
       recQuant: recRow?.quant ?? curated.default_quant,
       isCurated: true,
       href: `/can-i-run/${curated.slug}/`,
@@ -209,6 +245,10 @@ function makeHubRow(
     maxFitCtx: maxFit.contextTokens,
     maxFitVramGb: maxFit.totalVramGb,
     maxFitStatus: maxFit.status,
+    maxFitTpsLow: maxFit.estTpsLow,
+    maxFitTpsHigh: maxFit.estTpsHigh,
+    maxFitSpeedTier: maxFit.speedTier,
+    altRow: computeAltRow(model, hardware),
     recQuant: 'Q4_K_M',
     isCurated: false,
     href: `/calculator/?model=${encodeURIComponent(model.id)}&hw=${encodeURIComponent(hardware.id)}`,
@@ -368,6 +408,7 @@ export function buildModelHubs(allEntries: VramPageEntry[]): ModelHub[] {
       oomCount: oomRows.length,
       fastestTps,
       fastestTpsText,
+      fastestRow,
       q4Row,
       q8Row,
       fp16Row,
@@ -443,8 +484,12 @@ export function buildModelFaq(hub: ModelHub): FaqItem[] {
     {
       question: `Which GPU achieves the highest decode speed on ${m.short_name}?`,
       answer: fastest
-        ? `On ${fastest.hardware.name} (${fastest.hardware.bandwidth_gbps} GB/s), formula decode rate reaches ${fastestText} (${fastest.result.speed_tier}). Dual-GPU Layer Split scales memory capacity safely, while Tensor Parallel on PCIe incurs All-Reduce latency.`
+        ? `On ${fastest.hardware.name} (${fastest.hardware.bandwidth_gbps} GB/s), formula decode rate reaches ${fastestText} (${fastest.result.speed_tier}) at 8K context. Dual-GPU Layer Split scales memory capacity safely, while Tensor Parallel on PCIe incurs All-Reduce latency.`
         : `Higher memory-bandwidth cards reduce per-token decode time cleanly once all ${m.num_layers} layers fit in VRAM.`,
+    },
+    {
+      question: `Can I use these ${m.short_name} numbers for uncensored, abliterated, or Heretic versions?`,
+      answer: `Yes — uncensored / abliterated / Heretic weights preserve identical layer counts and GQA KV geometry as ${m.name}. Use the exact same ${hub.q4Row.total_vram_gb.toFixed(2)} GB (Q4_K_M GGUF) or ${hub.awqRow.total_vram_gb.toFixed(2)} GB (4-bit AWQ) memory budget and speed estimates above, with ~±3–5% headroom for imatrix quant builds.`,
     },
   ];
 }

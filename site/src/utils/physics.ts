@@ -14,12 +14,12 @@ import type {
 } from '../types/vram';
 
 /**
- * Deterministic LLM VRAM, Context, Offload, and Throughput Physics Engine (v3.1).
+ * Deterministic LLM VRAM, Context, Offload, and Throughput Physics Engine (v3.2).
  * Keep constants and formulas strictly synchronized with `scripts/physics.py`.
- * All token/s outputs are honest formula estimate ranges (~low–high tok/s), never raw telemetry.
+ * All token/s outputs are calibrated formula estimate ranges (~low–high tok/s), never raw telemetry.
  */
 
-export const ENGINE_VERSION = 'v3.1';
+export const ENGINE_VERSION = 'v3.2';
 
 export const QUANT_BPW: Record<QuantKey, number> = {
   Q4_K_M: 4.85,
@@ -372,23 +372,41 @@ export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
 
   const singleBw = hardware.bandwidth_gbps;
   const hasNvlink = Boolean(hardware.has_nvlink);
+  const kvLayers = model.kv_layers ?? totalLayers;
+  const isMoe = activeParamsB < model.params_b * 0.9;
+  const isHybrid = kvLayers < totalLayers;
+  const isLegacyGpu = ['t4', 'p40', 'gtx-10', 'rtx-20', 'v100'].some((tag) =>
+    hardware.id.includes(tag),
+  );
 
   let backendEff: number;
   if (fmt === 'AWQ') {
-    backendEff = hardware.id.includes('t4') ? 0.58 : 0.68;
+    backendEff = isLegacyGpu ? 0.48 : 0.66;
   } else if (fmt === 'MLX') {
-    backendEff = hardware.is_unified ? 0.76 : 0.72;
+    const sizeBonus = weightsGb >= 25.0 ? 0.08 : weightsGb >= 12.0 ? 0.03 : 0.0;
+    backendEff = hardware.is_unified ? 0.78 + sizeBonus : 0.72;
   } else if (hardware.backend === 'CUDA') {
-    backendEff = hardware.id.includes('t4') ? 0.62 : 0.72;
+    backendEff = isLegacyGpu ? 0.58 : 0.75;
   } else if (hardware.backend === 'Metal') {
-    backendEff = 0.72;
+    const sizeBonus = weightsGb >= 25.0 ? 0.05 : 0.0;
+    backendEff = 0.76 + sizeBonus;
   } else if (hardware.backend === 'ROCm') {
-    backendEff = 0.68;
+    backendEff = 0.70;
   } else if (hardware.backend === 'Vulkan') {
     backendEff = 0.62;
   } else {
-    backendEff = 0.58;
+    backendEff = 0.60;
   }
+
+  if (isMoe) {
+    backendEff *= 0.68;
+  }
+
+  let layerMs = fmt === 'AWQ' ? (isLegacyGpu ? 0.080 : 0.050) : fmt === 'MLX' ? 0.030 : 0.022;
+  if (isMoe) {
+    layerMs += 0.055;
+  }
+  const hybridMs = isHybrid ? (totalLayers - kvLayers) * (fmt === 'MLX' ? 0.110 : 0.015) : 0.0;
 
   let effectiveBw: number;
   let commLatencySec = 0.0;
@@ -412,7 +430,10 @@ export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
   }
 
   const cpuBw = cpu ? cpu.effective_bw_gbps : 55.0;
-  const activeKvGb = kvGb * 0.35;
+  const activeKvGb = kvGb * 0.85;
+  const ctxK = contextTokens / 1024.0;
+  const attnMs = contextTokens >= 8192 ? 0.00018 * kvLayers * Math.pow(ctxK, 1.35) : 0.0;
+  const overheadSec = (totalLayers * layerMs + hybridMs + attnMs) / 1000.0;
 
   let rawTps: number;
   let bottleneck: RigRunEstimate['bottleneck'];
@@ -429,7 +450,7 @@ export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
         ? (activeWeightsGb * (1.0 - gpuFraction) + activeKvGb * (1.0 - gpuFraction)) /
           Math.max(1.0, cpuBw * 0.6)
         : 0.0;
-    const totalTokSec = gpuTime + cpuTime + commLatencySec;
+    const totalTokSec = gpuTime + cpuTime + commLatencySec + overheadSec;
     rawTps = 1.0 / Math.max(0.002, totalTokSec);
 
     if (commLatencySec > 0 && totalTokSec > 0) {
@@ -536,22 +557,42 @@ export function maxFitContextDetails(
   quant: QuantKey = 'Q4_K_M',
   reserveProfile: ReserveProfile = 'desktop',
   kvQuant: KvQuantKey = 'fp16',
-): { contextTokens: number; totalVramGb: number; status: CompatStatus } {
+): {
+  contextTokens: number;
+  totalVramGb: number;
+  status: CompatStatus;
+  estTpsLow: number;
+  estTpsHigh: number;
+  speedTier: SpeedTier;
+} {
   const tiers = CONTEXT_LADDER.filter((t) => t <= model.max_context);
   let bestCtx = 0;
   let bestVram = 0;
   let bestStatus: CompatStatus = 'OOM';
+  let bestLow = 0;
+  let bestHigh = 0;
+  let bestTier: SpeedTier = 'OOM';
   for (const ctx of tiers) {
     const res = estimateRun(model, hardware, quant, ctx, reserveProfile, kvQuant);
     if (res.status === 'Fits' || res.status === 'Tight Fit') {
       bestCtx = ctx;
       bestVram = res.total_vram_gb;
       bestStatus = res.status;
+      bestLow = res.est_tps_low ?? 0;
+      bestHigh = res.est_tps_high ?? 0;
+      bestTier = res.speed_tier ?? classifySpeedTier(res.est_tps, res.status);
     } else {
       break;
     }
   }
-  return { contextTokens: bestCtx, totalVramGb: bestVram, status: bestStatus };
+  return {
+    contextTokens: bestCtx,
+    totalVramGb: bestVram,
+    status: bestStatus,
+    estTpsLow: bestLow,
+    estTpsHigh: bestHigh,
+    speedTier: bestTier,
+  };
 }
 
 export function maxSmoothContext(

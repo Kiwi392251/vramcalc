@@ -505,12 +505,12 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
   </div>
 
   <!-- Live Synced CLI Preview -->
-  <div class="mt-4 flex flex-col gap-2 rounded-xl bg-slate-950 px-4 py-3 text-slate-100 sm:flex-row sm:items-center sm:justify-between">
-    <div class="min-w-0">
+  <div class="mt-4 min-w-0 max-w-full flex flex-col gap-2 rounded-xl bg-slate-950 px-4 py-3 text-slate-100 sm:flex-row sm:items-center sm:justify-between">
+    <div class="min-w-0 max-w-full">
       <span id="calc-live-cmd-label" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400" data-i18n="detail.liveFlags">
         Live Flags for Selected Config
       </span>
-      <pre id="calc-live-cmd" class="mt-0.5 overflow-x-auto rounded font-mono text-xs text-emerald-300 transition-shadow">{initialLiveCmd}</pre>
+      <pre id="calc-live-cmd" class="mt-0.5 w-full max-w-full overflow-x-auto rounded font-mono text-xs text-emerald-300 transition-shadow">{initialLiveCmd}</pre>
     </div>
     <button
       type="button"
