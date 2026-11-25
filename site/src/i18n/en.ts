@@ -209,6 +209,14 @@ export const en = {
   'home.subAdditionalGpus':
     'Instant @8K + Max Fit calculations across all {hwTotal} catalog GPUs. Click any card for AWQ/MLX format toggles, reserve profiles, and multi-GPU splits.',
   'home.openRigSim': 'Open Full Rig in Simulator ->',
+  'home.modeBadgeRef': 'Reference Presets',
+  'home.modeHeadingRef': 'Popular Hardware References',
+  'home.modeHeadingRefDetail': 'Popular Hardware References · {detail}',
+  'home.modeSubRef':
+    'No hardware selected yet — cards below show preset Model × GPU examples. Pick your CPU or GPU above to switch to estimates for your own machine.',
+  'home.modeCtaSelectHw': 'Select My Hardware ↑',
+  'home.modeBadgeRig': 'Your Rig Estimate',
+  'home.modeHeadingRig': 'Your Rig Results: {rig}',
   'home.showingLive': 'Showing {shown} of {total} live estimates',
   'home.emptyTitle': 'No matching Model × Rig configurations',
   'home.emptyDesc': 'Try relaxing the status filter, adding GPU capacity, or launch the full Rig Simulator.',

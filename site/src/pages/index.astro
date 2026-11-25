@@ -384,7 +384,7 @@ const staticIndexSubArgs = JSON.stringify({
 
   <!-- Hardware Rig Configurator + Compatibility Matrix -->
   <section class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5">
+    <div id="rig-config-panel" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5">
       <!-- Row 1: CPU + RAM + GPU + QTY -->
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,0.75fr)_minmax(0,1.45fr)_116px] lg:items-end">
         <div>
@@ -599,8 +599,58 @@ const staticIndexSubArgs = JSON.stringify({
       </div>
     </div>
 
+    <!-- Dynamic Mode Header: Reference Presets vs. Selected Rig Results -->
+    <div
+      id="results-mode-banner"
+      class="mt-6 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50/90 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5 transition-colors"
+    >
+      <div class="min-w-0">
+        <div class="flex flex-wrap items-center gap-2">
+          <span
+            id="results-mode-badge"
+            data-i18n="home.modeBadgeRef"
+            class="inline-flex shrink-0 items-center rounded-full border border-slate-300 bg-white px-2.5 py-0.5 text-[11px] font-bold tracking-wide text-slate-700"
+          >
+            Reference Presets
+          </span>
+          <h2
+            id="results-mode-heading"
+            data-i18n="home.modeHeadingRef"
+            class="text-sm sm:text-base font-bold text-slate-950"
+          >
+            Popular Hardware References
+          </h2>
+        </div>
+        <p
+          id="results-mode-sub"
+          data-i18n="home.modeSubRef"
+          class="mt-1 text-xs leading-relaxed text-slate-600"
+        >
+          No hardware selected yet — cards below show preset Model × GPU examples. Pick your CPU or GPU above to switch to estimates for your own machine.
+        </p>
+      </div>
+      <div class="flex shrink-0 items-center gap-2">
+        <button
+          id="results-mode-select-btn"
+          type="button"
+          data-i18n="home.modeCtaSelectHw"
+          class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:text-blue-700 transition-colors cursor-pointer"
+        >
+          Select My Hardware ↑
+        </button>
+        <a
+          id="results-mode-sim-cta"
+          href="/calculator/"
+          data-i18n="home.openRigSim"
+          class="hidden items-center justify-center rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-colors"
+        >
+          Open Full Rig in Simulator -&gt;
+        </a>
+      </div>
+    </div>
+
     <!-- Curated Deep-Dive Cards Grid (SSR Progressive Window: first 24 visible, all 165 crawlable in DOM) -->
-    <div id="cards-grid" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div id="cards-grid" class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {entries.map((entry, idx) => {
         const res = entry.default_result;
         const usable =
@@ -871,7 +921,7 @@ const staticIndexSubArgs = JSON.stringify({
 
     <!-- Live Full-Catalog & Custom Rig Calculations -->
     <section id="live-calc-section" class="mt-6 hidden" aria-label="Live Catalog Estimates">
-      <div class="flex flex-col gap-3 rounded-2xl border border-blue-200 bg-blue-50/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div id="live-calc-header" class="flex flex-col gap-3 rounded-2xl border border-blue-200 bg-blue-50/60 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div class="flex flex-wrap items-center gap-2">
             <span
@@ -1405,6 +1455,7 @@ const staticIndexSubArgs = JSON.stringify({
     const showAllBtn = document.getElementById('show-all-btn');
 
     const liveSection = document.getElementById('live-calc-section');
+    const liveHeader = document.getElementById('live-calc-header');
     const liveBadge = document.getElementById('live-calc-badge');
     const liveHeading = document.getElementById('live-calc-heading');
     const liveSub = document.getElementById('live-calc-sub');
@@ -1413,6 +1464,14 @@ const staticIndexSubArgs = JSON.stringify({
     const livePagBar = document.getElementById('live-pagination-bar');
     const livePagSummary = document.getElementById('live-pagination-summary');
     const liveLoadMoreBtn = document.getElementById('live-load-more-btn');
+
+    const rigConfigPanel = document.getElementById('rig-config-panel');
+    const modeBanner = document.getElementById('results-mode-banner');
+    const modeBadge = document.getElementById('results-mode-badge');
+    const modeHeading = document.getElementById('results-mode-heading');
+    const modeSub = document.getElementById('results-mode-sub');
+    const modeSelectBtn = document.getElementById('results-mode-select-btn');
+    const modeSimCta = document.getElementById('results-mode-sim-cta') as HTMLAnchorElement | null;
 
     const catalogEl = document.getElementById('home-catalog-json');
     const catData: HomeCatalogPayload = catalogEl
@@ -2419,6 +2478,93 @@ const staticIndexSubArgs = JSON.stringify({
       };
     }
 
+    function updateResultsModeBanner(opts: {
+      isRig: boolean;
+      rigResult?: {
+        items: LiveItem[];
+        allFits: number;
+        allTight: number;
+        allPartial: number;
+        allOom: number;
+        rigTitle: string;
+        rigSimHref: string;
+      };
+    }) {
+      if (!modeBanner || !modeBadge || !modeHeading || !modeSub || !modeSelectBtn || !modeSimCta) return;
+
+      if (opts.isRig && opts.rigResult) {
+        const rig = opts.rigResult;
+        const guideCount = rig.items.filter((x) => Boolean(x.guideSlug)).length;
+
+        modeBadge.removeAttribute('data-i18n');
+        modeHeading.removeAttribute('data-i18n');
+        modeSub.removeAttribute('data-i18n');
+        modeSimCta.removeAttribute('data-i18n');
+
+        modeBanner.classList.remove('border-slate-200', 'bg-slate-50/90');
+        modeBanner.classList.add('border-blue-200', 'bg-blue-50/70');
+
+        modeBadge.classList.remove('border', 'border-slate-300', 'bg-white', 'text-slate-700');
+        modeBadge.classList.add('bg-blue-600', 'text-white');
+
+        modeBadge.textContent = t('home.modeBadgeRig');
+        modeHeading.textContent = t('home.modeHeadingRig', { rig: rig.rigTitle });
+        modeSub.textContent = t('home.subRigSummary', {
+          fits: rig.allFits,
+          tight: rig.allTight,
+          partial: rig.allPartial,
+          oom: rig.allOom,
+          guides: guideCount,
+        });
+
+        modeSelectBtn.classList.add('hidden');
+        modeSelectBtn.classList.remove('inline-flex');
+        modeSimCta.classList.remove('hidden');
+        modeSimCta.classList.add('inline-flex');
+        modeSimCta.href = rig.rigSimHref;
+        modeSimCta.textContent = t('home.openRigSim');
+        return;
+      }
+
+      modeBanner.classList.remove('border-blue-200', 'bg-blue-50/70');
+      modeBanner.classList.add('border-slate-200', 'bg-slate-50/90');
+
+      modeBadge.classList.remove('bg-blue-600', 'text-white');
+      modeBadge.classList.add('border', 'border-slate-300', 'bg-white', 'text-slate-700');
+
+      modeBadge.setAttribute('data-i18n', 'home.modeBadgeRef');
+      modeBadge.textContent = t('home.modeBadgeRef');
+
+      const detailParts: string[] = [];
+      if (selectedModel !== 'all') {
+        const m = modelById.get(selectedModel);
+        if (m) detailParts.push(m.short_name);
+      }
+      if (reserveProfile === 'clean') {
+        detailParts.push(t('reserve.clean'));
+      } else if (reserveProfile === 'custom' && customUsableGb !== null) {
+        detailParts.push(`${t('reserve.custom')} (${customUsableGb} GB)`);
+      }
+
+      if (detailParts.length > 0) {
+        modeHeading.removeAttribute('data-i18n');
+        modeHeading.textContent = t('home.modeHeadingRefDetail', { detail: detailParts.join(' · ') });
+      } else {
+        modeHeading.setAttribute('data-i18n', 'home.modeHeadingRef');
+        modeHeading.textContent = t('home.modeHeadingRef');
+      }
+
+      modeSub.setAttribute('data-i18n', 'home.modeSubRef');
+      modeSub.textContent = t('home.modeSubRef');
+
+      modeSelectBtn.classList.remove('hidden');
+      modeSelectBtn.classList.add('inline-flex');
+      modeSelectBtn.textContent = t('home.modeCtaSelectHw');
+
+      modeSimCta.classList.add('hidden');
+      modeSimCta.classList.remove('inline-flex');
+    }
+
     function renderLiveCards(
       items: LiveItem[],
       isRigMode: boolean,
@@ -2441,6 +2587,16 @@ const staticIndexSubArgs = JSON.stringify({
       }
 
       liveSection.classList.remove('hidden');
+
+      const showSubHeader = !isRigMode && reserveProfile === 'desktop';
+      if (liveHeader) {
+        liveHeader.classList.toggle('hidden', !showSubHeader);
+        liveHeader.classList.toggle('flex', showSubHeader);
+      }
+      liveSection.classList.toggle('mt-6', showSubHeader);
+      liveSection.classList.toggle('mt-4', !showSubHeader);
+      liveGrid.classList.toggle('mt-4', showSubHeader);
+      liveGrid.classList.toggle('mt-0', !showSubHeader);
 
       if (liveBadge && liveHeading && liveSub && liveSimCta) {
         if (isRigMode && bannerMeta) {
@@ -2632,6 +2788,7 @@ const staticIndexSubArgs = JSON.stringify({
         if (paginationBar) paginationBar.classList.add('hidden');
 
         const rigResult = computeRigLiveResults();
+        updateResultsModeBanner({ isRig: true, rigResult });
         renderLiveCards(rigResult.items, true, rigResult);
 
         if (countEl) {
@@ -2654,6 +2811,7 @@ const staticIndexSubArgs = JSON.stringify({
         if (cardsGrid) cardsGrid.classList.add('hidden');
         if (paginationBar) paginationBar.classList.add('hidden');
 
+        updateResultsModeBanner({ isRig: false });
         const reserveLiveItems = computeCuratedReserveLiveItems();
         renderLiveCards(reserveLiveItems, false);
 
@@ -2674,6 +2832,7 @@ const staticIndexSubArgs = JSON.stringify({
       }
 
       // Default SSR Curated Matrix View (no rig hardware configured)
+      updateResultsModeBanner({ isRig: false });
       const orderedCards = cardsGrid
         ? Array.from(cardsGrid.querySelectorAll('[data-card]'))
         : cards;
@@ -3045,6 +3204,26 @@ const staticIndexSubArgs = JSON.stringify({
       showAllBtn.addEventListener('click', () => {
         visibleLimit = totalCurated;
         applyFilters(false);
+      });
+    }
+
+    let hwHighlightTimer: number | null = null;
+    if (modeSelectBtn) {
+      modeSelectBtn.addEventListener('click', () => {
+        rigConfigPanel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const cpuInput = cpuRoot?.querySelector('input');
+        const gpuInput = gpuRoot?.querySelector('input');
+        const targets = [cpuInput, gpuInput].filter((el): el is HTMLInputElement => Boolean(el));
+        targets.forEach((el) => {
+          el.classList.add('ring-2', 'ring-blue-500/70', 'border-blue-500');
+        });
+        if (hwHighlightTimer !== null) window.clearTimeout(hwHighlightTimer);
+        hwHighlightTimer = window.setTimeout(() => {
+          targets.forEach((el) => {
+            el.classList.remove('ring-2', 'ring-blue-500/70', 'border-blue-500');
+          });
+          hwHighlightTimer = null;
+        }, 1400);
       });
     }
 
