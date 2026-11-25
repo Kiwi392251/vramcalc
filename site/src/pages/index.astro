@@ -76,9 +76,7 @@ const initialRemainingCount = Math.max(0, totalCount - initialVisibleCount);
 const initialProgressPct = totalCount > 0 ? Math.round((initialVisibleCount / totalCount) * 100) : 100;
 const initialProgressStyle = `width: ${initialProgressPct}%`;
 const paginationHiddenClass =
-  initialRemainingCount > 0
-    ? 'mt-7 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'
-    : 'hidden';
+  'mt-7 hidden rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between';
 const fitsCount = entries.filter((e) => e.default_result.status === 'Fits').length;
 const tightPartialCount = entries.filter(
   (e) => e.default_result.status === 'Tight Fit' || e.default_result.status === 'Partial Offload',
@@ -260,6 +258,9 @@ const initCountArgs = JSON.stringify({
   models: catalogModelCount,
   hw: catalogHwCount,
 });
+const awaitCountArgs = JSON.stringify({ models: catalogModelCount, hw: catalogHwCount });
+const awaitDescArgs = JSON.stringify({ models: catalogModelCount });
+const awaitPresetsArgs = JSON.stringify({ total: totalCount });
 const initViewArgs = JSON.stringify({ shown: initialVisibleCount, total: totalCount });
 const initLoadArgs = JSON.stringify({ chunk: Math.min(PAGE_SIZE, initialRemainingCount), left: initialRemainingCount });
 const modelHubsArgs = JSON.stringify({ count: uniqueHubModelCount });
@@ -584,8 +585,8 @@ const staticIndexSubArgs = JSON.stringify({
             </select>
           </div>
 
-          <span id="filter-count" class="font-mono tabular-nums" data-i18n="home.countInitial" data-i18n-args={initCountArgs}>
-            {initialVisibleCount} / {totalCount} guides · {catalogModelCount}×{catalogHwCount} static hubs
+          <span id="filter-count" class="font-mono tabular-nums" data-i18n="home.countAwaitHw" data-i18n-args={awaitCountArgs}>
+            Select hardware first · {catalogModelCount}×{catalogHwCount}
           </span>
           <button
             id="filter-reset"
@@ -599,10 +600,77 @@ const staticIndexSubArgs = JSON.stringify({
       </div>
     </div>
 
+    <!-- Awaiting Hardware State (Default when no CPU / RAM / GPU is selected) -->
+    <div
+      id="await-hardware-panel"
+      class="mt-6 rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-7 text-center shadow-xs sm:px-8 sm:py-9"
+    >
+      <div class="mx-auto max-w-2xl">
+        <span
+          data-i18n="home.awaitBadge"
+          class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold tracking-wide text-slate-700"
+        >
+          No Hardware Selected
+        </span>
+        <h2
+          data-i18n="home.awaitTitle"
+          class="mt-3 text-base font-bold tracking-tight text-slate-950 sm:text-lg"
+        >
+          Select your chip or GPU above to check VRAM fit
+        </h2>
+        <p
+          data-i18n="home.awaitDesc"
+          data-i18n-args={awaitDescArgs}
+          class="mt-2 text-xs leading-relaxed text-slate-600 sm:text-sm"
+        >
+          Until you pick a CPU/chip, RAM, or GPU above, no "Fits in VRAM" or speed verdict is shown. Choose any hardware to run live estimates across all {catalogModelCount} models.
+        </p>
+
+        <div
+          id="await-model-req"
+          class="mt-3 hidden rounded-xl border border-blue-200 bg-blue-50/70 px-3.5 py-2 text-xs font-medium text-blue-900"
+        ></div>
+
+        <div class="mt-5">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500" data-i18n="home.awaitQuickTry">
+            Or pick a common device to calculate right away:
+          </p>
+          <div class="mt-2.5 flex flex-wrap items-center justify-center gap-2">
+            <button type="button" data-quick-soc="apple-m4" data-quick-ram="16" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer">Apple M4 (16GB)</button>
+            <button type="button" data-quick-soc="apple-m4-pro" data-quick-ram="48" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer">Apple M4 Pro (48GB)</button>
+            <button type="button" data-quick-gpu="rtx-4070-12gb" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer">RTX 4070 (12GB)</button>
+            <button type="button" data-quick-gpu="rtx-4090-24gb" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer">RTX 4090 (24GB)</button>
+            <button type="button" data-quick-gpu="nvidia-a10-24gb" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer">NVIDIA A10 (24GB)</button>
+            <button type="button" data-quick-gpu="nvidia-t4-16gb" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer">NVIDIA T4 (16GB)</button>
+          </div>
+        </div>
+
+        <div class="mt-5 flex flex-wrap items-center justify-center gap-3 border-t border-slate-100 pt-4">
+          <button
+            id="await-select-hw-btn"
+            type="button"
+            data-i18n="home.modeCtaSelectHw"
+            class="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors cursor-pointer"
+          >
+            Select My Hardware ↑
+          </button>
+          <button
+            id="open-presets-btn"
+            type="button"
+            data-i18n="home.awaitBrowsePresets"
+            data-i18n-args={awaitPresetsArgs}
+            class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-600 hover:border-slate-300 hover:text-slate-900 transition-colors cursor-pointer"
+          >
+            Just browsing? View {totalCount} preset GPU reference pairings ↓
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Dynamic Mode Header: Reference Presets vs. Selected Rig Results -->
     <div
       id="results-mode-banner"
-      class="mt-6 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50/90 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5 transition-colors"
+      class="mt-6 hidden flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50/90 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5 transition-colors"
     >
       <div class="min-w-0">
         <div class="flex flex-wrap items-center gap-2">
@@ -629,7 +697,7 @@ const staticIndexSubArgs = JSON.stringify({
           No hardware selected yet — cards below show preset Model × GPU examples. Pick your CPU or GPU above to switch to estimates for your own machine.
         </p>
       </div>
-      <div class="flex shrink-0 items-center gap-2">
+      <div class="flex shrink-0 flex-wrap items-center gap-2">
         <button
           id="results-mode-select-btn"
           type="button"
@@ -637,6 +705,14 @@ const staticIndexSubArgs = JSON.stringify({
           class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:text-blue-700 transition-colors cursor-pointer"
         >
           Select My Hardware ↑
+        </button>
+        <button
+          id="results-mode-close-presets-btn"
+          type="button"
+          data-i18n="home.modeClosePresets"
+          class="hidden items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:border-slate-300 hover:text-slate-900 transition-colors cursor-pointer"
+        >
+          Hide References
         </button>
         <a
           id="results-mode-sim-cta"
@@ -649,8 +725,8 @@ const staticIndexSubArgs = JSON.stringify({
       </div>
     </div>
 
-    <!-- Curated Deep-Dive Cards Grid (SSR Progressive Window: first 24 visible, all 165 crawlable in DOM) -->
-    <div id="cards-grid" class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <!-- Curated Deep-Dive Cards Grid (SSR Progressive Window: opt-in presets hidden until user chooses hardware or opens presets) -->
+    <div id="cards-grid" class="mt-4 hidden gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {entries.map((entry, idx) => {
         const res = entry.default_result;
         const usable =
@@ -1466,11 +1542,18 @@ const staticIndexSubArgs = JSON.stringify({
     const liveLoadMoreBtn = document.getElementById('live-load-more-btn');
 
     const rigConfigPanel = document.getElementById('rig-config-panel');
+    const awaitPanel = document.getElementById('await-hardware-panel');
+    const awaitModelReq = document.getElementById('await-model-req');
+    const awaitSelectHwBtn = document.getElementById('await-select-hw-btn');
+    const openPresetsBtn = document.getElementById('open-presets-btn');
+    const quickSocBtns = Array.from(document.querySelectorAll('[data-quick-soc]'));
+    const quickGpuBtns = Array.from(document.querySelectorAll('[data-quick-gpu]'));
     const modeBanner = document.getElementById('results-mode-banner');
     const modeBadge = document.getElementById('results-mode-badge');
     const modeHeading = document.getElementById('results-mode-heading');
     const modeSub = document.getElementById('results-mode-sub');
     const modeSelectBtn = document.getElementById('results-mode-select-btn');
+    const modeClosePresetsBtn = document.getElementById('results-mode-close-presets-btn');
     const modeSimCta = document.getElementById('results-mode-sim-cta') as HTMLAnchorElement | null;
 
     const catalogEl = document.getElementById('home-catalog-json');
@@ -1506,6 +1589,7 @@ const staticIndexSubArgs = JSON.stringify({
     let visibleLimit = PAGE_SIZE;
     let liveVisibleLimit = PAGE_SIZE;
     let currentSort = 'featured';
+    let browsePresetsOpen = false;
 
     function updateReserveUi() {
       reserveBtns.forEach((b) => {
@@ -1977,6 +2061,7 @@ const staticIndexSubArgs = JSON.stringify({
       formatCustomActionLabel: (n) => t('home.customRamUse', { ram: n }),
       onChange: (val) => {
         selectedRamGb = val ? parseRamGb(val) : null;
+        if (!isRigConfigured()) browsePresetsOpen = false;
         updateContextBar();
         applyFilters(true);
       },
@@ -2036,12 +2121,15 @@ const staticIndexSubArgs = JSON.stringify({
       if (!val) {
         selectedCpuVal = '';
         if (wasUnified) {
-          ramCombo.setOptions(buildRamOptions(null), true);
+          selectedRamGb = null;
+          ramCombo.setOptions(buildRamOptions(null), false);
+          ramCombo.clear(true);
           gpuCombo.clear(true);
           selectedGpuVal = '';
           gpuCount = 1;
           syncGpuQtyControl();
         }
+        if (!isRigConfigured()) browsePresetsOpen = false;
         updateContextBar();
         applyFilters(true);
         return;
@@ -2093,6 +2181,7 @@ const staticIndexSubArgs = JSON.stringify({
       if (!preserveQty) {
         gpuCount = 1;
       }
+      if (!isRigConfigured()) browsePresetsOpen = false;
       syncGpuQtyControl();
       updateContextBar();
       applyFilters(true);
@@ -2478,6 +2567,12 @@ const staticIndexSubArgs = JSON.stringify({
       };
     }
 
+    function setGridVisible(el: Element | null, visible: boolean, displayClass: string) {
+      if (!el) return;
+      el.classList.toggle('hidden', !visible);
+      el.classList.toggle(displayClass, visible);
+    }
+
     function updateResultsModeBanner(opts: {
       isRig: boolean;
       rigResult?: {
@@ -2491,6 +2586,8 @@ const staticIndexSubArgs = JSON.stringify({
       };
     }) {
       if (!modeBanner || !modeBadge || !modeHeading || !modeSub || !modeSelectBtn || !modeSimCta) return;
+
+      setGridVisible(modeBanner, true, 'flex');
 
       if (opts.isRig && opts.rigResult) {
         const rig = opts.rigResult;
@@ -2517,10 +2614,9 @@ const staticIndexSubArgs = JSON.stringify({
           guides: guideCount,
         });
 
-        modeSelectBtn.classList.add('hidden');
-        modeSelectBtn.classList.remove('inline-flex');
-        modeSimCta.classList.remove('hidden');
-        modeSimCta.classList.add('inline-flex');
+        setGridVisible(modeSelectBtn, false, 'inline-flex');
+        setGridVisible(modeClosePresetsBtn, false, 'inline-flex');
+        setGridVisible(modeSimCta, true, 'inline-flex');
         modeSimCta.href = rig.rigSimHref;
         modeSimCta.textContent = t('home.openRigSim');
         return;
@@ -2557,12 +2653,13 @@ const staticIndexSubArgs = JSON.stringify({
       modeSub.setAttribute('data-i18n', 'home.modeSubRef');
       modeSub.textContent = t('home.modeSubRef');
 
-      modeSelectBtn.classList.remove('hidden');
-      modeSelectBtn.classList.add('inline-flex');
+      setGridVisible(modeSelectBtn, true, 'inline-flex');
       modeSelectBtn.textContent = t('home.modeCtaSelectHw');
-
-      modeSimCta.classList.add('hidden');
-      modeSimCta.classList.remove('inline-flex');
+      if (modeClosePresetsBtn) {
+        setGridVisible(modeClosePresetsBtn, true, 'inline-flex');
+        modeClosePresetsBtn.textContent = t('home.modeClosePresets');
+      }
+      setGridVisible(modeSimCta, false, 'inline-flex');
     }
 
     function renderLiveCards(
@@ -2783,15 +2880,18 @@ const staticIndexSubArgs = JSON.stringify({
       const rigActive = isRigConfigured();
 
       if (rigActive) {
-        // Unified live 22-model view for the configured CPU + RAM + GPU rig
-        if (cardsGrid) cardsGrid.classList.add('hidden');
-        if (paginationBar) paginationBar.classList.add('hidden');
+        // Unified live 23-model view for the configured CPU + RAM + GPU rig
+        if (awaitPanel) awaitPanel.classList.add('hidden');
+        setGridVisible(cardsGrid, false, 'grid');
+        setGridVisible(paginationBar, false, 'flex');
 
         const rigResult = computeRigLiveResults();
         updateResultsModeBanner({ isRig: true, rigResult });
         renderLiveCards(rigResult.items, true, rigResult);
 
         if (countEl) {
+          countEl.removeAttribute('data-i18n');
+          countEl.removeAttribute('data-i18n-args');
           countEl.textContent = t('home.countRig', { count: rigResult.items.length });
         }
         if (emptySimLink) {
@@ -2807,15 +2907,71 @@ const staticIndexSubArgs = JSON.stringify({
         return;
       }
 
+      if (!browsePresetsOpen) {
+        // Honest default: no hardware selected -> hide all preset verdict cards
+        if (awaitPanel) awaitPanel.classList.remove('hidden');
+        setGridVisible(modeBanner, false, 'flex');
+        setGridVisible(cardsGrid, false, 'grid');
+        setGridVisible(paginationBar, false, 'flex');
+        if (liveSection) liveSection.classList.add('hidden');
+        if (liveGrid) liveGrid.innerHTML = '';
+        if (livePagBar) livePagBar.classList.add('hidden');
+        if (emptyState) emptyState.classList.add('hidden');
+
+        if (awaitModelReq) {
+          const selModelObj = selectedModel !== 'all' ? modelById.get(selectedModel) : undefined;
+          if (selModelObj) {
+            const mReq = estimateRigRun({
+              model: selModelObj,
+              hardware: null,
+              quant: 'Q4_K_M',
+              format: 'GGUF',
+              contextTokens: 8192,
+            });
+            awaitModelReq.textContent = t('home.awaitModelReq', {
+              model: selModelObj.short_name,
+              gb: mReq.total_vram_gb.toFixed(1),
+            });
+            awaitModelReq.classList.remove('hidden');
+          } else {
+            awaitModelReq.classList.add('hidden');
+          }
+        }
+
+        if (countEl) {
+          countEl.setAttribute('data-i18n', 'home.countAwaitHw');
+          countEl.setAttribute(
+            'data-i18n-args',
+            JSON.stringify({ models: catData.models.length, hw: catData.hardware.length }),
+          );
+          countEl.textContent = t('home.countAwaitHw', {
+            models: catData.models.length,
+            hw: catData.hardware.length,
+          });
+        }
+
+        const hasFilterInAwait =
+          selectedModel !== 'all' ||
+          selectedStatus !== 'all' ||
+          reserveProfile !== 'desktop' ||
+          currentSort !== 'featured';
+        if (resetBtn) resetBtn.classList.toggle('hidden', !hasFilterInAwait);
+        syncUrl();
+        return;
+      }
+
       if (reserveProfile !== 'desktop') {
-        if (cardsGrid) cardsGrid.classList.add('hidden');
-        if (paginationBar) paginationBar.classList.add('hidden');
+        if (awaitPanel) awaitPanel.classList.add('hidden');
+        setGridVisible(cardsGrid, false, 'grid');
+        setGridVisible(paginationBar, false, 'flex');
 
         updateResultsModeBanner({ isRig: false });
         const reserveLiveItems = computeCuratedReserveLiveItems();
         renderLiveCards(reserveLiveItems, false);
 
         if (countEl) {
+          countEl.removeAttribute('data-i18n');
+          countEl.removeAttribute('data-i18n-args');
           countEl.textContent = t('home.countRig', { count: reserveLiveItems.length });
         }
         if (emptySimLink) {
@@ -2831,7 +2987,8 @@ const staticIndexSubArgs = JSON.stringify({
         return;
       }
 
-      // Default SSR Curated Matrix View (no rig hardware configured)
+      // Opt-in Preset Reference Matrix View (no rig hardware configured)
+      if (awaitPanel) awaitPanel.classList.add('hidden');
       updateResultsModeBanner({ isRig: false });
       const orderedCards = cardsGrid
         ? Array.from(cardsGrid.querySelectorAll('[data-card]'))
@@ -2863,6 +3020,8 @@ const staticIndexSubArgs = JSON.stringify({
         selectedModel !== 'all' || selectedStatus !== 'all' || currentSort !== 'featured';
 
       if (countEl) {
+        countEl.removeAttribute('data-i18n');
+        countEl.removeAttribute('data-i18n-args');
         if (!isFiltered) {
           countEl.textContent = t('home.countInitial', {
             shown: shownCount,
@@ -2883,9 +3042,7 @@ const staticIndexSubArgs = JSON.stringify({
         }
       }
 
-      if (paginationBar) {
-        paginationBar.classList.toggle('hidden', remaining === 0);
-      }
+      setGridVisible(paginationBar, remaining > 0, 'flex');
       if (paginationSummary) {
         paginationSummary.textContent = t('home.viewingGuides', {
           shown: shownCount,
@@ -2908,7 +3065,7 @@ const staticIndexSubArgs = JSON.stringify({
       if (resetBtn) resetBtn.classList.toggle('hidden', !isFiltered);
       if (emptySimLink) emptySimLink.href = '/calculator/';
       if (emptyState) emptyState.classList.toggle('hidden', anyMatched);
-      if (cardsGrid) cardsGrid.classList.toggle('hidden', matching.length === 0);
+      setGridVisible(cardsGrid, matching.length > 0, 'grid');
 
       syncUrl();
     }
@@ -3130,6 +3287,7 @@ const staticIndexSubArgs = JSON.stringify({
       customUsableGb = null;
       selectedModel = 'all';
       selectedStatus = 'all';
+      browsePresetsOpen = false;
       if (customGbInput) customGbInput.value = '';
 
       cpuCombo.clear(true);
@@ -3208,22 +3366,63 @@ const staticIndexSubArgs = JSON.stringify({
     }
 
     let hwHighlightTimer: number | null = null;
-    if (modeSelectBtn) {
-      modeSelectBtn.addEventListener('click', () => {
-        rigConfigPanel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        const cpuInput = cpuRoot?.querySelector('input');
-        const gpuInput = gpuRoot?.querySelector('input');
-        const targets = [cpuInput, gpuInput].filter((el): el is HTMLInputElement => Boolean(el));
+    function highlightHardwareInputs() {
+      rigConfigPanel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      const cpuInput = cpuRoot?.querySelector('input');
+      const gpuInput = gpuRoot?.querySelector('input');
+      const targets = [cpuInput, gpuInput].filter((el): el is HTMLInputElement => Boolean(el));
+      targets.forEach((el) => {
+        el.classList.add('ring-2', 'ring-blue-500/70', 'border-blue-500');
+      });
+      if (hwHighlightTimer !== null) window.clearTimeout(hwHighlightTimer);
+      hwHighlightTimer = window.setTimeout(() => {
         targets.forEach((el) => {
-          el.classList.add('ring-2', 'ring-blue-500/70', 'border-blue-500');
+          el.classList.remove('ring-2', 'ring-blue-500/70', 'border-blue-500');
         });
-        if (hwHighlightTimer !== null) window.clearTimeout(hwHighlightTimer);
-        hwHighlightTimer = window.setTimeout(() => {
-          targets.forEach((el) => {
-            el.classList.remove('ring-2', 'ring-blue-500/70', 'border-blue-500');
-          });
-          hwHighlightTimer = null;
-        }, 1400);
+        hwHighlightTimer = null;
+      }, 1400);
+    }
+
+    if (modeSelectBtn) {
+      modeSelectBtn.addEventListener('click', highlightHardwareInputs);
+    }
+    if (awaitSelectHwBtn) {
+      awaitSelectHwBtn.addEventListener('click', highlightHardwareInputs);
+    }
+
+    quickSocBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const socId = btn.getAttribute('data-quick-soc') || '';
+        const ramStr = btn.getAttribute('data-quick-ram') || '';
+        const soc = socById.get(socId);
+        if (soc) {
+          const ramNum = Number(ramStr);
+          activateUnifiedSoc(soc, Number.isFinite(ramNum) && ramNum > 0 ? ramNum : null);
+        }
+      });
+    });
+
+    quickGpuBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const gpuId = btn.getAttribute('data-quick-gpu') || '';
+        if (gpuId && hwById.has(gpuId)) {
+          gpuCombo.setValue(gpuId);
+          applyGpuSelection(gpuId, false);
+        }
+      });
+    });
+
+    if (openPresetsBtn) {
+      openPresetsBtn.addEventListener('click', () => {
+        browsePresetsOpen = true;
+        applyFilters(true);
+      });
+    }
+
+    if (modeClosePresetsBtn) {
+      modeClosePresetsBtn.addEventListener('click', () => {
+        browsePresetsOpen = false;
+        applyFilters(false);
       });
     }
 

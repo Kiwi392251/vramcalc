@@ -217,6 +217,16 @@ export const en = {
   'home.modeCtaSelectHw': 'Select My Hardware ↑',
   'home.modeBadgeRig': 'Your Rig Estimate',
   'home.modeHeadingRig': 'Your Rig Results: {rig}',
+  'home.countAwaitHw': 'Select hardware first · {models}×{hw}',
+  'home.awaitBadge': 'No Hardware Selected',
+  'home.awaitTitle': 'Select your chip or GPU above to check VRAM fit',
+  'home.awaitDesc':
+    'Until you pick a CPU/chip, RAM, or GPU above, no "Fits in VRAM" or speed verdict is shown. Choose any hardware to run live estimates across all {models} models.',
+  'home.awaitModelReq':
+    'Selected model: {model} requires ~{gb} GB (Q4_K_M @ 8K) — pick your hardware above to check fit.',
+  'home.awaitQuickTry': 'Or pick a common device to calculate right away:',
+  'home.awaitBrowsePresets': 'Just browsing? View {total} preset GPU reference pairings ↓',
+  'home.modeClosePresets': 'Hide References',
   'home.showingLive': 'Showing {shown} of {total} live estimates',
   'home.emptyTitle': 'No matching Model × Rig configurations',
   'home.emptyDesc': 'Try relaxing the status filter, adding GPU capacity, or launch the full Rig Simulator.',
