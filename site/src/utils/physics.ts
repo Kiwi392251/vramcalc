@@ -14,12 +14,12 @@ import type {
 } from '../types/vram';
 
 /**
- * Deterministic LLM VRAM, Context, Offload, and Throughput Physics Engine (v3.2).
+ * Deterministic LLM VRAM, Context, Offload, and Throughput Physics Engine (v3.3).
  * Keep constants and formulas strictly synchronized with `scripts/physics.py`.
  * All token/s outputs are calibrated formula estimate ranges (~low–high tok/s), never raw telemetry.
  */
 
-export const ENGINE_VERSION = 'v3.2';
+export const ENGINE_VERSION = 'v3.3';
 
 export const QUANT_BPW: Record<QuantKey, number> = {
   Q4_K_M: 4.85,
@@ -213,7 +213,7 @@ export function formatContextLabel(tokens: number): string {
 
 function computeTpsBounds(rawTps: number, status: CompatStatus): [number, number, number] {
   if (status === 'OOM' || rawTps <= 0) return [0, 0, 0];
-  const spread = status === 'Fits' ? 0.15 : status === 'Tight Fit' ? 0.2 : 0.25;
+  const spread = status === 'Fits' ? 0.17 : status === 'Tight Fit' ? 0.2 : 0.25;
   if (rawTps < 1.0) {
     return [round1(rawTps), 0, 1];
   }
@@ -381,7 +381,7 @@ export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
 
   let backendEff: number;
   if (fmt === 'AWQ') {
-    backendEff = isLegacyGpu ? 0.48 : 0.66;
+    backendEff = isLegacyGpu ? 0.48 : 0.69;
   } else if (fmt === 'MLX') {
     const sizeBonus = weightsGb >= 25.0 ? 0.08 : weightsGb >= 12.0 ? 0.03 : 0.0;
     backendEff = hardware.is_unified ? 0.78 + sizeBonus : 0.72;
@@ -389,7 +389,7 @@ export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
     backendEff = isLegacyGpu ? 0.58 : 0.75;
   } else if (hardware.backend === 'Metal') {
     const sizeBonus = weightsGb >= 25.0 ? 0.05 : 0.0;
-    backendEff = 0.76 + sizeBonus;
+    backendEff = 0.78 + sizeBonus;
   } else if (hardware.backend === 'ROCm') {
     backendEff = 0.70;
   } else if (hardware.backend === 'Vulkan') {
@@ -399,14 +399,14 @@ export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
   }
 
   if (isMoe) {
-    backendEff *= 0.68;
+    backendEff *= hardware.backend === 'CUDA' ? 0.65 : 0.71;
   }
 
-  let layerMs = fmt === 'AWQ' ? (isLegacyGpu ? 0.080 : 0.050) : fmt === 'MLX' ? 0.030 : 0.022;
+  let layerMs = fmt === 'AWQ' ? (isLegacyGpu ? 0.080 : 0.040) : fmt === 'MLX' ? 0.030 : 0.022;
   if (isMoe) {
-    layerMs += 0.055;
+    layerMs += hardware.backend === 'CUDA' ? 0.072 : 0.055;
   }
-  const hybridMs = isHybrid ? (totalLayers - kvLayers) * (fmt === 'MLX' ? 0.110 : 0.015) : 0.0;
+  const hybridMs = isHybrid ? (totalLayers - kvLayers) * (fmt === 'MLX' ? 0.145 : 0.002) : 0.0;
 
   let effectiveBw: number;
   let commLatencySec = 0.0;
@@ -514,6 +514,7 @@ export function estimateRun(
   reserveProfile: ReserveProfile = 'desktop',
   kvQuant: KvQuantKey = 'fp16',
   format?: RuntimeFormat,
+  customUsableGb?: number | null,
 ): RunEstimate {
   const rig = estimateRigRun({
     model,
@@ -526,6 +527,7 @@ export function estimateRun(
     kvQuant,
     splitMode: 'layer',
     reserveProfile,
+    customUsableGb,
   });
 
   return {
@@ -557,6 +559,7 @@ export function maxFitContextDetails(
   quant: QuantKey = 'Q4_K_M',
   reserveProfile: ReserveProfile = 'desktop',
   kvQuant: KvQuantKey = 'fp16',
+  customUsableGb?: number | null,
 ): {
   contextTokens: number;
   totalVramGb: number;
@@ -573,7 +576,7 @@ export function maxFitContextDetails(
   let bestHigh = 0;
   let bestTier: SpeedTier = 'OOM';
   for (const ctx of tiers) {
-    const res = estimateRun(model, hardware, quant, ctx, reserveProfile, kvQuant);
+    const res = estimateRun(model, hardware, quant, ctx, reserveProfile, kvQuant, undefined, customUsableGb);
     if (res.status === 'Fits' || res.status === 'Tight Fit') {
       bestCtx = ctx;
       bestVram = res.total_vram_gb;

@@ -12,6 +12,8 @@ import {
 } from '../../utils/physics';
 import {
   getBenchmarksMethodologyNote,
+  getFreshnessMeta,
+  getNearestReferenceAnchors,
   getReferenceBenchmarks,
   statusRank,
 } from '../../utils/hubs';
@@ -39,6 +41,21 @@ const tpsRangeText = formatTpsRange(res.est_tps_low, res.est_tps_high, res.est_t
 
 const refBenchmarks = getReferenceBenchmarks({ modelId: model.id, hardwareId: hardware.id });
 const refNote = getBenchmarksMethodologyNote();
+const slugLookup = new Map(allEntries.map((e) => [`${e.model.id}::${e.hardware.id}`, e.slug]));
+const nearestAnchors =
+  refBenchmarks.length === 0 ? getNearestReferenceAnchors(model.id, hardware, slugLookup) : [];
+
+const benchRepo =
+  hardware.is_unified && hardware.vendor === 'Apple' && model.mlx_repo
+    ? `mlx_lm.generate --model ${model.mlx_repo} --max-tokens 128`
+    : hardware.backend === 'CUDA' && model.awq_repo
+      ? `vllm bench latency --model ${model.awq_repo} --quantization awq --input-len 512 --output-len 128 --batch-size 1`
+      : `llama-bench -m ${model.id}-Q4_K_M.gguf -p 512 -n 128 -ngl ${commands.recommended_ngl} -fa 1`;
+const submitBenchIssueUrl = `https://github.com/Kiwi392251/vramcalc/issues/new?title=${encodeURIComponent(
+  `Benchmark: ${model.short_name} on ${hardware.short_name}`,
+)}&labels=benchmark&body=${encodeURIComponent(
+  `Hardware: ${hardware.name}\nModel: ${model.name}\nCommand: ${benchRepo}\nMeasured tok/s:\nDate:`,
+)}`;
 
 const entryBySlug = new Map(allEntries.map((e) => [e.slug, e]));
 const sameModelEntries = allEntries.filter(
@@ -375,31 +392,113 @@ const appSchema = {
         </div>
         <p class="mt-1 text-xs text-slate-600">{refNote}</p>
         <div class="mt-3 grid gap-3 sm:grid-cols-2">
-          {refBenchmarks.map((anc) => (
-            <div class="min-w-0 max-w-full rounded-xl border border-sky-200 bg-white p-3.5 text-xs">
-              <div class="flex flex-wrap items-center justify-between gap-2">
-                <span class="font-mono font-bold text-slate-950">
-                  {anc.format} · {anc.quant} @ {formatContextLabel(anc.context_tokens)} ({anc.backend})
-                </span>
-                <span class="font-mono font-bold text-emerald-700">
-                  {anc.gen_tps_low}–{anc.gen_tps_high} tok/s measured
-                </span>
+          {refBenchmarks.map((anc) => {
+            const fresh = getFreshnessMeta(anc.date);
+            return (
+              <div class="min-w-0 max-w-full rounded-xl border border-sky-200 bg-white p-3.5 text-xs">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <span class="font-mono font-bold text-slate-950">
+                    {anc.format} · {anc.quant} @ {formatContextLabel(anc.context_tokens)} ({anc.backend})
+                  </span>
+                  <span class="font-mono font-bold text-emerald-700">
+                    {anc.gen_tps_low}–{anc.gen_tps_high} tok/s measured
+                  </span>
+                </div>
+                <p class="mt-1 text-slate-600">{anc.notes}</p>
+                <div class="mt-1.5 flex flex-wrap items-center gap-1.5 font-mono text-[10px] text-slate-500">
+                  <span>{anc.date}</span>
+                  <span class={fresh.badgeClass} data-i18n={fresh.key}>{fresh.label}</span>
+                  <span>· {anc.prompt_spec} · {anc.runtime_version}</span>
+                </div>
+                <code class="mt-1.5 block w-full max-w-full overflow-x-auto rounded bg-slate-100 px-2 py-1 font-mono text-[10px] text-slate-700">
+                  {anc.repro_cmd}
+                </code>
+                <div class="mt-1.5 text-[11px] text-slate-500">
+                  <span data-i18n="speed.refSource">Source</span>:{' '}
+                  <a href={anc.source_url} target="_blank" rel="noopener noreferrer" class="underline hover:text-slate-900">
+                    {anc.source_label}
+                  </a>
+                </div>
               </div>
-              <p class="mt-1 text-slate-600">{anc.notes}</p>
-              <div class="mt-1.5 font-mono text-[10px] text-slate-500">
-                {anc.date} · {anc.prompt_spec} · {anc.runtime_version}
+            );
+          })}
+        </div>
+      </section>
+    )}
+
+    {refBenchmarks.length === 0 && (
+      <section class="mt-7 min-w-0 max-w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-xs" aria-labelledby="detail-nearest-anchors">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 id="detail-nearest-anchors" class="text-base font-bold text-slate-950" data-i18n="detail.nearestTitle">
+            Formula Only — Closest Verified Reference Anchors
+          </h2>
+          <span class="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[11px] font-medium text-slate-600" data-i18n="speed.formulaOnly">
+            Formula only (unverified)
+          </span>
+        </div>
+        <p class="mt-1 text-xs leading-relaxed text-slate-600" data-i18n="detail.nearestSub">
+          Zero measured single-stream run exists yet for this exact pairing. Use the neighboring verified hardware &amp; model runs below (with bandwidth ratio) or submit a real run:
+        </p>
+
+        {nearestAnchors.length > 0 && (
+          <div class="mt-3 grid gap-3 sm:grid-cols-2">
+            {nearestAnchors.map((item) => (
+              <div class="min-w-0 max-w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 text-xs">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <span class="rounded bg-white px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-700 border border-slate-200">
+                    {item.relation} · {item.bwRatioLabel}
+                  </span>
+                  <span class="font-mono font-bold text-emerald-700">
+                    {item.anchor.gen_tps_low}–{item.anchor.gen_tps_high} tok/s measured
+                  </span>
+                </div>
+                <div class="mt-2 font-bold text-slate-950">
+                  <a href={item.pairHref} class="hover:text-blue-600 transition-colors">
+                    {item.modelName} on {item.hardwareName}
+                  </a>
+                </div>
+                <div class="mt-0.5 flex flex-wrap items-center gap-1.5 font-mono text-[10px] text-slate-600">
+                  <span>{item.anchor.format} · {item.anchor.quant} @ {formatContextLabel(item.anchor.context_tokens)}</span>
+                  <span class={item.freshness.badgeClass} data-i18n={item.freshness.key}>{item.freshness.label}</span>
+                  <span>({item.anchor.date})</span>
+                </div>
+                <div class="mt-1.5 text-[11px] text-slate-500">
+                  <span data-i18n="speed.refSource">Source</span>:{' '}
+                  <a href={item.anchor.source_url} target="_blank" rel="noopener noreferrer" class="underline hover:text-slate-900">
+                    {item.anchor.source_label}
+                  </a>
+                </div>
               </div>
-              <code class="mt-1.5 block w-full max-w-full overflow-x-auto rounded bg-slate-100 px-2 py-1 font-mono text-[10px] text-slate-700">
-                {anc.repro_cmd}
-              </code>
-              <div class="mt-1.5 text-[11px] text-slate-500">
-                <span data-i18n="speed.refSource">Source</span>:{' '}
-                <a href={anc.source_url} target="_blank" rel="noopener noreferrer" class="underline hover:text-slate-900">
-                  {anc.source_label}
-                </a>
-              </div>
+            ))}
+          </div>
+        )}
+
+        <div class="mt-4 min-w-0 max-w-full rounded-xl border border-slate-800 bg-slate-950 p-4 text-slate-100">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="font-mono text-xs font-bold text-white" data-i18n="detail.submitRunTitle">
+              Run &amp; Submit a Real Benchmark for This Config
+            </span>
+            <div class="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                data-copy-target="detail-nearest-bench-cmd"
+                data-copy-label="Benchmark command"
+                class="inline-flex items-center gap-1 rounded-md border border-slate-700 bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-slate-200 hover:bg-slate-700 cursor-pointer transition-colors"
+              >
+                <span data-copy-text data-i18n="common.copy">Copy</span>
+              </button>
+              <a
+                href={submitBenchIssueUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center rounded-md bg-blue-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-blue-700 transition-colors"
+                data-i18n="detail.submitRunCta"
+              >
+                Submit Benchmark on GitHub -&gt;
+              </a>
             </div>
-          ))}
+          </div>
+          <pre id="detail-nearest-bench-cmd" class="mt-2 w-full max-w-full overflow-x-auto rounded-lg bg-slate-900 p-2.5 font-mono text-[11px] text-emerald-300">{benchRepo}</pre>
         </div>
       </section>
     )}

@@ -260,7 +260,7 @@ def generate_entry_copy(
         (
             "Tight margin (<5% usable): trim context to 4K or enable Q8_0 KV cache before loading large system prompts."
             if st == "Tight Fit"
-            else "Remember all tok/s numbers are Physics v3.2 formula estimate ranges (~±15–20%); pairs without a Verified Benchmark remain Formula only (unverified)."
+            else f"Remember all tok/s numbers are Physics {physics.ENGINE_VERSION} formula estimate ranges (~±17–25%); pairs without a Verified Benchmark remain Formula only (unverified)."
         ),
     ]
 
@@ -280,9 +280,9 @@ def generate_entry_copy(
         {
             "question": f"What token generation speed can I expect for {m['short_name']} on {h['short_name']}?",
             "answer": (
-                f"Physics v3.2 estimates {tps_range} ({tier}) for batch=1 decoding at 8K context"
+                f"Physics {physics.ENGINE_VERSION} estimates {tps_range} ({tier}) for batch=1 decoding at 8K context"
                 + (" — note that PCIe host-RAM transfers govern offloaded layers." if st == "Partial Offload" else f" (slowing to ~{max_fit_tps_range} at full {max_ctx_str} context).")
-                + " Treat this as a ±15–20% formula range unless backed by a Measured Community Benchmark."
+                + " Treat this as a ±17–20% formula range unless backed by a Measured Community Benchmark."
             ),
         },
         {
@@ -343,6 +343,8 @@ def _needs_copy_refresh(
         ]
     )
     if "Smooth" in blob or "smooth" in blob:
+        return True
+    if "Physics v3.2" in blob or "Physics v3.2" in " ".join(existing_entry.get("context_analysis", {}).get("optimization_tips", [])):
         return True
     if "Community Reference Anchors" in " ".join(existing_entry.get("context_analysis", {}).get("optimization_tips", [])):
         return True

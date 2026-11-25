@@ -32,7 +32,7 @@ ReserveProfile = Literal["desktop", "clean", "custom"]
 CompatStatus = Literal["Fits", "Tight Fit", "Partial Offload", "OOM"]
 SpeedTier = Literal["Fast", "Interactive", "Readable", "Slow", "OOM"]
 
-ENGINE_VERSION = "v3.2"
+ENGINE_VERSION = "v3.3"
 
 QUANT_SPECS: dict[QuantKey, dict[str, object]] = {
     "Q4_K_M": {"bpw": 4.85, "format": "GGUF", "label": "4.85 bpw · Balanced 4-bit GGUF"},
@@ -434,7 +434,7 @@ def estimate_rig_run(
             fits_rig = gpu_fraction >= 0.15 and spill_ram_gb <= available_ram_gb
             status = "Partial Offload" if fits_rig else "OOM"
 
-    # Throughput / Bandwidth calculation (Physics v3.2 calibrated model)
+    # Throughput / Bandwidth calculation (Physics v3.3 calibrated model)
     single_bw = float(hardware["bandwidth_gbps"])
     backend = hardware["backend"]
     hid = hardware["id"]
@@ -445,7 +445,7 @@ def estimate_rig_run(
     is_legacy_gpu = any(tag in hid for tag in ("t4", "p40", "gtx-10", "rtx-20", "v100"))
 
     if fmt == "AWQ":
-        backend_eff = 0.48 if is_legacy_gpu else 0.66
+        backend_eff = 0.48 if is_legacy_gpu else 0.69
     elif fmt == "MLX":
         size_bonus = 0.08 if weights_gb >= 25.0 else (0.03 if weights_gb >= 12.0 else 0.0)
         backend_eff = (0.78 + size_bonus) if hardware["is_unified"] else 0.72
@@ -453,7 +453,7 @@ def estimate_rig_run(
         backend_eff = 0.58 if is_legacy_gpu else 0.75
     elif backend == "Metal":
         size_bonus = 0.05 if weights_gb >= 25.0 else 0.0
-        backend_eff = 0.76 + size_bonus
+        backend_eff = 0.78 + size_bonus
     elif backend == "ROCm":
         backend_eff = 0.70
     elif backend == "Vulkan":
@@ -462,20 +462,20 @@ def estimate_rig_run(
         backend_eff = 0.60
 
     if is_moe:
-        backend_eff *= 0.68
+        backend_eff *= 0.65 if backend == "CUDA" else 0.71
 
     if fmt == "AWQ":
-        layer_ms = 0.080 if is_legacy_gpu else 0.050
+        layer_ms = 0.080 if is_legacy_gpu else 0.040
     elif fmt == "MLX":
         layer_ms = 0.030
     else:
         layer_ms = 0.022
     if is_moe:
-        layer_ms += 0.055
+        layer_ms += 0.072 if backend == "CUDA" else 0.055
 
     if is_hybrid:
         deltanet_layers = total_layers - kv_layers
-        hybrid_ms = deltanet_layers * (0.110 if fmt == "MLX" else 0.015)
+        hybrid_ms = deltanet_layers * (0.145 if fmt == "MLX" else 0.002)
     else:
         hybrid_ms = 0.0
 
@@ -573,7 +573,7 @@ def _compute_tps_bounds(raw_tps: float, status: CompatStatus) -> tuple[float, in
     if status == "OOM" or raw_tps <= 0.0:
         return 0.0, 0, 0
 
-    spread = 0.15 if status == "Fits" else (0.20 if status == "Tight Fit" else 0.25)
+    spread = 0.17 if status == "Fits" else (0.20 if status == "Tight Fit" else 0.25)
     if raw_tps < 1.0:
         return _r1(raw_tps), 0, 1
 

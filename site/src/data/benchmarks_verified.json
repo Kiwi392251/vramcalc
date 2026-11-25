@@ -1,6 +1,6 @@
 {
   "updated_at": "2026-11-24",
-  "methodology_note": "17 reproducible community & framework decode benchmarks (single-stream batch=1, specified prompt/decode lengths and dates) displayed side-by-side against Physics v3.2 calibrated formula ranges. Pairs without an anchor explicitly show 'Formula only (unverified)'.",
+  "methodology_note": "17 reproducible community & framework decode benchmarks (17 / 173 curated guides measured, 156 formula-only; single-stream batch=1, specified prompt/decode lengths and dates) displayed side-by-side against Physics v3.3 calibrated formula ranges. Older 2024–2025 snapshots remain clearly date-stamped until superseded by newer user submissions.",
   "anchors": [
     {
       "hardware_id": "apple-m4-16gb",
@@ -25,7 +25,7 @@
       "model_id": "qwen3-8b",
       "format": "GGUF",
       "quant": "Q4_K_M",
-      "context_tokens": 8192,
+      "context_tokens": 4096,
       "gen_tps_low": 15,
       "gen_tps_high": 19,
       "backend": "llama.cpp Metal Unified (-fa 1)",
@@ -36,7 +36,7 @@
       "verification_tier": "framework_thread",
       "source_label": "llama.cpp Apple Silicon Discussions #4167",
       "source_url": "https://github.com/ggml-org/llama.cpp/discussions/4167",
-      "notes": "Dense 8B Q4_K_M (~5.0 GB weights, ~6.6 GB total @ 8K) measures ~15–19 tok/s tg128 on base M4 16GB without swap thrashing."
+      "notes": "Dense 8B Q4_K_M (~5.0 GB weights, ~6.0 GB @ 4K short-prompt pp512/tg128 bench) measures ~15–19 tok/s on base M4 16GB without swap thrashing."
     },
     {
       "hardware_id": "apple-m4-pro-48gb",

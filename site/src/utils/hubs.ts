@@ -88,11 +88,97 @@ export function getCatalogUpdatedAt(): string {
 }
 
 export function getEngineVersion(): string {
-  return catalogData.engine_version ?? 'v3.2';
+  return catalogData.engine_version ?? 'v3.3';
 }
 
 export function getBenchmarksMethodologyNote(): string {
   return benchmarksData.methodology_note;
+}
+
+export interface FreshnessMeta {
+  key: 'home.measuredFresh2026' | 'home.measuredFresh2025' | 'home.measuredFreshLegacy';
+  label: string;
+  badgeClass: string;
+}
+
+export function getFreshnessMeta(dateStr: string): FreshnessMeta {
+  if (dateStr.startsWith('2026')) {
+    return {
+      key: 'home.measuredFresh2026',
+      label: '2026 run',
+      badgeClass:
+        'inline-block rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-800',
+    };
+  }
+  if (dateStr.startsWith('2025')) {
+    return {
+      key: 'home.measuredFresh2025',
+      label: '2025 baseline',
+      badgeClass:
+        'inline-block rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-slate-600',
+    };
+  }
+  return {
+    key: 'home.measuredFreshLegacy',
+    label: 'Legacy 2024',
+    badgeClass:
+      'inline-block rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-amber-800',
+  };
+}
+
+export interface NearestAnchorView {
+  relation: 'Same Hardware' | 'Same Model';
+  anchor: BenchmarkAnchor;
+  modelName: string;
+  hardwareName: string;
+  bandwidthGbps: number;
+  bwRatioLabel: string;
+  pairHref: string;
+  freshness: FreshnessMeta;
+}
+
+export function getNearestReferenceAnchors(
+  modelId: string,
+  targetHardware: HardwareSpec,
+  slugLookup: Map<string, string>,
+): NearestAnchorView[] {
+  const modelsById = new Map(catalogData.models.map((m) => [m.id, m]));
+  const hwById = new Map(catalogData.hardware.map((h) => [h.id, h]));
+  const sameHw = getReferenceBenchmarks({ hardwareId: targetHardware.id }).slice(0, 2);
+  const sameModel = getReferenceBenchmarks({ modelId }).slice(0, 2);
+
+  const out: NearestAnchorView[] = [];
+  const seen = new Set<string>();
+  const addAnchor = (relation: 'Same Hardware' | 'Same Model', anc: BenchmarkAnchor) => {
+    const key = `${anc.model_id}::${anc.hardware_id}`;
+    if (seen.has(key) || (anc.model_id === modelId && anc.hardware_id === targetHardware.id)) {
+      return;
+    }
+    seen.add(key);
+    const m = modelsById.get(anc.model_id);
+    const h = hwById.get(anc.hardware_id);
+    if (!m || !h) return;
+    const ratio = targetHardware.bandwidth_gbps / Math.max(1, h.bandwidth_gbps);
+    const bwRatioLabel =
+      h.id === targetHardware.id
+        ? `1.00× same bus (${targetHardware.bandwidth_gbps} GB/s)`
+        : `${ratio.toFixed(2)}× BW (${targetHardware.bandwidth_gbps} / ${h.bandwidth_gbps} GB/s)`;
+    const slug = slugLookup.get(key);
+    out.push({
+      relation,
+      anchor: anc,
+      modelName: m.name,
+      hardwareName: h.name,
+      bandwidthGbps: h.bandwidth_gbps,
+      bwRatioLabel,
+      pairHref: slug ? `/can-i-run/${slug}/` : `/gpu/${h.id}/`,
+      freshness: getFreshnessMeta(anc.date),
+    });
+  };
+
+  for (const a of sameHw) addAnchor('Same Hardware', a);
+  for (const a of sameModel) addAnchor('Same Model', a);
+  return out;
 }
 
 export function getReferenceBenchmarks(filters: {

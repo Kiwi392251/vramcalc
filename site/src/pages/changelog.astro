@@ -1,0 +1,274 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import rawCatalog from '../data/catalog_data.json';
+import rawBenchmarks from '../data/benchmarks_verified.json';
+import rawPagesData from '../data/pages_data.json';
+import type { BenchmarksData, CatalogData, VramPageEntry } from '../types/vram';
+
+const catalog = rawCatalog as CatalogData;
+const benchmarks = rawBenchmarks as BenchmarksData;
+const entries = rawPagesData as VramPageEntry[];
+
+const updatedAt = catalog.updated_at ?? '2026-11-24';
+const engineVersion = catalog.engine_version ?? 'v3.3';
+const modelCount = catalog.models.length;
+const hwCount = catalog.hardware.length;
+const guideCount = entries.length;
+const anchorCount = benchmarks.anchors.length;
+
+const canonicalUrl = 'https://vramcalc.me/changelog/';
+const pageTitle = `Changelog (v1.0 → ${engineVersion}) — VRAMCalc.me`;
+const pageDesc =
+  'Version-by-version engineering changelog covering Physics engine formula coefficients, verified benchmark additions, OS memory reserve modeling, and catalog updates.';
+
+const webPageSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: `VRAMCalc.me Changelog (${engineVersion})`,
+  url: canonicalUrl,
+  dateModified: updatedAt,
+  description: pageDesc,
+};
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://vramcalc.me/' },
+    { '@type': 'ListItem', position: 2, name: 'Changelog', item: canonicalUrl },
+  ],
+};
+
+interface ReleaseEntry {
+  version: string;
+  date: string;
+  badge: string;
+  badgeClass: string;
+  headline: string;
+  summary: string;
+  formulaChanges: string[];
+  uiAndDataChanges: string[];
+  links: Array<{ label: string; href: string }>;
+}
+
+const releases: ReleaseEntry[] = [
+  {
+    version: 'v3.3',
+    date: '2026-11-24',
+    badge: 'Current',
+    badgeClass: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+    headline: '17/17 Full Range Containment, Homepage Reserve / Custom GB Override & Nearest Anchors',
+    summary:
+      'Refined CUDA AWQ, CUDA MoE, Apple Metal GGUF, and Hybrid DeltaNet decode efficiency coefficients so all 17 verified community anchors fall completely within predicted ranges (<= 8.7% max midpoint error, 0 misses). Made 17/173 coverage and benchmark dates transparent rather than fabricating unverified runs.',
+    formulaChanges: [
+      'Aligned apple-m4-16gb × qwen3-8b pp512/tg128 reference evaluation context to 4096 tokens (~640 active KV tokens) instead of oversizing KV reads as an 8K run.',
+      'Recalibrated non-legacy CUDA AWQ Marlin efficiency (0.66 -> 0.69) and per-layer kernel overhead (0.050 -> 0.040 ms/layer), improving Qwen3.8-27B × RTX 4090 AWQ (30–44 tok/s vs 34–43 measured).',
+      'Refined CUDA MoE router efficiency (0.68 -> 0.65) and expert dispatch penalty (+0.055 -> +0.072 ms/layer), aligning Qwen3-30B-A3B × RTX 4090 (89–127 tok/s vs 90–127 measured; 0.5% midpoint delta).',
+      'Tuned Metal GGUF base efficiency (0.76 -> 0.78), MLX Hybrid DeltaNet penalty (0.110 -> 0.145 ms/layer), and Fits uncertainty band (±15% -> ±17%, within the documented ±17–25% formula band).',
+    ],
+    uiAndDataChanges: [
+      'Added this dedicated static /changelog/ route linked from the navbar, footer, hero badge, and methodology section.',
+      'Exposed Daily Desktop / Clean OS / Custom GB reserve selector directly inside the homepage configurator card for live custom VRAM ceilings (e.g. from nvidia-smi or Activity Monitor) and rewrote methodology copy across all 7 languages.',
+      'Added explicit coverage badge (17 / 173 guides measured · 156 formula-only), signed Δ Mid column, age/freshness tags (2026 run / 2025 baseline / Legacy 2024), and a Submit Real Run link in #measured-benchmarks.',
+      'Added a Closest Verified Reference Anchors + copyable bench command + GitHub Submit Run panel on every unverified /can-i-run/ guide page (e.g., showing Gemma 3 27B A10 and Qwen3.8-27B RTX 4090 AWQ with 600/1008 bandwidth ratio on A10 × Qwen3.8-27B).',
+    ],
+    links: [
+      { label: 'View Measured Benchmarks ->', href: '/#measured-benchmarks' },
+      { label: 'Test Custom GB Reserve ->', href: '/calculator/' },
+    ],
+  },
+  {
+    version: 'v3.2',
+    date: '2026-11-24',
+    badge: 'Calibration & Honesty',
+    badgeClass: 'border-sky-200 bg-sky-50 text-sky-800',
+    headline: 'Reproducible Benchmark Specs, Inline AWQ/MLX, @Max Fit Speed Drops & MoE Anchors',
+    summary:
+      'Addressed initial audit findings on unverified A10 × Qwen3.8-27B claims, Turing/AWQ overestimation, mixed 8K vs 128K speed numbers, missing MoE telemetry, and uncensored fine-tune compatibility.',
+    formulaChanges: [
+      'Added legacy GPU efficiency/overhead branch for T4 / P40 / GTX 10 / RTX 20 / V100 (AWQ 0.48 efficiency, 0.080 ms/layer; CUDA GGUF 0.58), bringing Llama-3.1 8B × T4 AWQ to 0.0% error.',
+      'Added active KV read overhead (0.85 × kv_gb) and long-context attention scaling (0.00018 × kv_layers × (ctx/1024)^1.35 ms) inside max_fit_context_full() and maxFitContextDetails().',
+      'Applied MoE router/expert scaling factors matching 3 new Qwen3-30B-A3B anchors (RTX 4090, M4 Max, M4 Pro).',
+    ],
+    uiAndDataChanges: [
+      'Tagged every unverified card and guide as "Formula only (unverified)" while keeping Green "Measured" badges strictly limited to entries backed by benchmarks_verified.json.',
+      'Promoted inline AWQ 4-bit / MLX 4-bit VRAM + speeds and @Max Fit slowdown telemetry onto homepage cards, #static-compatibility-index, /gpu/[hardware]/, and /model/[model]/ tables.',
+      'Documented 1:1 drop-in Uncensored / Abliterated / Heretic compatibility across methodology, FAQs, and combobox search aliases; fixed mobile <pre> grid overflow on /can-i-run/ pages.',
+    ],
+    links: [{ label: 'Explore A10 × Qwen3.8-27B ->', href: '/can-i-run/qwen3.8-27b-on-nvidia-a10-24gb/' }],
+  },
+  {
+    version: 'v3.1',
+    date: '2026-11-24',
+    badge: 'Hybrid Models',
+    badgeClass: 'border-indigo-200 bg-indigo-50 text-indigo-800',
+    headline: 'Added Qwen3.8-27B (48 DeltaNet + 16 GQA), On-Page Measured Table & Zero-JS Matrix',
+    summary:
+      'Expanded catalog coverage to 23 models × 103 hardware (303 static routes) with exact hybrid KV-layer accounting.',
+    formulaChanges: [
+      'Introduced optional model.kv_layers field so Qwen3.8-27B charges FP16 KV cache only on its 16 GQA attention layers (+0.25 GB / 4K tokens) while charging DeltaNet scratchpad overhead cleanly.',
+    ],
+    uiAndDataChanges: [
+      'Exposed 14 verified anchors directly in #measured-benchmarks on / and added full 23-Model Hub and 103-GPU Hub directories plus all 173 static rows directly on the homepage.',
+    ],
+    links: [{ label: 'Browse Qwen3.8-27B Hub ->', href: '/model/qwen3.8-27b/' }],
+  },
+  {
+    version: 'v3.0',
+    date: '2026-11-24',
+    badge: 'Architecture Overhaul',
+    badgeClass: 'border-blue-200 bg-blue-50 text-blue-800',
+    headline: 'Replaced "Smooth" & 0.1 Decimal Fake Precision; Added Qwen3, Gemma 3, T4/L4/A10, AWQ & MLX',
+    summary:
+      'Complete physics & UX overhaul decoupling Fit status from Speed tier, eliminating false single-decimal speeds, and exposing full 1-hop static hubs.',
+    formulaChanges: [
+      'Replaced "Smooth" with separate Fit Status (Fits / Tight Fit <5% or <1GB / Partial Offload / OOM) and Speed Tiers (Fast >=25, Interactive 12–24, Readable 6–11, Slow <6 tok/s).',
+      'Added multi-format bpw/overhead profiles for AWQ / FP8 (vLLM) and MLX 4/8-bit (mlx-lm), capacity-tiered OS reserve profiles (Desktop / Clean / Custom GB), and 2×num_layers PCIe All-Reduce sync latency penalty on Tensor Parallel.',
+    ],
+    uiAndDataChanges: [
+      'Added Qwen3 (4B/8B/14B/30B-A3B/32B), Gemma 3 (4B/12B/27B), and Data Center / Edge GPUs (T4, L4, A10, A10G, M4 16GB, RTX 5090, H200).',
+      'Paired every @8K VRAM readout with Max Fit context + max VRAM usage and launched benchmarks_verified.json (initial 12 community anchors).',
+    ],
+    links: [{ label: 'Browse All 103 GPUs ->', href: '/gpu/' }],
+  },
+  {
+    version: 'v2.0',
+    date: '2026-11-23',
+    badge: 'Multilingual & Multi-GPU',
+    badgeClass: 'border-slate-200 bg-slate-100 text-slate-700',
+    headline: 'CPU + RAM + 1x–8x GPU Rig Configurator & 7-Language Localization',
+    summary:
+      'Replaced single-GPU filters with composable CPU, System RAM, Discrete GPU / Unified SoC, and GPU count (1x–8x) selection plus client localization in EN, zh-CN, zh-TW, JA, ES, FR, and KO.',
+    formulaChanges: [
+      'Added DDR4/DDR5/EPYC host-RAM channel bandwidth offload modeling (-ngl layer partial offload and CPU-only -ngl 0 simulation).',
+    ],
+    uiAndDataChanges: [
+      'Launched /calculator/ Universal Rig Simulator and 7-locale auto-detection with top-right manual language switcher.',
+    ],
+    links: [{ label: 'Open Rig Simulator ->', href: '/calculator/' }],
+  },
+  {
+    version: 'v1.0',
+    date: '2026-11-22',
+    badge: 'Initial Release',
+    badgeClass: 'border-slate-200 bg-slate-100 text-slate-700',
+    headline: 'Initial GGUF Memory & Bandwidth Estimator Matrix',
+    summary:
+      'Launched static Astro matrix covering 12 core open LLMs and 43 GPUs/Macs with GGUF Q4_K_M/Q8_0/FP16 VRAM calculators.',
+    formulaChanges: ['Initial GGUF quantization bpw + GQA KV formula synchronized between scripts/physics.py and src/utils/physics.ts.'],
+    uiAndDataChanges: ['Built initial /can-i-run/ SEO guide generator and dark/light dual-theme OG card pipeline.'],
+    links: [{ label: 'Back to Matrix ->', href: '/' }],
+  },
+];
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={pageDesc}
+  canonicalPath="/changelog/"
+  totalPages={guideCount}
+  ogTitle={pageTitle}
+  ogDescription={pageDesc}
+  ogImage="/og/changelog.png"
+  ogImageAlt={pageTitle}
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(webPageSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  </Fragment>
+
+  <article class="mx-auto min-w-0 w-full max-w-4xl px-4 py-10 sm:px-6">
+    <nav aria-label="Breadcrumb" class="mb-4">
+      <ol class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-500">
+        <li>
+          <a href="/" class="hover:text-slate-900 transition-colors" data-i18n="common.home">Home</a>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li class="font-semibold text-slate-900" data-i18n="nav.changelog">Changelog</li>
+      </ol>
+    </nav>
+
+    <header class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8">
+      <div class="flex flex-wrap items-center gap-2 text-xs">
+        <span class="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 font-mono font-semibold text-emerald-800">
+          Physics {engineVersion}
+        </span>
+        <span class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-mono text-slate-600" data-i18n="common.updated" data-i18n-args={JSON.stringify({ date: updatedAt })}>
+          Updated {updatedAt}
+        </span>
+        <span class="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 font-mono font-semibold text-sky-800">
+          {anchorCount} / {guideCount} measured · {modelCount}×{hwCount} hubs
+        </span>
+      </div>
+
+      <h1 class="mt-4 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl" data-i18n="changelog.title">
+        VRAMCalc.me Engineering &amp; Physics Engine Changelog
+      </h1>
+      <p class="mt-2.5 text-sm leading-relaxed text-slate-600 sm:text-base" data-i18n="changelog.sub">
+        Version-by-version history of Physics v1.0 → {engineVersion} formula coefficients, catalog expansions, verified benchmark additions, and honesty audits.
+      </p>
+    </header>
+
+    <div class="mt-8 space-y-6">
+      {releases.map((rel) => (
+        <section class="min-w-0 max-w-full rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
+            <div class="flex flex-wrap items-center gap-2.5">
+              <span class="font-mono text-lg font-extrabold text-slate-950">{rel.version}</span>
+              <span class={`rounded-full border px-2.5 py-0.5 font-mono text-[11px] font-semibold ${rel.badgeClass}`}>
+                {rel.badge}
+              </span>
+            </div>
+            <time datetime={rel.date} class="font-mono text-xs text-slate-500">
+              {rel.date}
+            </time>
+          </div>
+
+          <h2 class="mt-4 text-base font-bold text-slate-950 sm:text-lg">{rel.headline}</h2>
+          <p class="mt-1.5 text-sm leading-relaxed text-slate-600">{rel.summary}</p>
+
+          <div class="mt-4 grid gap-4 md:grid-cols-2">
+            <div class="min-w-0 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+              <h3 class="font-mono text-xs font-bold uppercase tracking-wider text-slate-700">
+                Physics &amp; Formula Diffs
+              </h3>
+              <ul class="mt-2 space-y-1.5 text-xs leading-relaxed text-slate-700">
+                {rel.formulaChanges.map((item) => (
+                  <li class="flex items-start gap-2">
+                    <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600" aria-hidden="true"></span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div class="min-w-0 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+              <h3 class="font-mono text-xs font-bold uppercase tracking-wider text-slate-700">
+                Data, UI &amp; Audit Updates
+              </h3>
+              <ul class="mt-2 space-y-1.5 text-xs leading-relaxed text-slate-700">
+                {rel.uiAndDataChanges.map((item) => (
+                  <li class="flex items-start gap-2">
+                    <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-600" aria-hidden="true"></span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-4 flex flex-wrap gap-3">
+            {rel.links.map((lnk) => (
+              <a
+                href={lnk.href}
+                class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors"
+              >
+                {lnk.label}
+              </a>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  </article>
+</BaseLayout>

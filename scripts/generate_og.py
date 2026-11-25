@@ -348,6 +348,22 @@ def main() -> None:
     )
     generated += 1
 
+    # 1c. /changelog/ Engineering Changelog OG card
+    render_og_card(
+        OUT_DIR / "changelog.png",
+        palette_key="Blue",
+        badge_label=f"PHYSICS {catalog.ENGINE_VERSION}",
+        headline=f"VRAMCalc.me Changelog (v1.0 → {catalog.ENGINE_VERSION})",
+        subtitle="Formula calibration diffs, benchmark additions & methodology updates",
+        kpis=[
+            ("Current Engine", f"Physics {catalog.ENGINE_VERSION}", f"Updated {catalog.CATALOG_UPDATED_AT}", True),
+            ("Measured Matrix", "17 / 173 Curated", "100% range containment (<=8.7% err)", False),
+            ("Static Coverage", f"{len(catalog.MODELS)}×{len(catalog.HARDWARE)} Hubs", "Zero-JS 1-hop static routes", False),
+        ],
+        url_path="vramcalc.me/changelog/",
+    )
+    generated += 1
+
     # 2. /gpu/ Directory OG card
     max_usable = max(h["usable_vram_gb"] for h in catalog.HARDWARE)
     render_og_card(

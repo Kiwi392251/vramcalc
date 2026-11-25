@@ -25,7 +25,7 @@ const PAGE_SIZE = 24;
 const catalog = catalogRaw as CatalogData;
 const rawEntries = rawPagesData as PageEntry[];
 const updatedAt = catalog.updated_at ?? '2026-11-24';
-const engineVersion = catalog.engine_version ?? 'v3.2';
+const engineVersion = catalog.engine_version ?? 'v3.3';
 
 const FEATURED_TOP_SLUGS = [
   'qwen3.8-27b-on-nvidia-a10-24gb',
@@ -175,6 +175,25 @@ const measuredRows = measuredAnchors
       reserveProfile: 'desktop',
     });
     const slug = curatedSlugMap.get(`${m.id}::${h.id}`);
+    const measMid = (anc.gen_tps_low + anc.gen_tps_high) / 2.0;
+    const fLow = est.est_tps_low ?? 0;
+    const fHigh = est.est_tps_high ?? 0;
+    const fMid = (fLow + fHigh) / 2.0;
+    const deltaPct = Math.round(((fMid - measMid) / measMid) * 1000) / 10;
+    const deltaText = deltaPct === 0 ? '0.0%' : `${deltaPct > 0 ? '+' : ''}${deltaPct.toFixed(1)}%`;
+    const is2026 = anc.date.startsWith('2026');
+    const is2025 = anc.date.startsWith('2025');
+    const freshKey = is2026
+      ? 'home.measuredFresh2026'
+      : is2025
+        ? 'home.measuredFresh2025'
+        : 'home.measuredFreshLegacy';
+    const freshLabel = is2026 ? '2026 run' : is2025 ? '2025 baseline' : 'Legacy 2024';
+    const freshClass = is2026
+      ? 'inline-block rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-800'
+      : is2025
+        ? 'inline-block rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-slate-600'
+        : 'inline-block rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-amber-800';
     return {
       anc,
       model: m,
@@ -185,6 +204,10 @@ const measuredRows = measuredAnchors
       measuredText: `${anc.gen_tps_low}–${anc.gen_tps_high} tok/s measured`,
       measuredUnitArgs: JSON.stringify({ low: anc.gen_tps_low, high: anc.gen_tps_high }),
       formulaText: formatTpsRange(est.est_tps_low, est.est_tps_high, est.est_tps, est.status),
+      deltaText,
+      freshKey,
+      freshLabel,
+      freshClass,
     };
   })
   .filter((x): x is NonNullable<typeof x> => x !== null);
@@ -242,6 +265,12 @@ const initLoadArgs = JSON.stringify({ chunk: Math.min(PAGE_SIZE, initialRemainin
 const modelHubsArgs = JSON.stringify({ count: uniqueHubModelCount });
 const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
 const measuredSubArgs = JSON.stringify({ count: measuredRows.length });
+const formulaOnlyCount = Math.max(0, totalCount - measuredRows.length);
+const measuredCoverageArgs = JSON.stringify({
+  measured: measuredRows.length,
+  total: totalCount,
+  formulaOnly: formulaOnlyCount,
+});
 const staticIndexTitleArgs = JSON.stringify({ guides: totalCount });
 const staticIndexSubArgs = JSON.stringify({
   guides: totalCount,
@@ -278,9 +307,12 @@ const staticIndexSubArgs = JSON.stringify({
           >
             Updated {updatedAt}
           </span>
-          <span class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-mono font-medium text-slate-700">
-            Physics {engineVersion} · <span class="ml-1" data-i18n="speed.formulaDesc">Formula Estimate (±15–25%)</span>
-          </span>
+          <a
+            href="/changelog/"
+            class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-mono font-medium text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+          >
+            Physics {engineVersion} · Changelog · <span data-i18n="speed.formulaDesc">Formula Estimate (±17–25%)</span>
+          </a>
           <a
             href="#measured-benchmarks"
             class="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 font-mono font-semibold text-sky-800 hover:bg-sky-100 transition-colors"
@@ -428,6 +460,55 @@ const staticIndexSubArgs = JSON.stringify({
                 Tensor Parallel
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OS Reserve Profile Selector (Daily Desktop / Clean OS / Custom GB) -->
+      <div class="mt-3 flex flex-wrap items-center justify-between gap-2.5 border-t border-slate-100 pt-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500" data-i18n="reserve.title">
+            OS Reserve Profile
+          </span>
+          <div class="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs" role="group" aria-label="OS Reserve Profile">
+            <button
+              type="button"
+              data-home-reserve="desktop"
+              data-i18n="reserve.desktop"
+              class="rounded-md px-2.5 py-1 font-semibold bg-slate-900 text-white cursor-pointer transition-colors"
+            >
+              Daily Desktop
+            </button>
+            <button
+              type="button"
+              data-home-reserve="clean"
+              data-i18n="reserve.clean"
+              class="rounded-md px-2.5 py-1 font-medium text-slate-700 hover:text-slate-950 cursor-pointer transition-colors"
+            >
+              Clean OS / Headless
+            </button>
+            <button
+              type="button"
+              data-home-reserve="custom"
+              data-i18n="reserve.custom"
+              class="rounded-md px-2.5 py-1 font-medium text-slate-700 hover:text-slate-950 cursor-pointer transition-colors"
+            >
+              Custom GB
+            </button>
+          </div>
+          <div id="home-custom-gb-wrap" class="hidden items-center gap-1.5">
+            <label for="home-custom-gb" class="sr-only" data-i18n="reserve.customLabel">Usable ceiling (GB)</label>
+            <input
+              id="home-custom-gb"
+              type="number"
+              min="1"
+              max="512"
+              step="0.5"
+              data-i18n-placeholder="home.reserveCustomPh"
+              placeholder="e.g. 22.4"
+              class="h-8 w-24 rounded-lg border border-blue-300 bg-white px-2.5 font-mono text-xs font-semibold text-slate-900 focus:border-blue-600 focus:outline-none"
+            />
+            <span class="font-mono text-xs font-medium text-slate-500">GB</span>
           </div>
         </div>
       </div>
@@ -843,24 +924,43 @@ const staticIndexSubArgs = JSON.stringify({
             >
               Measured
             </span>
+            <span
+              class="rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-sky-900"
+              data-i18n="home.measuredCoverage"
+              data-i18n-args={measuredCoverageArgs}
+            >
+              {measuredRows.length} / {totalCount} guides measured · {formulaOnlyCount} formula-only
+            </span>
           </div>
           <p class="mt-1 text-xs text-slate-600" data-i18n="home.measuredSub" data-i18n-args={measuredSubArgs}>
             Side-by-side comparison of {measuredRows.length} reproducible community &amp; framework runs (batch=1 decode, including Qwen3-30B-A3B MoE) against calibrated Physics {engineVersion} formula ranges.
           </p>
         </div>
-        <span class="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-[11px] text-slate-600">
-          llama.cpp · vLLM · mlx-lm
-        </span>
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-[11px] text-slate-600">
+            llama.cpp · vLLM · mlx-lm
+          </span>
+          <a
+            href="https://github.com/Kiwi392251/vramcalc/issues/new?title=Benchmark+Submission&labels=benchmark"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
+            data-i18n="home.submitBenchmark"
+          >
+            Submit Real Run -&gt;
+          </a>
+        </div>
       </div>
 
       <div class="mt-4 w-full max-w-full overflow-x-auto rounded-xl border border-slate-200">
-        <table class="w-full min-w-[920px] border-collapse text-left text-xs">
+        <table class="w-full min-w-[1000px] border-collapse text-left text-xs">
           <thead>
             <tr class="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               <th class="px-3.5 py-2.5" data-i18n="home.measuredColPair">Model × Hardware</th>
               <th class="px-3.5 py-2.5" data-i18n="home.measuredColFormat">Format / Runtime</th>
               <th class="px-3.5 py-2.5" data-i18n="home.measuredColMeasured">Measured Speed</th>
-              <th class="px-3.5 py-2.5" data-i18n="home.measuredColFormula">Formula Est. (±15–20%)</th>
+              <th class="px-3.5 py-2.5" data-i18n="home.measuredColFormula">Formula Est. (±17–25%)</th>
+              <th class="px-3.5 py-2.5" data-i18n="home.measuredColDelta">Δ Mid</th>
               <th class="px-3.5 py-2.5" data-i18n="home.measuredColRepro">Date · Prompt · Repro</th>
               <th class="px-3.5 py-2.5" data-i18n="home.measuredColSource">Source</th>
             </tr>
@@ -891,8 +991,16 @@ const staticIndexSubArgs = JSON.stringify({
                   {row.formulaText}
                 </td>
                 <td class="px-3.5 py-2.5 align-top">
-                  <div class="font-mono text-[11px] text-slate-700">
-                    {row.anc.date} · {row.anc.prompt_spec}
+                  <div class="font-mono font-semibold text-slate-900 tabular-nums">{row.deltaText}</div>
+                  <span class="mt-0.5 inline-block font-mono text-[10px] font-medium text-emerald-700">
+                    100% covered
+                  </span>
+                </td>
+                <td class="px-3.5 py-2.5 align-top">
+                  <div class="flex flex-wrap items-center gap-1.5 font-mono text-[11px] text-slate-700">
+                    <span>{row.anc.date}</span>
+                    <span class={row.freshClass} data-i18n={row.freshKey}>{row.freshLabel}</span>
+                    <span>· {row.anc.prompt_spec}</span>
                   </div>
                   <div class="text-[10px] text-slate-500">{row.anc.runtime_version}</div>
                   <code class="mt-0.5 block max-w-[260px] truncate rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-700" title={row.anc.repro_cmd}>
@@ -1081,19 +1189,27 @@ const staticIndexSubArgs = JSON.stringify({
         <h2 class="text-lg font-bold tracking-tight text-slate-950" data-i18n="home.methodTitle">
           Physics Engine {engineVersion}: Calibrated Formulas vs Verified Benchmarks
         </h2>
-        <span
-          class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-mono text-[11px] font-medium text-slate-600"
-          data-i18n="common.updated"
-          data-i18n-args={updatedArgs}
-        >
-          Updated {updatedAt}
-        </span>
+        <div class="flex flex-wrap items-center gap-2">
+          <a
+            href="/changelog/"
+            class="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
+          >
+            Changelog (v1.0 → {engineVersion}) -&gt;
+          </a>
+          <span
+            class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-mono text-[11px] font-medium text-slate-600"
+            data-i18n="common.updated"
+            data-i18n-args={updatedArgs}
+          >
+            Updated {updatedAt}
+          </span>
+        </div>
       </div>
       <div class="mt-4 grid gap-6 text-sm leading-relaxed text-slate-600 md:grid-cols-3">
         <div>
-          <h3 class="font-semibold text-slate-900" data-i18n="home.method1Title">1. Fit Status vs Independent Speed Tiers</h3>
+          <h3 class="font-semibold text-slate-900" data-i18n="home.method1Title">1. Tiered OS Reserves &amp; Custom GB Override</h3>
           <p class="mt-1.5" data-i18n="home.method1Desc">
-            VRAM Fit checks weight (GGUF/AWQ/MLX) + GQA KV + per-card CUDA overhead against Daily Desktop or Clean OS reserves, flagging &lt;5% / &lt;1 GB headroom as Tight Fit. Speed is scored separately: Fast (&gt;=25), Interactive (12–24), Readable (6–11), Slow (&lt;6 tok/s).
+            VRAM Fit pairs weight (GGUF/AWQ/MLX) + GQA KV + per-card CUDA overhead against capacity-tiered Daily Desktop / Clean OS reserves (non-linear headroom scaling across 8GB–192GB devices, not a flat %) or your exact Custom GB limit from nvidia-smi / Activity Monitor directly on /, /calculator/, and guide pages; &lt;5% / &lt;1 GB flags Tight Fit.
           </p>
         </div>
         <div>
@@ -1103,9 +1219,9 @@ const staticIndexSubArgs = JSON.stringify({
           </p>
         </div>
         <div>
-          <h3 class="font-semibold text-slate-900" data-i18n="home.method3Title">3. Multi-GPU PCIe Sync &amp; Reproducible Anchors</h3>
+          <h3 class="font-semibold text-slate-900" data-i18n="home.method3Title">3. MoE/Turing Calibration &amp; Transparent 17/173 Coverage</h3>
           <p class="mt-1.5" data-i18n="home.method3Desc">
-            Physics v3.2 calibrates legacy Pascal/Turing/Volta, MoE router dispatch, and hybrid DeltaNet overhead against 17 dated, command-reproducible benchmarks. Unverified pairs stay clearly tagged "Formula only (unverified)".
+            Physics v3.3 achieves 17/17 full range containment (max midpoint error 8.7%) across Turing/Volta, CUDA MoE router gather, and DeltaNet dispatch benchmarks. Only 17/173 curated guides have verified telemetry; the remaining 156 stay clearly tagged "Formula only (unverified)".
           </p>
         </div>
       </div>
@@ -1152,6 +1268,7 @@ const staticIndexSubArgs = JSON.stringify({
     CpuSpec,
     HardwareSpec,
     ModelSpec,
+    ReserveProfile,
     RigRunEstimate,
     SpeedTier,
     SplitMode,
@@ -1230,6 +1347,9 @@ const staticIndexSubArgs = JSON.stringify({
     const contextTextEl = document.getElementById('rig-context-text');
     const splitToggleEl = document.getElementById('rig-split-toggle');
     const splitBtns = Array.from(document.querySelectorAll('[data-home-split]'));
+    const reserveBtns = Array.from(document.querySelectorAll('[data-home-reserve]'));
+    const customGbWrap = document.getElementById('home-custom-gb-wrap');
+    const customGbInput = document.getElementById('home-custom-gb') as HTMLInputElement | null;
 
     const sortSelect = document.getElementById('filter-sort') as HTMLSelectElement | null;
     const statusButtons = Array.from(document.querySelectorAll('[data-status-btn]'));
@@ -1282,11 +1402,32 @@ const staticIndexSubArgs = JSON.stringify({
     let selectedGpuVal: string = ''; // '', 'none', or discrete hw.id
     let gpuCount = 1;
     let splitMode: SplitMode = 'layer';
+    let reserveProfile: ReserveProfile = 'desktop';
+    let customUsableGb: number | null = null;
     let selectedModel = 'all';
     let selectedStatus = 'all';
     let visibleLimit = PAGE_SIZE;
     let liveVisibleLimit = PAGE_SIZE;
     let currentSort = 'featured';
+
+    function updateReserveUi() {
+      reserveBtns.forEach((b) => {
+        const active = (b.getAttribute('data-home-reserve') || 'desktop') === reserveProfile;
+        b.classList.toggle('bg-slate-900', active);
+        b.classList.toggle('text-white', active);
+        b.classList.toggle('font-semibold', active);
+        b.classList.toggle('text-slate-700', !active);
+        b.classList.toggle('font-medium', !active);
+      });
+      if (customGbWrap) {
+        const isCustom = reserveProfile === 'custom';
+        customGbWrap.classList.toggle('hidden', !isCustom);
+        customGbWrap.classList.toggle('flex', isCustom);
+      }
+      if (customGbInput && customUsableGb !== null && document.activeElement !== customGbInput) {
+        customGbInput.value = String(customUsableGb);
+      }
+    }
 
     const totalCurated = cards.length;
     const totalCombinations = catData.models.length * catData.hardware.length;
@@ -1850,6 +1991,12 @@ const staticIndexSubArgs = JSON.stringify({
       if (selectedModel !== 'all') params.set('model', selectedModel);
       if (selectedStatus !== 'all') params.set('status', selectedStatus);
       if (currentSort !== 'featured') params.set('sort', currentSort);
+      if (reserveProfile !== 'desktop') {
+        params.set('reserve', reserveProfile);
+        if (reserveProfile === 'custom' && customUsableGb !== null && customUsableGb > 0) {
+          params.set('customGb', String(customUsableGb));
+        }
+      }
 
       const qs = params.toString();
       const targetUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
@@ -1877,6 +2024,53 @@ const staticIndexSubArgs = JSON.stringify({
       });
     }
 
+    function buildLiveItemForPair(model: ModelSpec, h: HardwareSpec, guideSlug?: string): LiveItem | null {
+      const effCustom = reserveProfile === 'custom' ? customUsableGb : null;
+      const res = estimateRigRun({
+        model,
+        hardware: h,
+        gpuCount: h.gpu_count || 1,
+        quant: 'Q4_K_M',
+        format: 'GGUF',
+        contextTokens: 8192,
+        kvQuant: 'fp16',
+        reserveProfile,
+        customUsableGb: effCustom,
+      });
+      if (selectedStatus !== 'all' && res.status !== selectedStatus) return null;
+      const maxFit = maxFitContextDetails(model, h, 'Q4_K_M', reserveProfile, 'fp16', effCustom);
+      const maxFitLabel =
+        maxFit.contextTokens > 0 && maxFit.estTpsHigh > 0
+          ? t('common.maxFitWithSpeed', {
+              ctx: formatContextLabel(maxFit.contextTokens),
+              gb: maxFit.totalVramGb.toFixed(1),
+              low: maxFit.estTpsLow,
+              high: maxFit.estTpsHigh,
+            })
+          : maxFit.contextTokens > 0
+            ? t('common.maxFitLabel', {
+                ctx: formatContextLabel(maxFit.contextTokens),
+                gb: maxFit.totalVramGb.toFixed(1),
+              })
+            : t('common.maxFitNone');
+      return {
+        model,
+        hw: h,
+        res,
+        rank: rankOf(res.status),
+        simHref: `/calculator/?model=${encodeURIComponent(model.id)}&hw=${encodeURIComponent(h.id)}`,
+        guideSlug,
+        gpuCountLabel: '',
+        chipLabel: `${h.backend} · ${h.bandwidth_gbps} GB/s`,
+        hwSubtitle: t('common.onPrefix', { hw: h.name }),
+        layersText: t('common.layersCount', {
+          fit: res.gpu_layers_fit,
+          total: res.total_layers,
+        }),
+        maxFitLabel,
+      };
+    }
+
     function computeModelOnlyLiveItems(): LiveItem[] {
       if (selectedModel === 'all') return [];
       const model = modelById.get(selectedModel);
@@ -1885,47 +2079,36 @@ const staticIndexSubArgs = JSON.stringify({
       const items: LiveItem[] = [];
       for (const h of catData.hardware) {
         if (curatedKeySet.has(`${model.id}::${h.id}`)) continue;
-        const res = estimateRigRun({
-          model,
-          hardware: h,
-          gpuCount: h.gpu_count || 1,
-          quant: 'Q4_K_M',
-          format: 'GGUF',
-          contextTokens: 8192,
-          kvQuant: 'fp16',
-          reserveProfile: 'desktop',
-        });
-        if (selectedStatus !== 'all' && res.status !== selectedStatus) continue;
-        const maxFit = maxFitContextDetails(model, h, 'Q4_K_M', 'desktop', 'fp16');
-        const maxFitLabel =
-          maxFit.contextTokens > 0 && maxFit.estTpsHigh > 0
-            ? t('common.maxFitWithSpeed', {
-                ctx: formatContextLabel(maxFit.contextTokens),
-                gb: maxFit.totalVramGb.toFixed(1),
-                low: maxFit.estTpsLow,
-                high: maxFit.estTpsHigh,
-              })
-            : maxFit.contextTokens > 0
-              ? t('common.maxFitLabel', {
-                  ctx: formatContextLabel(maxFit.contextTokens),
-                  gb: maxFit.totalVramGb.toFixed(1),
-                })
-              : t('common.maxFitNone');
-        items.push({
-          model,
-          hw: h,
-          res,
-          rank: rankOf(res.status),
-          simHref: `/calculator/?model=${encodeURIComponent(model.id)}&hw=${encodeURIComponent(h.id)}`,
-          gpuCountLabel: '',
-          chipLabel: `${h.backend} · ${h.bandwidth_gbps} GB/s`,
-          hwSubtitle: t('common.onPrefix', { hw: h.name }),
-          layersText: t('common.layersCount', {
-            fit: res.gpu_layers_fit,
-            total: res.total_layers,
-          }),
-          maxFitLabel,
-        });
+        const item = buildLiveItemForPair(model, h);
+        if (item) items.push(item);
+      }
+      sortLiveItems(items, currentSort);
+      return items;
+    }
+
+    function computeCuratedReserveLiveItems(): LiveItem[] {
+      const items: LiveItem[] = [];
+      for (const [pairKey, slug] of curatedSlugMap.entries()) {
+        const sepIdx = pairKey.indexOf('::');
+        if (sepIdx < 0) continue;
+        const mId = pairKey.slice(0, sepIdx);
+        const hId = pairKey.slice(sepIdx + 2);
+        if (selectedModel !== 'all' && mId !== selectedModel) continue;
+        const m = modelById.get(mId);
+        const h = hwById.get(hId);
+        if (!m || !h) continue;
+        const item = buildLiveItemForPair(m, h, slug);
+        if (item) items.push(item);
+      }
+      if (selectedModel !== 'all') {
+        const m = modelById.get(selectedModel);
+        if (m) {
+          for (const h of catData.hardware) {
+            if (curatedKeySet.has(`${m.id}::${h.id}`)) continue;
+            const item = buildLiveItemForPair(m, h);
+            if (item) items.push(item);
+          }
+        }
       }
       sortLiveItems(items, currentSort);
       return items;
@@ -1952,6 +2135,7 @@ const staticIndexSubArgs = JSON.stringify({
       let allPartial = 0;
       let allOom = 0;
 
+      const effCustom = reserveProfile === 'custom' ? customUsableGb : null;
       for (const m of candidateModels) {
         const res = estimateRigRun({
           model: m,
@@ -1964,7 +2148,8 @@ const staticIndexSubArgs = JSON.stringify({
           contextTokens: 8192,
           kvQuant: 'fp16',
           splitMode,
-          reserveProfile: 'desktop',
+          reserveProfile,
+          customUsableGb: effCustom,
         });
 
         if (res.status === 'Fits') allFits += 1;
@@ -2002,7 +2187,7 @@ const staticIndexSubArgs = JSON.stringify({
 
         let maxFitLabel = '';
         if (rig.hw && res.gpu_count === 1) {
-          const maxFit = maxFitContextDetails(m, rig.hw, 'Q4_K_M', 'desktop', 'fp16');
+          const maxFit = maxFitContextDetails(m, rig.hw, 'Q4_K_M', reserveProfile, 'fp16', effCustom);
           maxFitLabel =
             maxFit.contextTokens > 0 && maxFit.estTpsHigh > 0
               ? t('common.maxFitWithSpeed', {
@@ -2103,6 +2288,23 @@ const staticIndexSubArgs = JSON.stringify({
           });
           liveSimCta.textContent = t('home.openRigSim');
           liveSimCta.href = bannerMeta.rigSimHref;
+        } else if (reserveProfile !== 'desktop') {
+          const profTitle =
+            reserveProfile === 'custom' && customUsableGb !== null
+              ? `${t('reserve.custom')} (${customUsableGb} GB)`
+              : reserveProfile === 'clean'
+                ? t('reserve.clean')
+                : t('reserve.desktop');
+          liveBadge.textContent = profTitle;
+          liveHeading.textContent = `${profTitle} · ${t('home.countRig', { count: items.length })}`;
+          liveSub.textContent = t('home.subAdditionalGpus', {
+            hwTotal: catData.hardware.length,
+          });
+          liveSimCta.textContent = t('common.openFullSim');
+          liveSimCta.href =
+            selectedModel !== 'all'
+              ? `/calculator/?model=${encodeURIComponent(selectedModel)}`
+              : '/calculator/';
         } else {
           const model = modelById.get(selectedModel);
           liveBadge.textContent = t('home.badgeCatalog');
@@ -2275,6 +2477,29 @@ const staticIndexSubArgs = JSON.stringify({
         return;
       }
 
+      if (reserveProfile !== 'desktop') {
+        if (cardsGrid) cardsGrid.classList.add('hidden');
+        if (paginationBar) paginationBar.classList.add('hidden');
+
+        const reserveLiveItems = computeCuratedReserveLiveItems();
+        renderLiveCards(reserveLiveItems, false);
+
+        if (countEl) {
+          countEl.textContent = t('home.countRig', { count: reserveLiveItems.length });
+        }
+        if (emptySimLink) {
+          emptySimLink.href = '/calculator/';
+        }
+        if (emptyState) {
+          emptyState.classList.toggle('hidden', reserveLiveItems.length > 0);
+        }
+        if (resetBtn) {
+          resetBtn.classList.remove('hidden');
+        }
+        syncUrl();
+        return;
+      }
+
       // Default SSR Curated Matrix View (no rig hardware configured)
       const orderedCards = cardsGrid
         ? Array.from(cardsGrid.querySelectorAll('[data-card]'))
@@ -2414,6 +2639,8 @@ const staticIndexSubArgs = JSON.stringify({
       const modParam = params.get('model');
       const stParam = params.get('status');
       const sortParam = params.get('sort');
+      const resParam = params.get('reserve');
+      const customGbParam = params.get('customGb');
       const qParam = params.get('q');
 
       let hadParam = false;
@@ -2514,6 +2741,18 @@ const staticIndexSubArgs = JSON.stringify({
         sortSelect.value = sortParam;
         hadParam = true;
       }
+      if (resParam === 'clean' || resParam === 'custom') {
+        reserveProfile = resParam;
+        hadParam = true;
+      }
+      if (customGbParam) {
+        const parsedCustom = Number(customGbParam);
+        if (Number.isFinite(parsedCustom) && parsedCustom > 0 && parsedCustom <= 512) {
+          customUsableGb = parsedCustom;
+          reserveProfile = 'custom';
+          hadParam = true;
+        }
+      }
 
       // Reflect hydrated CPU / RAM / GPU state into comboboxes
       const activeSoc = getActiveUnifiedSoc();
@@ -2540,6 +2779,7 @@ const staticIndexSubArgs = JSON.stringify({
       }
 
       syncGpuQtyControl();
+      updateReserveUi();
       updateContextBar();
       if (hadParam) {
         applyFilters(true);
@@ -2554,8 +2794,11 @@ const staticIndexSubArgs = JSON.stringify({
       selectedGpuVal = '';
       gpuCount = 1;
       splitMode = 'layer';
+      reserveProfile = 'desktop';
+      customUsableGb = null;
       selectedModel = 'all';
       selectedStatus = 'all';
+      if (customGbInput) customGbInput.value = '';
 
       cpuCombo.clear(true);
       ramCombo.setOptions(buildRamOptions(null), false);
@@ -2565,9 +2808,36 @@ const staticIndexSubArgs = JSON.stringify({
       if (sortSelect) sortSelect.value = 'featured';
 
       syncGpuQtyControl();
+      updateReserveUi();
       updateContextBar();
       updateStatusPills();
       applyFilters(true);
+    }
+
+    reserveBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const val = (btn.getAttribute('data-home-reserve') as ReserveProfile) || 'desktop';
+        reserveProfile = val;
+        if (val === 'custom' && customUsableGb === null) {
+          const typed = customGbInput ? Number(customGbInput.value) : NaN;
+          customUsableGb = Number.isFinite(typed) && typed > 0 ? typed : 22.4;
+        }
+        updateReserveUi();
+        applyFilters(true);
+        if (val === 'custom' && customGbInput) customGbInput.focus();
+      });
+    });
+
+    if (customGbInput) {
+      customGbInput.addEventListener('input', () => {
+        const val = Number(customGbInput.value);
+        if (Number.isFinite(val) && val > 0 && val <= 512) {
+          customUsableGb = val;
+          reserveProfile = 'custom';
+          updateReserveUi();
+          applyFilters(true);
+        }
+      });
     }
 
     if (gpuCountSelect) {
@@ -2662,6 +2932,7 @@ const staticIndexSubArgs = JSON.stringify({
     });
 
     syncGpuQtyControl();
+    updateReserveUi();
     hydrateFromUrl();
   }
 

@@ -27,7 +27,7 @@ const {
 } = Astro.props;
 
 const updatedAt = (rawCatalog as { updated_at?: string }).updated_at ?? '2026-11-24';
-const engineVersion = (rawCatalog as { engine_version?: string }).engine_version ?? 'v3.2';
+const engineVersion = (rawCatalog as { engine_version?: string }).engine_version ?? 'v3.3';
 const modelCount = rawCatalog.models.length;
 const hwCount = rawCatalog.hardware.length;
 
@@ -40,11 +40,14 @@ const isHome = canonicalPath === '/';
 const isCalc = canonicalPath.startsWith('/calculator');
 const isGpu = canonicalPath.startsWith('/gpu/');
 const isModel = canonicalPath.startsWith('/model/');
+const isChangelog = canonicalPath.startsWith('/changelog');
 
 const navMatrixClass = isHome ? 'whitespace-nowrap text-blue-600 font-semibold' : 'whitespace-nowrap hover:text-slate-950 transition-colors';
 const navCalcClass = isCalc ? 'whitespace-nowrap text-blue-600 font-semibold' : 'whitespace-nowrap hover:text-slate-950 transition-colors';
 const navGpuClass = isGpu ? 'whitespace-nowrap text-blue-600 font-semibold' : 'whitespace-nowrap hover:text-slate-950 transition-colors';
 const navModelClass = isModel ? 'whitespace-nowrap text-blue-600 font-semibold' : 'whitespace-nowrap hover:text-slate-950 transition-colors';
+const navChangelogClass = isChangelog ? 'whitespace-nowrap text-blue-600 font-semibold' : 'whitespace-nowrap hover:text-slate-950 transition-colors';
+const navDesktopChangelogClass = `hidden md:inline ${navChangelogClass}`;
 const indexedArgs = JSON.stringify({ count: totalPages, models: modelCount, hw: hwCount });
 const footerMetaArgs = JSON.stringify({ date: updatedAt, ver: engineVersion });
 ---
@@ -196,6 +199,9 @@ const footerMetaArgs = JSON.stringify({ date: updatedAt, ver: engineVersion });
           <a href="/#methodology" class="hidden md:inline whitespace-nowrap hover:text-slate-950 transition-colors" data-i18n="nav.formula">
             VRAM Formula
           </a>
+          <a href="/changelog/" class={navDesktopChangelogClass} data-i18n="nav.changelog">
+            Changelog
+          </a>
           {totalPages > 0 && (
             <span class="hidden xl:inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-mono text-slate-600 tabular-nums whitespace-nowrap">
               <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
@@ -217,17 +223,18 @@ const footerMetaArgs = JSON.stringify({ date: updatedAt, ver: engineVersion });
             <p class="font-medium text-slate-900" data-i18n="footer.tagline">
               VRAMCalc.me — Local LLM Memory &amp; Throughput Estimator
             </p>
-            <span
-              class="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-mono text-slate-500"
+            <a
+              href="/changelog/"
+              class="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-mono text-slate-600 hover:border-blue-300 hover:text-blue-700 transition-colors"
               data-i18n="footer.updatedMeta"
               data-i18n-args={footerMetaArgs}
             >
               Updated {updatedAt} · Physics {engineVersion} · Formula Estimates
-            </span>
+            </a>
           </div>
           <p class="max-w-2xl text-xs text-slate-500" data-i18n="footer.disclaimer">
             VRAM budgets come from weight bit-width (GGUF / AWQ / MLX), GQA KV-cache geometry, per-GPU CUDA/PCIe overhead,
-            and selectable OS reserves. Speed numbers are bandwidth formula estimate ranges (±15–25%), paired with public reference benchmarks where verified.
+            and selectable OS reserves. Speed numbers are bandwidth formula estimate ranges (±17–25%), paired with public reference benchmarks where verified.
           </p>
         </div>
         <div class="flex flex-wrap items-center gap-4 text-xs font-medium text-slate-500 shrink-0">
@@ -235,6 +242,7 @@ const footerMetaArgs = JSON.stringify({ date: updatedAt, ver: engineVersion });
           <a href="/calculator/" class="hover:text-slate-900 transition-colors" data-i18n="footer.rigSimulator">Rig Simulator</a>
           <a href="/gpu/" class="hover:text-slate-900 transition-colors" data-i18n="footer.allGpus">All GPUs</a>
           <a href="/model/" class="hover:text-slate-900 transition-colors" data-i18n="footer.allModels">All Models</a>
+          <a href="/changelog/" class="hover:text-slate-900 transition-colors" data-i18n="nav.changelog">Changelog</a>
           <a href="/sitemap-index.xml" class="hover:text-slate-900 transition-colors" data-i18n="footer.sitemap">Sitemap</a>
         </div>
       </div>

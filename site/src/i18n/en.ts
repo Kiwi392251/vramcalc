@@ -10,6 +10,7 @@ export const en = {
   'nav.gpus': 'GPUs',
   'nav.models': 'Models',
   'nav.formula': 'VRAM Formula',
+  'nav.changelog': 'Changelog',
   'nav.configsIndexed': '{count} guides · {models}×{hw}',
   'footer.tagline': 'VRAMCalc.me — Local LLM Memory & Throughput Estimator',
   'footer.disclaimer':
@@ -214,11 +215,18 @@ export const en = {
   'home.hwHubsHeading': 'All {count} Hardware Hubs',
   'home.measuredTitle': 'Measured Community Benchmarks vs Formula Estimates',
   'home.measuredSub':
-    'Side-by-side comparison of {count} reproducible community & framework runs (batch=1 decode, including Qwen3-30B-A3B MoE) against calibrated Physics v3.2 formula ranges.',
+    'Side-by-side comparison of {count} reproducible community & framework runs (batch=1 decode, including Qwen3-30B-A3B MoE) against calibrated Physics v3.3 formula ranges.',
+  'home.measuredCoverage': '{measured} / {total} guides measured · {formulaOnly} formula-only',
+  'home.submitBenchmark': 'Submit Real Run ->',
+  'home.reserveCustomPh': 'e.g. 22.4',
   'home.measuredColPair': 'Model × Hardware',
   'home.measuredColFormat': 'Format / Runtime',
   'home.measuredColMeasured': 'Measured Speed',
-  'home.measuredColFormula': 'Formula Est. (±15–20%)',
+  'home.measuredColFormula': 'Formula Est. (±17–25%)',
+  'home.measuredColDelta': 'Δ Mid',
+  'home.measuredFresh2026': '2026 run',
+  'home.measuredFresh2025': '2025 baseline',
+  'home.measuredFreshLegacy': 'Legacy 2024',
   'home.measuredColRepro': 'Date · Prompt · Repro',
   'home.measuredColSource': 'Source',
   'home.staticIndexTitle': 'Complete Static Compatibility Index (All {guides} Curated Pairings · Zero-JS)',
@@ -230,16 +238,16 @@ export const en = {
   'home.modelTableKv': 'KV / 4K',
   'home.modelTableFits': 'Fits GPUs',
   'home.modelTableFastest': 'Fastest GPU (8K)',
-  'home.methodTitle': 'Physics Engine v3.2: Calibrated Formulas vs Verified Benchmarks',
-  'home.method1Title': '1. Fit Status vs Independent Speed Tiers',
+  'home.methodTitle': 'Physics Engine v3.3: Calibrated Formulas vs Verified Benchmarks',
+  'home.method1Title': '1. Tiered OS Reserves & Custom GB Override',
   'home.method1Desc':
-    'VRAM Fit checks weight (GGUF/AWQ/MLX) + GQA KV + per-card CUDA overhead against Daily Desktop or Clean OS reserves, flagging <5% / <1 GB headroom as Tight Fit. Speed is scored separately: Fast (>=25), Interactive (12–24), Readable (6–11), Slow (<6 tok/s).',
+    'VRAM Fit pairs weight (GGUF/AWQ/MLX) + GQA KV + per-card CUDA overhead against capacity-tiered Daily Desktop / Clean OS reserves (non-linear headroom scaling across 8GB–192GB devices, not a flat %) or your exact Custom GB limit from nvidia-smi / Activity Monitor directly on /, /calculator/, and guide pages; <5% / <1 GB flags Tight Fit.',
   'home.method2Title': '2. Inline AWQ/MLX + Separate @8K vs @Max Fit Speeds',
   'home.method2Desc':
     'Every guide reports GGUF (llama.cpp), vLLM AWQ 4-bit, or Apple MLX 4-bit VRAM + speeds side-by-side, and separates 8K decode speed from @Max Fit long-context speed after KV-read and attention scaling.',
-  'home.method3Title': '3. Multi-GPU PCIe Sync & Reproducible Anchors',
+  'home.method3Title': '3. MoE/Turing Calibration & Transparent 17/173 Coverage',
   'home.method3Desc':
-    'Physics v3.2 calibrates legacy Pascal/Turing/Volta, MoE router dispatch, and hybrid DeltaNet overhead against 17 dated, command-reproducible benchmarks. Unverified pairs stay clearly tagged "Formula only (unverified)".',
+    'Physics v3.3 achieves 17/17 full range containment (max midpoint error 8.7%) across Turing/Volta, CUDA MoE router gather, and DeltaNet dispatch benchmarks. Only 17/173 curated guides have verified telemetry; the remaining 156 stay clearly tagged "Formula only (unverified)".',
   'home.uncensoredTitle': 'Uncensored / Abliterated / Heretic Models (1:1 Drop-In)',
   'home.uncensoredDesc':
     'Community uncensored, abliterated, and Heretic fine-tunes use identical layer counts, hidden dimensions, and GQA KV geometry as the base checkpoints above — apply the same @8K VRAM, Max Fit context, and tok/s estimates directly (allow ~±3–5% for custom imatrix quant variance).',
@@ -403,6 +411,14 @@ export const en = {
   'detail.faqTitle': 'Frequently Asked Questions',
   'detail.relatedTitle': 'Compare Related Hardware & Models',
   'detail.viewFullMatrix': 'View Full Matrix ->',
+  'detail.nearestTitle': 'Formula Only — Closest Verified Reference Anchors',
+  'detail.nearestSub':
+    'Zero measured single-stream run exists yet for this exact pairing. Use the neighboring verified hardware & model runs below (with bandwidth ratio) or submit a real run:',
+  'detail.submitRunTitle': 'Run & Submit a Real Benchmark for This Config',
+  'detail.submitRunCta': 'Submit Benchmark on GitHub ->',
+  'changelog.title': 'VRAMCalc.me Engineering & Physics Engine Changelog',
+  'changelog.sub':
+    'Version-by-version history of Physics v1.0 → v3.3 formula coefficients, catalog expansions, verified benchmark additions, and honesty audits.',
 
   // Directories & Hubs (/gpu/, /model/, /gpu/[hardware], /model/[model])
   'hub.hwDirBadge': 'Hardware Directory',
