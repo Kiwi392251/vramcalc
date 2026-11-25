@@ -93,7 +93,7 @@ export const ko: TranslationDict = {
   "common.openFullSim": "전체 시뮬레이터에서 열기 ->",
   "speed.formulaEst": "공식 추정",
   "speed.formulaOnly": "공식 추정만 (미검증)",
-  "speed.formulaDesc": "대역폭 공식 추정 범위 (±15–20%)",
+  "speed.formulaDesc": "대역폭 공식 추정 범위 (±17–25%)",
   "speed.refBenchmark": "커뮤니티 공개 실측 벤치마크",
   "speed.measuredBadge": "실측",
   "speed.measuredUnit": "{low}–{high} tok/s 실측",
@@ -437,5 +437,14 @@ export const ko: TranslationDict = {
   "hub.gpuHubLabel": "GPU 허브 ->",
   "hub.modelHubLabel": "모델 허브 ->",
   "hub.showingHwConfigs": "하드웨어 구성 {total}개 중 {shown}개 표시",
-  "hub.noMatchingConfigs": "현재 필터와 일치하는 구성이 없습니다."
+  "hub.noMatchingConfigs": "현재 필터와 일치하는 구성이 없습니다.",
+  "home.heroEnginePill": "Physics {ver} · 변경 이력 · 공식 추정 (±17–25%)",
+  "home.heroMeasuredPill": "{count}건 실측",
+  "home.measuredInRange": "범위 내",
+  "home.measuredNote": "각 행은 공개 벤치마크 또는 재현 가능한 명령어(batch=1 단일 디코드)에 연결됩니다. 173개 중 17개만 실측 데이터가 있으며 나머지 156개는 공식 추정만(미검증)으로 표시됩니다.",
+  "home.methodChangelogPill": "변경 이력 (v1.0 → {ver}) ->",
+  "card.verdictFits": "8K Q4 사용 {vram} GB / 가용 {usable} GB (여유 {margin} GB) · {params}B {arch}",
+  "card.verdictTight": "8K Q4 사용 {vram} / {usable} GB — 여유 {margin} GB뿐, 앱 종료 권장 · {params}B {arch}",
+  "card.verdictPartial": "8K Q4 필요 {vram} GB (VRAM {fit}/{total} 레이어, 나머지 RAM 분담) · {params}B {arch}",
+  "card.verdictOom": "8K Q4 필요 {vram} GB, 가용 상한 {usable} GB 초과 · {params}B {arch}"
 };

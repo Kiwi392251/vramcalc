@@ -168,6 +168,15 @@ export function applyTranslations(
   root.querySelectorAll('[data-i18n]').forEach((el) => {
     const key = el.getAttribute('data-i18n') as TranslationKey | null;
     if (!key) return;
+    if (el.getAttribute('data-i18n-keep-en') === 'true') {
+      if (!el.hasAttribute('data-en-text')) {
+        el.setAttribute('data-en-text', el.textContent || '');
+      }
+      if (locale === 'en') {
+        el.textContent = el.getAttribute('data-en-text') || '';
+        return;
+      }
+    }
     const rawArgs = el.getAttribute('data-i18n-args');
     let args: Record<string, string | number> | undefined;
     if (rawArgs) {

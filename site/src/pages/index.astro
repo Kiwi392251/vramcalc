@@ -265,6 +265,7 @@ const initLoadArgs = JSON.stringify({ chunk: Math.min(PAGE_SIZE, initialRemainin
 const modelHubsArgs = JSON.stringify({ count: uniqueHubModelCount });
 const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
 const measuredSubArgs = JSON.stringify({ count: measuredRows.length });
+const heroEngineArgs = JSON.stringify({ ver: engineVersion });
 const formulaOnlyCount = Math.max(0, totalCount - measuredRows.length);
 const measuredCoverageArgs = JSON.stringify({
   measured: measuredRows.length,
@@ -310,14 +311,18 @@ const staticIndexSubArgs = JSON.stringify({
           <a
             href="/changelog/"
             class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-mono font-medium text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+            data-i18n="home.heroEnginePill"
+            data-i18n-args={heroEngineArgs}
           >
-            Physics {engineVersion} · Changelog · <span data-i18n="speed.formulaDesc">Formula Estimate (±17–25%)</span>
+            Physics {engineVersion} · Changelog · Formula Estimate (±17–25%)
           </a>
           <a
             href="#measured-benchmarks"
             class="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 font-mono font-semibold text-sky-800 hover:bg-sky-100 transition-colors"
+            data-i18n="home.heroMeasuredPill"
+            data-i18n-args={measuredSubArgs}
           >
-            {measuredRows.length} <span data-i18n="speed.measuredBadge">Measured</span>
+            {measuredRows.length} Measured
           </a>
         </div>
         <h1 class="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl" data-i18n="home.heroTitle">
@@ -356,19 +361,19 @@ const staticIndexSubArgs = JSON.stringify({
 
       <dl class="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         <div class="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
-          <dt class="text-xs font-medium text-slate-500" data-i18n="home.kpiGuides">Curated Pairings</dt>
+          <dt class="text-xs font-medium text-slate-500" data-i18n="home.kpiGuides">Common Pairings</dt>
           <dd class="mt-1 font-mono text-2xl font-bold text-slate-950 tabular-nums">{totalCount}</dd>
         </div>
         <div class="rounded-xl border border-emerald-200/80 bg-emerald-50/50 px-4 py-3">
-          <dt class="text-xs font-medium text-emerald-800" data-i18n="home.kpiSmooth">Full Fits (8K Q4)</dt>
+          <dt class="text-xs font-medium text-emerald-800" data-i18n="home.kpiSmooth">Fits in VRAM (8K Q4)</dt>
           <dd class="mt-1 font-mono text-2xl font-bold text-emerald-900 tabular-nums">{fitsCount}</dd>
         </div>
         <div class="rounded-xl border border-amber-200/80 bg-amber-50/50 px-4 py-3">
-          <dt class="text-xs font-medium text-amber-800" data-i18n="home.kpiPartial">Tight / Partial Offload</dt>
+          <dt class="text-xs font-medium text-amber-800" data-i18n="home.kpiPartial">Tight Fit / RAM Offload</dt>
           <dd class="mt-1 font-mono text-2xl font-bold text-amber-900 tabular-nums">{tightPartialCount}</dd>
         </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
-          <dt class="text-xs font-medium text-slate-500" data-i18n="home.kpiLiveEngine">Static Matrix Coverage</dt>
+          <dt class="text-xs font-medium text-slate-500" data-i18n="home.kpiLiveEngine">Models × GPUs</dt>
           <dd class="mt-1 font-mono text-2xl font-bold text-slate-950 tabular-nums">
             {catalogModelCount} × {catalogHwCount}
           </dd>
@@ -678,8 +683,28 @@ const staticIndexSubArgs = JSON.stringify({
         const cardMeasuredText = cardMeasured
           ? `${cardMeasured.gen_tps_low}–${cardMeasured.gen_tps_high} tok/s measured`
           : '';
+        const cardMeasuredArgs = cardMeasured
+          ? JSON.stringify({ low: cardMeasured.gen_tps_low, high: cardMeasured.gen_tps_high })
+          : undefined;
         const showMeasuredBadge = Boolean(cardMeasured);
         const showFormulaOnlyBadge = !cardMeasured && res.status !== 'OOM';
+        const verdictKey =
+          res.status === 'Fits'
+            ? 'card.verdictFits'
+            : res.status === 'Tight Fit'
+              ? 'card.verdictTight'
+              : res.status === 'Partial Offload'
+                ? 'card.verdictPartial'
+                : 'card.verdictOom';
+        const verdictArgs = JSON.stringify({
+          vram: res.total_vram_gb.toFixed(1),
+          usable: usable.toFixed(1),
+          margin: Math.max(0, usable - res.total_vram_gb).toFixed(1),
+          fit: res.gpu_layers_fit,
+          total: res.total_layers,
+          params: entry.model.params_b,
+          arch: entry.model.architecture,
+        });
 
         return (
           <article
@@ -726,7 +751,12 @@ const staticIndexSubArgs = JSON.stringify({
                 </a>
               </h2>
 
-              <p class="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-600">
+              <p
+                class="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-600"
+                data-i18n={verdictKey}
+                data-i18n-args={verdictArgs}
+                data-i18n-keep-en="true"
+              >
                 {entry.verdict_summary}
               </p>
             </div>
@@ -747,7 +777,11 @@ const staticIndexSubArgs = JSON.stringify({
                 </span>
                 <div class="flex items-center gap-1.5 shrink-0">
                   {showMeasuredBadge && (
-                    <span class="rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-800">
+                    <span
+                      class="rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-800"
+                      data-i18n="speed.measuredUnit"
+                      data-i18n-args={cardMeasuredArgs}
+                    >
                       {cardMeasuredText}
                     </span>
                   )}
@@ -992,8 +1026,8 @@ const staticIndexSubArgs = JSON.stringify({
                 </td>
                 <td class="px-3.5 py-2.5 align-top">
                   <div class="font-mono font-semibold text-slate-900 tabular-nums">{row.deltaText}</div>
-                  <span class="mt-0.5 inline-block font-mono text-[10px] font-medium text-emerald-700">
-                    100% covered
+                  <span class="mt-0.5 inline-block font-mono text-[10px] font-medium text-emerald-700" data-i18n="home.measuredInRange">
+                    In range
                   </span>
                 </td>
                 <td class="px-3.5 py-2.5 align-top">
@@ -1022,7 +1056,7 @@ const staticIndexSubArgs = JSON.stringify({
           </tbody>
         </table>
       </div>
-      <p class="mt-2.5 text-[11px] text-slate-500">{measuredNote}</p>
+      <p class="mt-2.5 text-[11px] text-slate-500" data-i18n="home.measuredNote">{measuredNote}</p>
     </div>
   </section>
 
@@ -1193,6 +1227,8 @@ const staticIndexSubArgs = JSON.stringify({
           <a
             href="/changelog/"
             class="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
+            data-i18n="home.methodChangelogPill"
+            data-i18n-args={heroEngineArgs}
           >
             Changelog (v1.0 → {engineVersion}) -&gt;
           </a>
@@ -2344,8 +2380,10 @@ const staticIndexSubArgs = JSON.stringify({
               : escapeHtml(formatTpsRange(res.est_tps_low, res.est_tps_high, res.est_tps, res.status));
           const budgetLabel = isCpuOnly ? t('common.ram8kLabel') : t('common.vram8kLabel');
           const measuredText = hw && !isCpuOnly ? measuredPairMap.get(`${model.id}::${hw.id}`) : undefined;
-          const formulaTag = measuredText
-            ? `<span class="shrink-0 rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-800">${escapeHtml(measuredText)}</span>`
+          const mm = measuredText?.match(/^(\d+)[–-](\d+)/);
+          const dispMeasured = mm ? t('speed.measuredUnit', { low: mm[1], high: mm[2] }) : measuredText;
+          const formulaTag = dispMeasured
+            ? `<span class="shrink-0 rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-800">${escapeHtml(dispMeasured)}</span>`
             : res.status !== 'OOM'
               ? `<span class="shrink-0 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-mono text-[10px] text-slate-500">${escapeHtml(t('speed.formulaOnly'))}</span>`
               : '';

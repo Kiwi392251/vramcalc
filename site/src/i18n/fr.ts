@@ -93,7 +93,7 @@ export const fr: TranslationDict = {
   "common.openFullSim": "Ouvrir dans le Simulateur ->",
   "speed.formulaEst": "Est. formule",
   "speed.formulaOnly": "Formule seule (non vérifié)",
-  "speed.formulaDesc": "Fourchette théorique (±15–20%)",
+  "speed.formulaDesc": "Fourchette théorique (±17–25%)",
   "speed.refBenchmark": "Benchmarks Publics Mesurés",
   "speed.measuredBadge": "Mesuré",
   "speed.measuredUnit": "{low}–{high} tok/s mesurés",
@@ -437,5 +437,14 @@ export const fr: TranslationDict = {
   "hub.gpuHubLabel": "Hub GPU ->",
   "hub.modelHubLabel": "Hub Modèle ->",
   "hub.showingHwConfigs": "{shown} sur {total} configs matérielles",
-  "hub.noMatchingConfigs": "Aucune configuration correspondante."
+  "hub.noMatchingConfigs": "Aucune configuration correspondante.",
+  "home.heroEnginePill": "Physics {ver} · Journal · Formule (±17–25%)",
+  "home.heroMeasuredPill": "{count} Mesurés",
+  "home.measuredInRange": "Dans la plage",
+  "home.measuredNote": "Chaque ligne pointe vers un benchmark public ou une commande reproductible (décodage batch=1). Seuls 17 / 173 guides disposent de mesures réelles ; les 156 autres restent marqués Formule seule (non vérifié).",
+  "home.methodChangelogPill": "Journal (v1.0 → {ver}) ->",
+  "card.verdictFits": "8K Q4 utilise {vram} Go sur {usable} Go ({margin} Go libres) · {params}B {arch}",
+  "card.verdictTight": "8K Q4 utilise {vram} / {usable} Go — seulement {margin} Go libres · {params}B {arch}",
+  "card.verdictPartial": "8K Q4 demande {vram} Go ({fit}/{total} couches VRAM, reste RAM) · {params}B {arch}",
+  "card.verdictOom": "8K Q4 demande {vram} Go, au-delà des {usable} Go disponibles · {params}B {arch}"
 };

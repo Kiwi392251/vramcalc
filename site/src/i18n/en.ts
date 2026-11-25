@@ -109,7 +109,7 @@ export const en = {
   // Speed & Benchmark Anchors
   'speed.formulaEst': 'Formula est.',
   'speed.formulaOnly': 'Formula only (unverified)',
-  'speed.formulaDesc': 'Formula Estimate (±15–20%)',
+  'speed.formulaDesc': 'Formula Estimate (±17–25%)',
   'speed.refBenchmark': 'Measured Community Benchmarks',
   'speed.measuredBadge': 'Measured',
   'speed.measuredUnit': '{low}–{high} tok/s measured',
@@ -129,10 +129,12 @@ export const en = {
   'home.ctaSimulator': 'Multi-GPU, AWQ/MLX & CPU Simulator ->',
   'home.ctaGpus': 'Browse {count} GPU Hubs ->',
   'home.ctaModels': 'Browse {count} Model Hubs ->',
-  'home.kpiGuides': 'Curated Pairings',
-  'home.kpiSmooth': 'Full Fits (8K Q4)',
-  'home.kpiPartial': 'Tight / Partial Offload',
-  'home.kpiLiveEngine': 'Static Matrix Coverage',
+  'home.kpiGuides': 'Common Pairings',
+  'home.kpiSmooth': 'Fits in VRAM (8K Q4)',
+  'home.kpiPartial': 'Tight Fit / RAM Offload',
+  'home.kpiLiveEngine': 'Models × GPUs',
+  'home.heroEnginePill': 'Physics {ver} · Changelog · Formula Estimate (±17–25%)',
+  'home.heroMeasuredPill': '{count} Measured',
 
   // Homepage Rig Configurator
   'home.cpuLabel': 'CPU / Unified Chip',
@@ -229,6 +231,9 @@ export const en = {
   'home.measuredFreshLegacy': 'Legacy 2024',
   'home.measuredColRepro': 'Date · Prompt · Repro',
   'home.measuredColSource': 'Source',
+  'home.measuredInRange': 'In range',
+  'home.measuredNote':
+    'Every row above links to a public benchmark report or reproducible framework bench command (single-stream batch=1 decode). Only 17 / 173 curated guides have verified runs today; the remaining 156 pairings stay explicitly labeled Formula only (unverified).',
   'home.staticIndexTitle': 'Complete Static Compatibility Index (All {guides} Curated Pairings · Zero-JS)',
   'home.staticIndexSub':
     'All {guides} curated guides below include full @8K, @Max Fit & AWQ/MLX speeds directly on this page. The remaining {combos} full-matrix speed rows live statically across the {models} Model Hub pages (103 GPUs each) and {hw} GPU Hub pages (23 models each) — 1 click away, zero JS required.',
@@ -251,6 +256,11 @@ export const en = {
   'home.uncensoredTitle': 'Uncensored / Abliterated / Heretic Models (1:1 Drop-In)',
   'home.uncensoredDesc':
     'Community uncensored, abliterated, and Heretic fine-tunes use identical layer counts, hidden dimensions, and GQA KV geometry as the base checkpoints above — apply the same @8K VRAM, Max Fit context, and tok/s estimates directly (allow ~±3–5% for custom imatrix quant variance).',
+  'home.methodChangelogPill': 'Changelog (v1.0 → {ver}) ->',
+  'card.verdictFits': '8K Q4 uses {vram} GB of {usable} GB usable ({margin} GB free) · {params}B {arch}',
+  'card.verdictTight': '8K Q4 uses {vram} / {usable} GB — only {margin} GB free; close heavy apps · {params}B {arch}',
+  'card.verdictPartial': '8K Q4 needs {vram} GB ({fit}/{total} layers in VRAM, rest in system RAM) · {params}B {arch}',
+  'card.verdictOom': '8K Q4 needs {vram} GB, exceeding {usable} GB usable ceiling · {params}B {arch}',
 
   // Calculator / Simulator page
   'sim.breadcrumb': 'Rig Simulator',

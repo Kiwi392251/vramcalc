@@ -93,7 +93,7 @@ export const ja: TranslationDict = {
   "common.openFullSim": "シミュレータで開く ->",
   "speed.formulaEst": "計算推定",
   "speed.formulaOnly": "計算推定のみ（未検証）",
-  "speed.formulaDesc": "帯域ベース計算レンジ (±15–20%)",
+  "speed.formulaDesc": "帯域ベース計算レンジ (±17–25%)",
   "speed.refBenchmark": "公開実測ベンチマーク対照",
   "speed.measuredBadge": "実測値",
   "speed.measuredUnit": "{low}–{high} tok/s 実測",
@@ -437,5 +437,14 @@ export const ja: TranslationDict = {
   "hub.gpuHubLabel": "GPUハブ ->",
   "hub.modelHubLabel": "モデルハブ ->",
   "hub.showingHwConfigs": "{shown} / {total} 件の検証構成を表示",
-  "hub.noMatchingConfigs": "選択した条件に一致する構成がありません。"
+  "hub.noMatchingConfigs": "選択した条件に一致する構成がありません。",
+  "home.heroEnginePill": "Physics {ver} · 更新履歴 · 公式推定 (±17–25%)",
+  "home.heroMeasuredPill": "{count} 件実測",
+  "home.measuredInRange": "範囲内",
+  "home.measuredNote": "各行は公開ベンチマーク報告または再現可能なコマンド（batch=1 単一ストリーム生成）にリンクしています。現在実測データがあるのは 17 / 173 件のみで、残る 156 件は計算推定のみと明記しています。",
+  "home.methodChangelogPill": "更新履歴 (v1.0 → {ver}) ->",
+  "card.verdictFits": "8K Q4 使用 {vram} GB / 利用可能 {usable} GB（残り {margin} GB）· {params}B {arch}",
+  "card.verdictTight": "8K Q4 使用 {vram} / {usable} GB（残り {margin} GB のみ · 他アプリ終了推奨）· {params}B {arch}",
+  "card.verdictPartial": "8K Q4 必要 {vram} GB（VRAM {fit}/{total} 層、残りはRAM分担）· {params}B {arch}",
+  "card.verdictOom": "8K Q4 必要 {vram} GB（利用可能上限 {usable} GB 超過）· {params}B {arch}"
 };
