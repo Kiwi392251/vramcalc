@@ -375,9 +375,11 @@ export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
   const kvLayers = model.kv_layers ?? totalLayers;
   const isMoe = activeParamsB < model.params_b * 0.9;
   const isHybrid = kvLayers < totalLayers;
-  const isLegacyGpu = ['t4', 'p40', 'gtx-10', 'rtx-20', 'v100'].some((tag) =>
-    hardware.id.includes(tag),
-  );
+  const isLegacyGpu =
+    !hardware.id.includes('ada') &&
+    ['t4', 'p40', 'p100', 'gtx-10', 'gtx-16', 'rtx-20', 'titan-rtx', 'v100'].some((tag) =>
+      hardware.id.includes(tag),
+    );
 
   let backendEff: number;
   if (fmt === 'AWQ') {

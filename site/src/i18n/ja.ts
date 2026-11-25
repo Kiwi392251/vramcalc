@@ -204,7 +204,7 @@ export const ja: TranslationDict = {
   "home.measuredColRepro": "日付 · 条件 · 再現コマンド",
   "home.measuredColSource": "出典",
   "home.staticIndexTitle": "全静的互換インデックス（全 {guides} ガイド · JS 不要）",
-  "home.staticIndexSub": "下記の静的HTMLに全 {guides} ガイドの @8K・@Max Fit 速度および AWQ/MLX 併記値を直接掲載。残りの全 {combos} 通りの速度表は {models} モデルハブ（各103 GPU）と {hw} GPUハブ（各23モデル）に1クリック・JS不要で配置されています。",
+  "home.staticIndexSub": "下記の静的HTMLに全 {guides} ガイドの @8K・@Max Fit 速度および AWQ/MLX 併記値を直接掲載。残りの全 {combos} 通りの速度表は {models} モデルハブ（各{hw} GPU）と {hw} GPUハブ（各{models}モデル）に1クリック・JS不要で配置されています。",
   "home.modelTableModel": "モデル",
   "home.modelTableQ4": "Q4_K_M @ 8K",
   "home.modelTableAwq": "AWQ 4-bit @ 8K",
@@ -446,5 +446,17 @@ export const ja: TranslationDict = {
   "card.verdictFits": "8K Q4 使用 {vram} GB / 利用可能 {usable} GB（残り {margin} GB）· {params}B {arch}",
   "card.verdictTight": "8K Q4 使用 {vram} / {usable} GB（残り {margin} GB のみ · 他アプリ終了推奨）· {params}B {arch}",
   "card.verdictPartial": "8K Q4 必要 {vram} GB（VRAM {fit}/{total} 層、残りはRAM分担）· {params}B {arch}",
-  "card.verdictOom": "8K Q4 必要 {vram} GB（利用可能上限 {usable} GB 超過）· {params}B {arch}"
+  "card.verdictOom": "8K Q4 必要 {vram} GB（利用可能上限 {usable} GB 超過）· {params}B {arch}",
+  "cb.brandCol": "ブランド",
+  "cb.seriesCol": "シリーズ",
+  "cb.modelCol": "モデル",
+  "cb.allBrands": "すべて ({count})",
+  "cb.allSeries": "全シリーズ ({count})",
+  "cb.searchCpuPh": "ブランド・シリーズ・型番で検索（例: 9800X3D, 285K, M4 Max）...",
+  "cb.searchGpuPh": "ブランド・シリーズ・型番で検索（例: 5090, A10, RX 9070, B60, M3 Ultra）...",
+  "cb.countItems": "{count} 件",
+  "cb.brandNoGpu": "GPUなし",
+  "cb.brandGeneric": "汎用",
+  "cb.seriesNoGpu": "CPUのみ",
+  "cb.seriesUnified": "ユニファイドメモリ"
 };

@@ -442,7 +442,9 @@ def estimate_rig_run(
     kv_layers = int(model.get("kv_layers") or total_layers)
     is_moe = active_params_b < model["params_b"] * 0.9
     is_hybrid = kv_layers < total_layers
-    is_legacy_gpu = any(tag in hid for tag in ("t4", "p40", "gtx-10", "rtx-20", "v100"))
+    is_legacy_gpu = "ada" not in hid and any(
+        tag in hid for tag in ("t4", "p40", "p100", "gtx-10", "gtx-16", "rtx-20", "titan-rtx", "v100")
+    )
 
     if fmt == "AWQ":
         backend_eff = 0.48 if is_legacy_gpu else 0.69

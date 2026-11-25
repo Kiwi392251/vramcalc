@@ -204,7 +204,7 @@ export const es: TranslationDict = {
   "home.measuredColRepro": "Fecha · Prompt · Repro",
   "home.measuredColSource": "Fuente",
   "home.staticIndexTitle": "Índice Estático Completo ({guides} Guías · Sin JS)",
-  "home.staticIndexSub": "Las {guides} guías detalladas abajo incluyen velocidades @8K, @Max Fit y AWQ/MLX directamente en esta página. Las {combos} filas completas viven estáticamente en las {models} páginas de Modelos (103 GPUs c/u) y {hw} de GPUs (23 modelos c/u), sin JS.",
+  "home.staticIndexSub": "Las {guides} guías detalladas abajo incluyen velocidades @8K, @Max Fit y AWQ/MLX directamente en esta página. Las {combos} filas completas viven estáticamente en las {models} páginas de Modelos ({hw} GPUs c/u) y {hw} de GPUs ({models} modelos c/u), sin JS.",
   "home.modelTableModel": "Modelo",
   "home.modelTableQ4": "Q4_K_M @ 8K",
   "home.modelTableAwq": "AWQ 4-bit @ 8K",
@@ -446,5 +446,17 @@ export const es: TranslationDict = {
   "card.verdictFits": "8K Q4 usa {vram} GB de {usable} GB útiles ({margin} GB libres) · {params}B {arch}",
   "card.verdictTight": "8K Q4 usa {vram} / {usable} GB — solo {margin} GB libres · {params}B {arch}",
   "card.verdictPartial": "8K Q4 pide {vram} GB ({fit}/{total} capas en VRAM, resto en RAM) · {params}B {arch}",
-  "card.verdictOom": "8K Q4 pide {vram} GB y supera los {usable} GB disponibles · {params}B {arch}"
+  "card.verdictOom": "8K Q4 pide {vram} GB y supera los {usable} GB disponibles · {params}B {arch}",
+  "cb.brandCol": "Marca",
+  "cb.seriesCol": "Serie",
+  "cb.modelCol": "Modelo",
+  "cb.allBrands": "Todas ({count})",
+  "cb.allSeries": "Todas las series ({count})",
+  "cb.searchCpuPh": "Buscar marca, serie o CPU (ej. 9800X3D, 285K, M4 Max)...",
+  "cb.searchGpuPh": "Buscar marca, serie o GPU (ej. 5090, A10, RX 9070, B60, M3 Ultra)...",
+  "cb.countItems": "{count} modelos",
+  "cb.brandNoGpu": "Sin GPU",
+  "cb.brandGeneric": "Genérico",
+  "cb.seriesNoGpu": "Solo CPU",
+  "cb.seriesUnified": "Memoria Unificada"
 };

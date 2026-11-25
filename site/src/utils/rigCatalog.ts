@@ -39,94 +39,118 @@ const SOC_DISPLAY_META: Record<
     order: 2,
     aliases: 'macbook pro mac mini metal m5 pro',
   },
+  'apple-m5': {
+    name: 'Apple M5 (Unified Silicon)',
+    shortName: 'Apple M5',
+    order: 3,
+    aliases: 'macbook air macbook pro mac mini imac metal m5',
+  },
   'apple-m4-max': {
     name: 'Apple M4 Max (Unified Silicon)',
     shortName: 'Apple M4 Max',
-    order: 3,
+    order: 4,
     aliases: 'macbook pro mac studio metal m4 max',
   },
   'apple-m4-pro': {
     name: 'Apple M4 Pro (Unified Silicon)',
     shortName: 'Apple M4 Pro',
-    order: 4,
+    order: 5,
     aliases: 'macbook pro mac mini metal m4 pro',
   },
   'apple-m4': {
     name: 'Apple M4 (Unified Silicon)',
     shortName: 'Apple M4',
-    order: 5,
+    order: 6,
     aliases: 'macbook air macbook pro mac mini imac metal m4',
+  },
+  'apple-m3-ultra': {
+    name: 'Apple M3 Ultra (Unified Silicon)',
+    shortName: 'Apple M3 Ultra',
+    order: 7,
+    aliases: 'mac studio metal m3 ultra 96gb 256gb 512gb',
   },
   'apple-m3-max': {
     name: 'Apple M3 Max (Unified Silicon)',
     shortName: 'Apple M3 Max',
-    order: 6,
+    order: 8,
     aliases: 'macbook pro metal m3 max',
   },
   'apple-m3-pro': {
     name: 'Apple M3 Pro (Unified Silicon)',
     shortName: 'Apple M3 Pro',
-    order: 7,
+    order: 9,
     aliases: 'macbook pro metal m3 pro',
   },
   'apple-m3': {
     name: 'Apple M3 (Unified Silicon)',
     shortName: 'Apple M3',
-    order: 8,
+    order: 10,
     aliases: 'macbook air macbook pro imac metal m3',
   },
   'apple-m2-ultra': {
     name: 'Apple M2 Ultra (Unified Silicon)',
     shortName: 'Apple M2 Ultra',
-    order: 9,
-    aliases: 'mac studio mac pro metal m2 ultra',
+    order: 11,
+    aliases: 'mac studio mac pro metal m2 ultra 128gb 192gb',
   },
   'apple-m2-max': {
     name: 'Apple M2 Max (Unified Silicon)',
     shortName: 'Apple M2 Max',
-    order: 10,
+    order: 12,
     aliases: 'macbook pro mac studio metal m2 max',
   },
   'apple-m2-pro': {
     name: 'Apple M2 Pro (Unified Silicon)',
     shortName: 'Apple M2 Pro',
-    order: 11,
+    order: 13,
     aliases: 'macbook pro mac mini metal m2 pro',
   },
   'apple-m2': {
     name: 'Apple M2 (Unified Silicon)',
     shortName: 'Apple M2',
-    order: 12,
+    order: 14,
     aliases: 'macbook air mac mini metal m2',
+  },
+  'apple-m1-ultra': {
+    name: 'Apple M1 Ultra (Unified Silicon)',
+    shortName: 'Apple M1 Ultra',
+    order: 15,
+    aliases: 'mac studio metal m1 ultra 64gb 128gb',
   },
   'apple-m1-max': {
     name: 'Apple M1 Max (Unified Silicon)',
     shortName: 'Apple M1 Max',
-    order: 13,
+    order: 16,
     aliases: 'macbook pro mac studio metal m1 max',
   },
   'apple-m1-pro': {
     name: 'Apple M1 Pro (Unified Silicon)',
     shortName: 'Apple M1 Pro',
-    order: 14,
+    order: 17,
     aliases: 'macbook pro metal m1 pro',
   },
   'apple-m1': {
     name: 'Apple M1 (Unified Silicon)',
     shortName: 'Apple M1',
-    order: 15,
+    order: 18,
     aliases: 'macbook air macbook pro mac mini imac metal m1',
   },
   'ryzen-ai-max-395': {
     name: 'AMD Ryzen AI Max+ 395 / Strix Halo (Unified)',
     shortName: 'Ryzen AI Max+ 395 (Strix Halo)',
-    order: 16,
+    order: 19,
     aliases: 'amd strix halo framework mini pc rocm unified apu 395',
+  },
+  'ryzen-ai-max-390': {
+    name: 'AMD Ryzen AI Max 390 / Strix Halo (Unified)',
+    shortName: 'Ryzen AI Max 390 (Strix Halo)',
+    order: 20,
+    aliases: 'amd strix halo mini pc rocm unified apu 390',
   },
   'nvidia-dgx-spark-gb10': {
     name: 'NVIDIA DGX Spark GB10 (Unified Grace Blackwell)',
     shortName: 'DGX Spark GB10',
-    order: 17,
+    order: 21,
     aliases: 'nvidia grace blackwell gb10 dgx spark project digits cuda unified',
   },
 };
@@ -156,7 +180,7 @@ export function extractUnifiedSocProfiles(hardware: HardwareSpec[]): UnifiedSocP
         : `${minBwGbps}–${maxBwGbps} GB/s`;
 
     let defaultRamGb = ramTiers[0];
-    if (/^apple-m[1-4]$/.test(famId) && ramTiers.includes(16)) {
+    if (/^apple-m[1-5]$/.test(famId) && ramTiers.includes(16)) {
       defaultRamGb = 16;
     } else if (famId.includes('-max') && ramTiers.includes(64)) {
       defaultRamGb = 64;
@@ -229,7 +253,7 @@ export function resolveUnifiedHardware(
   let usableFraction = targetGb <= 36 ? 0.75 : 0.78;
   if (soc.id === 'nvidia-dgx-spark-gb10') {
     usableFraction = 0.875;
-  } else if (soc.id === 'ryzen-ai-max-395') {
+  } else if (soc.id === 'ryzen-ai-max-395' || soc.id === 'ryzen-ai-max-390') {
     usableFraction = 0.75;
   }
   const usable = Math.max(2, Math.round(targetGb * usableFraction * 10) / 10);

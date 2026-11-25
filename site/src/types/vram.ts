@@ -79,6 +79,7 @@ export interface CpuSpec {
   name: string;
   short_name: string;
   vendor: string;
+  series?: string;
   memory_type: string;
   channels: number;
   effective_bw_gbps: number;

@@ -236,7 +236,7 @@ export const en = {
     'Every row above links to a public benchmark report or reproducible framework bench command (single-stream batch=1 decode). Only 17 / 173 curated guides have verified runs today; the remaining 156 pairings stay explicitly labeled Formula only (unverified).',
   'home.staticIndexTitle': 'Complete Static Compatibility Index (All {guides} Curated Pairings · Zero-JS)',
   'home.staticIndexSub':
-    'All {guides} curated guides below include full @8K, @Max Fit & AWQ/MLX speeds directly on this page. The remaining {combos} full-matrix speed rows live statically across the {models} Model Hub pages (103 GPUs each) and {hw} GPU Hub pages (23 models each) — 1 click away, zero JS required.',
+    'All {guides} curated guides below include full @8K, @Max Fit & AWQ/MLX speeds directly on this page. The remaining {combos} full-matrix speed rows live statically across the {models} Model Hub pages ({hw} GPUs each) and {hw} GPU Hub pages ({models} models each) — 1 click away, zero JS required.',
   'home.modelTableModel': 'Model',
   'home.modelTableQ4': 'Q4_K_M @ 8K',
   'home.modelTableAwq': 'AWQ 4-bit @ 8K',
@@ -261,6 +261,18 @@ export const en = {
   'card.verdictTight': '8K Q4 uses {vram} / {usable} GB — only {margin} GB free; close heavy apps · {params}B {arch}',
   'card.verdictPartial': '8K Q4 needs {vram} GB ({fit}/{total} layers in VRAM, rest in system RAM) · {params}B {arch}',
   'card.verdictOom': '8K Q4 needs {vram} GB, exceeding {usable} GB usable ceiling · {params}B {arch}',
+  'cb.brandCol': 'Brand',
+  'cb.seriesCol': 'Series',
+  'cb.modelCol': 'Model',
+  'cb.allBrands': 'All ({count})',
+  'cb.allSeries': 'All Series ({count})',
+  'cb.searchCpuPh': 'Search CPU brand, series or model (e.g. 9800X3D, 285K, M4 Max)...',
+  'cb.searchGpuPh': 'Search GPU brand, series or model (e.g. 5090, A10, RX 9070, B60, M3 Ultra)...',
+  'cb.countItems': '{count} models',
+  'cb.brandNoGpu': 'No GPU',
+  'cb.brandGeneric': 'Generic',
+  'cb.seriesNoGpu': 'CPU-Only',
+  'cb.seriesUnified': 'Unified Memory',
 
   // Calculator / Simulator page
   'sim.breadcrumb': 'Rig Simulator',

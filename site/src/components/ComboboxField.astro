@@ -4,19 +4,21 @@ interface Props {
   label: string;
   placeholder: string;
   compact?: boolean;
+  cascader?: boolean;
   labelI18n?: string;
   placeholderI18n?: string;
 }
 
-const { id, label, placeholder, compact = false, labelI18n, placeholderI18n } = Astro.props;
+const { id, label, placeholder, compact = false, cascader = false, labelI18n, placeholderI18n } = Astro.props;
 
 const inputId = `${id}-input`;
 const listId = `${id}-list`;
 const heightCls = compact ? 'h-9 text-xs' : 'h-10 text-sm';
 const wrapMarginCls = compact ? '' : 'mt-1.5';
 const inputClasses = `${heightCls} w-full rounded-lg border border-slate-300 bg-white pl-3 pr-12 font-medium text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none transition-colors`;
-const listClasses =
-  'hidden absolute left-0 right-0 top-full z-40 mt-1.5 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-xl';
+const listClasses = cascader
+  ? 'hidden absolute left-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl'
+  : 'hidden absolute left-0 right-0 top-full z-40 mt-1.5 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-xl';
 ---
 
 <div>

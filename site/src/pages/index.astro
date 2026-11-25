@@ -392,6 +392,7 @@ const staticIndexSubArgs = JSON.stringify({
             id="cb-cpu"
             label="CPU / Unified Chip"
             placeholder="Search i5/i7, Ryzen, Apple M1–M5..."
+            cascader={true}
             labelI18n="home.cpuLabel"
             placeholderI18n="home.cpuPlaceholder"
           />
@@ -412,6 +413,7 @@ const staticIndexSubArgs = JSON.stringify({
             id="cb-gpu"
             label="GPU (Graphics Card)"
             placeholder="Search GPU or None (CPU-Only)..."
+            cascader={true}
             labelI18n="home.gpuLabel"
             placeholderI18n="home.gpuPlaceholder"
           />
@@ -1478,17 +1480,99 @@ const staticIndexSubArgs = JSON.stringify({
       );
     }
 
-    // Build CPU options (Unified Silicon + x86 Tiers)
+    const CPU_BRAND_ORDER: Record<string, number> = {
+      Apple: 1,
+      Intel: 2,
+      AMD: 3,
+      Qualcomm: 4,
+      NVIDIA: 5,
+      Generic: 6,
+    };
+
+    const CPU_SERIES_ORDER: Record<string, number> = {
+      'Apple Silicon M5': 1,
+      'Apple Silicon M4': 2,
+      'Apple Silicon M3': 3,
+      'Apple Silicon M2': 4,
+      'Apple Silicon M1': 5,
+      'DGX Workstation': 6,
+      'Core Ultra 200 (Arrow Lake)': 10,
+      'Core 14th / 13th Gen (DDR5)': 11,
+      'Core 12th–10th Gen (DDR4)': 12,
+      'Core Laptop (Ultra / HX / H)': 13,
+      'Xeon Workstation & Server': 14,
+      'Ryzen 9000 (AM5 Zen 5)': 20,
+      'Ryzen 7000 (AM5 Zen 4)': 21,
+      'Ryzen 5000 / 3000 (AM4 DDR4)': 22,
+      'Ryzen Laptop & AI': 23,
+      'Threadripper Workstation': 24,
+      'EPYC Server': 25,
+      'Ryzen AI Max (Unified)': 26,
+      'Snapdragon X (ARM AI PC)': 30,
+      'Generic Presets': 40,
+    };
+
+    const GPU_BRAND_ORDER: Record<string, number> = {
+      NVIDIA: 1,
+      AMD: 2,
+      Intel: 3,
+      Apple: 4,
+    };
+
+    const GPU_SERIES_ORDER: Record<string, number> = {
+      'RTX 50 Series': 1,
+      'RTX 40 Series': 2,
+      'RTX 30 Series': 3,
+      'RTX 20 Series': 4,
+      'GTX 16 Series': 5,
+      'GTX 10 Series': 6,
+      'RTX 50 Laptop': 7,
+      'RTX 40 Laptop': 8,
+      'RTX 30 Laptop': 9,
+      'RTX Workstation': 10,
+      'Data Center & Homelab': 11,
+      'Multi-GPU RTX': 12,
+      'DGX Workstation': 13,
+      'Radeon RX 9000': 20,
+      'Radeon RX 7000': 21,
+      'Radeon RX 6000': 22,
+      'Radeon PRO': 23,
+      'Instinct Data Center': 24,
+      'Ryzen AI Max': 25,
+      'Intel Arc Battlemage': 30,
+      'Intel Arc Alchemist': 31,
+      'Apple Silicon M5': 40,
+      'Apple Silicon M4': 41,
+      'Apple Silicon M3': 42,
+      'Apple Silicon M2': 43,
+      'Apple Silicon M1': 44,
+    };
+
+    // Build CPU options (Unified Silicon + x86/ARM Tiers, 3-Column Brand / Series / Model)
     function buildCpuOptions(): ComboboxOption[] {
       const opts: ComboboxOption[] = [];
       for (const soc of socProfiles) {
+        const seriesName =
+          soc.vendor === 'Apple'
+            ? soc.series
+            : soc.vendor === 'AMD'
+              ? 'Ryzen AI Max (Unified)'
+              : 'DGX Spark GB10 (Unified)';
+        const seriesOrder =
+          soc.vendor === 'NVIDIA'
+            ? 1
+            : CPU_SERIES_ORDER[seriesName] ?? 90;
         opts.push({
           value: `soc:${soc.id}`,
           label: soc.name,
+          brand: soc.vendor,
+          brandOrder: CPU_BRAND_ORDER[soc.vendor] ?? 50,
+          series: seriesName,
+          seriesOrder,
           group: t('home.grpUnified'),
           sublabel: `${soc.ramTiers.join(' / ')} GB · ${soc.backend} ${soc.bwLabel}`,
           badge: `${soc.backend} Unified`,
-          searchBlob: soc.searchBlob,
+          searchBlob: `${soc.searchBlob} ${seriesName}`.toLowerCase(),
         });
       }
 
@@ -1503,13 +1587,19 @@ const staticIndexSubArgs = JSON.stringify({
         for (const c of catData.cpus) {
           if (c.tier !== tier) continue;
           const aliases = (c.search_aliases || []).join(' ');
+          const brandName = c.vendor === 'Generic' ? t('cb.brandGeneric') : c.vendor;
+          const seriesName = c.series || c.tier;
           opts.push({
             value: `x86:${c.id}`,
             label: c.name,
+            brand: brandName,
+            brandOrder: CPU_BRAND_ORDER[c.vendor] ?? 50,
+            series: seriesName,
+            seriesOrder: CPU_SERIES_ORDER[seriesName] ?? 90,
             group: t(groupKey),
             sublabel: `${c.memory_type} · ${c.channels}-Ch · ${c.simd}`,
             badge: `${c.effective_bw_gbps} GB/s`,
-            searchBlob: [c.id, c.name, c.short_name, c.vendor, c.tier, c.memory_type, aliases]
+            searchBlob: [c.id, c.name, c.short_name, c.vendor, seriesName, c.tier, c.memory_type, aliases]
               .join(' ')
               .toLowerCase(),
           });
@@ -1575,51 +1665,80 @@ const staticIndexSubArgs = JSON.stringify({
     };
 
     function buildGpuOptions(): ComboboxOption[] {
-      const opts: ComboboxOption[] = [
-        {
-          value: 'none',
-          label: t('home.noneCpuOnly'),
-          group: t('home.grpNoGpu'),
-          sublabel: t('home.noneCpuOnlySub'),
-          badge: 'CPU-Only',
-          searchBlob: 'none no gpu cpu only system ram integrated ddr4 ddr5',
-        },
-      ];
+      const opts: ComboboxOption[] = [];
 
-      for (const grp of discreteGroupList) {
-        const gKey = gpuGroupKeyMap[grp.label];
-        const grpTitle = gKey ? t(gKey) : grp.label;
-        for (const h of grp.items) {
-          const usableDesktop = effectiveUsableVramGb(h, 1, 'desktop')[1];
-          opts.push({
-            value: h.id,
-            label: h.name,
-            group: grpTitle,
-            sublabel: t('home.vramLineSub', {
-              vram: h.vram_gb,
-              mem: h.memory_type,
-              usable: usableDesktop,
-            }),
-            badge: `${h.bandwidth_gbps} GB/s`,
-            searchBlob: hwSearchMap.get(h.id) || h.name.toLowerCase(),
-          });
-        }
+      const sortedDiscrete = [...discreteGpus].sort((a, b) => {
+        const bo = (GPU_BRAND_ORDER[a.vendor] ?? 99) - (GPU_BRAND_ORDER[b.vendor] ?? 99);
+        if (bo !== 0) return bo;
+        const so = (GPU_SERIES_ORDER[a.series] ?? 99) - (GPU_SERIES_ORDER[b.series] ?? 99);
+        if (so !== 0) return so;
+        if (b.vram_gb !== a.vram_gb) return b.vram_gb - a.vram_gb;
+        if (b.bandwidth_gbps !== a.bandwidth_gbps) return b.bandwidth_gbps - a.bandwidth_gbps;
+        return a.name.localeCompare(b.name);
+      });
+
+      for (const h of sortedDiscrete) {
+        const usableDesktop = effectiveUsableVramGb(h, 1, 'desktop')[1];
+        opts.push({
+          value: h.id,
+          label: h.name,
+          brand: h.vendor,
+          brandOrder: GPU_BRAND_ORDER[h.vendor] ?? 99,
+          series: h.series,
+          seriesOrder: GPU_SERIES_ORDER[h.series] ?? 99,
+          group: h.series,
+          sublabel: t('home.vramLineSub', {
+            vram: h.vram_gb,
+            mem: h.memory_type,
+            usable: usableDesktop,
+          }),
+          badge: `${h.bandwidth_gbps} GB/s`,
+          searchBlob: hwSearchMap.get(h.id) || h.name.toLowerCase(),
+        });
       }
 
-      for (const sku of catData.hardware) {
-        if (!sku.is_unified) continue;
+      const sortedUnified = catData.hardware
+        .filter((h) => h.is_unified)
+        .sort((a, b) => {
+          const bo = (GPU_BRAND_ORDER[a.vendor] ?? 99) - (GPU_BRAND_ORDER[b.vendor] ?? 99);
+          if (bo !== 0) return bo;
+          const so = (GPU_SERIES_ORDER[a.series] ?? 99) - (GPU_SERIES_ORDER[b.series] ?? 99);
+          if (so !== 0) return so;
+          if (b.bandwidth_gbps !== a.bandwidth_gbps) return b.bandwidth_gbps - a.bandwidth_gbps;
+          return b.vram_gb - a.vram_gb;
+        });
+
+      for (const sku of sortedUnified) {
         opts.push({
           value: `uni:${sku.id}`,
           label: sku.name,
+          brand: sku.vendor,
+          brandOrder: GPU_BRAND_ORDER[sku.vendor] ?? 99,
+          series: sku.series,
+          seriesOrder: GPU_SERIES_ORDER[sku.series] ?? 99,
           group: t('home.grpGpuUnified'),
           sublabel: t('home.unifiedChipNote', {
             ram: Math.round(sku.vram_gb),
             backend: sku.backend,
           }),
           badge: `${sku.bandwidth_gbps} GB/s`,
-          searchBlob: `${hwSearchMap.get(sku.id) || ''} unified macbook mac studio mac mini`.toLowerCase(),
+          searchBlob: `${hwSearchMap.get(sku.id) || ''} unified macbook mac studio mac mini strix halo dgx spark`.toLowerCase(),
         });
       }
+
+      opts.push({
+        value: 'none',
+        label: t('home.noneCpuOnly'),
+        brand: t('cb.brandNoGpu'),
+        brandOrder: 99,
+        series: t('cb.seriesNoGpu'),
+        seriesOrder: 1,
+        group: t('home.grpNoGpu'),
+        sublabel: t('home.noneCpuOnlySub'),
+        badge: 'CPU-Only',
+        searchBlob: 'none no gpu cpu only system ram integrated ddr4 ddr5',
+      });
+
       return opts;
     }
 
@@ -1774,8 +1893,16 @@ const staticIndexSubArgs = JSON.stringify({
     // Instantiate Comboboxes
     const cpuCombo = new SearchableCombobox({
       root: cpuRoot,
+      mode: 'cascader',
       options: buildCpuOptions(),
       placeholder: t('home.cpuPlaceholder'),
+      searchPlaceholder: t('cb.searchCpuPh'),
+      brandHeader: t('cb.brandCol'),
+      seriesHeader: t('cb.seriesCol'),
+      modelHeader: t('cb.modelCol'),
+      allBrandsLabel: (n) => t('cb.allBrands', { count: n }),
+      allSeriesLabel: (n) => t('cb.allSeries', { count: n }),
+      itemsCountFormatter: (n) => t('cb.countItems', { count: n }),
       emptyText: t('home.cpuEmpty'),
       onChange: (val) => applyCpuSelection(val),
     });
@@ -1798,8 +1925,16 @@ const staticIndexSubArgs = JSON.stringify({
 
     const gpuCombo = new SearchableCombobox({
       root: gpuRoot,
+      mode: 'cascader',
       options: buildGpuOptions(),
       placeholder: t('home.gpuPlaceholder'),
+      searchPlaceholder: t('cb.searchGpuPh'),
+      brandHeader: t('cb.brandCol'),
+      seriesHeader: t('cb.seriesCol'),
+      modelHeader: t('cb.modelCol'),
+      allBrandsLabel: (n) => t('cb.allBrands', { count: n }),
+      allSeriesLabel: (n) => t('cb.allSeries', { count: n }),
+      itemsCountFormatter: (n) => t('cb.countItems', { count: n }),
       emptyText: t('home.gpuEmpty'),
       onChange: (val) => applyGpuSelection(val, false),
     });
@@ -2939,27 +3074,45 @@ const staticIndexSubArgs = JSON.stringify({
     });
 
     onLocaleChange(() => {
-      cpuCombo.setOptions(buildCpuOptions(), false);
+      cpuCombo.setOptions(buildCpuOptions(), true);
       cpuCombo.setPlaceholder(t('home.cpuPlaceholder'));
       cpuCombo.setEmptyText(t('home.cpuEmpty'));
+      cpuCombo.setCascaderLabels({
+        searchPlaceholder: t('cb.searchCpuPh'),
+        brandHeader: t('cb.brandCol'),
+        seriesHeader: t('cb.seriesCol'),
+        modelHeader: t('cb.modelCol'),
+        allBrandsLabel: (n) => t('cb.allBrands', { count: n }),
+        allSeriesLabel: (n) => t('cb.allSeries', { count: n }),
+        itemsCountFormatter: (n) => t('cb.countItems', { count: n }),
+      });
       if (selectedCpuVal) cpuCombo.setValue(selectedCpuVal);
 
-      ramCombo.setOptions(buildRamOptions(getActiveUnifiedSoc()), false);
+      ramCombo.setOptions(buildRamOptions(getActiveUnifiedSoc()), true);
       ramCombo.setPlaceholder(t('home.ramPlaceholder'));
       ramCombo.setEmptyText(t('home.ramEmpty'));
       ramCombo.setCustomActionFormatter((n) => t('home.customRamUse', { ram: n }));
       if (selectedRamGb !== null) ramCombo.setValue(String(selectedRamGb), `${selectedRamGb} GB`);
 
-      gpuCombo.setOptions(buildGpuOptions(), false);
+      gpuCombo.setOptions(buildGpuOptions(), true);
       gpuCombo.setPlaceholder(t('home.gpuPlaceholder'));
       gpuCombo.setEmptyText(t('home.gpuEmpty'));
+      gpuCombo.setCascaderLabels({
+        searchPlaceholder: t('cb.searchGpuPh'),
+        brandHeader: t('cb.brandCol'),
+        seriesHeader: t('cb.seriesCol'),
+        modelHeader: t('cb.modelCol'),
+        allBrandsLabel: (n) => t('cb.allBrands', { count: n }),
+        allSeriesLabel: (n) => t('cb.allSeries', { count: n }),
+        itemsCountFormatter: (n) => t('cb.countItems', { count: n }),
+      });
       if (getActiveUnifiedSoc()) {
         gpuCombo.setDisplayOverride(t('home.noneUnifiedAuto'), true, false);
       } else if (selectedGpuVal) {
         gpuCombo.setValue(selectedGpuVal);
       }
 
-      modelCombo.setOptions(buildModelOptions(), false);
+      modelCombo.setOptions(buildModelOptions(), true);
       modelCombo.setPlaceholder(t('home.allModels', { count: catData.models.length }));
       modelCombo.setEmptyText(t('home.modelEmpty'));
       modelCombo.setValue(selectedModel);

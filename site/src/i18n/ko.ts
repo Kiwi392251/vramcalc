@@ -204,7 +204,7 @@ export const ko: TranslationDict = {
   "home.measuredColRepro": "날짜 · 조건 · 재현 명령",
   "home.measuredColSource": "출처",
   "home.staticIndexTitle": "전체 정적 호환 인덱스 ({guides}개 가이드 · JS 불필요)",
-  "home.staticIndexSub": "아래 정적 HTML에는 {guides}개 상세 가이드의 @8K 속도, @Max Fit 저하 속도, AWQ/MLX 값이 모두 직접 표시됩니다. 전체 {combos}개 조합의 실제 속도 행은 {models}개 모델 허브(각 103 GPU)와 {hw}개 GPU 허브(각 23 모델)에 정적으로 프리렌더링되어 있습니다.",
+  "home.staticIndexSub": "아래 정적 HTML에는 {guides}개 상세 가이드의 @8K 속도, @Max Fit 저하 속도, AWQ/MLX 값이 모두 직접 표시됩니다. 전체 {combos}개 조합의 실제 속도 행은 {models}개 모델 허브(각 {hw} GPU)와 {hw}개 GPU 허브(각 {models} 모델)에 정적으로 프리렌더링되어 있습니다.",
   "home.modelTableModel": "모델",
   "home.modelTableQ4": "Q4_K_M @ 8K",
   "home.modelTableAwq": "AWQ 4-bit @ 8K",
@@ -446,5 +446,17 @@ export const ko: TranslationDict = {
   "card.verdictFits": "8K Q4 사용 {vram} GB / 가용 {usable} GB (여유 {margin} GB) · {params}B {arch}",
   "card.verdictTight": "8K Q4 사용 {vram} / {usable} GB — 여유 {margin} GB뿐, 앱 종료 권장 · {params}B {arch}",
   "card.verdictPartial": "8K Q4 필요 {vram} GB (VRAM {fit}/{total} 레이어, 나머지 RAM 분담) · {params}B {arch}",
-  "card.verdictOom": "8K Q4 필요 {vram} GB, 가용 상한 {usable} GB 초과 · {params}B {arch}"
+  "card.verdictOom": "8K Q4 필요 {vram} GB, 가용 상한 {usable} GB 초과 · {params}B {arch}",
+  "cb.brandCol": "브랜드",
+  "cb.seriesCol": "시리즈",
+  "cb.modelCol": "모델",
+  "cb.allBrands": "전체 ({count})",
+  "cb.allSeries": "전체 시리즈 ({count})",
+  "cb.searchCpuPh": "브랜드, 시리즈 또는 CPU 검색 (예: 9800X3D, 285K, M4 Max)...",
+  "cb.searchGpuPh": "브랜드, 시리즈 또는 GPU 검색 (예: 5090, A10, RX 9070, B60, M3 Ultra)...",
+  "cb.countItems": "{count}개",
+  "cb.brandNoGpu": "GPU 없음",
+  "cb.brandGeneric": "일반",
+  "cb.seriesNoGpu": "CPU 전용",
+  "cb.seriesUnified": "통합 메모리"
 };
