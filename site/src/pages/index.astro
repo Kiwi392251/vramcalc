@@ -188,10 +188,20 @@ const measuredRows = measuredAnchors
         : 'home.measuredFreshLegacy';
     const freshLabel = is2026 ? '2026 run' : is2025 ? '2025 baseline' : 'Legacy 2024';
     const freshClass = is2026
-      ? 'inline-block rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-800'
+      ? 'inline-flex items-center rounded-md border border-emerald-200/90 bg-emerald-50 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-emerald-800 whitespace-nowrap'
       : is2025
-        ? 'inline-block rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-slate-600'
-        : 'inline-block rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-amber-800';
+        ? 'inline-flex items-center rounded-md border border-slate-200/90 bg-slate-100/90 px-1.5 py-0.5 font-mono text-[11px] font-medium text-slate-600 whitespace-nowrap'
+        : 'inline-flex items-center rounded-md border border-amber-200/90 bg-amber-50 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-amber-800 whitespace-nowrap';
+    const vendorDotClass =
+      h.vendor === 'Apple'
+        ? 'bg-slate-900'
+        : h.vendor === 'NVIDIA'
+          ? 'bg-emerald-600'
+          : h.vendor === 'AMD'
+            ? 'bg-rose-600'
+            : h.vendor === 'Intel'
+              ? 'bg-sky-600'
+              : 'bg-slate-500';
     return {
       anc,
       model: m,
@@ -206,6 +216,7 @@ const measuredRows = measuredAnchors
       freshKey,
       freshLabel,
       freshClass,
+      vendorDotClass,
     };
   })
   .filter((x): x is NonNullable<typeof x> => x !== null);
@@ -298,52 +309,27 @@ const staticIndexSubArgs = JSON.stringify({
     <script type="application/ld+json" set:html={JSON.stringify(homeCollectionSchema)} />
   </Fragment>
 
-  <section class="border-b border-slate-200 bg-white">
+  <section class="border-b border-slate-200/80 bg-gradient-to-b from-white via-white to-slate-50/70">
     <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
       <div class="max-w-3xl">
-        <div class="mb-3 flex flex-wrap items-center gap-2 text-xs">
-          <span
-            class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 font-mono font-semibold text-emerald-800"
-            data-i18n="common.updated"
-            data-i18n-args={updatedArgs}
-          >
-            Updated {updatedAt}
-          </span>
-          <a
-            href="/changelog/"
-            class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-mono font-medium text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-            data-i18n="home.heroEnginePill"
-            data-i18n-args={heroEngineArgs}
-          >
-            Physics {engineVersion} · Changelog · Formula Estimate (±17–25%)
-          </a>
-          <a
-            href="#measured-benchmarks"
-            class="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 font-mono font-semibold text-sky-800 hover:bg-sky-100 transition-colors"
-            data-i18n="home.heroMeasuredPill"
-            data-i18n-args={measuredSubArgs}
-          >
-            {measuredRows.length} Measured
-          </a>
-        </div>
-        <h1 class="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl" data-i18n="home.heroTitle">
+        <h1 class="text-3xl sm:text-[38px] font-extrabold tracking-[-0.03em] leading-[1.14] text-slate-950" data-i18n="home.heroTitle">
           Local AI Model VRAM &amp; Inference Speed Matrix
         </h1>
-        <p class="mt-3 text-base leading-relaxed text-slate-600" data-i18n="home.heroDesc" data-i18n-args={heroDescArgs}>
+        <p class="mt-3.5 text-[15px] sm:text-base leading-relaxed text-slate-600" data-i18n="home.heroDesc" data-i18n-args={heroDescArgs}>
           Check memory fit, max safe context, and honest bandwidth throughput ranges across {catalogModelCount} models (Qwen3.8-27B, Qwen3, Gemma 3, DeepSeek-R1, Llama-3.3) and {catalogHwCount} GPUs &amp; Macs (M4 16GB, T4, L4, A10, RTX 5090), supporting GGUF, AWQ, MLX, and 1x–8x multi-GPU topologies.
         </p>
 
-        <div class="mt-5 flex flex-wrap items-center gap-3">
+        <div class="mt-6 flex flex-wrap items-center gap-3">
           <a
             href="/calculator/"
-            class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-colors"
+            class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-[0_1px_2px_rgba(37,99,235,0.2)] hover:bg-blue-700 transition-colors"
             data-i18n="home.ctaSimulator"
           >
             Multi-GPU, AWQ/MLX &amp; CPU Simulator -&gt;
           </a>
           <a
             href="/gpu/"
-            class="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors"
+            class="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-4 py-2.5 text-xs font-semibold text-white shadow-[0_1px_2px_rgba(15,23,42,0.16)] hover:bg-slate-800 transition-colors"
             data-i18n="home.ctaGpus"
             data-i18n-args={ctaGpusArgs}
           >
@@ -351,31 +337,70 @@ const staticIndexSubArgs = JSON.stringify({
           </a>
           <a
             href="/model/"
-            class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-800 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+            class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200/90 bg-white px-4 py-2.5 text-xs font-semibold text-slate-800 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-700 transition-colors"
             data-i18n="home.ctaModels"
             data-i18n-args={ctaModelsArgs}
           >
             Browse {uniqueHubModelCount} Model Hubs -&gt;
           </a>
         </div>
+
+        <div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-500">
+          <span class="inline-flex items-center gap-1.5 font-mono font-medium text-emerald-700">
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true"></span>
+            <span data-i18n="common.updated" data-i18n-args={updatedArgs}>
+              Updated {updatedAt}
+            </span>
+          </span>
+          <span class="text-slate-300" aria-hidden="true">·</span>
+          <a
+            href="/changelog/"
+            class="font-mono hover:text-blue-600 transition-colors"
+            data-i18n="home.heroEnginePill"
+            data-i18n-args={heroEngineArgs}
+          >
+            Physics {engineVersion} · Changelog · Formula Estimate (±17–25%)
+          </a>
+          <span class="text-slate-300" aria-hidden="true">·</span>
+          <a
+            href="#measured-benchmarks"
+            class="font-mono font-medium text-slate-700 hover:text-blue-600 transition-colors"
+            data-i18n="home.heroMeasuredPill"
+            data-i18n-args={measuredSubArgs}
+          >
+            {measuredRows.length} Measured
+          </a>
+        </div>
       </div>
 
-      <dl class="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-        <div class="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
-          <dt class="text-xs font-medium text-slate-500" data-i18n="home.kpiGuides">Common Pairings</dt>
-          <dd class="mt-1 font-mono text-2xl font-bold text-slate-950 tabular-nums">{totalCount}</dd>
+      <dl class="mt-8 grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200/80 rounded-2xl border border-slate-200/90 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] overflow-hidden">
+        <div class="px-5 py-4">
+          <dt class="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+            <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400" aria-hidden="true"></span>
+            <span data-i18n="home.kpiGuides">Common Pairings</span>
+          </dt>
+          <dd class="mt-1.5 font-mono text-2xl font-bold tracking-[-0.02em] text-slate-950 tabular-nums">{totalCount}</dd>
         </div>
-        <div class="rounded-xl border border-emerald-200/80 bg-emerald-50/50 px-4 py-3">
-          <dt class="text-xs font-medium text-emerald-800" data-i18n="home.kpiSmooth">Fits in VRAM (8K Q4)</dt>
-          <dd class="mt-1 font-mono text-2xl font-bold text-emerald-900 tabular-nums">{fitsCount}</dd>
+        <div class="px-5 py-4">
+          <dt class="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+            <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden="true"></span>
+            <span data-i18n="home.kpiSmooth">Fits in VRAM (8K Q4)</span>
+          </dt>
+          <dd class="mt-1.5 font-mono text-2xl font-bold tracking-[-0.02em] text-slate-950 tabular-nums">{fitsCount}</dd>
         </div>
-        <div class="rounded-xl border border-amber-200/80 bg-amber-50/50 px-4 py-3">
-          <dt class="text-xs font-medium text-amber-800" data-i18n="home.kpiPartial">Tight Fit / RAM Offload</dt>
-          <dd class="mt-1 font-mono text-2xl font-bold text-amber-900 tabular-nums">{tightPartialCount}</dd>
+        <div class="px-5 py-4">
+          <dt class="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+            <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" aria-hidden="true"></span>
+            <span data-i18n="home.kpiPartial">Tight Fit / RAM Offload</span>
+          </dt>
+          <dd class="mt-1.5 font-mono text-2xl font-bold tracking-[-0.02em] text-slate-950 tabular-nums">{tightPartialCount}</dd>
         </div>
-        <div class="rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
-          <dt class="text-xs font-medium text-slate-500" data-i18n="home.kpiLiveEngine">Models × GPUs</dt>
-          <dd class="mt-1 font-mono text-2xl font-bold text-slate-950 tabular-nums">
+        <div class="px-5 py-4">
+          <dt class="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+            <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" aria-hidden="true"></span>
+            <span data-i18n="home.kpiLiveEngine">Models × GPUs</span>
+          </dt>
+          <dd class="mt-1.5 font-mono text-2xl font-bold tracking-[-0.02em] text-slate-950 tabular-nums">
             {catalogModelCount} × {catalogHwCount}
           </dd>
         </div>
@@ -385,7 +410,7 @@ const staticIndexSubArgs = JSON.stringify({
 
   <!-- Hardware Rig Configurator + Compatibility Matrix -->
   <section class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-    <div id="rig-config-panel" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5">
+    <div id="rig-config-panel" class="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-[0_2px_10px_rgba(15,23,42,0.04)]">
       <!-- Row 1: CPU + RAM + GPU + QTY -->
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,0.75fr)_minmax(0,1.45fr)_116px] lg:items-end">
         <div>
@@ -603,9 +628,16 @@ const staticIndexSubArgs = JSON.stringify({
     <!-- Awaiting Hardware State (Default when no CPU / RAM / GPU is selected) -->
     <div
       id="await-hardware-panel"
-      class="mt-6 rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-7 text-center shadow-xs sm:px-8 sm:py-9"
+      class="mt-6 rounded-2xl border border-slate-200/90 bg-gradient-to-b from-white to-slate-50/70 px-5 py-8 text-center shadow-[0_1px_3px_rgba(15,23,42,0.04)] sm:px-8 sm:py-10"
     >
       <div class="mx-auto max-w-2xl">
+        <div class="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.05)]" aria-hidden="true">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="6" y="6" width="12" height="12" rx="2" />
+            <rect x="9.5" y="9.5" width="5" height="5" rx="0.5" />
+            <path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4" />
+          </svg>
+        </div>
         <span
           data-i18n="home.awaitBadge"
           class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold tracking-wide text-slate-700"
@@ -614,7 +646,7 @@ const staticIndexSubArgs = JSON.stringify({
         </span>
         <h2
           data-i18n="home.awaitTitle"
-          class="mt-3 text-base font-bold tracking-tight text-slate-950 sm:text-lg"
+          class="mt-3 text-base font-bold tracking-[-0.02em] text-slate-950 sm:text-xl"
         >
           Select your chip or GPU above to check VRAM fit
         </h2>
@@ -636,21 +668,21 @@ const staticIndexSubArgs = JSON.stringify({
             Or pick a common device to calculate right away:
           </p>
           <div class="mt-2.5 flex flex-wrap items-center justify-center gap-2">
-            <button type="button" data-quick-soc="apple-m4" data-quick-ram="16" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer">Apple M4 (16GB)</button>
-            <button type="button" data-quick-soc="apple-m4-pro" data-quick-ram="48" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer">Apple M4 Pro (48GB)</button>
-            <button type="button" data-quick-gpu="rtx-4070-12gb" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer">RTX 4070 (12GB)</button>
-            <button type="button" data-quick-gpu="rtx-4090-24gb" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer">RTX 4090 (24GB)</button>
-            <button type="button" data-quick-gpu="nvidia-a10-24gb" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer">NVIDIA A10 (24GB)</button>
-            <button type="button" data-quick-gpu="nvidia-t4-16gb" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer">NVIDIA T4 (16GB)</button>
+            <button type="button" data-quick-soc="apple-m4" data-quick-ram="16" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3.5 py-2 text-[13px] font-semibold text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-blue-400 hover:bg-blue-50/60 hover:text-blue-700 transition-colors cursor-pointer">Apple M4 <span class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-medium text-slate-600">16GB</span></button>
+            <button type="button" data-quick-soc="apple-m4-pro" data-quick-ram="48" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3.5 py-2 text-[13px] font-semibold text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-blue-400 hover:bg-blue-50/60 hover:text-blue-700 transition-colors cursor-pointer">Apple M4 Pro <span class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-medium text-slate-600">48GB</span></button>
+            <button type="button" data-quick-gpu="rtx-4070-12gb" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3.5 py-2 text-[13px] font-semibold text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-blue-400 hover:bg-blue-50/60 hover:text-blue-700 transition-colors cursor-pointer">RTX 4070 <span class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-medium text-slate-600">12GB</span></button>
+            <button type="button" data-quick-gpu="rtx-4090-24gb" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3.5 py-2 text-[13px] font-semibold text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-blue-400 hover:bg-blue-50/60 hover:text-blue-700 transition-colors cursor-pointer">RTX 4090 <span class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-medium text-slate-600">24GB</span></button>
+            <button type="button" data-quick-gpu="nvidia-a10-24gb" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3.5 py-2 text-[13px] font-semibold text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-blue-400 hover:bg-blue-50/60 hover:text-blue-700 transition-colors cursor-pointer">NVIDIA A10 <span class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-medium text-slate-600">24GB</span></button>
+            <button type="button" data-quick-gpu="nvidia-t4-16gb" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3.5 py-2 text-[13px] font-semibold text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-blue-400 hover:bg-blue-50/60 hover:text-blue-700 transition-colors cursor-pointer">NVIDIA T4 <span class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-medium text-slate-600">16GB</span></button>
           </div>
         </div>
 
-        <div class="mt-5 flex flex-wrap items-center justify-center gap-3 border-t border-slate-100 pt-4">
+        <div class="mt-6 flex flex-wrap items-center justify-center gap-3 border-t border-slate-200/80 pt-5">
           <button
             id="await-select-hw-btn"
             type="button"
             data-i18n="home.modeCtaSelectHw"
-            class="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors cursor-pointer"
+            class="inline-flex items-center justify-center rounded-lg bg-slate-950 px-4 py-2 text-xs font-semibold text-white shadow-[0_1px_2px_rgba(15,23,42,0.16)] hover:bg-slate-800 transition-colors cursor-pointer"
           >
             Select My Hardware ↑
           </button>
@@ -659,7 +691,7 @@ const staticIndexSubArgs = JSON.stringify({
             type="button"
             data-i18n="home.awaitBrowsePresets"
             data-i18n-args={awaitPresetsArgs}
-            class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-600 hover:border-slate-300 hover:text-slate-900 transition-colors cursor-pointer"
+            class="inline-flex items-center justify-center rounded-lg border border-slate-200/90 bg-white px-3.5 py-2 text-xs font-medium text-slate-600 hover:border-slate-300 hover:text-slate-900 transition-colors cursor-pointer"
           >
             Just browsing? View {totalCount} preset GPU reference pairings ↓
           </button>
@@ -1073,110 +1105,122 @@ const staticIndexSubArgs = JSON.stringify({
 
   <!-- Measured Community Benchmarks vs Formula Estimates -->
   <section id="measured-benchmarks" class="mx-auto max-w-6xl px-4 pt-6 sm:px-6" aria-labelledby="measured-heading">
-    <div class="min-w-0 max-w-full rounded-2xl border border-sky-200 bg-white p-5 shadow-xs sm:p-6">
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <div class="flex flex-wrap items-center gap-2">
-            <h2 id="measured-heading" class="text-base font-bold tracking-tight text-slate-950" data-i18n="home.measuredTitle">
+    <div class="min-w-0 max-w-full rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <h2 id="measured-heading" class="text-lg sm:text-xl font-bold tracking-[-0.02em] text-slate-950" data-i18n="home.measuredTitle">
               Measured Community Benchmarks vs Formula Estimates
             </h2>
             <span
-              class="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-800"
-              data-i18n="speed.measuredBadge"
-            >
-              Measured
-            </span>
-            <span
-              class="rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-sky-900"
+              class="rounded-full border border-emerald-200/90 bg-emerald-50/90 px-2.5 py-0.5 font-mono text-xs font-semibold text-emerald-800 whitespace-nowrap"
               data-i18n="home.measuredCoverage"
               data-i18n-args={measuredCoverageArgs}
             >
               {measuredRows.length} / {totalCount} guides measured · {formulaOnlyCount} formula-only
             </span>
           </div>
-          <p class="mt-1 text-xs text-slate-600" data-i18n="home.measuredSub" data-i18n-args={measuredSubArgs}>
+          <p class="mt-1.5 max-w-3xl text-sm leading-relaxed text-slate-600" data-i18n="home.measuredSub" data-i18n-args={measuredSubArgs}>
             Side-by-side comparison of {measuredRows.length} reproducible community &amp; framework runs (batch=1 decode, including Qwen3-30B-A3B MoE) against calibrated Physics {engineVersion} formula ranges.
           </p>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-[11px] text-slate-600">
-            llama.cpp · vLLM · mlx-lm
-          </span>
-          <a
-            href="https://github.com/Kiwi392251/vramcalc/issues/new?title=Benchmark+Submission&labels=benchmark"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
-            data-i18n="home.submitBenchmark"
-          >
-            Submit Real Run -&gt;
-          </a>
-        </div>
+        <a
+          href="https://github.com/Kiwi392251/vramcalc/issues/new?title=Benchmark+Submission&labels=benchmark"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-800 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-700 transition-colors"
+          data-i18n="home.submitBenchmark"
+        >
+          Submit Real Run -&gt;
+        </a>
       </div>
 
-      <div class="mt-4 w-full max-w-full overflow-x-auto rounded-xl border border-slate-200">
-        <table class="w-full min-w-[1000px] border-collapse text-left text-xs">
+      <div class="mt-5 w-full max-w-full overflow-x-auto rounded-xl border border-slate-200/90 thin-scrollbar">
+        <table class="w-full min-w-[900px] border-collapse text-left">
           <thead>
-            <tr class="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-              <th class="px-3.5 py-2.5" data-i18n="home.measuredColPair">Model × Hardware</th>
-              <th class="px-3.5 py-2.5" data-i18n="home.measuredColFormat">Format / Runtime</th>
-              <th class="px-3.5 py-2.5" data-i18n="home.measuredColMeasured">Measured Speed</th>
-              <th class="px-3.5 py-2.5" data-i18n="home.measuredColFormula">Formula Est. (±17–25%)</th>
-              <th class="px-3.5 py-2.5" data-i18n="home.measuredColDelta">Δ Mid</th>
-              <th class="px-3.5 py-2.5" data-i18n="home.measuredColRepro">Date · Prompt · Repro</th>
-              <th class="px-3.5 py-2.5" data-i18n="home.measuredColSource">Source</th>
+            <tr class="border-b border-slate-200 bg-slate-50/90 text-[11px] font-semibold text-slate-500 whitespace-nowrap">
+              <th class="pl-3.5 pr-2 py-2.5" data-i18n="home.measuredColPair">Model × Hardware</th>
+              <th class="px-2 py-2.5" data-i18n="home.measuredColFormat">Format / Runtime</th>
+              <th class="px-2 py-2.5" data-i18n="home.measuredColMeasured">Measured Speed</th>
+              <th class="px-2 py-2.5 max-w-[92px] whitespace-normal leading-snug" data-i18n="home.measuredColFormula">Formula Est. (±17–25%)</th>
+              <th class="px-2 py-2.5" data-i18n="home.measuredColDelta">Δ Mid</th>
+              <th class="px-2 py-2.5" data-i18n="home.measuredColRepro">Date · Prompt · Repro</th>
+              <th class="pl-2 pr-3.5 py-2.5" data-i18n="home.measuredColSource">Source</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             {measuredRows.map((row) => (
-              <tr class="hover:bg-slate-50/70 transition-colors">
-                <td class="px-3.5 py-2.5 align-top">
-                  <a href={row.pairHref} class="font-bold text-slate-950 hover:text-blue-600">
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="pl-3.5 pr-2 py-3 align-top">
+                  <a href={row.pairHref} class="text-sm font-bold tracking-[-0.01em] text-slate-950 hover:text-blue-600 transition-colors whitespace-nowrap">
                     {row.model.short_name}
                   </a>
-                  <div class="text-[11px] text-slate-500">{row.hardware.name}</div>
+                  <div class="mt-1.5">
+                    <span class="inline-flex items-center gap-1.5 rounded-md border border-slate-200/90 bg-slate-50 px-2 py-0.5 text-[13px] font-semibold text-slate-900 whitespace-nowrap">
+                      <span class={`h-1.5 w-1.5 shrink-0 rounded-full ${row.vendorDotClass}`} aria-hidden="true"></span>
+                      {row.hardware.name}
+                    </span>
+                  </div>
                 </td>
-                <td class="px-3.5 py-2.5 align-top font-mono text-slate-700">
-                  <div>{row.anc.format} · {row.anc.quant} @ {row.ctxLabel}</div>
-                  <div class="text-[11px] text-slate-500">{row.anc.backend}</div>
+                <td class="px-2 py-3 align-top">
+                  <div class="font-mono text-xs font-semibold text-slate-800 whitespace-nowrap">
+                    {row.anc.format} · {row.anc.quant} <span class="text-slate-400">@</span> {row.ctxLabel}
+                  </div>
+                  <div class="mt-1 max-w-[155px] text-[11px] text-slate-500 leading-snug">{row.anc.backend}</div>
                 </td>
-                <td class="px-3.5 py-2.5 align-top">
+                <td class="px-2 py-3 align-top whitespace-nowrap">
                   <span
-                    class="inline-flex items-center rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono font-bold text-emerald-800"
+                    class="inline-flex items-center whitespace-nowrap rounded-lg border border-emerald-200/90 bg-emerald-50 px-2 py-1 font-mono text-xs font-bold text-emerald-800 tabular-nums"
                     data-i18n="speed.measuredUnit"
                     data-i18n-args={row.measuredUnitArgs}
                   >
                     {row.measuredText}
                   </span>
                 </td>
-                <td class="px-3.5 py-2.5 align-top font-mono text-slate-700">
+                <td class="px-2 py-3 align-top font-mono text-xs font-medium text-slate-700 whitespace-nowrap tabular-nums">
                   {row.formulaText}
                 </td>
-                <td class="px-3.5 py-2.5 align-top">
-                  <div class="font-mono font-semibold text-slate-900 tabular-nums">{row.deltaText}</div>
-                  <span class="mt-0.5 inline-block font-mono text-[10px] font-medium text-emerald-700" data-i18n="home.measuredInRange">
+                <td class="px-2 py-3 align-top whitespace-nowrap">
+                  <div class="font-mono text-xs font-bold text-slate-900 tabular-nums">{row.deltaText}</div>
+                  <span class="mt-1 inline-block text-[11px] font-medium text-emerald-700" data-i18n="home.measuredInRange">
                     In range
                   </span>
                 </td>
-                <td class="px-3.5 py-2.5 align-top">
-                  <div class="flex flex-wrap items-center gap-1.5 font-mono text-[11px] text-slate-700">
-                    <span>{row.anc.date}</span>
+                <td class="px-2 py-3 align-top">
+                  <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+                    <span class="font-mono font-medium text-slate-700 tabular-nums whitespace-nowrap">{row.anc.date}</span>
                     <span class={row.freshClass} data-i18n={row.freshKey}>{row.freshLabel}</span>
-                    <span>· {row.anc.prompt_spec}</span>
+                    <span class="font-mono text-slate-500 whitespace-nowrap">{row.anc.prompt_spec}</span>
                   </div>
-                  <div class="text-[10px] text-slate-500">{row.anc.runtime_version}</div>
-                  <code class="mt-0.5 block max-w-[260px] truncate rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-700" title={row.anc.repro_cmd}>
-                    {row.anc.repro_cmd}
-                  </code>
+                  <div class="mt-1 text-[11px] text-slate-500">{row.anc.runtime_version}</div>
+                  <button
+                    type="button"
+                    data-copy-cmd={row.anc.repro_cmd}
+                    title={row.anc.repro_cmd}
+                    class="mt-1.5 inline-flex max-w-[170px] items-center gap-1.5 rounded-md border border-slate-200/90 bg-slate-50 px-2 py-1 font-mono text-[11px] text-slate-700 hover:border-blue-300 hover:bg-blue-50/70 hover:text-blue-800 transition-colors cursor-pointer"
+                  >
+                    <span class="truncate">{row.anc.repro_cmd}</span>
+                    <svg data-cmd-copy-icon class="h-3 w-3 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                    <svg data-cmd-check-icon class="hidden h-3 w-3 shrink-0 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </button>
                 </td>
-                <td class="px-3.5 py-2.5 align-top text-[11px]">
+                <td class="pl-2 pr-3.5 py-3 align-top">
                   <a
                     href={row.anc.source_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="text-blue-600 underline hover:text-blue-800"
+                    class="group/src inline-flex max-w-[115px] items-start gap-1 text-[11px] font-medium leading-snug text-slate-600 hover:text-blue-600 transition-colors"
                   >
-                    {row.anc.source_label}
+                    <span>{row.anc.source_label}</span>
+                    <svg class="mt-0.5 h-3 w-3 shrink-0 text-slate-400 group-hover/src:text-blue-600 transition-colors" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clip-rule="evenodd" />
+                      <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z" clip-rule="evenodd" />
+                    </svg>
                   </a>
                 </td>
               </tr>
@@ -1184,7 +1228,7 @@ const staticIndexSubArgs = JSON.stringify({
           </tbody>
         </table>
       </div>
-      <p class="mt-2.5 text-[11px] text-slate-500" data-i18n="home.measuredNote">{measuredNote}</p>
+      <p class="mt-3 text-xs leading-relaxed text-slate-500" data-i18n="home.measuredNote">{measuredNote}</p>
     </div>
   </section>
 
@@ -1193,25 +1237,25 @@ const staticIndexSubArgs = JSON.stringify({
     <h2 id="hubs-heading" class="sr-only">Browse All Static Model Hubs, GPU Hubs &amp; Pairings</h2>
 
     <!-- All 23 Model Hubs Table (Zero-JS Visible HTML) -->
-    <div class="min-w-0 max-w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
+    <div class="min-w-0 max-w-full rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <h3 class="text-sm font-bold tracking-tight text-slate-950" data-i18n="home.modelHubsHeading" data-i18n-args={modelHubsArgs}>
+        <h3 class="text-base sm:text-lg font-bold tracking-[-0.02em] text-slate-950" data-i18n="home.modelHubsHeading" data-i18n-args={modelHubsArgs}>
           All {uniqueHubModelCount} Model Hubs
         </h3>
-        <a href="/model/" class="text-xs font-semibold text-blue-600 hover:text-blue-800" data-i18n="common.viewAll">
+        <a href="/model/" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors" data-i18n="common.viewAll">
           View All -&gt;
         </a>
       </div>
-      <div class="mt-3 w-full max-w-full overflow-x-auto rounded-xl border border-slate-200">
+      <div class="mt-4 w-full max-w-full overflow-x-auto rounded-xl border border-slate-200/90 thin-scrollbar">
         <table class="w-full min-w-[780px] border-collapse text-left text-xs">
           <thead>
-            <tr class="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-              <th class="px-3 py-2" data-i18n="home.modelTableModel">Model</th>
-              <th class="px-3 py-2" data-i18n="home.modelTableQ4">Q4_K_M @ 8K</th>
-              <th class="px-3 py-2" data-i18n="home.modelTableAwq">AWQ 4-bit @ 8K</th>
-              <th class="px-3 py-2" data-i18n="home.modelTableKv">KV / 4K</th>
-              <th class="px-3 py-2" data-i18n="home.modelTableFits">Fits GPUs</th>
-              <th class="px-3 py-2" data-i18n="home.modelTableFastest">Fastest GPU (8K)</th>
+            <tr class="border-b border-slate-200 bg-slate-50/90 text-[11px] font-semibold text-slate-500 whitespace-nowrap">
+              <th class="pl-3.5 pr-2.5 py-2.5" data-i18n="home.modelTableModel">Model</th>
+              <th class="px-2.5 py-2.5" data-i18n="home.modelTableQ4">Q4_K_M @ 8K</th>
+              <th class="px-2.5 py-2.5" data-i18n="home.modelTableAwq">AWQ 4-bit @ 8K</th>
+              <th class="px-2.5 py-2.5" data-i18n="home.modelTableKv">KV / 4K</th>
+              <th class="px-2.5 py-2.5" data-i18n="home.modelTableFits">Fits GPUs</th>
+              <th class="pl-2.5 pr-3.5 py-2.5" data-i18n="home.modelTableFastest">Fastest GPU (8K)</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
@@ -1225,20 +1269,20 @@ const staticIndexSubArgs = JSON.stringify({
                 ? `${hub.fastestRow.hardware.short_name} · ${hub.fastestTpsText}`
                 : hub.fastestTpsText;
               return (
-                <tr class="hover:bg-slate-50/70 transition-colors">
-                  <td class="px-3 py-2">
-                    <a href={mHref} class="font-bold text-slate-950 hover:text-blue-600">
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                  <td class="pl-3.5 pr-2.5 py-2.5 whitespace-nowrap">
+                    <a href={mHref} class="text-[13px] font-bold text-slate-950 hover:text-blue-600 transition-colors">
                       {hub.model.name}
                     </a>
-                    <span class="ml-2 font-mono text-[11px] text-slate-500">{hub.model.architecture}</span>
+                    <span class="ml-1.5 font-mono text-[11px] text-slate-500">{hub.model.architecture}</span>
                   </td>
-                  <td class="px-3 py-2 font-mono text-slate-800 tabular-nums">{q4Gb} GB</td>
-                  <td class="px-3 py-2 font-mono text-slate-700 tabular-nums">{awqGb} GB</td>
-                  <td class="px-3 py-2 font-mono text-slate-600 tabular-nums">+{kvStr} GB</td>
-                  <td class="px-3 py-2 font-mono font-semibold text-emerald-700 tabular-nums">
+                  <td class="px-2.5 py-2.5 font-mono text-slate-800 whitespace-nowrap tabular-nums">{q4Gb} GB</td>
+                  <td class="px-2.5 py-2.5 font-mono text-slate-700 whitespace-nowrap tabular-nums">{awqGb} GB</td>
+                  <td class="px-2.5 py-2.5 font-mono text-slate-600 whitespace-nowrap tabular-nums">+{kvStr} GB</td>
+                  <td class="px-2.5 py-2.5 font-mono font-semibold text-emerald-700 whitespace-nowrap tabular-nums">
                     {fitCount} / {uniqueHubHwCount}
                   </td>
-                  <td class="px-3 py-2 font-mono text-slate-800 tabular-nums">
+                  <td class="pl-2.5 pr-3.5 py-2.5 font-mono text-slate-800 whitespace-nowrap tabular-nums">
                     {fastestCellText}
                   </td>
                 </tr>
@@ -1250,16 +1294,16 @@ const staticIndexSubArgs = JSON.stringify({
     </div>
 
     <!-- All 103 Hardware Hubs (Zero-JS Visible HTML) -->
-    <div class="min-w-0 max-w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
+    <div class="min-w-0 max-w-full rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <h3 class="text-sm font-bold tracking-tight text-slate-950" data-i18n="home.hwHubsHeading" data-i18n-args={hwHubsArgs}>
+        <h3 class="text-base sm:text-lg font-bold tracking-[-0.02em] text-slate-950" data-i18n="home.hwHubsHeading" data-i18n-args={hwHubsArgs}>
           All {uniqueHubHwCount} Hardware Hubs
         </h3>
-        <a href="/gpu/" class="text-xs font-semibold text-blue-600 hover:text-blue-800" data-i18n="common.viewAll">
+        <a href="/gpu/" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors" data-i18n="common.viewAll">
           View All -&gt;
         </a>
       </div>
-      <div class="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div class="mt-4 max-h-[380px] overflow-y-auto pr-1 thin-scrollbar grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {hwHubRows.map((hub) => {
           const hHref = `/gpu/${hub.hardware.id}/`;
           const fitTotal = hub.fitsCount + hub.tightCount;
@@ -1267,9 +1311,9 @@ const staticIndexSubArgs = JSON.stringify({
           return (
             <a
               href={hHref}
-              class="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs hover:border-blue-300 hover:bg-blue-50 transition-colors"
+              class="flex items-center justify-between gap-2 rounded-xl border border-slate-200/80 bg-slate-50/70 px-3 py-2 text-xs hover:border-blue-300 hover:bg-blue-50/60 transition-colors"
             >
-              <span class="truncate font-semibold text-slate-800">{hub.hardware.short_name}</span>
+              <span class="truncate text-[13px] font-semibold text-slate-900">{hub.hardware.short_name}</span>
               <span class="shrink-0 font-mono text-[11px] text-slate-500 tabular-nums">
                 {usableStr}G · {fitTotal}/{uniqueHubModelCount}
               </span>
@@ -1280,59 +1324,59 @@ const staticIndexSubArgs = JSON.stringify({
     </div>
 
     <!-- Complete Static Compatibility Index (All 173 Curated Pairings, Zero-JS) -->
-    <div id="static-compatibility-index" class="min-w-0 max-w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
+    <div id="static-compatibility-index" class="min-w-0 max-w-full rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 class="text-sm font-bold tracking-tight text-slate-950" data-i18n="home.staticIndexTitle" data-i18n-args={staticIndexTitleArgs}>
+          <h3 class="text-base sm:text-lg font-bold tracking-[-0.02em] text-slate-950" data-i18n="home.staticIndexTitle" data-i18n-args={staticIndexTitleArgs}>
             Complete Static Compatibility Index (All {totalCount} Curated Pairings · Zero-JS)
           </h3>
-          <p class="mt-0.5 text-xs text-slate-600" data-i18n="home.staticIndexSub" data-i18n-args={staticIndexSubArgs}>
+          <p class="mt-1 text-xs leading-relaxed text-slate-600" data-i18n="home.staticIndexSub" data-i18n-args={staticIndexSubArgs}>
             All {totalCount} curated guides below include full @8K, @Max Fit &amp; AWQ/MLX speeds directly on this page. The remaining {catalogModelCount * catalogHwCount} full-matrix speed rows live statically across the {catalogModelCount} Model Hub pages (103 GPUs each) and {catalogHwCount} GPU Hub pages (23 models each) — 1 click away, zero JS required.
           </p>
         </div>
       </div>
-      <div class="mt-3 w-full max-w-full max-h-[420px] overflow-auto rounded-xl border border-slate-200">
-        <table class="w-full min-w-[940px] border-collapse text-left text-xs">
-          <thead class="sticky top-0 z-10 bg-slate-50">
-            <tr class="border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-              <th class="px-3 py-2" data-i18n="home.modelTableModel">Model</th>
-              <th class="px-3 py-2" data-i18n="hub.colHardware">Hardware</th>
-              <th class="px-3 py-2" data-i18n="detail.colStatus">Fit / Speed</th>
-              <th class="px-3 py-2" data-i18n="common.vram8kLabel">VRAM @ 8K</th>
-              <th class="px-3 py-2">AWQ / MLX @ 8K</th>
-              <th class="px-3 py-2" data-i18n="hub.bestQuantMaxCtx">Max Fit</th>
-              <th class="px-3 py-2" data-i18n="sim.colSpeed">Est. Range</th>
-              <th class="px-3 py-2 text-right" data-i18n="sim.colAction">Guide</th>
+      <div class="mt-4 w-full max-w-full max-h-[420px] overflow-auto rounded-xl border border-slate-200/90 thin-scrollbar">
+        <table class="w-full min-w-[840px] border-collapse text-left text-xs">
+          <thead class="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs">
+            <tr class="border-b border-slate-200 text-[11px] font-semibold text-slate-500 whitespace-nowrap">
+              <th class="pl-3 pr-2 py-2.5" data-i18n="home.modelTableModel">Model</th>
+              <th class="px-2 py-2.5" data-i18n="hub.colHardware">Hardware</th>
+              <th class="px-2 py-2.5" data-i18n="detail.colStatus">Fit / Speed</th>
+              <th class="px-2 py-2.5" data-i18n="common.vram8kLabel">VRAM @ 8K</th>
+              <th class="px-2 py-2.5">AWQ / MLX @ 8K</th>
+              <th class="px-2 py-2.5 max-w-[115px] whitespace-normal leading-snug" data-i18n="hub.bestQuantMaxCtx">Max Fit</th>
+              <th class="px-2 py-2.5" data-i18n="sim.colSpeed">Est. Range</th>
+              <th class="pl-2 pr-3 py-2.5 text-right" data-i18n="sim.colAction">Guide</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             {staticIndexRows.map((row) => (
-              <tr class="hover:bg-slate-50/70 transition-colors">
-                <td class="px-3 py-2 font-bold text-slate-900">{row.modelShort}</td>
-                <td class="px-3 py-2 text-slate-700">{row.hwShort}</td>
-                <td class="px-3 py-2">
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="pl-3 pr-2 py-2.5 text-[13px] font-bold text-slate-950 whitespace-nowrap">{row.modelShort}</td>
+                <td class="px-2 py-2.5 max-w-[215px] text-[13px] font-semibold text-slate-900 leading-snug">{row.hwShort}</td>
+                <td class="px-2 py-2.5">
                   <div class="flex flex-wrap items-center gap-1">
                     <StatusBadge status={row.status} />
                     <SpeedBadge tier={row.speedTier} short={true} />
                   </div>
                 </td>
-                <td class="px-3 py-2 font-mono text-slate-700 tabular-nums">{row.vramText}</td>
-                <td class="px-3 py-2 font-mono text-[11px] text-slate-600 tabular-nums">{row.altText}</td>
-                <td class="px-3 py-2 font-mono text-slate-600 tabular-nums">{row.maxFitText}</td>
-                <td class="px-3 py-2">
+                <td class="px-2 py-2.5 font-mono text-slate-700 whitespace-nowrap tabular-nums">{row.vramText}</td>
+                <td class="px-2 py-2.5 max-w-[140px] font-mono text-[11px] text-slate-600 leading-snug tabular-nums">{row.altText}</td>
+                <td class="px-2 py-2.5 max-w-[155px] font-mono text-[11px] text-slate-600 leading-snug tabular-nums">{row.maxFitText}</td>
+                <td class="px-2 py-2.5 whitespace-nowrap">
                   <div class="font-mono font-semibold text-slate-900 tabular-nums">{row.tpsText}</div>
                   {row.isMeasured ? (
-                    <span class="mt-0.5 inline-block rounded border border-emerald-200 bg-emerald-50 px-1 py-0.5 font-mono text-[9px] font-semibold text-emerald-800" data-i18n="speed.measuredBadge">
+                    <span class="mt-0.5 inline-block rounded border border-emerald-200 bg-emerald-50 px-1 py-0.5 font-mono text-[10px] font-semibold text-emerald-800" data-i18n="speed.measuredBadge">
                       Measured
                     </span>
                   ) : (
-                    <span class="mt-0.5 inline-block font-mono text-[9px] text-slate-400" data-i18n="speed.formulaEst">
+                    <span class="mt-0.5 inline-block font-mono text-[10px] text-slate-400" data-i18n="speed.formulaEst">
                       Formula est.
                     </span>
                   )}
                 </td>
-                <td class="px-3 py-2 text-right">
-                  <a href={row.href} class="font-semibold text-blue-600 hover:text-blue-800" data-i18n="common.openGuide">
+                <td class="pl-2 pr-3 py-2.5 text-right whitespace-nowrap">
+                  <a href={row.href} class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors" data-i18n="common.openGuide">
                     Open Guide -&gt;
                   </a>
                 </td>
@@ -1346,9 +1390,9 @@ const staticIndexSubArgs = JSON.stringify({
 
   <!-- Estimation Formula & Methodology -->
   <section id="methodology" class="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
-    <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+    <div class="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <h2 class="text-lg font-bold tracking-tight text-slate-950" data-i18n="home.methodTitle">
+        <h2 class="text-lg sm:text-xl font-bold tracking-[-0.02em] text-slate-950" data-i18n="home.methodTitle">
           Physics Engine {engineVersion}: Calibrated Formulas vs Verified Benchmarks
         </h2>
         <div class="flex flex-wrap items-center gap-2">
@@ -1369,7 +1413,7 @@ const staticIndexSubArgs = JSON.stringify({
           </span>
         </div>
       </div>
-      <div class="mt-4 grid gap-6 text-sm leading-relaxed text-slate-600 md:grid-cols-3">
+      <div class="mt-5 grid gap-6 border-t border-slate-100 pt-5 text-sm leading-relaxed text-slate-600 md:grid-cols-3">
         <div>
           <h3 class="font-semibold text-slate-900" data-i18n="home.method1Title">1. Tiered OS Reserves &amp; Custom GB Override</h3>
           <p class="mt-1.5" data-i18n="home.method1Desc">
@@ -1390,11 +1434,11 @@ const staticIndexSubArgs = JSON.stringify({
         </div>
       </div>
 
-      <div class="mt-5 rounded-xl border border-indigo-200 bg-indigo-50/70 p-4 text-xs leading-relaxed text-indigo-950">
-        <div class="font-bold text-indigo-950" data-i18n="home.uncensoredTitle">
+      <div class="mt-5 rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-xs leading-relaxed text-slate-800">
+        <div class="font-bold text-slate-950" data-i18n="home.uncensoredTitle">
           Uncensored / Abliterated / Heretic Models (1:1 Drop-In)
         </div>
-        <p class="mt-1 text-indigo-900/90" data-i18n="home.uncensoredDesc">
+        <p class="mt-1 text-slate-600" data-i18n="home.uncensoredDesc">
           Community uncensored, abliterated, and Heretic fine-tunes use identical layer counts, hidden dimensions, and GQA KV geometry as the base checkpoints above — apply the same @8K VRAM, Max Fit context, and tok/s estimates directly (allow ~±3–5% for custom imatrix quant variance).
         </p>
       </div>
@@ -3425,6 +3469,34 @@ const staticIndexSubArgs = JSON.stringify({
         applyFilters(false);
       });
     }
+
+    const cmdTimers = new WeakMap<Element, number>();
+    document.querySelectorAll('[data-copy-cmd]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const cmd = btn.getAttribute('data-copy-cmd') || '';
+        if (!cmd) return;
+        const doFeedback = () => {
+          const copyIcon = btn.querySelector('[data-cmd-copy-icon]');
+          const checkIcon = btn.querySelector('[data-cmd-check-icon]');
+          if (copyIcon) copyIcon.classList.add('hidden');
+          if (checkIcon) checkIcon.classList.remove('hidden');
+          btn.classList.add('border-emerald-300', 'bg-emerald-50', 'text-emerald-800');
+          const prev = cmdTimers.get(btn);
+          if (prev) window.clearTimeout(prev);
+          const tid = window.setTimeout(() => {
+            if (copyIcon) copyIcon.classList.remove('hidden');
+            if (checkIcon) checkIcon.classList.add('hidden');
+            btn.classList.remove('border-emerald-300', 'bg-emerald-50', 'text-emerald-800');
+          }, 1400);
+          cmdTimers.set(btn, tid);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(cmd).then(doFeedback).catch(doFeedback);
+        } else {
+          doFeedback();
+        }
+      });
+    });
 
     if (liveLoadMoreBtn) {
       liveLoadMoreBtn.addEventListener('click', () => {

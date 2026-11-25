@@ -42,11 +42,11 @@ const isGpu = canonicalPath.startsWith('/gpu/');
 const isModel = canonicalPath.startsWith('/model/');
 const isChangelog = canonicalPath.startsWith('/changelog');
 
-const navMatrixClass = isHome ? 'whitespace-nowrap text-blue-600 font-semibold' : 'whitespace-nowrap hover:text-slate-950 transition-colors';
-const navCalcClass = isCalc ? 'whitespace-nowrap text-blue-600 font-semibold' : 'whitespace-nowrap hover:text-slate-950 transition-colors';
-const navGpuClass = isGpu ? 'whitespace-nowrap text-blue-600 font-semibold' : 'whitespace-nowrap hover:text-slate-950 transition-colors';
-const navModelClass = isModel ? 'whitespace-nowrap text-blue-600 font-semibold' : 'whitespace-nowrap hover:text-slate-950 transition-colors';
-const navChangelogClass = isChangelog ? 'whitespace-nowrap text-blue-600 font-semibold' : 'whitespace-nowrap hover:text-slate-950 transition-colors';
+const navMatrixClass = isHome ? 'whitespace-nowrap rounded-lg bg-blue-50 px-2.5 py-1 text-blue-700 font-semibold' : 'whitespace-nowrap rounded-lg px-2.5 py-1 hover:bg-slate-100/80 hover:text-slate-950 transition-colors';
+const navCalcClass = isCalc ? 'whitespace-nowrap rounded-lg bg-blue-50 px-2.5 py-1 text-blue-700 font-semibold' : 'whitespace-nowrap rounded-lg px-2.5 py-1 hover:bg-slate-100/80 hover:text-slate-950 transition-colors';
+const navGpuClass = isGpu ? 'whitespace-nowrap rounded-lg bg-blue-50 px-2.5 py-1 text-blue-700 font-semibold' : 'whitespace-nowrap rounded-lg px-2.5 py-1 hover:bg-slate-100/80 hover:text-slate-950 transition-colors';
+const navModelClass = isModel ? 'whitespace-nowrap rounded-lg bg-blue-50 px-2.5 py-1 text-blue-700 font-semibold' : 'whitespace-nowrap rounded-lg px-2.5 py-1 hover:bg-slate-100/80 hover:text-slate-950 transition-colors';
+const navChangelogClass = isChangelog ? 'whitespace-nowrap rounded-lg bg-blue-50 px-2.5 py-1 text-blue-700 font-semibold' : 'whitespace-nowrap rounded-lg px-2.5 py-1 hover:bg-slate-100/80 hover:text-slate-950 transition-colors';
 const navDesktopChangelogClass = `hidden md:inline ${navChangelogClass}`;
 const indexedArgs = JSON.stringify({ count: totalPages, models: modelCount, hw: hwCount });
 const footerMetaArgs = JSON.stringify({ date: updatedAt, ver: engineVersion });
@@ -140,8 +140,8 @@ const footerMetaArgs = JSON.stringify({ date: updatedAt, ver: engineVersion });
 
     <slot name="head" />
   </head>
-  <body class="min-h-screen bg-[#f8fafc] text-slate-900 antialiased flex flex-col">
-    <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-sm">
+  <body class="min-h-screen bg-[#f6f8fb] text-slate-900 antialiased flex flex-col">
+    <header class="sticky top-0 z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur-md">
       <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2.5 sm:flex-nowrap sm:gap-4 sm:px-6 sm:py-3">
         <a
           href="/"
@@ -191,12 +191,12 @@ const footerMetaArgs = JSON.stringify({ date: updatedAt, ver: engineVersion });
           ></div>
         </div>
 
-        <nav aria-label="Primary" class="order-3 flex w-full items-center justify-between gap-2 border-t border-slate-100 pt-2 text-xs font-medium text-slate-600 sm:order-2 sm:ml-auto sm:w-auto sm:border-0 sm:pt-0 sm:gap-5 sm:text-sm">
+        <nav aria-label="Primary" class="order-3 flex w-full items-center justify-between gap-1 border-t border-slate-100 pt-2 text-xs font-medium text-slate-600 sm:order-2 sm:ml-auto sm:w-auto sm:border-0 sm:pt-0 sm:gap-1.5 sm:text-sm">
           <a href="/" class={navMatrixClass} data-i18n="nav.matrix">Matrix</a>
           <a href="/calculator/" class={navCalcClass} data-i18n="nav.simulator">Simulator</a>
           <a href="/gpu/" class={navGpuClass} data-i18n="nav.gpus">GPUs</a>
           <a href="/model/" class={navModelClass} data-i18n="nav.models">Models</a>
-          <a href="/#methodology" class="hidden md:inline whitespace-nowrap hover:text-slate-950 transition-colors" data-i18n="nav.formula">
+          <a href="/#methodology" class="hidden md:inline whitespace-nowrap rounded-lg px-2.5 py-1 hover:bg-slate-100/80 hover:text-slate-950 transition-colors" data-i18n="nav.formula">
             VRAM Formula
           </a>
           <a href="/changelog/" class={navDesktopChangelogClass} data-i18n="nav.changelog">
