@@ -239,7 +239,7 @@ export const en = {
   'home.measuredCoverage': '{measured} / {total} guides measured · {formulaOnly} formula-only',
   'home.submitBenchmark': 'Submit Real Run ->',
   'home.reserveCustomPh': 'e.g. 22.4',
-  'home.measuredColPair': 'Model × Hardware',
+  'home.measuredColPair': 'Model × Test Hardware',
   'home.measuredColFormat': 'Format / Runtime',
   'home.measuredColMeasured': 'Measured Speed',
   'home.measuredColFormula': 'Formula Est. (±17–25%)',

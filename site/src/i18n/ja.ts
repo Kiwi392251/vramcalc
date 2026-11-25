@@ -208,7 +208,7 @@ export const ja: TranslationDict = {
   "home.measuredCoverage": "{measured} / {total} ガイドが実測済み · {formulaOnly} は計算推定のみ",
   "home.submitBenchmark": "実測を投稿 ->",
   "home.reserveCustomPh": "例: 22.4",
-  "home.measuredColPair": "モデル × ハードウェア",
+  "home.measuredColPair": "モデル × 実測ハードウェア",
   "home.measuredColFormat": "形式 / ランタイム",
   "home.measuredColMeasured": "実測速度",
   "home.measuredColFormula": "計算推定 (±17–25%)",

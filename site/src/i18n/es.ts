@@ -208,7 +208,7 @@ export const es: TranslationDict = {
   "home.measuredCoverage": "{measured} / {total} guías medidas · {formulaOnly} solo fórmula",
   "home.submitBenchmark": "Enviar Medición ->",
   "home.reserveCustomPh": "ej. 22.4",
-  "home.measuredColPair": "Modelo × Hardware",
+  "home.measuredColPair": "Modelo × Hardware de prueba",
   "home.measuredColFormat": "Formato / Runtime",
   "home.measuredColMeasured": "Velocidad Medida",
   "home.measuredColFormula": "Est. Fórmula (±17–25%)",

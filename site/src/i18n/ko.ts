@@ -208,7 +208,7 @@ export const ko: TranslationDict = {
   "home.measuredCoverage": "{measured} / {total}개 가이드 실측 · {formulaOnly}개 공식 추정",
   "home.submitBenchmark": "실측 제보하기 ->",
   "home.reserveCustomPh": "예: 22.4",
-  "home.measuredColPair": "모델 × 하드웨어",
+  "home.measuredColPair": "모델 × 테스트 하드웨어",
   "home.measuredColFormat": "포맷 / 런타임",
   "home.measuredColMeasured": "실측 속도",
   "home.measuredColFormula": "공식 추정 (±17–25%)",

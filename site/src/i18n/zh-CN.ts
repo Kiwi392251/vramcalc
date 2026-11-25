@@ -210,7 +210,7 @@ export const zhCN: TranslationDict = {
   "home.measuredCoverage": "{measured} / {total} 组已有实测 · 其余 {formulaOnly} 组为公式估算",
   "home.submitBenchmark": "提交真机实测 ->",
   "home.reserveCustomPh": "例如 22.4",
-  "home.measuredColPair": "模型 × 硬件",
+  "home.measuredColPair": "模型 × 测试硬件",
   "home.measuredColFormat": "格式 / 运行时",
   "home.measuredColMeasured": "实测速度",
   "home.measuredColFormula": "公式估算 (±17–25%)",
