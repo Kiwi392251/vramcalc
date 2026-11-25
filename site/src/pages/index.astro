@@ -1,8 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ComboboxField from '../components/ComboboxField.astro';
+import CustomSelect from '../components/CustomSelect.astro';
 import StatusBadge from '../components/StatusBadge.astro';
-import SpeedBadge from '../components/SpeedBadge.astro';
 import catalogRaw from '../data/catalog_data.json';
 import rawPagesData from '../data/pages_data.json';
 import type { CatalogData, PageEntry, SpeedTier } from '../types/vram';
@@ -76,9 +76,8 @@ const initialRemainingCount = Math.max(0, totalCount - initialVisibleCount);
 const initialProgressPct = totalCount > 0 ? Math.round((initialVisibleCount / totalCount) * 100) : 100;
 const initialProgressStyle = `width: ${initialProgressPct}%`;
 const paginationHiddenClass =
-  'mt-7 hidden rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between';
+  'mt-7 hidden surface-card p-4 sm:p-5 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between';
 
-// Full static catalog hubs (all 22 models + all 103 hardware SKUs reachable in 1 hop from '/')
 const uniqueHubModels = [...catalog.models].sort((a, b) => a.name.localeCompare(b.name));
 const uniqueHubHardware = [...catalog.hardware].sort((a, b) => a.name.localeCompare(b.name));
 
@@ -184,20 +183,20 @@ const measuredRows = measuredAnchors
         : 'home.measuredFreshLegacy';
     const freshLabel = is2026 ? '2026 run' : is2025 ? '2025 baseline' : 'Legacy 2024';
     const freshClass = is2026
-      ? 'inline-flex items-center rounded-md border border-emerald-200/90 bg-emerald-50 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-emerald-800 whitespace-nowrap'
+      ? 'badge-fits inline-flex items-center rounded-md border px-1.5 py-0.5 font-mono text-[11px] font-semibold whitespace-nowrap'
       : is2025
-        ? 'inline-flex items-center rounded-md border border-slate-200/90 bg-slate-100/90 px-1.5 py-0.5 font-mono text-[11px] font-medium text-slate-600 whitespace-nowrap'
-        : 'inline-flex items-center rounded-md border border-amber-200/90 bg-amber-50 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-amber-800 whitespace-nowrap';
+        ? 'badge-neutral inline-flex items-center rounded-md border px-1.5 py-0.5 font-mono text-[11px] font-medium whitespace-nowrap'
+        : 'badge-partial inline-flex items-center rounded-md border px-1.5 py-0.5 font-mono text-[11px] font-semibold whitespace-nowrap';
     const vendorDotClass =
       h.vendor === 'Apple'
-        ? 'bg-slate-900'
+        ? 'bg-[var(--ink-primary)]'
         : h.vendor === 'NVIDIA'
-          ? 'bg-emerald-600'
+          ? 'bg-emerald-500'
           : h.vendor === 'AMD'
-            ? 'bg-rose-600'
+            ? 'bg-rose-500'
             : h.vendor === 'Intel'
-              ? 'bg-sky-600'
-              : 'bg-slate-500';
+              ? 'bg-sky-500'
+              : 'bg-[var(--ink-tertiary)]';
     return {
       anc,
       model: m,
@@ -252,19 +251,19 @@ const staticIndexRows = entries.map((e) => {
     speedTier,
     tpsText,
     isMeasured,
-    layersText: `${res.gpu_layers_fit}/${res.total_layers}`,
   };
 });
+
+const sortSelectOptions = [
+  { value: 'featured', label: 'Recommended', dataI18n: 'home.sortRecommended' },
+  { value: 'tps-desc', label: 'Fastest tok/s', dataI18n: 'home.sortFastest' },
+  { value: 'vram-asc', label: 'Lowest VRAM', dataI18n: 'home.sortLowestVram' },
+  { value: 'params-desc', label: 'Largest Model', dataI18n: 'home.sortLargestModel' },
+];
 
 const heroDescArgs = JSON.stringify({ models: catalogModelCount, hw: catalogHwCount });
 const ctaGpusArgs = JSON.stringify({ count: uniqueHubHwCount });
 const ctaModelsArgs = JSON.stringify({ count: uniqueHubModelCount });
-const initCountArgs = JSON.stringify({
-  shown: initialVisibleCount,
-  total: totalCount,
-  models: catalogModelCount,
-  hw: catalogHwCount,
-});
 const awaitCountArgs = JSON.stringify({ models: catalogModelCount, hw: catalogHwCount });
 const awaitDescArgs = JSON.stringify({ models: catalogModelCount });
 const awaitPresetsArgs = JSON.stringify({ total: totalCount });
@@ -272,6 +271,7 @@ const initViewArgs = JSON.stringify({ shown: initialVisibleCount, total: totalCo
 const initLoadArgs = JSON.stringify({ chunk: Math.min(PAGE_SIZE, initialRemainingCount), left: initialRemainingCount });
 const modelHubsArgs = JSON.stringify({ count: uniqueHubModelCount });
 const hwHubsArgs = JSON.stringify({ count: uniqueHubHwCount });
+const dirSubArgs = JSON.stringify({ models: uniqueHubModelCount, hw: uniqueHubHwCount, guides: totalCount });
 const measuredSubArgs = JSON.stringify({ count: measuredRows.length });
 const heroEngineArgs = JSON.stringify({ ver: engineVersion });
 const formulaOnlyCount = Math.max(0, totalCount - measuredRows.length);
@@ -280,7 +280,7 @@ const measuredCoverageArgs = JSON.stringify({
   total: totalCount,
   formulaOnly: formulaOnlyCount,
 });
-const staticIndexTitleArgs = JSON.stringify({ guides: totalCount });
+const staticIndexTitleArgs = JSON.stringify({ count: totalCount });
 const staticIndexSubArgs = JSON.stringify({
   guides: totalCount,
   models: catalogModelCount,
@@ -298,34 +298,33 @@ const staticIndexSubArgs = JSON.stringify({
   ogDescription={homeOgDescription}
   ogImage="/og/home.png"
   ogImageAlt={homeOgTitle}
-  themeColor="#2563eb"
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
     <script type="application/ld+json" set:html={JSON.stringify(homeCollectionSchema)} />
   </Fragment>
 
-  <section class="border-b border-slate-200/80 bg-gradient-to-b from-white via-white to-slate-50/70">
-    <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+  <section class="border-b border-[var(--border-hairline)] bg-[var(--bg-surface)]">
+    <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
       <div class="max-w-3xl">
-        <h1 class="text-3xl sm:text-[38px] font-extrabold tracking-[-0.03em] leading-[1.14] text-slate-950" data-i18n="home.heroTitle">
+        <h1 class="text-3xl sm:text-[42px] font-bold tracking-[-0.03em] leading-[1.12] text-[var(--ink-primary)]" data-i18n="home.heroTitle">
           Local AI Model VRAM &amp; Inference Speed Matrix
         </h1>
-        <p class="mt-3.5 text-[15px] sm:text-base leading-relaxed text-slate-600" data-i18n="home.heroDesc" data-i18n-args={heroDescArgs}>
+        <p class="mt-4 text-[15px] sm:text-base leading-relaxed text-[var(--ink-secondary)]" data-i18n="home.heroDesc" data-i18n-args={heroDescArgs}>
           Check memory fit, max safe context, and honest bandwidth throughput ranges across {catalogModelCount} models (Qwen3.8-27B, Qwen3, Gemma 3, DeepSeek-R1, Llama-3.3) and {catalogHwCount} GPUs &amp; Macs (M4 16GB, T4, L4, A10, RTX 5090), supporting GGUF, AWQ, MLX, and 1x–8x multi-GPU topologies.
         </p>
 
-        <div class="mt-6 flex flex-wrap items-center gap-3">
+        <div class="mt-7 flex flex-wrap items-center gap-3">
           <a
             href="/calculator/"
-            class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-[0_1px_2px_rgba(37,99,235,0.2)] hover:bg-blue-700 transition-colors"
+            class="btn-primary px-4 py-2.5 text-xs sm:text-[13px]"
             data-i18n="home.ctaSimulator"
           >
             Multi-GPU, AWQ/MLX &amp; CPU Simulator -&gt;
           </a>
           <a
             href="/gpu/"
-            class="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-4 py-2.5 text-xs font-semibold text-white shadow-[0_1px_2px_rgba(15,23,42,0.16)] hover:bg-slate-800 transition-colors"
+            class="btn-secondary px-4 py-2.5 text-xs sm:text-[13px]"
             data-i18n="home.ctaGpus"
             data-i18n-args={ctaGpusArgs}
           >
@@ -333,7 +332,7 @@ const staticIndexSubArgs = JSON.stringify({
           </a>
           <a
             href="/model/"
-            class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200/90 bg-white px-4 py-2.5 text-xs font-semibold text-slate-800 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-700 transition-colors"
+            class="btn-secondary px-4 py-2.5 text-xs sm:text-[13px]"
             data-i18n="home.ctaModels"
             data-i18n-args={ctaModelsArgs}
           >
@@ -341,26 +340,26 @@ const staticIndexSubArgs = JSON.stringify({
           </a>
         </div>
 
-        <div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-500">
-          <span class="inline-flex items-center gap-1.5 font-mono font-medium text-emerald-700">
+        <div class="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-[var(--ink-tertiary)]">
+          <span class="inline-flex items-center gap-1.5 font-mono font-medium text-emerald-600 dark:text-emerald-400">
             <span class="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true"></span>
             <span data-i18n="common.updated" data-i18n-args={updatedArgs}>
               Updated {updatedAt}
             </span>
           </span>
-          <span class="text-slate-300" aria-hidden="true">·</span>
+          <span aria-hidden="true">·</span>
           <a
             href="/changelog/"
-            class="font-mono hover:text-blue-600 transition-colors"
+            class="font-mono hover:text-[var(--accent-ink)] transition-colors"
             data-i18n="home.heroEnginePill"
             data-i18n-args={heroEngineArgs}
           >
             Physics {engineVersion} · Changelog · Formula Estimate (±17–25%)
           </a>
-          <span class="text-slate-300" aria-hidden="true">·</span>
+          <span aria-hidden="true">·</span>
           <a
             href="#measured-benchmarks"
-            class="font-mono font-medium text-slate-700 hover:text-blue-600 transition-colors"
+            class="font-mono font-medium text-[var(--ink-secondary)] hover:text-[var(--accent-ink)] transition-colors"
             data-i18n="home.heroMeasuredPill"
             data-i18n-args={measuredSubArgs}
           >
@@ -373,9 +372,9 @@ const staticIndexSubArgs = JSON.stringify({
 
   <!-- Hardware Rig Configurator + Compatibility Matrix -->
   <section class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-    <div id="rig-config-panel" class="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-[0_2px_10px_rgba(15,23,42,0.04)]">
+    <div id="rig-config-panel" class="surface-card p-5 sm:p-7">
       <!-- Row 1: CPU + RAM + GPU + QTY -->
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,0.75fr)_minmax(0,1.45fr)_116px] lg:items-end">
+      <div class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,0.75fr)_minmax(0,1.45fr)_124px] lg:items-end">
         <div>
           <ComboboxField
             id="cb-cpu"
@@ -409,40 +408,39 @@ const staticIndexSubArgs = JSON.stringify({
         </div>
 
         <div>
-          <label
-            for="rig-gpu-count"
-            class="block text-xs font-semibold uppercase tracking-wider text-slate-500"
+          <span
+            class="block text-xs font-medium text-[var(--ink-secondary)]"
             data-i18n="home.qtyLabel"
           >
             Qty
-          </label>
-          <select
-            id="rig-gpu-count"
-            disabled
-            class="mt-1.5 h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-sm font-semibold text-slate-400 cursor-not-allowed focus:border-blue-600 focus:outline-none transition-colors"
-          >
-            <option value="0">—</option>
-          </select>
+          </span>
+          <div class="mt-1.5">
+            <CustomSelect
+              id="rig-gpu-count"
+              options={[{ value: '0', label: '—' }]}
+              value="0"
+              disabled={true}
+              ariaLabel="GPU quantity"
+              ariaLabelI18n="home.qtyLabel"
+            />
+          </div>
         </div>
       </div>
 
       <!-- Conditional Sub-Bar: Unified Memory Info / Multi-GPU Split / CPU-Only Info -->
       <div
         id="rig-context-bar"
-        class="mt-3 hidden rounded-xl border border-blue-200/80 bg-blue-50/70 px-3.5 py-2 text-xs text-slate-700"
+        class="mt-3.5 hidden rounded-xl border border-[var(--accent-border)] bg-[var(--accent-soft)] px-3.5 py-2.5 text-xs text-[var(--ink-primary)]"
       >
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <span id="rig-context-text" class="font-medium text-slate-800"></span>
+          <span id="rig-context-text" class="font-medium"></span>
           <div id="rig-split-toggle" class="hidden">
-            <div
-              class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-0.5"
-              role="group"
-              aria-label="Multi-GPU split strategy"
-            >
+            <div class="seg-track" role="group" aria-label="Multi-GPU split strategy">
               <button
                 type="button"
                 data-home-split="layer"
-                class="rounded-md px-2.5 py-1 text-[11px] font-semibold bg-slate-900 text-white cursor-pointer"
+                data-active="true"
+                class="seg-btn text-[11px]"
                 data-i18n="home.layerSplit"
               >
                 Layer Split
@@ -450,7 +448,8 @@ const staticIndexSubArgs = JSON.stringify({
               <button
                 type="button"
                 data-home-split="tensor"
-                class="rounded-md px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:text-slate-950 cursor-pointer"
+                data-active="false"
+                class="seg-btn text-[11px]"
                 data-i18n="home.tensorParallel"
               >
                 Tensor Parallel
@@ -461,33 +460,36 @@ const staticIndexSubArgs = JSON.stringify({
       </div>
 
       <!-- OS Reserve Profile Selector (Daily Desktop / Clean OS / Custom GB) -->
-      <div class="mt-3 flex flex-wrap items-center justify-between gap-2.5 border-t border-slate-100 pt-3">
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500" data-i18n="reserve.title">
+      <div class="mt-3.5 flex flex-wrap items-center justify-between gap-2.5 border-t border-[var(--border-hairline)] pt-3.5">
+        <div class="flex flex-wrap items-center gap-2.5">
+          <span class="text-xs font-medium text-[var(--ink-secondary)]" data-i18n="reserve.title">
             OS Reserve Profile
           </span>
-          <div class="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs" role="group" aria-label="OS Reserve Profile">
+          <div class="seg-track" role="group" aria-label="OS Reserve Profile">
             <button
               type="button"
               data-home-reserve="desktop"
+              data-active="true"
               data-i18n="reserve.desktop"
-              class="rounded-md px-2.5 py-1 font-semibold bg-slate-900 text-white cursor-pointer transition-colors"
+              class="seg-btn"
             >
               Daily Desktop
             </button>
             <button
               type="button"
               data-home-reserve="clean"
+              data-active="false"
               data-i18n="reserve.clean"
-              class="rounded-md px-2.5 py-1 font-medium text-slate-700 hover:text-slate-950 cursor-pointer transition-colors"
+              class="seg-btn"
             >
               Clean OS / Headless
             </button>
             <button
               type="button"
               data-home-reserve="custom"
+              data-active="false"
               data-i18n="reserve.custom"
-              class="rounded-md px-2.5 py-1 font-medium text-slate-700 hover:text-slate-950 cursor-pointer transition-colors"
+              class="seg-btn"
             >
               Custom GB
             </button>
@@ -502,37 +504,34 @@ const staticIndexSubArgs = JSON.stringify({
               step="0.5"
               data-i18n-placeholder="home.reserveCustomPh"
               placeholder="e.g. 22.4"
-              class="h-8 w-24 rounded-lg border border-blue-300 bg-white px-2.5 font-mono text-xs font-semibold text-slate-900 focus:border-blue-600 focus:outline-none"
+              class="field-input h-8 w-24 px-2.5 font-mono text-xs font-semibold"
             />
-            <span class="font-mono text-xs font-medium text-slate-500">GB</span>
+            <span class="font-mono text-xs font-medium text-[var(--ink-tertiary)]">GB</span>
           </div>
         </div>
       </div>
 
       <!-- Row 2: Model + Status + Sort + Count + Reset -->
-      <div class="mt-4 flex flex-wrap items-center justify-between gap-2.5 border-t border-slate-100 pt-3.5">
+      <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border-hairline)] pt-4">
         <div class="flex flex-wrap items-center gap-2.5">
           <div class="flex items-center gap-2">
-            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500" data-i18n="home.modelLabel">Model</span>
+            <span class="text-xs font-medium text-[var(--ink-secondary)]" data-i18n="home.modelLabel">Model</span>
             <div class="w-48 sm:w-56">
               <ComboboxField
                 id="cb-model"
                 label="Model"
                 placeholder="All Models"
                 compact={true}
+                cascader={true}
                 labelI18n="home.modelLabel"
               />
             </div>
           </div>
 
-          <span class="hidden h-4 w-px bg-slate-200 sm:inline-block" aria-hidden="true"></span>
+          <span class="hidden h-4 w-px bg-[var(--border-subtle)] sm:inline-block" aria-hidden="true"></span>
 
           <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by status">
             {(['all', 'Fits', 'Tight Fit', 'Partial Offload', 'OOM'] as const).map((st) => {
-              const btnClass =
-                st === 'all'
-                  ? 'rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-900 bg-slate-900 text-white'
-                  : 'rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100';
               const stI18nKey =
                 st === 'all'
                   ? 'status.allStatuses'
@@ -547,8 +546,9 @@ const staticIndexSubArgs = JSON.stringify({
                 <button
                   type="button"
                   data-status-btn={st}
+                  data-active={st === 'all' ? 'true' : 'false'}
                   data-i18n={stI18nKey}
-                  class={btnClass}
+                  class="pill-filter"
                 >
                   {st === 'all' ? 'All Statuses' : st}
                 </button>
@@ -557,29 +557,30 @@ const staticIndexSubArgs = JSON.stringify({
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2.5 text-xs text-slate-600">
+        <div class="flex flex-wrap items-center gap-2.5 text-xs text-[var(--ink-secondary)]">
           <div class="flex items-center gap-1.5">
-            <label for="filter-sort" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400" data-i18n="home.sortLabel">
+            <span class="text-[11px] font-medium text-[var(--ink-tertiary)]" data-i18n="home.sortLabel">
               Sort
-            </label>
-            <select
+            </span>
+            <CustomSelect
               id="filter-sort"
-              class="h-8 rounded-lg border border-slate-300 bg-white px-2 text-xs font-medium text-slate-900 focus:border-blue-600 focus:outline-none"
-            >
-              <option value="featured" data-i18n="home.sortRecommended">Recommended</option>
-              <option value="tps-desc" data-i18n="home.sortFastest">Fastest tok/s</option>
-              <option value="vram-asc" data-i18n="home.sortLowestVram">Lowest VRAM</option>
-              <option value="params-desc" data-i18n="home.sortLargestModel">Largest Model</option>
-            </select>
+              compact={true}
+              align="right"
+              options={sortSelectOptions}
+              value="featured"
+              ariaLabel="Sort results"
+              ariaLabelI18n="home.sortLabel"
+              buttonClass="min-w-[126px]"
+            />
           </div>
 
-          <span id="filter-count" class="font-mono tabular-nums" data-i18n="home.countAwaitHw" data-i18n-args={awaitCountArgs}>
+          <span id="filter-count" class="font-mono text-[11px] text-[var(--ink-tertiary)] tabular-nums" data-i18n="home.countAwaitHw" data-i18n-args={awaitCountArgs}>
             Select hardware first · {catalogModelCount}×{catalogHwCount}
           </span>
           <button
             id="filter-reset"
             type="button"
-            class="hidden font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
+            class="hidden font-semibold text-[var(--accent-ink)] hover:underline cursor-pointer"
             data-i18n="common.reset"
           >
             Reset
@@ -591,10 +592,10 @@ const staticIndexSubArgs = JSON.stringify({
     <!-- Awaiting Hardware State (Default when no CPU / RAM / GPU is selected) -->
     <div
       id="await-hardware-panel"
-      class="mt-6 rounded-2xl border border-slate-200/90 bg-gradient-to-b from-white to-slate-50/70 px-5 py-8 text-center shadow-[0_1px_3px_rgba(15,23,42,0.04)] sm:px-8 sm:py-10"
+      class="mt-6 surface-card px-5 py-9 text-center sm:px-8 sm:py-12"
     >
       <div class="mx-auto max-w-2xl">
-        <div class="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.05)]" aria-hidden="true">
+        <div class="mx-auto mb-3.5 flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] text-[var(--ink-primary)]" aria-hidden="true">
           <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <rect x="6" y="6" width="12" height="12" rx="2" />
             <rect x="9.5" y="9.5" width="5" height="5" rx="0.5" />
@@ -603,49 +604,49 @@ const staticIndexSubArgs = JSON.stringify({
         </div>
         <span
           data-i18n="home.awaitBadge"
-          class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold tracking-wide text-slate-700"
+          class="badge-neutral inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold"
         >
           No Hardware Selected
         </span>
         <h2
           data-i18n="home.awaitTitle"
-          class="mt-3 text-base font-bold tracking-[-0.02em] text-slate-950 sm:text-xl"
+          class="mt-3.5 text-lg font-semibold tracking-[-0.02em] text-[var(--ink-primary)] sm:text-xl"
         >
           Select your chip or GPU above to check VRAM fit
         </h2>
         <p
           data-i18n="home.awaitDesc"
           data-i18n-args={awaitDescArgs}
-          class="mt-2 text-xs leading-relaxed text-slate-600 sm:text-sm"
+          class="mt-2 text-xs leading-relaxed text-[var(--ink-secondary)] sm:text-sm"
         >
           Until you pick a CPU/chip, RAM, or GPU above, no "Fits in VRAM" or speed verdict is shown. Choose any hardware to run live estimates across all {catalogModelCount} models.
         </p>
 
         <div
           id="await-model-req"
-          class="mt-3 hidden rounded-xl border border-blue-200 bg-blue-50/70 px-3.5 py-2 text-xs font-medium text-blue-900"
+          class="mt-3.5 hidden rounded-xl border border-[var(--accent-border)] bg-[var(--accent-soft)] px-4 py-2.5 text-xs font-medium text-[var(--accent-ink)]"
         ></div>
 
-        <div class="mt-5">
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500" data-i18n="home.awaitQuickTry">
+        <div class="mt-6">
+          <p class="text-[11px] font-medium text-[var(--ink-tertiary)]" data-i18n="home.awaitQuickTry">
             Or pick a common device to calculate right away:
           </p>
-          <div class="mt-2.5 flex flex-wrap items-center justify-center gap-2">
-            <button type="button" data-quick-soc="apple-m4" data-quick-ram="16" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3.5 py-2 text-[13px] font-semibold text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-blue-400 hover:bg-blue-50/60 hover:text-blue-700 transition-colors cursor-pointer">Apple M4 <span class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-medium text-slate-600">16GB</span></button>
-            <button type="button" data-quick-soc="apple-m4-pro" data-quick-ram="48" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3.5 py-2 text-[13px] font-semibold text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-blue-400 hover:bg-blue-50/60 hover:text-blue-700 transition-colors cursor-pointer">Apple M4 Pro <span class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-medium text-slate-600">48GB</span></button>
-            <button type="button" data-quick-gpu="rtx-4070-12gb" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3.5 py-2 text-[13px] font-semibold text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-blue-400 hover:bg-blue-50/60 hover:text-blue-700 transition-colors cursor-pointer">RTX 4070 <span class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-medium text-slate-600">12GB</span></button>
-            <button type="button" data-quick-gpu="rtx-4090-24gb" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3.5 py-2 text-[13px] font-semibold text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-blue-400 hover:bg-blue-50/60 hover:text-blue-700 transition-colors cursor-pointer">RTX 4090 <span class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-medium text-slate-600">24GB</span></button>
-            <button type="button" data-quick-gpu="nvidia-a10-24gb" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3.5 py-2 text-[13px] font-semibold text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-blue-400 hover:bg-blue-50/60 hover:text-blue-700 transition-colors cursor-pointer">NVIDIA A10 <span class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-medium text-slate-600">24GB</span></button>
-            <button type="button" data-quick-gpu="nvidia-t4-16gb" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white px-3.5 py-2 text-[13px] font-semibold text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-blue-400 hover:bg-blue-50/60 hover:text-blue-700 transition-colors cursor-pointer">NVIDIA T4 <span class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-medium text-slate-600">16GB</span></button>
+          <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
+            <button type="button" data-quick-soc="apple-m4" data-quick-ram="16" class="btn-secondary px-3.5 py-2 text-[13px] font-semibold hover:border-[var(--accent-border)] hover:text-[var(--accent-ink)]">Apple M4 <span class="rounded-md bg-[var(--bg-subtle)] px-1.5 py-0.5 font-mono text-[11px] font-medium text-[var(--ink-secondary)]">16GB</span></button>
+            <button type="button" data-quick-soc="apple-m4-pro" data-quick-ram="48" class="btn-secondary px-3.5 py-2 text-[13px] font-semibold hover:border-[var(--accent-border)] hover:text-[var(--accent-ink)]">Apple M4 Pro <span class="rounded-md bg-[var(--bg-subtle)] px-1.5 py-0.5 font-mono text-[11px] font-medium text-[var(--ink-secondary)]">48GB</span></button>
+            <button type="button" data-quick-gpu="rtx-4070-12gb" class="btn-secondary px-3.5 py-2 text-[13px] font-semibold hover:border-[var(--accent-border)] hover:text-[var(--accent-ink)]">RTX 4070 <span class="rounded-md bg-[var(--bg-subtle)] px-1.5 py-0.5 font-mono text-[11px] font-medium text-[var(--ink-secondary)]">12GB</span></button>
+            <button type="button" data-quick-gpu="rtx-4090-24gb" class="btn-secondary px-3.5 py-2 text-[13px] font-semibold hover:border-[var(--accent-border)] hover:text-[var(--accent-ink)]">RTX 4090 <span class="rounded-md bg-[var(--bg-subtle)] px-1.5 py-0.5 font-mono text-[11px] font-medium text-[var(--ink-secondary)]">24GB</span></button>
+            <button type="button" data-quick-gpu="nvidia-a10-24gb" class="btn-secondary px-3.5 py-2 text-[13px] font-semibold hover:border-[var(--accent-border)] hover:text-[var(--accent-ink)]">NVIDIA A10 <span class="rounded-md bg-[var(--bg-subtle)] px-1.5 py-0.5 font-mono text-[11px] font-medium text-[var(--ink-secondary)]">24GB</span></button>
+            <button type="button" data-quick-gpu="nvidia-t4-16gb" class="btn-secondary px-3.5 py-2 text-[13px] font-semibold hover:border-[var(--accent-border)] hover:text-[var(--accent-ink)]">NVIDIA T4 <span class="rounded-md bg-[var(--bg-subtle)] px-1.5 py-0.5 font-mono text-[11px] font-medium text-[var(--ink-secondary)]">16GB</span></button>
           </div>
         </div>
 
-        <div class="mt-6 flex flex-wrap items-center justify-center gap-3 border-t border-slate-200/80 pt-5">
+        <div class="mt-7 flex flex-wrap items-center justify-center gap-3 border-t border-[var(--border-hairline)] pt-5">
           <button
             id="await-select-hw-btn"
             type="button"
             data-i18n="home.modeCtaSelectHw"
-            class="inline-flex items-center justify-center rounded-lg bg-slate-950 px-4 py-2 text-xs font-semibold text-white shadow-[0_1px_2px_rgba(15,23,42,0.16)] hover:bg-slate-800 transition-colors cursor-pointer"
+            class="btn-primary px-4 py-2 text-xs"
           >
             Select My Hardware ↑
           </button>
@@ -654,7 +655,7 @@ const staticIndexSubArgs = JSON.stringify({
             type="button"
             data-i18n="home.awaitBrowsePresets"
             data-i18n-args={awaitPresetsArgs}
-            class="inline-flex items-center justify-center rounded-lg border border-slate-200/90 bg-white px-3.5 py-2 text-xs font-medium text-slate-600 hover:border-slate-300 hover:text-slate-900 transition-colors cursor-pointer"
+            class="rounded-lg px-3.5 py-2 text-xs font-medium text-[var(--ink-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--ink-primary)] transition-colors cursor-pointer"
           >
             Just browsing? View {totalCount} preset GPU reference pairings ↓
           </button>
@@ -665,21 +666,21 @@ const staticIndexSubArgs = JSON.stringify({
     <!-- Dynamic Mode Header: Reference Presets vs. Selected Rig Results -->
     <div
       id="results-mode-banner"
-      class="mt-6 hidden flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50/90 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5 transition-colors"
+      class="mt-6 hidden surface-card flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5 transition-colors"
     >
       <div class="min-w-0">
         <div class="flex flex-wrap items-center gap-2">
           <span
             id="results-mode-badge"
             data-i18n="home.modeBadgeRef"
-            class="inline-flex shrink-0 items-center rounded-full border border-slate-300 bg-white px-2.5 py-0.5 text-[11px] font-bold tracking-wide text-slate-700"
+            class="badge-neutral inline-flex shrink-0 items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold"
           >
             Reference Presets
           </span>
           <h2
             id="results-mode-heading"
             data-i18n="home.modeHeadingRef"
-            class="text-sm sm:text-base font-bold text-slate-950"
+            class="text-sm sm:text-base font-semibold text-[var(--ink-primary)]"
           >
             Popular Hardware References
           </h2>
@@ -687,7 +688,7 @@ const staticIndexSubArgs = JSON.stringify({
         <p
           id="results-mode-sub"
           data-i18n="home.modeSubRef"
-          class="mt-1 text-xs leading-relaxed text-slate-600"
+          class="mt-1 text-xs leading-relaxed text-[var(--ink-secondary)]"
         >
           No hardware selected yet — cards below show preset Model × GPU examples. Pick your CPU or GPU above to switch to estimates for your own machine.
         </p>
@@ -697,7 +698,7 @@ const staticIndexSubArgs = JSON.stringify({
           id="results-mode-select-btn"
           type="button"
           data-i18n="home.modeCtaSelectHw"
-          class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-800 hover:border-blue-400 hover:text-blue-700 transition-colors cursor-pointer"
+          class="btn-secondary px-3.5 py-2 text-xs"
         >
           Select My Hardware ↑
         </button>
@@ -705,7 +706,7 @@ const staticIndexSubArgs = JSON.stringify({
           id="results-mode-close-presets-btn"
           type="button"
           data-i18n="home.modeClosePresets"
-          class="hidden items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:border-slate-300 hover:text-slate-900 transition-colors cursor-pointer"
+          class="hidden items-center justify-center rounded-lg px-3 py-2 text-xs font-medium text-[var(--ink-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--ink-primary)] transition-colors cursor-pointer"
         >
           Hide References
         </button>
@@ -713,14 +714,14 @@ const staticIndexSubArgs = JSON.stringify({
           id="results-mode-sim-cta"
           href="/calculator/"
           data-i18n="home.openRigSim"
-          class="hidden items-center justify-center rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-colors"
+          class="hidden btn-primary px-3.5 py-2 text-xs"
         >
           Open Full Rig in Simulator -&gt;
         </a>
       </div>
     </div>
 
-    <!-- Curated Deep-Dive Cards Grid (SSR Progressive Window: opt-in presets hidden until user chooses hardware or opens presets) -->
+    <!-- Curated Deep-Dive Cards Grid (opt-in presets hidden until user chooses hardware or opens presets) -->
     <div id="cards-grid" class="mt-4 hidden gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {entries.map((entry, idx) => {
         const res = entry.default_result;
@@ -743,7 +744,7 @@ const staticIndexSubArgs = JSON.stringify({
         const detailHref = `/can-i-run/${entry.slug}/`;
         const rank = statusRank(res.status);
         const hiddenClass = idx >= PAGE_SIZE ? ' hidden' : '';
-        const cardClass = `matrix-card group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:border-blue-300 hover:shadow-md${hiddenClass}`;
+        const cardClass = `matrix-card surface-card-interactive group flex flex-col justify-between p-5${hiddenClass}`;
         const searchIndex = [
           entry.model.name,
           entry.model.short_name,
@@ -810,7 +811,7 @@ const staticIndexSubArgs = JSON.stringify({
           ? JSON.stringify({ low: cardMeasured.gen_tps_low, high: cardMeasured.gen_tps_high })
           : undefined;
         const showMeasuredBadge = Boolean(cardMeasured);
-        const showFormulaOnlyBadge = !cardMeasured && res.status !== 'OOM';
+        const showFormulaText = !cardMeasured && res.status !== 'OOM';
         const verdictKey =
           res.status === 'Fits'
             ? 'card.verdictFits'
@@ -845,27 +846,20 @@ const staticIndexSubArgs = JSON.stringify({
             class={cardClass}
           >
             <div>
-              <div class="flex items-start justify-between gap-2">
-                <div class="flex flex-wrap items-center gap-1.5">
-                  <StatusBadge status={res.status} />
-                  <SpeedBadge tier={speedTier} short={true} />
-                  <span
-                    class="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700"
-                    data-i18n="common.fullGuide"
-                  >
-                    Full Guide
-                  </span>
-                </div>
-                <span class="shrink-0 rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-600">
+              <div class="flex items-center justify-between gap-2">
+                <StatusBadge status={res.status} />
+                <span class="shrink-0 font-mono text-[11px] font-medium text-[var(--ink-tertiary)] whitespace-nowrap">
                   {entry.hardware.backend} · {entry.hardware.bandwidth_gbps} GB/s
                 </span>
               </div>
 
-              <h2 class="mt-3.5 text-base font-bold tracking-tight text-slate-950 group-hover:text-blue-600 transition-colors">
-                <a href={detailHref} class="focus:outline-none">
-                  {entry.model.short_name}
+              <h2 class="mt-3.5 tracking-tight">
+                <a href={detailHref} class="block focus:outline-none">
+                  <span class="block text-[17px] font-semibold text-[var(--ink-primary)] group-hover:text-[var(--accent-ink)] transition-colors">
+                    {entry.model.short_name}
+                  </span>
                   <span
-                    class="block text-sm font-semibold text-slate-600"
+                    class="mt-0.5 block text-[13.5px] font-medium text-[var(--ink-secondary)]"
                     data-i18n="common.onPrefix"
                     data-i18n-args={hwOnArgs}
                   >
@@ -875,7 +869,7 @@ const staticIndexSubArgs = JSON.stringify({
               </h2>
 
               <p
-                class="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-600"
+                class="mt-2 line-clamp-2 text-xs leading-relaxed text-[var(--ink-tertiary)]"
                 data-i18n={verdictKey}
                 data-i18n-args={verdictArgs}
                 data-i18n-keep-en="true"
@@ -884,60 +878,60 @@ const staticIndexSubArgs = JSON.stringify({
               </p>
             </div>
 
-            <div class="mt-4 pt-4 border-t border-slate-100">
+            <div class="mt-4 border-t border-[var(--border-hairline)] pt-3.5">
               <div class="flex items-center justify-between text-xs">
-                <span class="text-slate-500" data-i18n="common.vram8kLabel">VRAM @ 8K</span>
-                <span class="font-mono font-semibold text-slate-900 tabular-nums">
+                <span class="text-[var(--ink-secondary)]" data-i18n="common.vram8kLabel">VRAM @ 8K</span>
+                <span class="font-mono font-semibold text-[var(--ink-primary)] tabular-nums">
                   {res.total_vram_gb.toFixed(1)} / {usable.toFixed(1)} GB
                 </span>
               </div>
-              <div class="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+              <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-subtle)]">
                 <div class={fillBarClass} style={fillStyle}></div>
               </div>
-              <div class="mt-1.5 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 tabular-nums">
+              <div class="mt-2 flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-[var(--ink-tertiary)] tabular-nums">
                 <span data-i18n={maxFitI18nKey} data-i18n-args={maxFitArgs}>
                   {maxFitDisplayText}
                 </span>
-                <div class="flex items-center gap-1.5 shrink-0">
+              </div>
+              {altFmt && (
+                <div class="mt-1 font-mono text-[11px] text-[var(--ink-secondary)] tabular-nums">
+                  {altLineText}
+                </div>
+              )}
+
+              <div class="mt-3.5 flex items-end justify-between gap-2">
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-baseline gap-1.5">
+                    <span class="font-mono text-base sm:text-[17px] font-semibold text-[var(--ink-primary)] tabular-nums" data-i18n={statusAttrs}>
+                      {tpsDisplay}
+                    </span>
+                    <span
+                      class="text-[11px] text-[var(--ink-tertiary)] tabular-nums"
+                      data-i18n="common.layersCount"
+                      data-i18n-args={layerArgs}
+                    >
+                      ({res.gpu_layers_fit}/{res.total_layers} layers)
+                    </span>
+                  </div>
                   {showMeasuredBadge && (
                     <span
-                      class="rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-800"
+                      class="badge-fits mt-1 inline-flex items-center rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-semibold"
                       data-i18n="speed.measuredUnit"
                       data-i18n-args={cardMeasuredArgs}
                     >
                       {cardMeasuredText}
                     </span>
                   )}
-                  {showFormulaOnlyBadge && (
-                    <span class="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-mono text-[10px] text-slate-500" data-i18n="speed.formulaOnly">
+                  {showFormulaText && (
+                    <span class="mt-0.5 block text-[11px] text-[var(--ink-tertiary)]" data-i18n="speed.formulaOnly">
                       Formula only (unverified)
                     </span>
                   )}
                 </div>
-              </div>
-              {altFmt && (
-                <div class="mt-1 font-mono text-[11px] text-slate-600 tabular-nums">
-                  {altLineText}
-                </div>
-              )}
-
-              <div class="mt-3 flex items-center justify-between">
-                <div class="flex items-baseline gap-1.5">
-                  <span class="font-mono text-base sm:text-lg font-bold text-slate-950 tabular-nums" data-i18n={statusAttrs}>
-                    {tpsDisplay}
-                  </span>
-                  <span
-                    class="text-[11px] text-slate-500 tabular-nums"
-                    data-i18n="common.layersCount"
-                    data-i18n-args={layerArgs}
-                  >
-                    ({res.gpu_layers_fit}/{res.total_layers} layers)
-                  </span>
-                </div>
 
                 <a
                   href={detailHref}
-                  class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800"
+                  class="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-[var(--accent-ink)] hover:underline whitespace-nowrap"
                   data-i18n="common.openCalc"
                 >
                   Open Calc -&gt;
@@ -949,21 +943,21 @@ const staticIndexSubArgs = JSON.stringify({
       })}
     </div>
 
-    <!-- Progressive Pagination Controls (Curated Guides) -->
+    <!-- Progressive Pagination Controls -->
     <div id="pagination-bar" class={paginationHiddenClass}>
       <div class="w-full sm:max-w-xs">
         <p
           id="pagination-summary"
-          class="font-mono text-xs font-medium text-slate-600 tabular-nums"
+          class="font-mono text-xs font-medium text-[var(--ink-secondary)] tabular-nums"
           data-i18n="home.viewingGuides"
           data-i18n-args={initViewArgs}
         >
           Viewing {initialVisibleCount} of {totalCount} matching guides
         </p>
-        <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+        <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-subtle)]">
           <div
             id="pagination-bar-fill"
-            class="h-full rounded-full bg-blue-600 transition-all duration-200"
+            class="h-full rounded-full bg-[var(--accent)] transition-all duration-200"
             style={initialProgressStyle}
           ></div>
         </div>
@@ -973,7 +967,7 @@ const staticIndexSubArgs = JSON.stringify({
         <button
           id="load-more-btn"
           type="button"
-          class="rounded-lg bg-slate-950 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors cursor-pointer"
+          class="btn-mono px-4 py-2 text-xs"
           data-i18n="home.loadMoreGuides"
           data-i18n-args={initLoadArgs}
         >
@@ -982,7 +976,7 @@ const staticIndexSubArgs = JSON.stringify({
         <button
           id="show-all-btn"
           type="button"
-          class="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700 transition-colors cursor-pointer"
+          class="btn-secondary px-3.5 py-2 text-xs"
           data-i18n="home.showAllRemaining"
         >
           Show All Remaining
@@ -992,27 +986,27 @@ const staticIndexSubArgs = JSON.stringify({
 
     <!-- Live Full-Catalog & Custom Rig Calculations -->
     <section id="live-calc-section" class="mt-6 hidden" aria-label="Live Catalog Estimates">
-      <div id="live-calc-header" class="flex flex-col gap-3 rounded-2xl border border-blue-200 bg-blue-50/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div id="live-calc-header" class="flex flex-col gap-3 rounded-2xl border border-[var(--accent-border)] bg-[var(--accent-soft)] p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div class="flex flex-wrap items-center gap-2">
             <span
               id="live-calc-badge"
-              class="rounded-full bg-blue-600 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white"
+              class="rounded-full bg-[var(--accent)] px-2.5 py-0.5 text-[11px] font-semibold text-white"
             >
               Live Catalog Physics
             </span>
-            <h2 id="live-calc-heading" class="text-sm font-bold text-slate-950">
+            <h2 id="live-calc-heading" class="text-sm font-semibold text-[var(--ink-primary)]">
               Additional Live Catalog Estimates
             </h2>
           </div>
-          <p id="live-calc-sub" class="mt-1 text-xs text-slate-600">
-            Instant @8K + Max Fit calculations across all {catalogModelCount} models &amp; {catalogHwCount} catalog GPUs. Click any card for AWQ/MLX format toggles, reserve profiles, and multi-GPU splits.
+          <p id="live-calc-sub" class="mt-1 text-xs text-[var(--ink-secondary)]">
+            Instant @8K + Max Fit calculations across all {catalogModelCount} models &amp; {catalogHwCount} catalog GPUs.
           </p>
         </div>
         <a
           id="live-sim-cta"
           href="/calculator/"
-          class="inline-flex shrink-0 items-center justify-center rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition-colors"
+          class="btn-primary shrink-0 px-3.5 py-2 text-xs"
         >
           Open in Multi-GPU / CPU Simulator -&gt;
         </a>
@@ -1021,12 +1015,12 @@ const staticIndexSubArgs = JSON.stringify({
       <div id="live-calc-grid" class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
 
       <div id="live-pagination-bar" class="mt-5 hidden">
-        <div class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs">
-          <span id="live-pagination-summary" class="font-mono text-slate-600 tabular-nums"></span>
+        <div class="surface-card flex items-center justify-between px-4 py-3 text-xs">
+          <span id="live-pagination-summary" class="font-mono text-[var(--ink-secondary)] tabular-nums"></span>
           <button
             id="live-load-more-btn"
             type="button"
-            class="rounded-lg bg-slate-900 px-3.5 py-1.5 font-semibold text-white hover:bg-slate-800 cursor-pointer"
+            class="btn-mono px-3.5 py-1.5 text-xs"
           >
             Load More Live Estimates
           </button>
@@ -1037,17 +1031,17 @@ const staticIndexSubArgs = JSON.stringify({
     <!-- Empty Filter State -->
     <div
       id="empty-state"
-      class="mt-6 hidden rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center"
+      class="mt-6 hidden rounded-2xl border border-dashed border-[var(--border-strong)] bg-[var(--bg-surface)] p-10 text-center"
     >
-      <p class="text-base font-semibold text-slate-900" data-i18n="home.emptyTitle">No matching Model × Rig configurations</p>
-      <p class="mt-1 text-sm text-slate-500" data-i18n="home.emptyDesc">
+      <p class="text-base font-semibold text-[var(--ink-primary)]" data-i18n="home.emptyTitle">No matching Model × Rig configurations</p>
+      <p class="mt-1 text-sm text-[var(--ink-secondary)]" data-i18n="home.emptyDesc">
         Try relaxing the status filter, adding GPU capacity, or launch the full Rig Simulator.
       </p>
       <div class="mt-4 flex flex-wrap justify-center gap-2">
         <button
           id="empty-reset-btn"
           type="button"
-          class="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 cursor-pointer"
+          class="btn-mono px-4 py-2 text-xs"
           data-i18n="common.resetAll"
         >
           Reset All Filters
@@ -1055,7 +1049,7 @@ const staticIndexSubArgs = JSON.stringify({
         <a
           id="empty-sim-link"
           href="/calculator/"
-          class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+          class="badge-accent rounded-lg border px-4 py-2 text-xs font-semibold hover:opacity-85 transition-opacity"
           data-i18n="home.emptySimBtn"
         >
           Open Custom Rig Simulator -&gt;
@@ -1068,22 +1062,22 @@ const staticIndexSubArgs = JSON.stringify({
 
   <!-- Measured Community Benchmarks vs Formula Estimates -->
   <section id="measured-benchmarks" class="mx-auto max-w-6xl px-4 pt-6 sm:px-6" aria-labelledby="measured-heading">
-    <div class="min-w-0 max-w-full rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
+    <div class="surface-card min-w-0 max-w-full p-5 sm:p-6">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div class="min-w-0">
           <div class="flex flex-wrap items-center gap-2.5">
-            <h2 id="measured-heading" class="text-lg sm:text-xl font-bold tracking-[-0.02em] text-slate-950" data-i18n="home.measuredTitle">
+            <h2 id="measured-heading" class="text-lg sm:text-xl font-semibold tracking-[-0.02em] text-[var(--ink-primary)]" data-i18n="home.measuredTitle">
               Measured Community Benchmarks vs Formula Estimates
             </h2>
             <span
-              class="rounded-full border border-emerald-200/90 bg-emerald-50/90 px-2.5 py-0.5 font-mono text-xs font-semibold text-emerald-800 whitespace-nowrap"
+              class="badge-fits rounded-full border px-2.5 py-0.5 font-mono text-[11px] font-semibold whitespace-nowrap"
               data-i18n="home.measuredCoverage"
               data-i18n-args={measuredCoverageArgs}
             >
               {measuredRows.length} / {totalCount} guides measured · {formulaOnlyCount} formula-only
             </span>
           </div>
-          <p class="mt-1.5 max-w-3xl text-sm leading-relaxed text-slate-600" data-i18n="home.measuredSub" data-i18n-args={measuredSubArgs}>
+          <p class="mt-1.5 max-w-3xl text-sm leading-relaxed text-[var(--ink-secondary)]" data-i18n="home.measuredSub" data-i18n-args={measuredSubArgs}>
             Side-by-side comparison of {measuredRows.length} reproducible community &amp; framework runs (batch=1 decode, including Qwen3-30B-A3B MoE) against calibrated Physics {engineVersion} formula ranges.
           </p>
         </div>
@@ -1091,96 +1085,96 @@ const staticIndexSubArgs = JSON.stringify({
           href="https://github.com/Kiwi392251/vramcalc/issues/new?title=Benchmark+Submission&labels=benchmark"
           target="_blank"
           rel="noopener noreferrer"
-          class="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-800 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-700 transition-colors"
+          class="btn-secondary shrink-0 self-start px-3.5 py-2 text-xs"
           data-i18n="home.submitBenchmark"
         >
           Submit Real Run -&gt;
         </a>
       </div>
 
-      <div class="mt-5 w-full max-w-full overflow-x-auto rounded-xl border border-slate-200/90 thin-scrollbar">
+      <div class="mt-5 w-full max-w-full overflow-x-auto border-y border-[var(--border-hairline)] thin-scrollbar">
         <table class="w-full min-w-[900px] border-collapse text-left">
           <thead>
-            <tr class="border-b border-slate-200 bg-slate-50/90 text-[11px] font-semibold text-slate-500 whitespace-nowrap">
-              <th class="pl-3.5 pr-2 py-2.5" data-i18n="home.measuredColPair">Model × Test Hardware</th>
+            <tr class="border-b border-[var(--border-subtle)] text-[11px] font-medium text-[var(--ink-tertiary)] whitespace-nowrap">
+              <th class="pr-2 py-2.5" data-i18n="home.measuredColPair">Model × Test Hardware</th>
               <th class="px-2 py-2.5" data-i18n="home.measuredColFormat">Format / Runtime</th>
               <th class="px-2 py-2.5" data-i18n="home.measuredColMeasured">Measured Speed</th>
               <th class="px-2 py-2.5 max-w-[92px] whitespace-normal leading-snug" data-i18n="home.measuredColFormula">Formula Est. (±17–25%)</th>
               <th class="px-2 py-2.5" data-i18n="home.measuredColDelta">Δ Mid</th>
               <th class="px-2 py-2.5" data-i18n="home.measuredColRepro">Date · Prompt · Repro</th>
-              <th class="pl-2 pr-3.5 py-2.5" data-i18n="home.measuredColSource">Source</th>
+              <th class="pl-2 py-2.5" data-i18n="home.measuredColSource">Source</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">
+          <tbody class="divide-y divide-[var(--border-hairline)]">
             {measuredRows.map((row) => (
-              <tr class="hover:bg-slate-50/80 transition-colors">
-                <td class="pl-3.5 pr-2 py-3 align-top">
-                  <a href={row.pairHref} class="text-sm font-bold tracking-[-0.01em] text-slate-950 hover:text-blue-600 transition-colors whitespace-nowrap">
+              <tr class="hover:bg-[var(--bg-subtle)] transition-colors">
+                <td class="pr-2 py-3.5 align-top">
+                  <a href={row.pairHref} class="text-sm font-semibold tracking-[-0.01em] text-[var(--ink-primary)] hover:text-[var(--accent-ink)] transition-colors whitespace-nowrap">
                     {row.model.short_name}
                   </a>
                   <div class="mt-1.5">
-                    <span class="inline-flex items-center gap-1.5 rounded-md border border-slate-200/90 bg-slate-50 px-2 py-0.5 text-[13px] font-semibold text-slate-900 whitespace-nowrap">
+                    <span class="inline-flex items-center gap-1.5 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-2 py-0.5 text-[13px] font-semibold text-[var(--ink-primary)] whitespace-nowrap">
                       <span class={`h-1.5 w-1.5 shrink-0 rounded-full ${row.vendorDotClass}`} aria-hidden="true"></span>
                       {row.hardware.name}
                     </span>
                   </div>
                 </td>
-                <td class="px-2 py-3 align-top">
-                  <div class="font-mono text-xs font-semibold text-slate-800 whitespace-nowrap">
-                    {row.anc.format} · {row.anc.quant} <span class="text-slate-400">@</span> {row.ctxLabel}
+                <td class="px-2 py-3.5 align-top">
+                  <div class="font-mono text-xs font-semibold text-[var(--ink-primary)] whitespace-nowrap">
+                    {row.anc.format} · {row.anc.quant} <span class="text-[var(--ink-tertiary)]">@</span> {row.ctxLabel}
                   </div>
-                  <div class="mt-1 max-w-[155px] text-[11px] text-slate-500 leading-snug">{row.anc.backend}</div>
+                  <div class="mt-1 max-w-[155px] text-[11px] text-[var(--ink-tertiary)] leading-snug">{row.anc.backend}</div>
                 </td>
-                <td class="px-2 py-3 align-top whitespace-nowrap">
+                <td class="px-2 py-3.5 align-top whitespace-nowrap">
                   <span
-                    class="inline-flex items-center whitespace-nowrap rounded-lg border border-emerald-200/90 bg-emerald-50 px-2 py-1 font-mono text-xs font-bold text-emerald-800 tabular-nums"
+                    class="badge-fits inline-flex items-center whitespace-nowrap rounded-lg border px-2 py-1 font-mono text-xs font-bold tabular-nums"
                     data-i18n="speed.measuredUnit"
                     data-i18n-args={row.measuredUnitArgs}
                   >
                     {row.measuredText}
                   </span>
                 </td>
-                <td class="px-2 py-3 align-top font-mono text-xs font-medium text-slate-700 whitespace-nowrap tabular-nums">
+                <td class="px-2 py-3.5 align-top font-mono text-xs font-medium text-[var(--ink-secondary)] whitespace-nowrap tabular-nums">
                   {row.formulaText}
                 </td>
-                <td class="px-2 py-3 align-top whitespace-nowrap">
-                  <div class="font-mono text-xs font-bold text-slate-900 tabular-nums">{row.deltaText}</div>
-                  <span class="mt-1 inline-block text-[11px] font-medium text-emerald-700" data-i18n="home.measuredInRange">
+                <td class="px-2 py-3.5 align-top whitespace-nowrap">
+                  <div class="font-mono text-xs font-semibold text-[var(--ink-primary)] tabular-nums">{row.deltaText}</div>
+                  <span class="mt-0.5 inline-block text-[11px] font-medium text-emerald-600 dark:text-emerald-400" data-i18n="home.measuredInRange">
                     In range
                   </span>
                 </td>
-                <td class="px-2 py-3 align-top">
+                <td class="px-2 py-3.5 align-top">
                   <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
-                    <span class="font-mono font-medium text-slate-700 tabular-nums whitespace-nowrap">{row.anc.date}</span>
+                    <span class="font-mono font-medium text-[var(--ink-secondary)] tabular-nums whitespace-nowrap">{row.anc.date}</span>
                     <span class={row.freshClass} data-i18n={row.freshKey}>{row.freshLabel}</span>
-                    <span class="font-mono text-slate-500 whitespace-nowrap">{row.anc.prompt_spec}</span>
+                    <span class="font-mono text-[var(--ink-tertiary)] whitespace-nowrap">{row.anc.prompt_spec}</span>
                   </div>
-                  <div class="mt-1 text-[11px] text-slate-500">{row.anc.runtime_version}</div>
+                  <div class="mt-1 text-[11px] text-[var(--ink-tertiary)]">{row.anc.runtime_version}</div>
                   <button
                     type="button"
                     data-copy-cmd={row.anc.repro_cmd}
                     title={row.anc.repro_cmd}
-                    class="mt-1.5 inline-flex max-w-[170px] items-center gap-1.5 rounded-md border border-slate-200/90 bg-slate-50 px-2 py-1 font-mono text-[11px] text-slate-700 hover:border-blue-300 hover:bg-blue-50/70 hover:text-blue-800 transition-colors cursor-pointer"
+                    class="mt-1.5 inline-flex max-w-[170px] items-center gap-1.5 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-2 py-1 font-mono text-[11px] text-[var(--ink-secondary)] hover:border-[var(--accent-border)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-ink)] transition-colors cursor-pointer"
                   >
                     <span class="truncate">{row.anc.repro_cmd}</span>
-                    <svg data-cmd-copy-icon class="h-3 w-3 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <svg data-cmd-copy-icon class="h-3 w-3 shrink-0 text-[var(--ink-tertiary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                       <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                     </svg>
-                    <svg data-cmd-check-icon class="hidden h-3 w-3 shrink-0 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                    <svg data-cmd-check-icon class="hidden h-3 w-3 shrink-0 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   </button>
                 </td>
-                <td class="pl-2 pr-3.5 py-3 align-top">
+                <td class="pl-2 py-3.5 align-top">
                   <a
                     href={row.anc.source_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="group/src inline-flex max-w-[115px] items-start gap-1 text-[11px] font-medium leading-snug text-slate-600 hover:text-blue-600 transition-colors"
+                    class="group/src inline-flex max-w-[115px] items-start gap-1 text-[11px] font-medium leading-snug text-[var(--ink-secondary)] hover:text-[var(--accent-ink)] transition-colors"
                   >
                     <span>{row.anc.source_label}</span>
-                    <svg class="mt-0.5 h-3 w-3 shrink-0 text-slate-400 group-hover/src:text-blue-600 transition-colors" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <svg class="mt-0.5 h-3 w-3 shrink-0 text-[var(--ink-tertiary)] group-hover/src:text-[var(--accent-ink)] transition-colors" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clip-rule="evenodd" />
                       <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z" clip-rule="evenodd" />
                     </svg>
@@ -1191,184 +1185,216 @@ const staticIndexSubArgs = JSON.stringify({
           </tbody>
         </table>
       </div>
-      <p class="mt-3 text-xs leading-relaxed text-slate-500" data-i18n="home.measuredNote">{measuredNote}</p>
+      <p class="mt-3.5 text-xs leading-relaxed text-[var(--ink-tertiary)]" data-i18n="home.measuredNote">{measuredNote}</p>
     </div>
   </section>
 
-  <!-- Zero-JS Full Model Hubs Table, Hardware Directory & All Curated Static Pairings -->
-  <section class="mx-auto max-w-6xl px-4 pt-6 sm:px-6 space-y-6" aria-labelledby="hubs-heading">
-    <h2 id="hubs-heading" class="sr-only">Browse All Static Model Hubs, GPU Hubs &amp; Pairings</h2>
-
-    <!-- All 23 Model Hubs Table (Zero-JS Visible HTML) -->
-    <div class="min-w-0 max-w-full rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <h3 class="text-base sm:text-lg font-bold tracking-[-0.02em] text-slate-950" data-i18n="home.modelHubsHeading" data-i18n-args={modelHubsArgs}>
-          All {uniqueHubModelCount} Model Hubs
-        </h3>
-        <a href="/model/" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors" data-i18n="common.viewAll">
-          View All -&gt;
-        </a>
-      </div>
-      <div class="mt-4 w-full max-w-full overflow-x-auto rounded-xl border border-slate-200/90 thin-scrollbar">
-        <table class="w-full min-w-[780px] border-collapse text-left text-xs">
-          <thead>
-            <tr class="border-b border-slate-200 bg-slate-50/90 text-[11px] font-semibold text-slate-500 whitespace-nowrap">
-              <th class="pl-3.5 pr-2.5 py-2.5" data-i18n="home.modelTableModel">Model</th>
-              <th class="px-2.5 py-2.5" data-i18n="home.modelTableQ4">Q4_K_M @ 8K</th>
-              <th class="px-2.5 py-2.5" data-i18n="home.modelTableAwq">AWQ 4-bit @ 8K</th>
-              <th class="px-2.5 py-2.5" data-i18n="home.modelTableKv">KV / 4K</th>
-              <th class="px-2.5 py-2.5" data-i18n="home.modelTableFits">Fits GPUs</th>
-              <th class="pl-2.5 pr-3.5 py-2.5" data-i18n="home.modelTableFastest">Fastest GPU (8K)</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            {modelHubRows.map((hub) => {
-              const mHref = `/model/${hub.model.id}/`;
-              const fitCount = hub.fitsCount + hub.tightCount;
-              const q4Gb = hub.q4Row.total_vram_gb.toFixed(1);
-              const awqGb = hub.awqRow.total_vram_gb.toFixed(1);
-              const kvStr = hub.kvPer4k.toFixed(2);
-              const fastestCellText = hub.fastestRow
-                ? `${hub.fastestRow.hardware.short_name} · ${hub.fastestTpsText}`
-                : hub.fastestTpsText;
-              return (
-                <tr class="hover:bg-slate-50/80 transition-colors">
-                  <td class="pl-3.5 pr-2.5 py-2.5 whitespace-nowrap">
-                    <a href={mHref} class="text-[13px] font-bold text-slate-950 hover:text-blue-600 transition-colors">
-                      {hub.model.name}
-                    </a>
-                    <span class="ml-1.5 font-mono text-[11px] text-slate-500">{hub.model.architecture}</span>
-                  </td>
-                  <td class="px-2.5 py-2.5 font-mono text-slate-800 whitespace-nowrap tabular-nums">{q4Gb} GB</td>
-                  <td class="px-2.5 py-2.5 font-mono text-slate-700 whitespace-nowrap tabular-nums">{awqGb} GB</td>
-                  <td class="px-2.5 py-2.5 font-mono text-slate-600 whitespace-nowrap tabular-nums">+{kvStr} GB</td>
-                  <td class="px-2.5 py-2.5 font-mono font-semibold text-emerald-700 whitespace-nowrap tabular-nums">
-                    {fitCount} / {uniqueHubHwCount}
-                  </td>
-                  <td class="pl-2.5 pr-3.5 py-2.5 font-mono text-slate-800 whitespace-nowrap tabular-nums">
-                    {fastestCellText}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- All 103 Hardware Hubs (Zero-JS Visible HTML) -->
-    <div class="min-w-0 max-w-full rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <h3 class="text-base sm:text-lg font-bold tracking-[-0.02em] text-slate-950" data-i18n="home.hwHubsHeading" data-i18n-args={hwHubsArgs}>
-          All {uniqueHubHwCount} Hardware Hubs
-        </h3>
-        <a href="/gpu/" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors" data-i18n="common.viewAll">
-          View All -&gt;
-        </a>
-      </div>
-      <div class="mt-4 max-h-[380px] overflow-y-auto pr-1 thin-scrollbar grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {hwHubRows.map((hub) => {
-          const hHref = `/gpu/${hub.hardware.id}/`;
-          const fitTotal = hub.fitsCount + hub.tightCount;
-          const usableStr = hub.effectiveUsableGb.toFixed(1);
-          return (
-            <a
-              href={hHref}
-              class="flex items-center justify-between gap-2 rounded-xl border border-slate-200/80 bg-slate-50/70 px-3 py-2 text-xs hover:border-blue-300 hover:bg-blue-50/60 transition-colors"
-            >
-              <span class="truncate text-[13px] font-semibold text-slate-900">{hub.hardware.short_name}</span>
-              <span class="shrink-0 font-mono text-[11px] text-slate-500 tabular-nums">
-                {usableStr}G · {fitTotal}/{uniqueHubModelCount}
-              </span>
-            </a>
-          );
-        })}
-      </div>
-    </div>
-
-    <!-- Complete Static Compatibility Index (All 173 Curated Pairings, Zero-JS) -->
-    <div id="static-compatibility-index" class="min-w-0 max-w-full rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
-      <div class="flex flex-wrap items-center justify-between gap-2">
+  <!-- Consolidated 3-Tab Static SEO Catalog Directory (All 23 Models + 168 Hardware + 173 Curated Pairings in DOM) -->
+  <section id="catalog-directory-hub" class="mx-auto max-w-6xl px-4 pt-6 sm:px-6" aria-labelledby="hubs-heading">
+    <div class="surface-card min-w-0 max-w-full p-5 sm:p-6">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h3 class="text-base sm:text-lg font-bold tracking-[-0.02em] text-slate-950" data-i18n="home.staticIndexTitle" data-i18n-args={staticIndexTitleArgs}>
-            Complete Static Compatibility Index (All {totalCount} Curated Pairings · Zero-JS)
-          </h3>
-          <p class="mt-1 text-xs leading-relaxed text-slate-600" data-i18n="home.staticIndexSub" data-i18n-args={staticIndexSubArgs}>
-            All {totalCount} curated guides below include full @8K, @Max Fit &amp; AWQ/MLX speeds directly on this page. The remaining {catalogModelCount * catalogHwCount} full-matrix speed rows live statically across the {catalogModelCount} Model Hub pages (103 GPUs each) and {catalogHwCount} GPU Hub pages (23 models each) — 1 click away, zero JS required.
+          <h2 id="hubs-heading" class="text-lg sm:text-xl font-semibold tracking-[-0.02em] text-[var(--ink-primary)]" data-i18n="home.dirTitle">
+            Complete Catalog Directory
+          </h2>
+          <p class="mt-1 text-xs sm:text-sm text-[var(--ink-secondary)]" data-i18n="home.dirSub" data-i18n-args={dirSubArgs}>
+            Browse all {uniqueHubModelCount} models, {uniqueHubHwCount} GPUs &amp; Macs, or jump directly to the {totalCount} curated benchmark guides.
           </p>
         </div>
+        <a
+          id="dir-view-all-link"
+          href="/model/"
+          class="shrink-0 self-start text-xs font-semibold text-[var(--accent-ink)] hover:underline whitespace-nowrap"
+          data-i18n="common.viewAll"
+        >
+          View All -&gt;
+        </a>
       </div>
-      <div class="mt-4 w-full max-w-full max-h-[420px] overflow-auto rounded-xl border border-slate-200/90 thin-scrollbar">
-        <table class="w-full min-w-[840px] border-collapse text-left text-xs">
-          <thead class="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs">
-            <tr class="border-b border-slate-200 text-[11px] font-semibold text-slate-500 whitespace-nowrap">
-              <th class="pl-3 pr-2 py-2.5" data-i18n="home.modelTableModel">Model</th>
-              <th class="px-2 py-2.5" data-i18n="hub.colHardware">Hardware</th>
-              <th class="px-2 py-2.5" data-i18n="detail.colStatus">Fit / Speed</th>
-              <th class="px-2 py-2.5" data-i18n="common.vram8kLabel">VRAM @ 8K</th>
-              <th class="px-2 py-2.5">AWQ / MLX @ 8K</th>
-              <th class="px-2 py-2.5 max-w-[115px] whitespace-normal leading-snug" data-i18n="hub.bestQuantMaxCtx">Max Fit</th>
-              <th class="px-2 py-2.5" data-i18n="sim.colSpeed">Est. Range</th>
-              <th class="pl-2 pr-3 py-2.5 text-right" data-i18n="sim.colAction">Guide</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            {staticIndexRows.map((row) => (
-              <tr class="hover:bg-slate-50/80 transition-colors">
-                <td class="pl-3 pr-2 py-2.5 text-[13px] font-bold text-slate-950 whitespace-nowrap">{row.modelShort}</td>
-                <td class="px-2 py-2.5 max-w-[215px] text-[13px] font-semibold text-slate-900 leading-snug">{row.hwShort}</td>
-                <td class="px-2 py-2.5">
-                  <div class="flex flex-wrap items-center gap-1">
-                    <StatusBadge status={row.status} />
-                    <SpeedBadge tier={row.speedTier} short={true} />
-                  </div>
-                </td>
-                <td class="px-2 py-2.5 font-mono text-slate-700 whitespace-nowrap tabular-nums">{row.vramText}</td>
-                <td class="px-2 py-2.5 max-w-[140px] font-mono text-[11px] text-slate-600 leading-snug tabular-nums">{row.altText}</td>
-                <td class="px-2 py-2.5 max-w-[155px] font-mono text-[11px] text-slate-600 leading-snug tabular-nums">{row.maxFitText}</td>
-                <td class="px-2 py-2.5 whitespace-nowrap">
-                  <div class="font-mono font-semibold text-slate-900 tabular-nums">{row.tpsText}</div>
-                  {row.isMeasured ? (
-                    <span class="mt-0.5 inline-block rounded border border-emerald-200 bg-emerald-50 px-1 py-0.5 font-mono text-[10px] font-semibold text-emerald-800" data-i18n="speed.measuredBadge">
-                      Measured
-                    </span>
-                  ) : (
-                    <span class="mt-0.5 inline-block font-mono text-[10px] text-slate-400" data-i18n="speed.formulaEst">
-                      Formula est.
-                    </span>
-                  )}
-                </td>
-                <td class="pl-2 pr-3 py-2.5 text-right whitespace-nowrap">
-                  <a href={row.href} class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors" data-i18n="common.openGuide">
-                    Open Guide -&gt;
-                  </a>
-                </td>
+
+      <div class="mt-4 flex items-center gap-6 border-b border-[var(--border-hairline)] overflow-x-auto thin-scrollbar" role="tablist" aria-label="Catalog directory tabs">
+        <button
+          type="button"
+          role="tab"
+          aria-selected="true"
+          data-dir-tab="models"
+          data-active="true"
+          class="dir-tab"
+          data-i18n="home.dirTabModels"
+          data-i18n-args={modelHubsArgs}
+        >
+          Model Hubs ({uniqueHubModelCount})
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected="false"
+          data-dir-tab="hardware"
+          data-active="false"
+          class="dir-tab"
+          data-i18n="home.dirTabHardware"
+          data-i18n-args={hwHubsArgs}
+        >
+          Hardware Hubs ({uniqueHubHwCount})
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected="false"
+          data-dir-tab="index"
+          data-active="false"
+          class="dir-tab"
+          data-i18n="home.dirTabIndex"
+          data-i18n-args={staticIndexTitleArgs}
+        >
+          Full Pairing Index ({totalCount})
+        </button>
+      </div>
+
+      <!-- Tab 1: All 23 Model Hubs -->
+      <div data-dir-panel="models" role="tabpanel" class="mt-4">
+        <div class="w-full max-w-full overflow-x-auto thin-scrollbar">
+          <table class="w-full min-w-[780px] border-collapse text-left text-xs">
+            <thead>
+              <tr class="border-b border-[var(--border-subtle)] text-[11px] font-medium text-[var(--ink-tertiary)] whitespace-nowrap">
+                <th class="pr-2.5 py-2.5" data-i18n="home.modelTableModel">Model</th>
+                <th class="px-2.5 py-2.5" data-i18n="home.modelTableQ4">Q4_K_M @ 8K</th>
+                <th class="px-2.5 py-2.5" data-i18n="home.modelTableAwq">AWQ 4-bit @ 8K</th>
+                <th class="px-2.5 py-2.5" data-i18n="home.modelTableKv">KV / 4K</th>
+                <th class="px-2.5 py-2.5" data-i18n="home.modelTableFits">Fits GPUs</th>
+                <th class="pl-2.5 py-2.5" data-i18n="home.modelTableFastest">Fastest GPU (8K)</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody class="divide-y divide-[var(--border-hairline)]">
+              {modelHubRows.map((hub) => {
+                const mHref = `/model/${hub.model.id}/`;
+                const fitCount = hub.fitsCount + hub.tightCount;
+                const q4Gb = hub.q4Row.total_vram_gb.toFixed(1);
+                const awqGb = hub.awqRow.total_vram_gb.toFixed(1);
+                const kvStr = hub.kvPer4k.toFixed(2);
+                const fastestCellText = hub.fastestRow
+                  ? `${hub.fastestRow.hardware.short_name} · ${hub.fastestTpsText}`
+                  : hub.fastestTpsText;
+                return (
+                  <tr class="hover:bg-[var(--bg-subtle)] transition-colors">
+                    <td class="pr-2.5 py-2.5 whitespace-nowrap">
+                      <a href={mHref} class="text-[13px] font-semibold text-[var(--ink-primary)] hover:text-[var(--accent-ink)] transition-colors">
+                        {hub.model.name}
+                      </a>
+                      <span class="ml-1.5 font-mono text-[11px] text-[var(--ink-tertiary)]">{hub.model.architecture}</span>
+                    </td>
+                    <td class="px-2.5 py-2.5 font-mono text-[var(--ink-primary)] whitespace-nowrap tabular-nums">{q4Gb} GB</td>
+                    <td class="px-2.5 py-2.5 font-mono text-[var(--ink-secondary)] whitespace-nowrap tabular-nums">{awqGb} GB</td>
+                    <td class="px-2.5 py-2.5 font-mono text-[var(--ink-tertiary)] whitespace-nowrap tabular-nums">+{kvStr} GB</td>
+                    <td class="px-2.5 py-2.5 font-mono font-semibold text-emerald-600 dark:text-emerald-400 whitespace-nowrap tabular-nums">
+                      {fitCount} / {uniqueHubHwCount}
+                    </td>
+                    <td class="pl-2.5 py-2.5 font-mono text-[var(--ink-secondary)] whitespace-nowrap tabular-nums">
+                      {fastestCellText}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 2: All 168 Hardware Hubs -->
+      <div data-dir-panel="hardware" role="tabpanel" class="hidden mt-4">
+        <div class="max-h-[380px] overflow-y-auto pr-1 thin-scrollbar grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {hwHubRows.map((hub) => {
+            const hHref = `/gpu/${hub.hardware.id}/`;
+            const fitTotal = hub.fitsCount + hub.tightCount;
+            const usableStr = hub.effectiveUsableGb.toFixed(1);
+            return (
+              <a
+                href={hHref}
+                class="flex items-center justify-between gap-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-3 py-2 text-xs hover:border-[var(--accent-border)] hover:bg-[var(--accent-soft)] transition-colors"
+              >
+                <span class="truncate text-[13px] font-semibold text-[var(--ink-primary)]">{hub.hardware.short_name}</span>
+                <span class="shrink-0 font-mono text-[11px] text-[var(--ink-tertiary)] tabular-nums">
+                  {usableStr}G · {fitTotal}/{uniqueHubModelCount}
+                </span>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      <!-- Tab 3: Complete Static Compatibility Index (All 173 Curated Pairings, Zero-JS DOM) -->
+      <div id="static-compatibility-index" data-dir-panel="index" role="tabpanel" class="hidden mt-4">
+        <p class="mb-3 text-xs leading-relaxed text-[var(--ink-secondary)]" data-i18n="home.staticIndexSub" data-i18n-args={staticIndexSubArgs}>
+          All {totalCount} curated guides below include full @8K, @Max Fit &amp; AWQ/MLX speeds directly on this page. The remaining {catalogModelCount * catalogHwCount} full-matrix speed rows live statically across the {catalogModelCount} Model Hub pages (168 GPUs each) and {catalogHwCount} GPU Hub pages (23 models each) — 1 click away, zero JS required.
+        </p>
+        <div class="w-full max-w-full max-h-[420px] overflow-auto border-y border-[var(--border-hairline)] thin-scrollbar">
+          <table class="w-full min-w-[840px] border-collapse text-left text-xs">
+            <thead class="sticky top-0 z-10 bg-[var(--bg-surface)]">
+              <tr class="border-b border-[var(--border-subtle)] text-[11px] font-medium text-[var(--ink-tertiary)] whitespace-nowrap">
+                <th class="pr-2 py-2.5" data-i18n="home.modelTableModel">Model</th>
+                <th class="px-2 py-2.5" data-i18n="hub.colHardware">Hardware</th>
+                <th class="px-2 py-2.5" data-i18n="detail.colStatus">Fit</th>
+                <th class="px-2 py-2.5" data-i18n="common.vram8kLabel">VRAM @ 8K</th>
+                <th class="px-2 py-2.5">AWQ / MLX @ 8K</th>
+                <th class="px-2 py-2.5 max-w-[115px] whitespace-normal leading-snug" data-i18n="hub.bestQuantMaxCtx">Max Fit</th>
+                <th class="px-2 py-2.5" data-i18n="sim.colSpeed">Est. Range</th>
+                <th class="pl-2 py-2.5 text-right" data-i18n="sim.colAction">Guide</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[var(--border-hairline)]">
+              {staticIndexRows.map((row) => (
+                <tr class="hover:bg-[var(--bg-subtle)] transition-colors">
+                  <td class="pr-2 py-2.5 text-[13px] font-semibold text-[var(--ink-primary)] whitespace-nowrap">{row.modelShort}</td>
+                  <td class="px-2 py-2.5 max-w-[215px] text-[13px] font-medium text-[var(--ink-secondary)] leading-snug">{row.hwShort}</td>
+                  <td class="px-2 py-2.5">
+                    <StatusBadge status={row.status} />
+                  </td>
+                  <td class="px-2 py-2.5 font-mono text-[var(--ink-secondary)] whitespace-nowrap tabular-nums">{row.vramText}</td>
+                  <td class="px-2 py-2.5 max-w-[140px] font-mono text-[11px] text-[var(--ink-tertiary)] leading-snug tabular-nums">{row.altText}</td>
+                  <td class="px-2 py-2.5 max-w-[155px] font-mono text-[11px] text-[var(--ink-tertiary)] leading-snug tabular-nums">{row.maxFitText}</td>
+                  <td class="px-2 py-2.5 whitespace-nowrap">
+                    <div class="font-mono font-semibold text-[var(--ink-primary)] tabular-nums">{row.tpsText}</div>
+                    {row.isMeasured ? (
+                      <span class="badge-fits mt-0.5 inline-block rounded border px-1 py-0.5 font-mono text-[10px] font-semibold" data-i18n="speed.measuredBadge">
+                        Measured
+                      </span>
+                    ) : (
+                      <span class="mt-0.5 inline-block text-[10px] text-[var(--ink-tertiary)]" data-i18n="speed.formulaEst">
+                        Formula est.
+                      </span>
+                    )}
+                  </td>
+                  <td class="pl-2 py-2.5 text-right whitespace-nowrap">
+                    <a href={row.href} class="text-xs font-semibold text-[var(--accent-ink)] hover:underline" data-i18n="common.openGuide">
+                      Open Guide -&gt;
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- Estimation Formula & Methodology -->
   <section id="methodology" class="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
-    <div class="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
+    <div class="surface-card p-6 sm:p-8">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <h2 class="text-lg sm:text-xl font-bold tracking-[-0.02em] text-slate-950" data-i18n="home.methodTitle">
+        <h2 class="text-lg sm:text-xl font-semibold tracking-[-0.02em] text-[var(--ink-primary)]" data-i18n="home.methodTitle">
           Physics Engine {engineVersion}: Calibrated Formulas vs Verified Benchmarks
         </h2>
         <div class="flex flex-wrap items-center gap-2">
           <a
             href="/changelog/"
-            class="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
+            class="badge-accent rounded-full border px-2.5 py-0.5 font-mono text-[11px] font-semibold hover:opacity-85 transition-opacity"
             data-i18n="home.methodChangelogPill"
             data-i18n-args={heroEngineArgs}
           >
             Changelog (v1.0 → {engineVersion}) -&gt;
           </a>
           <span
-            class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-mono text-[11px] font-medium text-slate-600"
+            class="badge-neutral rounded-full border px-2.5 py-0.5 font-mono text-[11px] font-medium"
             data-i18n="common.updated"
             data-i18n-args={updatedArgs}
           >
@@ -1376,32 +1402,32 @@ const staticIndexSubArgs = JSON.stringify({
           </span>
         </div>
       </div>
-      <div class="mt-5 grid gap-6 border-t border-slate-100 pt-5 text-sm leading-relaxed text-slate-600 md:grid-cols-3">
+      <div class="mt-5 grid gap-6 border-t border-[var(--border-hairline)] pt-5 text-sm leading-relaxed text-[var(--ink-secondary)] md:grid-cols-3">
         <div>
-          <h3 class="font-semibold text-slate-900" data-i18n="home.method1Title">1. Tiered OS Reserves &amp; Custom GB Override</h3>
+          <h3 class="font-semibold text-[var(--ink-primary)]" data-i18n="home.method1Title">1. Tiered OS Reserves &amp; Custom GB Override</h3>
           <p class="mt-1.5" data-i18n="home.method1Desc">
             VRAM Fit pairs weight (GGUF/AWQ/MLX) + GQA KV + per-card CUDA overhead against capacity-tiered Daily Desktop / Clean OS reserves (non-linear headroom scaling across 8GB–192GB devices, not a flat %) or your exact Custom GB limit from nvidia-smi / Activity Monitor directly on /, /calculator/, and guide pages; &lt;5% / &lt;1 GB flags Tight Fit.
           </p>
         </div>
         <div>
-          <h3 class="font-semibold text-slate-900" data-i18n="home.method2Title">2. Inline AWQ/MLX + Separate @8K vs @Max Fit Speeds</h3>
+          <h3 class="font-semibold text-[var(--ink-primary)]" data-i18n="home.method2Title">2. Inline AWQ/MLX + Separate @8K vs @Max Fit Speeds</h3>
           <p class="mt-1.5" data-i18n="home.method2Desc">
             Every guide reports GGUF (llama.cpp), vLLM AWQ 4-bit, or Apple MLX 4-bit VRAM + speeds side-by-side, and separates 8K decode speed from @Max Fit long-context speed after KV-read and attention scaling.
           </p>
         </div>
         <div>
-          <h3 class="font-semibold text-slate-900" data-i18n="home.method3Title">3. MoE/Turing Calibration &amp; Transparent 17/173 Coverage</h3>
+          <h3 class="font-semibold text-[var(--ink-primary)]" data-i18n="home.method3Title">3. MoE/Turing Calibration &amp; Transparent 17/173 Coverage</h3>
           <p class="mt-1.5" data-i18n="home.method3Desc">
             Physics v3.3 achieves 17/17 full range containment (max midpoint error 8.7%) across Turing/Volta, CUDA MoE router gather, and DeltaNet dispatch benchmarks. Only 17/173 curated guides have verified telemetry; the remaining 156 stay clearly tagged "Formula only (unverified)".
           </p>
         </div>
       </div>
 
-      <div class="mt-5 rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-xs leading-relaxed text-slate-800">
-        <div class="font-bold text-slate-950" data-i18n="home.uncensoredTitle">
+      <div class="surface-inset mt-6 p-4 text-xs leading-relaxed text-[var(--ink-secondary)]">
+        <div class="font-semibold text-[var(--ink-primary)]" data-i18n="home.uncensoredTitle">
           Uncensored / Abliterated / Heretic Models (1:1 Drop-In)
         </div>
-        <p class="mt-1 text-slate-600" data-i18n="home.uncensoredDesc">
+        <p class="mt-1" data-i18n="home.uncensoredDesc">
           Community uncensored, abliterated, and Heretic fine-tunes use identical layer counts, hidden dimensions, and GQA KV geometry as the base checkpoints above — apply the same @8K VRAM, Max Fit context, and tok/s estimates directly (allow ~±3–5% for custom imatrix quant variance).
         </p>
       </div>
@@ -1410,11 +1436,15 @@ const staticIndexSubArgs = JSON.stringify({
 </BaseLayout>
 
 <script>
-  import { SearchableCombobox, type ComboboxOption } from '../utils/combobox';
-  import { groupCatalogHardware } from '../utils/hubs';
-  import { getLocale, onLocaleChange, t, tSpeedTier, tStatus } from '../utils/i18n';
   import {
-    classifySpeedTier,
+    buildCpuCascaderOptions,
+    buildHardwareCascaderOptions,
+    buildModelCascaderOptions,
+  } from '../utils/cascaderOptions';
+  import { SearchableCombobox, type ComboboxOption } from '../utils/combobox';
+  import { CustomSelect } from '../utils/customSelect';
+  import { getLocale, onLocaleChange, t, tStatus } from '../utils/i18n';
+  import {
     effectiveUsableVramGb,
     estimateRigRun,
     formatContextLabel,
@@ -1441,7 +1471,6 @@ const staticIndexSubArgs = JSON.stringify({
     ModelSpec,
     ReserveProfile,
     RigRunEstimate,
-    SpeedTier,
     SplitMode,
   } from '../types/vram';
 
@@ -1461,7 +1490,6 @@ const staticIndexSubArgs = JSON.stringify({
     rank: number;
     simHref: string;
     guideSlug?: string;
-    gpuCountLabel: string;
     chipLabel: string;
     hwSubtitle: string;
     layersText: string;
@@ -1476,25 +1504,10 @@ const staticIndexSubArgs = JSON.stringify({
   }
 
   function badgeClasses(s: CompatStatus): string {
-    if (s === 'Fits') return 'border-emerald-200 bg-emerald-50 text-emerald-800';
-    if (s === 'Tight Fit') return 'border-orange-200 bg-orange-50 text-orange-800';
-    if (s === 'Partial Offload') return 'border-amber-200 bg-amber-50 text-amber-800';
-    return 'border-rose-200 bg-rose-50 text-rose-800';
-  }
-
-  function dotClass(s: CompatStatus): string {
-    if (s === 'Fits') return 'bg-emerald-600';
-    if (s === 'Tight Fit') return 'bg-orange-500';
-    if (s === 'Partial Offload') return 'bg-amber-500';
-    return 'bg-rose-600';
-  }
-
-  function speedBadgeClasses(tier: SpeedTier): string {
-    if (tier === 'Fast') return 'border-sky-200 bg-sky-50 text-sky-800';
-    if (tier === 'Interactive') return 'border-indigo-200 bg-indigo-50 text-indigo-800';
-    if (tier === 'Readable') return 'border-slate-200 bg-slate-100 text-slate-700';
-    if (tier === 'Slow') return 'border-amber-200 bg-amber-50 text-amber-800';
-    return 'border-rose-200 bg-rose-50 text-rose-800';
+    if (s === 'Fits') return 'badge-fits';
+    if (s === 'Tight Fit') return 'badge-tight';
+    if (s === 'Partial Offload') return 'badge-partial';
+    return 'badge-oom';
   }
 
   function escapeHtml(s: string): string {
@@ -1513,7 +1526,8 @@ const staticIndexSubArgs = JSON.stringify({
     const ramRoot = document.getElementById('cb-ram');
     const gpuRoot = document.getElementById('cb-gpu');
     const modelRoot = document.getElementById('cb-model');
-    const gpuCountSelect = document.getElementById('rig-gpu-count') as HTMLSelectElement | null;
+    const gpuCountRoot = document.getElementById('rig-gpu-count');
+    const sortRoot = document.getElementById('filter-sort');
     const contextBar = document.getElementById('rig-context-bar');
     const contextTextEl = document.getElementById('rig-context-text');
     const splitToggleEl = document.getElementById('rig-split-toggle');
@@ -1522,7 +1536,6 @@ const staticIndexSubArgs = JSON.stringify({
     const customGbWrap = document.getElementById('home-custom-gb-wrap');
     const customGbInput = document.getElementById('home-custom-gb') as HTMLInputElement | null;
 
-    const sortSelect = document.getElementById('filter-sort') as HTMLSelectElement | null;
     const statusButtons = Array.from(document.querySelectorAll('[data-status-btn]'));
     const cards = Array.from(document.querySelectorAll('[data-card]'));
     const countEl = document.getElementById('filter-count');
@@ -1563,12 +1576,16 @@ const staticIndexSubArgs = JSON.stringify({
     const modeClosePresetsBtn = document.getElementById('results-mode-close-presets-btn');
     const modeSimCta = document.getElementById('results-mode-sim-cta') as HTMLAnchorElement | null;
 
+    const dirTabBtns = Array.from(document.querySelectorAll('[data-dir-tab]'));
+    const dirPanels = Array.from(document.querySelectorAll('[data-dir-panel]'));
+    const dirViewAllLink = document.getElementById('dir-view-all-link') as HTMLAnchorElement | null;
+
     const catalogEl = document.getElementById('home-catalog-json');
     const catData: HomeCatalogPayload = catalogEl
       ? (JSON.parse(catalogEl.textContent || '{}') as HomeCatalogPayload)
       : { models: [], hardware: [], cpus: [], curatedKeys: [], curatedSlugs: {} };
 
-    if (!cpuRoot || !ramRoot || !gpuRoot || !modelRoot) return;
+    if (!cpuRoot || !ramRoot || !gpuRoot || !modelRoot || !gpuCountRoot || !sortRoot) return;
 
     const curatedKeySet = new Set(catData.curatedKeys || []);
     const curatedSlugMap = new Map<string, string>(Object.entries(catData.curatedSlugs || {}));
@@ -1581,12 +1598,10 @@ const staticIndexSubArgs = JSON.stringify({
     const socProfiles = extractUnifiedSocProfiles(catData.hardware);
     const socById = new Map(socProfiles.map((s) => [s.id, s]));
     const discreteGpus = getDiscreteSingleGpus(catData.hardware);
-    const discreteGroupList = groupCatalogHardware(discreteGpus);
 
-    // State
-    let selectedCpuVal: string = ''; // '', 'soc:<id>', or 'x86:<id>'
+    let selectedCpuVal: string = '';
     let selectedRamGb: number | null = null;
-    let selectedGpuVal: string = ''; // '', 'none', or discrete hw.id
+    let selectedGpuVal: string = '';
     let gpuCount = 1;
     let splitMode: SplitMode = 'layer';
     let reserveProfile: ReserveProfile = 'desktop';
@@ -1598,28 +1613,6 @@ const staticIndexSubArgs = JSON.stringify({
     let currentSort = 'featured';
     let browsePresetsOpen = false;
 
-    function updateReserveUi() {
-      reserveBtns.forEach((b) => {
-        const active = (b.getAttribute('data-home-reserve') || 'desktop') === reserveProfile;
-        b.classList.toggle('bg-slate-900', active);
-        b.classList.toggle('text-white', active);
-        b.classList.toggle('font-semibold', active);
-        b.classList.toggle('text-slate-700', !active);
-        b.classList.toggle('font-medium', !active);
-      });
-      if (customGbWrap) {
-        const isCustom = reserveProfile === 'custom';
-        customGbWrap.classList.toggle('hidden', !isCustom);
-        customGbWrap.classList.toggle('flex', isCustom);
-      }
-      if (customGbInput && customUsableGb !== null && document.activeElement !== customGbInput) {
-        customGbInput.value = String(customUsableGb);
-      }
-    }
-
-    const totalCurated = cards.length;
-    const totalCombinations = catData.models.length * catData.hardware.length;
-
     const hwSearchMap = new Map<string, string>();
     for (const h of catData.hardware) {
       hwSearchMap.set(
@@ -1630,132 +1623,21 @@ const staticIndexSubArgs = JSON.stringify({
       );
     }
 
-    const CPU_BRAND_ORDER: Record<string, number> = {
-      Apple: 1,
-      Intel: 2,
-      AMD: 3,
-      Qualcomm: 4,
-      NVIDIA: 5,
-      Generic: 6,
-    };
+    const totalCurated = cards.length;
 
-    const CPU_SERIES_ORDER: Record<string, number> = {
-      'Apple Silicon M5': 1,
-      'Apple Silicon M4': 2,
-      'Apple Silicon M3': 3,
-      'Apple Silicon M2': 4,
-      'Apple Silicon M1': 5,
-      'DGX Workstation': 6,
-      'Core Ultra 200 (Arrow Lake)': 10,
-      'Core 14th / 13th Gen (DDR5)': 11,
-      'Core 12th–10th Gen (DDR4)': 12,
-      'Core Laptop (Ultra / HX / H)': 13,
-      'Xeon Workstation & Server': 14,
-      'Ryzen 9000 (AM5 Zen 5)': 20,
-      'Ryzen 7000 (AM5 Zen 4)': 21,
-      'Ryzen 5000 / 3000 (AM4 DDR4)': 22,
-      'Ryzen Laptop & AI': 23,
-      'Threadripper Workstation': 24,
-      'EPYC Server': 25,
-      'Ryzen AI Max (Unified)': 26,
-      'Snapdragon X (ARM AI PC)': 30,
-      'Generic Presets': 40,
-    };
-
-    const GPU_BRAND_ORDER: Record<string, number> = {
-      NVIDIA: 1,
-      AMD: 2,
-      Intel: 3,
-      Apple: 4,
-    };
-
-    const GPU_SERIES_ORDER: Record<string, number> = {
-      'RTX 50 Series': 1,
-      'RTX 40 Series': 2,
-      'RTX 30 Series': 3,
-      'RTX 20 Series': 4,
-      'GTX 16 Series': 5,
-      'GTX 10 Series': 6,
-      'RTX 50 Laptop': 7,
-      'RTX 40 Laptop': 8,
-      'RTX 30 Laptop': 9,
-      'RTX Workstation': 10,
-      'Data Center & Homelab': 11,
-      'Multi-GPU RTX': 12,
-      'DGX Workstation': 13,
-      'Radeon RX 9000': 20,
-      'Radeon RX 7000': 21,
-      'Radeon RX 6000': 22,
-      'Radeon PRO': 23,
-      'Instinct Data Center': 24,
-      'Ryzen AI Max': 25,
-      'Intel Arc Battlemage': 30,
-      'Intel Arc Alchemist': 31,
-      'Apple Silicon M5': 40,
-      'Apple Silicon M4': 41,
-      'Apple Silicon M3': 42,
-      'Apple Silicon M2': 43,
-      'Apple Silicon M1': 44,
-    };
-
-    // Build CPU options (Unified Silicon + x86/ARM Tiers, 3-Column Brand / Series / Model)
-    function buildCpuOptions(): ComboboxOption[] {
-      const opts: ComboboxOption[] = [];
-      for (const soc of socProfiles) {
-        const seriesName =
-          soc.vendor === 'Apple'
-            ? soc.series
-            : soc.vendor === 'AMD'
-              ? 'Ryzen AI Max (Unified)'
-              : 'DGX Spark GB10 (Unified)';
-        const seriesOrder =
-          soc.vendor === 'NVIDIA'
-            ? 1
-            : CPU_SERIES_ORDER[seriesName] ?? 90;
-        opts.push({
-          value: `soc:${soc.id}`,
-          label: soc.name,
-          brand: soc.vendor,
-          brandOrder: CPU_BRAND_ORDER[soc.vendor] ?? 50,
-          series: seriesName,
-          seriesOrder,
-          group: t('home.grpUnified'),
-          sublabel: `${soc.ramTiers.join(' / ')} GB · ${soc.backend} ${soc.bwLabel}`,
-          badge: `${soc.backend} Unified`,
-          searchBlob: `${soc.searchBlob} ${seriesName}`.toLowerCase(),
-        });
+    function updateReserveUi() {
+      reserveBtns.forEach((b) => {
+        const active = (b.getAttribute('data-home-reserve') || 'desktop') === reserveProfile;
+        b.setAttribute('data-active', active ? 'true' : 'false');
+      });
+      if (customGbWrap) {
+        const isCustom = reserveProfile === 'custom';
+        customGbWrap.classList.toggle('hidden', !isCustom);
+        customGbWrap.classList.toggle('flex', isCustom);
       }
-
-      const cpuTiers = [
-        { tier: 'Consumer DDR5', groupKey: 'home.grpDdr5' as const },
-        { tier: 'Consumer DDR4', groupKey: 'home.grpDdr4' as const },
-        { tier: 'Laptop LPDDR5X', groupKey: 'home.grpLaptopCpu' as const },
-        { tier: 'Workstation HEDT', groupKey: 'home.grpWorkstationCpu' as const },
-        { tier: 'Server EPYC / Xeon', groupKey: 'home.grpServerCpu' as const },
-      ];
-      for (const { tier, groupKey } of cpuTiers) {
-        for (const c of catData.cpus) {
-          if (c.tier !== tier) continue;
-          const aliases = (c.search_aliases || []).join(' ');
-          const brandName = c.vendor === 'Generic' ? t('cb.brandGeneric') : c.vendor;
-          const seriesName = c.series || c.tier;
-          opts.push({
-            value: `x86:${c.id}`,
-            label: c.name,
-            brand: brandName,
-            brandOrder: CPU_BRAND_ORDER[c.vendor] ?? 50,
-            series: seriesName,
-            seriesOrder: CPU_SERIES_ORDER[seriesName] ?? 90,
-            group: t(groupKey),
-            sublabel: `${c.memory_type} · ${c.channels}-Ch · ${c.simd}`,
-            badge: `${c.effective_bw_gbps} GB/s`,
-            searchBlob: [c.id, c.name, c.short_name, c.vendor, seriesName, c.tier, c.memory_type, aliases]
-              .join(' ')
-              .toLowerCase(),
-          });
-        }
+      if (customGbInput && customUsableGb !== null && document.activeElement !== customGbInput) {
+        customGbInput.value = String(customUsableGb);
       }
-      return opts;
     }
 
     function buildRamOptions(soc: UnifiedSocProfile | null): ComboboxOption[] {
@@ -1795,135 +1677,24 @@ const staticIndexSubArgs = JSON.stringify({
       return opts;
     }
 
-    const gpuGroupKeyMap: Record<
-      string,
-      | 'home.grpGpuDesktopNvidia'
-      | 'home.grpGpuClassicNvidia'
-      | 'home.grpGpuWorkstationNvidia'
-      | 'home.grpGpuLaptopNvidia'
-      | 'home.grpGpuAmd'
-      | 'home.grpGpuIntel'
-      | 'home.grpGpuUnified'
-    > = {
-      'NVIDIA Desktop RTX': 'home.grpGpuDesktopNvidia',
-      'NVIDIA Classic GTX & RTX 20': 'home.grpGpuClassicNvidia',
-      'NVIDIA Multi-GPU & Workstation': 'home.grpGpuWorkstationNvidia',
-      'NVIDIA Laptop RTX': 'home.grpGpuLaptopNvidia',
-      'AMD Radeon & Ryzen AI': 'home.grpGpuAmd',
-      'Intel Arc': 'home.grpGpuIntel',
-      'Apple Silicon Unified': 'home.grpGpuUnified',
-    };
+    const gpuCountSelect = new CustomSelect({
+      root: gpuCountRoot,
+      disabled: true,
+      onChange: (val) => {
+        gpuCount = Math.max(1, Number(val || 1));
+        updateContextBar();
+        applyFilters(true);
+      },
+    });
 
-    function buildGpuOptions(): ComboboxOption[] {
-      const opts: ComboboxOption[] = [];
-
-      const sortedDiscrete = [...discreteGpus].sort((a, b) => {
-        const bo = (GPU_BRAND_ORDER[a.vendor] ?? 99) - (GPU_BRAND_ORDER[b.vendor] ?? 99);
-        if (bo !== 0) return bo;
-        const so = (GPU_SERIES_ORDER[a.series] ?? 99) - (GPU_SERIES_ORDER[b.series] ?? 99);
-        if (so !== 0) return so;
-        if (b.vram_gb !== a.vram_gb) return b.vram_gb - a.vram_gb;
-        if (b.bandwidth_gbps !== a.bandwidth_gbps) return b.bandwidth_gbps - a.bandwidth_gbps;
-        return a.name.localeCompare(b.name);
-      });
-
-      for (const h of sortedDiscrete) {
-        const usableDesktop = effectiveUsableVramGb(h, 1, 'desktop')[1];
-        opts.push({
-          value: h.id,
-          label: h.name,
-          brand: h.vendor,
-          brandOrder: GPU_BRAND_ORDER[h.vendor] ?? 99,
-          series: h.series,
-          seriesOrder: GPU_SERIES_ORDER[h.series] ?? 99,
-          group: h.series,
-          sublabel: t('home.vramLineSub', {
-            vram: h.vram_gb,
-            mem: h.memory_type,
-            usable: usableDesktop,
-          }),
-          badge: `${h.bandwidth_gbps} GB/s`,
-          searchBlob: hwSearchMap.get(h.id) || h.name.toLowerCase(),
-        });
-      }
-
-      const sortedUnified = catData.hardware
-        .filter((h) => h.is_unified)
-        .sort((a, b) => {
-          const bo = (GPU_BRAND_ORDER[a.vendor] ?? 99) - (GPU_BRAND_ORDER[b.vendor] ?? 99);
-          if (bo !== 0) return bo;
-          const so = (GPU_SERIES_ORDER[a.series] ?? 99) - (GPU_SERIES_ORDER[b.series] ?? 99);
-          if (so !== 0) return so;
-          if (b.bandwidth_gbps !== a.bandwidth_gbps) return b.bandwidth_gbps - a.bandwidth_gbps;
-          return b.vram_gb - a.vram_gb;
-        });
-
-      for (const sku of sortedUnified) {
-        opts.push({
-          value: `uni:${sku.id}`,
-          label: sku.name,
-          brand: sku.vendor,
-          brandOrder: GPU_BRAND_ORDER[sku.vendor] ?? 99,
-          series: sku.series,
-          seriesOrder: GPU_SERIES_ORDER[sku.series] ?? 99,
-          group: t('home.grpGpuUnified'),
-          sublabel: t('home.unifiedChipNote', {
-            ram: Math.round(sku.vram_gb),
-            backend: sku.backend,
-          }),
-          badge: `${sku.bandwidth_gbps} GB/s`,
-          searchBlob: `${hwSearchMap.get(sku.id) || ''} unified macbook mac studio mac mini strix halo dgx spark`.toLowerCase(),
-        });
-      }
-
-      opts.push({
-        value: 'none',
-        label: t('home.noneCpuOnly'),
-        brand: t('cb.brandNoGpu'),
-        brandOrder: 99,
-        series: t('cb.seriesNoGpu'),
-        seriesOrder: 1,
-        group: t('home.grpNoGpu'),
-        sublabel: t('home.noneCpuOnlySub'),
-        badge: 'CPU-Only',
-        searchBlob: 'none no gpu cpu only system ram integrated ddr4 ddr5',
-      });
-
-      return opts;
-    }
-
-    const allModelsSorted = [...catData.models].sort((a, b) => a.name.localeCompare(b.name));
-    function buildModelOptions(): ComboboxOption[] {
-      return [
-        {
-          value: 'all',
-          label: t('home.allModels', { count: catData.models.length }),
-          group: t('home.grpModelSel'),
-          searchBlob: 'all models clear reset any',
-        },
-        ...allModelsSorted.map((m) => ({
-          value: m.id,
-          label: `${m.short_name} (${m.params_b}B)`,
-          group: m.family,
-          sublabel: m.active_params_b
-            ? `${m.name} · MoE ${m.active_params_b}B`
-            : `${m.name} · ${m.architecture}`,
-          badge: m.active_params_b ? `${m.active_params_b}B` : `${m.params_b}B`,
-          searchBlob: [
-            m.id,
-            m.name,
-            m.short_name,
-            m.family,
-            m.architecture,
-            `${m.params_b}b`,
-            m.active_params_b ? `moe ${m.active_params_b}b` : 'dense',
-            'uncensored abliterated heretic dolphin',
-          ]
-            .join(' ')
-            .toLowerCase(),
-        })),
-      ];
-    }
+    const sortSelect = new CustomSelect({
+      root: sortRoot,
+      align: 'right',
+      initialValue: 'featured',
+      onChange: () => {
+        applyFilters(true);
+      },
+    });
 
     function getActiveUnifiedSoc(): UnifiedSocProfile | null {
       if (!selectedCpuVal.startsWith('soc:')) return null;
@@ -1938,55 +1709,42 @@ const staticIndexSubArgs = JSON.stringify({
     }
 
     function syncGpuQtyControl() {
-      if (!gpuCountSelect) return;
       const soc = getActiveUnifiedSoc();
       const hw = selectedGpuVal && selectedGpuVal !== 'none' ? hwById.get(selectedGpuVal) ?? null : null;
 
       if (soc) {
-        gpuCountSelect.innerHTML = `<option value="0">${escapeHtml(t('home.qtyNone'))}</option>`;
-        gpuCountSelect.value = '0';
-        gpuCountSelect.disabled = true;
+        const lbl = t('home.qtyNone');
+        gpuCountSelect.setOptions([{ value: '0', label: lbl }], false);
+        gpuCountSelect.setValue('0', true);
+        gpuCountSelect.setDisabled(true, lbl);
       } else if (selectedGpuVal === 'none' || !hw) {
-        gpuCountSelect.innerHTML =
-          selectedGpuVal === 'none'
-            ? `<option value="0">${escapeHtml(t('home.qtyNone'))}</option>`
-            : '<option value="0">—</option>';
-        gpuCountSelect.value = '0';
-        gpuCountSelect.disabled = true;
+        const lbl = selectedGpuVal === 'none' ? t('home.qtyNone') : '—';
+        gpuCountSelect.setOptions([{ value: '0', label: lbl }], false);
+        gpuCountSelect.setValue('0', true);
+        gpuCountSelect.setDisabled(true, lbl);
       } else if (!isMultiGpuCapable(hw)) {
         gpuCount = 1;
-        gpuCountSelect.innerHTML = `<option value="1">${escapeHtml(t('home.qtyLaptop'))}</option>`;
-        gpuCountSelect.value = '1';
-        gpuCountSelect.disabled = true;
+        const lbl = t('home.qtyLaptop');
+        gpuCountSelect.setOptions([{ value: '1', label: lbl }], false);
+        gpuCountSelect.setValue('1', true);
+        gpuCountSelect.setDisabled(true, lbl);
       } else {
-        gpuCountSelect.innerHTML = GPU_COUNT_OPTIONS.map((n) => {
-          const txt = n === 1 ? t('home.qtySingle') : t('home.qtyMulti', { n });
-          return `<option value="${n}">${escapeHtml(txt)}</option>`;
-        }).join('');
-        gpuCountSelect.disabled = false;
-        gpuCountSelect.value = String(gpuCount);
+        gpuCountSelect.setOptions(
+          GPU_COUNT_OPTIONS.map((n) => ({
+            value: String(n),
+            label: n === 1 ? t('home.qtySingle') : t('home.qtyMulti', { n }),
+          })),
+          false,
+        );
+        gpuCountSelect.setDisabled(false);
+        gpuCountSelect.setValue(String(gpuCount), true);
       }
-
-      const enabled = !gpuCountSelect.disabled;
-      gpuCountSelect.classList.toggle('bg-white', enabled);
-      gpuCountSelect.classList.toggle('border-slate-300', enabled);
-      gpuCountSelect.classList.toggle('text-slate-900', enabled);
-      gpuCountSelect.classList.toggle('cursor-pointer', enabled);
-      gpuCountSelect.classList.toggle('bg-slate-50', !enabled);
-      gpuCountSelect.classList.toggle('border-slate-200', !enabled);
-      gpuCountSelect.classList.toggle('text-slate-400', !enabled);
-      gpuCountSelect.classList.toggle('cursor-not-allowed', !enabled);
     }
 
     function updateSplitToggleUi() {
       splitBtns.forEach((b) => {
         const active = b.getAttribute('data-home-split') === splitMode;
-        b.classList.toggle('bg-slate-900', active);
-        b.classList.toggle('text-white', active);
-        b.classList.toggle('font-semibold', active);
-        b.classList.toggle('text-slate-600', !active);
-        b.classList.toggle('font-medium', !active);
-        b.classList.toggle('hover:text-slate-950', !active);
+        b.setAttribute('data-active', active ? 'true' : 'false');
       });
     }
 
@@ -2040,11 +1798,16 @@ const staticIndexSubArgs = JSON.stringify({
       }
     }
 
-    // Instantiate Comboboxes
     const cpuCombo = new SearchableCombobox({
       root: cpuRoot,
       mode: 'cascader',
-      options: buildCpuOptions(),
+      options: buildCpuCascaderOptions({
+        cpus: catData.cpus,
+        socProfiles,
+        t,
+        includeUnified: true,
+        prefixX86: true,
+      }),
       placeholder: t('home.cpuPlaceholder'),
       searchPlaceholder: t('cb.searchCpuPh'),
       brandHeader: t('cb.brandCol'),
@@ -2077,7 +1840,13 @@ const staticIndexSubArgs = JSON.stringify({
     const gpuCombo = new SearchableCombobox({
       root: gpuRoot,
       mode: 'cascader',
-      options: buildGpuOptions(),
+      options: buildHardwareCascaderOptions({
+        hardware: catData.hardware,
+        t,
+        prefixUnified: true,
+        includeCpuOnly: true,
+        includeMultiGpu: false,
+      }),
       placeholder: t('home.gpuPlaceholder'),
       searchPlaceholder: t('cb.searchGpuPh'),
       brandHeader: t('cb.brandCol'),
@@ -2092,8 +1861,20 @@ const staticIndexSubArgs = JSON.stringify({
 
     const modelCombo = new SearchableCombobox({
       root: modelRoot,
-      options: buildModelOptions(),
+      mode: 'cascader',
+      options: buildModelCascaderOptions({
+        models: catData.models,
+        t,
+        includeAllOption: true,
+      }),
       placeholder: t('home.allModels', { count: catData.models.length }),
+      searchPlaceholder: t('cb.searchModelPh'),
+      brandHeader: t('cb.brandCol'),
+      seriesHeader: t('cb.seriesCol'),
+      modelHeader: t('cb.modelCol'),
+      allBrandsLabel: (n) => t('cb.allBrands', { count: n }),
+      allSeriesLabel: (n) => t('cb.allSeries', { count: n }),
+      itemsCountFormatter: (n) => t('cb.countItems', { count: n }),
       emptyValue: 'all',
       initialValue: 'all',
       emptyText: t('home.modelEmpty'),
@@ -2150,7 +1931,6 @@ const staticIndexSubArgs = JSON.stringify({
         }
       }
 
-      // x86 CPU selected
       selectedCpuVal = val;
       if (wasUnified) {
         ramCombo.setOptions(buildRamOptions(null), true);
@@ -2177,7 +1957,6 @@ const staticIndexSubArgs = JSON.stringify({
         }
       }
 
-      // Leaving unified mode if switching GPU explicitly
       if (selectedCpuVal.startsWith('soc:')) {
         selectedCpuVal = '';
         cpuCombo.clear(true);
@@ -2229,7 +2008,6 @@ const staticIndexSubArgs = JSON.stringify({
       const hw = selectedGpuVal && selectedGpuVal !== 'none' ? hwById.get(selectedGpuVal) ?? null : null;
 
       if (!hw) {
-        // CPU-Only (either GPU === 'none', OR only CPU/RAM chosen so far)
         const ram = selectedRamGb ?? 32;
         const titleParts = [hasCustomCpu ? cpu.short_name : 'Default DDR4 (35 GB/s)', `${ram} GB RAM`];
         return {
@@ -2266,12 +2044,7 @@ const staticIndexSubArgs = JSON.stringify({
     function updateStatusPills() {
       statusButtons.forEach((b) => {
         const active = (b.getAttribute('data-status-btn') || 'all') === selectedStatus;
-        b.classList.toggle('border-slate-900', active);
-        b.classList.toggle('bg-slate-900', active);
-        b.classList.toggle('text-white', active);
-        b.classList.toggle('border-slate-200', !active);
-        b.classList.toggle('bg-slate-50', !active);
-        b.classList.toggle('text-slate-700', !active);
+        b.setAttribute('data-active', active ? 'true' : 'false');
       });
     }
 
@@ -2386,7 +2159,6 @@ const staticIndexSubArgs = JSON.stringify({
         rank: rankOf(res.status),
         simHref: `/calculator/?model=${encodeURIComponent(model.id)}&hw=${encodeURIComponent(h.id)}`,
         guideSlug,
-        gpuCountLabel: '',
         chipLabel: `${h.backend} · ${h.bandwidth_gbps} GB/s`,
         hwSubtitle: t('common.onPrefix', { hw: h.name }),
         layersText: t('common.layersCount', {
@@ -2543,7 +2315,6 @@ const staticIndexSubArgs = JSON.stringify({
           rank: rankOf(res.status),
           simHref,
           guideSlug,
-          gpuCountLabel: rig.effGpuCount > 1 ? `${rig.effGpuCount}× ` : '',
           chipLabel,
           hwSubtitle: t('common.onPrefix', { hw: rig.rigTitle }),
           layersText,
@@ -2605,11 +2376,9 @@ const staticIndexSubArgs = JSON.stringify({
         modeSub.removeAttribute('data-i18n');
         modeSimCta.removeAttribute('data-i18n');
 
-        modeBanner.classList.remove('border-slate-200', 'bg-slate-50/90');
-        modeBanner.classList.add('border-blue-200', 'bg-blue-50/70');
-
-        modeBadge.classList.remove('border', 'border-slate-300', 'bg-white', 'text-slate-700');
-        modeBadge.classList.add('bg-blue-600', 'text-white');
+        modeBanner.classList.add('!border-[var(--accent-border)]', '!bg-[var(--accent-soft)]');
+        modeBadge.classList.remove('badge-neutral');
+        modeBadge.classList.add('badge-accent');
 
         modeBadge.textContent = t('home.modeBadgeRig');
         modeHeading.textContent = t('home.modeHeadingRig', { rig: rig.rigTitle });
@@ -2629,11 +2398,9 @@ const staticIndexSubArgs = JSON.stringify({
         return;
       }
 
-      modeBanner.classList.remove('border-blue-200', 'bg-blue-50/70');
-      modeBanner.classList.add('border-slate-200', 'bg-slate-50/90');
-
-      modeBadge.classList.remove('bg-blue-600', 'text-white');
-      modeBadge.classList.add('border', 'border-slate-300', 'bg-white', 'text-slate-700');
+      modeBanner.classList.remove('!border-[var(--accent-border)]', '!bg-[var(--accent-soft)]');
+      modeBadge.classList.remove('badge-accent');
+      modeBadge.classList.add('badge-neutral');
 
       modeBadge.setAttribute('data-i18n', 'home.modeBadgeRef');
       modeBadge.textContent = t('home.modeBadgeRef');
@@ -2768,7 +2535,6 @@ const staticIndexSubArgs = JSON.stringify({
                 : res.status === 'Partial Offload'
                   ? 'bg-amber-500'
                   : 'bg-rose-500';
-          const speedTier = res.speed_tier ?? classifySpeedTier(res.est_tps, res.status);
           const tpsDisplay =
             res.status === 'OOM'
               ? escapeHtml(t('status.oom'))
@@ -2777,10 +2543,10 @@ const staticIndexSubArgs = JSON.stringify({
           const measuredText = hw && !isCpuOnly ? measuredPairMap.get(`${model.id}::${hw.id}`) : undefined;
           const mm = measuredText?.match(/^(\d+)[–-](\d+)/);
           const dispMeasured = mm ? t('speed.measuredUnit', { low: mm[1], high: mm[2] }) : measuredText;
-          const formulaTag = dispMeasured
-            ? `<span class="shrink-0 rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-800">${escapeHtml(dispMeasured)}</span>`
+          const provenanceTag = dispMeasured
+            ? `<span class="badge-fits mt-1 inline-flex items-center rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-semibold">${escapeHtml(dispMeasured)}</span>`
             : res.status !== 'OOM'
-              ? `<span class="shrink-0 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-mono text-[10px] text-slate-500">${escapeHtml(t('speed.formulaOnly'))}</span>`
+              ? `<span class="mt-0.5 block text-[11px] text-[var(--ink-tertiary)]">${escapeHtml(t('speed.formulaOnly'))}</span>`
               : '';
           const moeLine = model.active_params_b
             ? t('common.moeLine', {
@@ -2794,61 +2560,53 @@ const staticIndexSubArgs = JSON.stringify({
               });
 
           const primaryHref = guideSlug ? `/can-i-run/${encodeURIComponent(guideSlug)}/` : simHref;
-          const kindBadge = guideSlug
-            ? `<span class="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700">${escapeHtml(t('common.fullGuide'))}</span>`
-            : `<span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">${escapeHtml(t('common.liveCalc'))}</span>`;
-
           const footerActions = guideSlug
-            ? `<div class="flex items-center gap-2.5">
-                 <a href="${simHref}" class="text-[11px] font-medium text-slate-500 hover:text-blue-600">${escapeHtml(t('common.simShort'))}</a>
-                 <a href="${primaryHref}" class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800">${escapeHtml(t('common.openGuide'))}</a>
+            ? `<div class="flex items-center gap-2.5 shrink-0">
+                 <a href="${simHref}" class="text-[11px] font-medium text-[var(--ink-tertiary)] hover:text-[var(--ink-primary)] transition-colors">${escapeHtml(t('common.simShort'))}</a>
+                 <a href="${primaryHref}" class="inline-flex items-center gap-1 text-xs font-semibold text-[var(--accent-ink)] hover:underline whitespace-nowrap">${escapeHtml(t('common.openGuide'))}</a>
                </div>`
-            : `<a href="${simHref}" class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800">${escapeHtml(t('common.simulate'))}</a>`;
+            : `<a href="${simHref}" class="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-[var(--accent-ink)] hover:underline whitespace-nowrap">${escapeHtml(t('common.simulate'))}</a>`;
 
           return `
-            <article class="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:border-blue-300 hover:shadow-md">
+            <article class="surface-card-interactive group flex flex-col justify-between p-5">
               <div>
-                <div class="flex items-start justify-between gap-2">
-                  <div class="flex flex-wrap items-center gap-1.5">
-                    <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${badgeClasses(res.status)}">
-                      <span class="h-1.5 w-1.5 rounded-full ${dotClass(res.status)}"></span>
-                      ${escapeHtml(tStatus(res.status))}
-                    </span>
-                    <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold ${speedBadgeClasses(speedTier)}">
-                      ${escapeHtml(tSpeedTier(speedTier, true))}
-                    </span>
-                    ${kindBadge}
-                  </div>
-                  <span class="shrink-0 rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-600">${escapeHtml(chipLabel)}</span>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${badgeClasses(res.status)}">
+                    <span class="status-dot h-1.5 w-1.5 rounded-full shrink-0" aria-hidden="true"></span>
+                    ${escapeHtml(tStatus(res.status))}
+                  </span>
+                  <span class="shrink-0 font-mono text-[11px] font-medium text-[var(--ink-tertiary)] whitespace-nowrap">${escapeHtml(chipLabel)}</span>
                 </div>
 
-                <h3 class="mt-3.5 text-base font-bold tracking-tight text-slate-950 group-hover:text-blue-600 transition-colors">
-                  <a href="${primaryHref}" class="focus:outline-none">
-                    ${escapeHtml(model.short_name)}
-                    <span class="block text-sm font-semibold text-slate-600">${escapeHtml(hwSubtitle)}</span>
+                <h3 class="mt-3.5 tracking-tight">
+                  <a href="${primaryHref}" class="block focus:outline-none">
+                    <span class="block text-[17px] font-semibold text-[var(--ink-primary)] group-hover:text-[var(--accent-ink)] transition-colors">${escapeHtml(model.short_name)}</span>
+                    <span class="mt-0.5 block text-[13.5px] font-medium text-[var(--ink-secondary)]">${escapeHtml(hwSubtitle)}</span>
                   </a>
                 </h3>
 
-                <p class="mt-1.5 font-mono text-xs text-slate-500">${escapeHtml(moeLine)}</p>
+                <p class="mt-1.5 font-mono text-xs text-[var(--ink-tertiary)]">${escapeHtml(moeLine)}</p>
               </div>
 
-              <div class="mt-4 pt-4 border-t border-slate-100">
+              <div class="mt-4 border-t border-[var(--border-hairline)] pt-3.5">
                 <div class="flex items-center justify-between text-xs">
-                  <span class="text-slate-500">${escapeHtml(budgetLabel)}</span>
-                  <span class="font-mono font-semibold text-slate-900 tabular-nums">${res.total_vram_gb.toFixed(1)} / ${budget.toFixed(1)} GB</span>
+                  <span class="text-[var(--ink-secondary)]">${escapeHtml(budgetLabel)}</span>
+                  <span class="font-mono font-semibold text-[var(--ink-primary)] tabular-nums">${res.total_vram_gb.toFixed(1)} / ${budget.toFixed(1)} GB</span>
                 </div>
-                <div class="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-subtle)]">
                   <div class="h-full rounded-full ${barColor}" style="width: ${pct}%"></div>
                 </div>
-                <div class="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-slate-500 tabular-nums">
+                <div class="mt-2 flex items-center justify-between gap-2 text-[11px] text-[var(--ink-tertiary)] tabular-nums">
                   <span>${escapeHtml(maxFitLabel)}</span>
-                  ${formulaTag}
                 </div>
 
-                <div class="mt-3 flex items-center justify-between">
-                  <div class="flex items-baseline gap-1.5">
-                    <span class="font-mono text-base sm:text-lg font-bold text-slate-950 tabular-nums">${tpsDisplay}</span>
-                    <span class="text-[11px] text-slate-500 tabular-nums">${escapeHtml(layersText)}</span>
+                <div class="mt-3.5 flex items-end justify-between gap-2">
+                  <div class="min-w-0">
+                    <div class="flex flex-wrap items-baseline gap-1.5">
+                      <span class="font-mono text-base sm:text-[17px] font-semibold text-[var(--ink-primary)] tabular-nums">${tpsDisplay}</span>
+                      <span class="text-[11px] text-[var(--ink-tertiary)] tabular-nums">${escapeHtml(layersText)}</span>
+                    </div>
+                    ${provenanceTag}
                   </div>
                   ${footerActions}
                 </div>
@@ -2878,7 +2636,7 @@ const staticIndexSubArgs = JSON.stringify({
         liveVisibleLimit = PAGE_SIZE;
       }
 
-      const sortVal = sortSelect ? sortSelect.value : 'featured';
+      const sortVal = sortSelect.getValue() || 'featured';
       if (sortVal !== currentSort) {
         currentSort = sortVal;
         sortCardsInDom(sortVal);
@@ -2887,7 +2645,6 @@ const staticIndexSubArgs = JSON.stringify({
       const rigActive = isRigConfigured();
 
       if (rigActive) {
-        // Unified live 23-model view for the configured CPU + RAM + GPU rig
         if (awaitPanel) awaitPanel.classList.add('hidden');
         setGridVisible(cardsGrid, false, 'grid');
         setGridVisible(paginationBar, false, 'flex');
@@ -2915,7 +2672,6 @@ const staticIndexSubArgs = JSON.stringify({
       }
 
       if (!browsePresetsOpen) {
-        // Honest default: no hardware selected -> hide all preset verdict cards
         if (awaitPanel) awaitPanel.classList.remove('hidden');
         setGridVisible(modeBanner, false, 'flex');
         setGridVisible(cardsGrid, false, 'grid');
@@ -2994,7 +2750,6 @@ const staticIndexSubArgs = JSON.stringify({
         return;
       }
 
-      // Opt-in Preset Reference Matrix View (no rig hardware configured)
       if (awaitPanel) awaitPanel.classList.add('hidden');
       updateResultsModeBanner({ isRig: false });
       const orderedCards = cardsGrid
@@ -3081,9 +2836,8 @@ const staticIndexSubArgs = JSON.stringify({
       const tokens = qParam.trim().toLowerCase().split(/\s+/).filter(Boolean);
       if (tokens.length === 0) return false;
 
-      // 1. Unified SKU match (e.g. "m4 16g")
       const matchedUnified = catData.hardware.find(
-        (h) => h.is_unified && tokens.every((t) => (hwSearchMap.get(h.id) || '').includes(t)),
+        (h) => h.is_unified && tokens.every((tk) => (hwSearchMap.get(h.id) || '').includes(tk)),
       );
       if (matchedUnified) {
         const socId = matchedUnified.id.replace(/-\d+gb$/, '');
@@ -3099,9 +2853,8 @@ const staticIndexSubArgs = JSON.stringify({
         }
       }
 
-      // 2. Discrete GPU match (e.g. "1080", "4070", "p40", "b580")
       const matchedGpu = discreteGpus.find((h) =>
-        tokens.every((t) => (hwSearchMap.get(h.id) || '').includes(t)),
+        tokens.every((tk) => (hwSearchMap.get(h.id) || '').includes(tk)),
       );
       if (matchedGpu) {
         selectedGpuVal = matchedGpu.id;
@@ -3109,10 +2862,9 @@ const staticIndexSubArgs = JSON.stringify({
         return true;
       }
 
-      // 3. Model match (e.g. "qwen3", "deepseek r1 14b")
       const matchedModel = catData.models.find((m) =>
-        tokens.every((t) =>
-          [m.id, m.name, m.short_name, m.family, `${m.params_b}b`].join(' ').toLowerCase().includes(t),
+        tokens.every((tk) =>
+          [m.id, m.name, m.short_name, m.family, `${m.params_b}b`].join(' ').toLowerCase().includes(tk),
         ),
       );
       if (matchedModel) {
@@ -3141,7 +2893,6 @@ const staticIndexSubArgs = JSON.stringify({
 
       let hadParam = false;
 
-      // CPU
       if (cpuParam) {
         if (cpuParam.startsWith('soc:') && socById.has(cpuParam.slice(4))) {
           selectedCpuVal = cpuParam;
@@ -3158,7 +2909,6 @@ const staticIndexSubArgs = JSON.stringify({
         }
       }
 
-      // RAM
       if (ramParam) {
         const parsedRam = parseRamGb(ramParam);
         if (parsedRam !== null) {
@@ -3167,7 +2917,6 @@ const staticIndexSubArgs = JSON.stringify({
         }
       }
 
-      // GPU (explicit)
       if (gpuParam) {
         if (gpuParam === 'none' || gpuParam === 'cpu-only') {
           selectedGpuVal = 'none';
@@ -3177,7 +2926,6 @@ const staticIndexSubArgs = JSON.stringify({
           hadParam = true;
         }
       } else if (hwParam) {
-        // Legacy ?hw= support
         if (hwParam === 'cpu-only') {
           selectedGpuVal = 'none';
           hadParam = true;
@@ -3233,8 +2981,8 @@ const staticIndexSubArgs = JSON.stringify({
           hadParam = true;
         }
       }
-      if (sortParam && sortSelect && Array.from(sortSelect.options).some((o) => o.value === sortParam)) {
-        sortSelect.value = sortParam;
+      if (sortParam && sortSelect.hasOption(sortParam)) {
+        sortSelect.setValue(sortParam, true);
         hadParam = true;
       }
       if (resParam === 'clean' || resParam === 'custom') {
@@ -3250,7 +2998,6 @@ const staticIndexSubArgs = JSON.stringify({
         }
       }
 
-      // Reflect hydrated CPU / RAM / GPU state into comboboxes
       const activeSoc = getActiveUnifiedSoc();
       if (activeSoc) {
         cpuCombo.setValue(selectedCpuVal);
@@ -3302,7 +3049,7 @@ const staticIndexSubArgs = JSON.stringify({
       ramCombo.clear(true);
       gpuCombo.clear(true);
       modelCombo.setValue('all');
-      if (sortSelect) sortSelect.value = 'featured';
+      sortSelect.setValue('featured', true);
 
       syncGpuQtyControl();
       updateReserveUi();
@@ -3337,15 +3084,6 @@ const staticIndexSubArgs = JSON.stringify({
       });
     }
 
-    if (gpuCountSelect) {
-      gpuCountSelect.addEventListener('change', () => {
-        const val = Number(gpuCountSelect.value || 1);
-        gpuCount = Math.max(1, val);
-        updateContextBar();
-        applyFilters(true);
-      });
-    }
-
     splitBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
         splitMode = (btn.getAttribute('data-home-split') as SplitMode) || 'layer';
@@ -3354,7 +3092,6 @@ const staticIndexSubArgs = JSON.stringify({
       });
     });
 
-    if (sortSelect) sortSelect.addEventListener('change', () => applyFilters(true));
     if (resetBtn) resetBtn.addEventListener('click', resetAll);
     if (emptyResetBtn) emptyResetBtn.addEventListener('click', resetAll);
 
@@ -3379,23 +3116,19 @@ const staticIndexSubArgs = JSON.stringify({
       const gpuInput = gpuRoot?.querySelector('input');
       const targets = [cpuInput, gpuInput].filter((el): el is HTMLInputElement => Boolean(el));
       targets.forEach((el) => {
-        el.classList.add('ring-2', 'ring-blue-500/70', 'border-blue-500');
+        el.classList.add('ring-2', 'ring-[var(--accent)]', 'border-[var(--accent)]');
       });
       if (hwHighlightTimer !== null) window.clearTimeout(hwHighlightTimer);
       hwHighlightTimer = window.setTimeout(() => {
         targets.forEach((el) => {
-          el.classList.remove('ring-2', 'ring-blue-500/70', 'border-blue-500');
+          el.classList.remove('ring-2', 'ring-[var(--accent)]', 'border-[var(--accent)]');
         });
         hwHighlightTimer = null;
       }, 1400);
     }
 
-    if (modeSelectBtn) {
-      modeSelectBtn.addEventListener('click', highlightHardwareInputs);
-    }
-    if (awaitSelectHwBtn) {
-      awaitSelectHwBtn.addEventListener('click', highlightHardwareInputs);
-    }
+    if (modeSelectBtn) modeSelectBtn.addEventListener('click', highlightHardwareInputs);
+    if (awaitSelectHwBtn) awaitSelectHwBtn.addEventListener('click', highlightHardwareInputs);
 
     quickSocBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -3433,6 +3166,41 @@ const staticIndexSubArgs = JSON.stringify({
       });
     }
 
+    // 3-tab catalog directory switcher (all 3 panels remain statically in DOM)
+    function activateDirTab(tabName: string) {
+      dirTabBtns.forEach((b) => {
+        const isAct = b.getAttribute('data-dir-tab') === tabName;
+        b.setAttribute('data-active', isAct ? 'true' : 'false');
+        b.setAttribute('aria-selected', isAct ? 'true' : 'false');
+      });
+      dirPanels.forEach((p) => {
+        const match = p.getAttribute('data-dir-panel') === tabName;
+        p.classList.toggle('hidden', !match);
+      });
+      if (dirViewAllLink) {
+        if (tabName === 'models') {
+          dirViewAllLink.href = '/model/';
+          dirViewAllLink.classList.remove('hidden');
+        } else if (tabName === 'hardware') {
+          dirViewAllLink.href = '/gpu/';
+          dirViewAllLink.classList.remove('hidden');
+        } else {
+          dirViewAllLink.classList.add('hidden');
+        }
+      }
+    }
+
+    dirTabBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-dir-tab') || 'models';
+        activateDirTab(target);
+      });
+    });
+
+    if (window.location.hash === '#static-compatibility-index') {
+      activateDirTab('index');
+    }
+
     const cmdTimers = new WeakMap<Element, number>();
     document.querySelectorAll('[data-copy-cmd]').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -3443,13 +3211,13 @@ const staticIndexSubArgs = JSON.stringify({
           const checkIcon = btn.querySelector('[data-cmd-check-icon]');
           if (copyIcon) copyIcon.classList.add('hidden');
           if (checkIcon) checkIcon.classList.remove('hidden');
-          btn.classList.add('border-emerald-300', 'bg-emerald-50', 'text-emerald-800');
+          btn.classList.add('badge-fits');
           const prev = cmdTimers.get(btn);
           if (prev) window.clearTimeout(prev);
           const tid = window.setTimeout(() => {
             if (copyIcon) copyIcon.classList.remove('hidden');
             if (checkIcon) checkIcon.classList.add('hidden');
-            btn.classList.remove('border-emerald-300', 'bg-emerald-50', 'text-emerald-800');
+            btn.classList.remove('badge-fits');
           }, 1400);
           cmdTimers.set(btn, tid);
         };
@@ -3487,7 +3255,16 @@ const staticIndexSubArgs = JSON.stringify({
     });
 
     onLocaleChange(() => {
-      cpuCombo.setOptions(buildCpuOptions(), true);
+      cpuCombo.setOptions(
+        buildCpuCascaderOptions({
+          cpus: catData.cpus,
+          socProfiles,
+          t,
+          includeUnified: true,
+          prefixX86: true,
+        }),
+        true,
+      );
       cpuCombo.setPlaceholder(t('home.cpuPlaceholder'));
       cpuCombo.setEmptyText(t('home.cpuEmpty'));
       cpuCombo.setCascaderLabels({
@@ -3507,7 +3284,16 @@ const staticIndexSubArgs = JSON.stringify({
       ramCombo.setCustomActionFormatter((n) => t('home.customRamUse', { ram: n }));
       if (selectedRamGb !== null) ramCombo.setValue(String(selectedRamGb), `${selectedRamGb} GB`);
 
-      gpuCombo.setOptions(buildGpuOptions(), true);
+      gpuCombo.setOptions(
+        buildHardwareCascaderOptions({
+          hardware: catData.hardware,
+          t,
+          prefixUnified: true,
+          includeCpuOnly: true,
+          includeMultiGpu: false,
+        }),
+        true,
+      );
       gpuCombo.setPlaceholder(t('home.gpuPlaceholder'));
       gpuCombo.setEmptyText(t('home.gpuEmpty'));
       gpuCombo.setCascaderLabels({
@@ -3525,11 +3311,28 @@ const staticIndexSubArgs = JSON.stringify({
         gpuCombo.setValue(selectedGpuVal);
       }
 
-      modelCombo.setOptions(buildModelOptions(), true);
+      modelCombo.setOptions(
+        buildModelCascaderOptions({
+          models: catData.models,
+          t,
+          includeAllOption: true,
+        }),
+        true,
+      );
       modelCombo.setPlaceholder(t('home.allModels', { count: catData.models.length }));
       modelCombo.setEmptyText(t('home.modelEmpty'));
+      modelCombo.setCascaderLabels({
+        searchPlaceholder: t('cb.searchModelPh'),
+        brandHeader: t('cb.brandCol'),
+        seriesHeader: t('cb.seriesCol'),
+        modelHeader: t('cb.modelCol'),
+        allBrandsLabel: (n) => t('cb.allBrands', { count: n }),
+        allSeriesLabel: (n) => t('cb.allSeries', { count: n }),
+        itemsCountFormatter: (n) => t('cb.countItems', { count: n }),
+      });
       modelCombo.setValue(selectedModel);
 
+      sortSelect.syncLocaleLabels();
       syncGpuQtyControl();
       updateContextBar();
       applyFilters(false);

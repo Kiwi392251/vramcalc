@@ -1,8 +1,11 @@
 export const en = {
-  // Language switcher
+  // Language & Theme switcher
   'lang.autoDevice': 'Auto (Device Language)',
   'lang.autoShort': 'Auto',
   'lang.switcherAria': 'Select language',
+  'theme.toggleAria': 'Toggle color theme',
+  'theme.toDark': 'Switch to Dark Workbench',
+  'theme.toLight': 'Switch to Light Mode',
 
   // Navigation & Footer
   'nav.matrix': 'Matrix',
@@ -286,6 +289,16 @@ export const en = {
   'cb.allSeries': 'All Series ({count})',
   'cb.searchCpuPh': 'Search CPU brand, series or model (e.g. 9800X3D, 285K, M4 Max)...',
   'cb.searchGpuPh': 'Search GPU brand, series or model (e.g. 5090, A10, RX 9070, B60, M3 Ultra)...',
+  'cb.searchModelPh': 'Search LLM brand, family or size (e.g. Qwen3, Gemma 3, DeepSeek, 27B)...',
+  'cb.allModelsOption': 'All Models ({count})',
+  'home.dirTitle': 'Complete Catalog Directory',
+  'home.dirSub': 'Browse all {models} models, {hw} GPUs & Macs, or jump directly to the {guides} curated benchmark guides.',
+  'home.dirTabModels': 'Model Hubs ({count})',
+  'home.dirTabHardware': 'Hardware Hubs ({count})',
+  'home.dirTabIndex': 'Full Pairing Index ({count})',
+  'sim.selectHwPh': 'Search GPU or Apple Silicon (e.g. 4090, A10, T4, M4 Max)...',
+  'sim.selectCpuPh': 'Search host CPU (e.g. 9800X3D, 285K, EPYC)...',
+  'sim.selectModelPh': 'Search open LLM (e.g. Qwen3.8, Gemma 3, 70B)...',
   'cb.countItems': '{count} models',
   'cb.brandNoGpu': 'No GPU',
   'cb.brandGeneric': 'Generic',

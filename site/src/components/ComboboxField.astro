@@ -6,19 +6,20 @@ interface Props {
   compact?: boolean;
   cascader?: boolean;
   labelI18n?: string;
+  labelI18nArgs?: string;
   placeholderI18n?: string;
 }
 
-const { id, label, placeholder, compact = false, cascader = false, labelI18n, placeholderI18n } = Astro.props;
+const { id, label, placeholder, compact = false, cascader = false, labelI18n, labelI18nArgs, placeholderI18n } = Astro.props;
 
 const inputId = `${id}-input`;
 const listId = `${id}-list`;
 const heightCls = compact ? 'h-9 text-xs' : 'h-10 text-sm';
 const wrapMarginCls = compact ? '' : 'mt-1.5';
-const inputClasses = `${heightCls} w-full rounded-lg border border-slate-300 bg-white pl-3 pr-12 font-medium text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none transition-colors`;
+const inputClasses = `${heightCls} field-input pl-3 pr-13 font-medium`;
 const listClasses = cascader
-  ? 'hidden absolute left-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl'
-  : 'hidden absolute left-0 right-0 top-full z-40 mt-1.5 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-xl';
+  ? 'popover-panel hidden absolute left-0 top-full z-50 mt-1.5 overflow-hidden'
+  : 'popover-panel hidden absolute left-0 right-0 top-full z-40 mt-1.5 max-h-80 overflow-y-auto py-1 thin-scrollbar';
 ---
 
 <div>
@@ -27,7 +28,7 @@ const listClasses = cascader
       {label}
     </label>
   ) : (
-    <label for={inputId} class="block text-xs font-semibold uppercase tracking-wider text-slate-500" data-i18n={labelI18n}>
+    <label for={inputId} class="block text-xs font-medium text-[var(--ink-secondary)]" data-i18n={labelI18n} data-i18n-args={labelI18nArgs}>
       {label}
     </label>
   )}
@@ -50,7 +51,7 @@ const listClasses = cascader
       type="button"
       data-cb-clear
       aria-label={`Clear ${label}`}
-      class="hidden absolute right-7 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
+      class="hidden absolute right-7 top-1/2 -translate-y-1/2 rounded-md p-1 text-[var(--ink-tertiary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--ink-primary)] cursor-pointer transition-colors"
     >
       <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
         <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
@@ -60,7 +61,7 @@ const listClasses = cascader
       type="button"
       data-cb-toggle
       aria-label={`Toggle ${label} options`}
-      class="absolute right-1 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
+      class="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-[var(--ink-tertiary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--ink-primary)] cursor-pointer transition-colors"
     >
       <svg class="h-4 w-4 transition-transform duration-150" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
         <path

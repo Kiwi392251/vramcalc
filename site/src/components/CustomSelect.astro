@@ -1,0 +1,113 @@
+---
+export interface SelectOptionItem {
+  value: string;
+  label: string;
+  dataI18n?: string;
+}
+
+interface Props {
+  id: string;
+  options: SelectOptionItem[];
+  value?: string;
+  disabled?: boolean;
+  compact?: boolean;
+  align?: 'left' | 'right';
+  ariaLabel?: string;
+  ariaLabelI18n?: string;
+  menuWidthClass?: string;
+  buttonClass?: string;
+}
+
+const {
+  id,
+  options,
+  value,
+  disabled = false,
+  compact = false,
+  align = 'left',
+  ariaLabel = 'Select option',
+  ariaLabelI18n,
+  menuWidthClass = 'min-w-full w-max max-w-[290px]',
+  buttonClass = '',
+} = Astro.props;
+
+const activeVal = value ?? options[0]?.value ?? '';
+const activeOpt = options.find((o) => o.value === activeVal) ?? options[0];
+const listId = `${id}-menu`;
+const sizeCls = compact
+  ? 'h-8 rounded-lg px-2.5 text-xs font-medium'
+  : 'h-10 rounded-[10px] px-3 text-sm font-medium';
+const posCls = align === 'right' ? 'right-0' : 'left-0';
+---
+
+<div id={id} class="relative" data-cs-root data-align={align}>
+  <button
+    type="button"
+    data-cs-btn
+    role="combobox"
+    aria-haspopup="listbox"
+    aria-expanded="false"
+    aria-controls={listId}
+    aria-label={ariaLabel}
+    data-i18n-aria={ariaLabelI18n}
+    disabled={disabled}
+    class={`field-input flex items-center justify-between gap-2 text-left cursor-pointer ${sizeCls} ${buttonClass}`}
+  >
+    <span data-cs-label data-i18n={activeOpt?.dataI18n} class="truncate">
+      {activeOpt?.label ?? '—'}
+    </span>
+    <svg
+      data-cs-chevron
+      class="h-3.5 w-3.5 shrink-0 text-[var(--ink-tertiary)] transition-transform duration-150"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        fill-rule="evenodd"
+        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+        clip-rule="evenodd"
+      />
+    </svg>
+  </button>
+
+  <div
+    id={listId}
+    data-cs-menu
+    role="listbox"
+    class={`popover-panel hidden absolute ${posCls} top-full z-50 mt-1.5 max-h-72 overflow-y-auto py-1 thin-scrollbar ${menuWidthClass}`}
+  >
+    {options.map((opt) => {
+      const isSel = opt.value === activeVal;
+      const optCls = isSel
+        ? 'bg-[var(--accent-soft)] text-[var(--accent-ink)] font-semibold'
+        : 'text-[var(--ink-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--ink-primary)] font-medium';
+      return (
+        <button
+          type="button"
+          role="option"
+          aria-selected={isSel ? 'true' : 'false'}
+          data-cs-option={opt.value}
+          class={`flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-xs transition-colors cursor-pointer ${optCls}`}
+        >
+          <span class="truncate" data-cs-opt-label data-i18n={opt.dataI18n}>
+            {opt.label}
+          </span>
+          <svg
+            data-cs-check
+            class={`h-3.5 w-3.5 shrink-0 text-[var(--accent)] ${isSel ? '' : 'hidden'}`}
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+      );
+    })}
+  </div>
+</div>

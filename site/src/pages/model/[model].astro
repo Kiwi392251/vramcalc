@@ -168,28 +168,25 @@ const ogImage = `/og/model-${model.id}.png`;
         </li>
         <li aria-hidden="true">/</li>
         <li>
-          <a href="/model/" class="hover:text-slate-900 transition-colors" data-i18n="nav.models">Models</a>
+          <a href="/model/" class="hover:text-[var(--ink-primary)] transition-colors" data-i18n="nav.models">Models</a>
         </li>
         <li aria-hidden="true">/</li>
-        <li aria-current="page" class="text-slate-900 font-semibold truncate">
+        <li aria-current="page" class="font-semibold text-[var(--ink-primary)] truncate">
           {model.name}
         </li>
       </ol>
     </nav>
 
-    <header class="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-xs sm:p-8">
+    <header class="pb-6">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex flex-wrap items-center gap-2">
-          <span class="rounded-full border border-blue-500/40 bg-blue-500/15 px-2.5 py-0.5 font-mono text-xs font-semibold text-blue-300">
+          <span class="badge-accent font-mono text-xs">
             {model.family}
           </span>
-          <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 font-mono text-xs text-slate-300">
-            {model.params_b}B Params · {model.num_layers} Layers
+          <span class="font-mono text-xs text-[var(--ink-tertiary)]">
+            {model.params_b}B · {model.num_layers}L · {model.architecture} · {maxContextLabel} max ({model.release_year})
           </span>
-          <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 font-mono text-xs text-slate-300">
-            {model.architecture}
-          </span>
-          <span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-xs text-emerald-300" data-i18n="common.updated" data-i18n-args={updatedArgs}>
+          <span class="badge-fits font-mono text-xs" data-i18n="common.updated" data-i18n-args={updatedArgs}>
             Updated {updatedAt}
           </span>
         </div>
@@ -197,102 +194,97 @@ const ogImage = `/og/model-${model.id}.png`;
         <a
           href={simModelHref}
           data-i18n="hub.open7QuantBtn"
-          class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-500 transition-colors"
+          class="btn-primary text-xs shrink-0"
         >
           Open Format &amp; Reserve Simulator -&gt;
         </a>
       </div>
 
-      <h1 class="mt-4 text-2xl font-extrabold tracking-tight text-white sm:text-4xl" data-i18n="hub.bestGpusFor" data-i18n-args={bestGpusForArgs}>
+      <h1 class="mt-4 text-2xl font-extrabold tracking-tight text-[var(--ink-primary)] sm:text-4xl" data-i18n="hub.bestGpusFor" data-i18n-args={bestGpusForArgs}>
         Best GPUs &amp; Macs for {model.name} ({model.params_b}B)
       </h1>
 
-      <p class="mt-3 max-w-3xl text-sm leading-relaxed text-slate-300 sm:text-base">
-        Ranked across all <strong class="text-white">{rows.length}</strong> catalog GPUs, cloud instances (T4/L4/A10/H200),
-        dual-GPU stations, and Apple Silicon Macs (<span class="text-emerald-300 font-semibold">{fitsCount} Fits</span>,{' '}
-        <span class="text-orange-300 font-semibold">{tightCount} Tight Fit</span>,{' '}
-        <span class="text-amber-300 font-semibold">{partialCount} Partial Offload</span>,{' '}
-        <span class="text-rose-300 font-semibold">{oomCount} OOM</span>). Baseline Q4_K_M @ 8K uses{' '}
-        <strong class="text-white font-mono">{q4VramLabel}</strong> (AWQ 4-bit: <strong class="text-white font-mono">{awqVramLabel}</strong>).
+      <p class="mt-3 max-w-3xl text-sm leading-relaxed text-[var(--ink-secondary)] sm:text-base">
+        Ranked across all <strong class="text-[var(--ink-primary)]">{rows.length}</strong> catalog GPUs, cloud instances (T4/L4/A10/H200),
+        dual-GPU stations, and Apple Silicon Macs (<span class="font-semibold text-emerald-600 dark:text-emerald-400">{fitsCount} Fits</span>,{' '}
+        <span class="font-semibold text-orange-600 dark:text-orange-400">{tightCount} Tight Fit</span>,{' '}
+        <span class="font-semibold text-amber-600 dark:text-amber-400">{partialCount} Partial Offload</span>,{' '}
+        <span class="font-semibold text-rose-600 dark:text-rose-400">{oomCount} OOM</span>). Baseline Q4_K_M @ 8K uses{' '}
+        <strong class="font-mono text-[var(--ink-primary)]">{q4VramLabel}</strong> (AWQ 4-bit: <strong class="font-mono text-[var(--ink-primary)]">{awqVramLabel}</strong>).
       </p>
 
       {model.use_cases.length > 0 && (
         <div class="mt-4 flex flex-wrap gap-2">
           {model.use_cases.map((uc) => (
-            <span class="rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1 text-xs text-slate-300">
+            <span class="badge-neutral text-xs">
               {uc}
             </span>
           ))}
         </div>
       )}
 
-      <dl class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
-          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400">Q4_K_M @ 8K</dt>
-          <dd class="mt-1 font-mono text-lg font-bold text-white tabular-nums">{q4VramLabel}</dd>
-          <dd class="mt-0.5 font-mono text-[11px] text-slate-400">{q4WeightsLabel}</dd>
+      <dl class="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-px rounded-2xl border border-[var(--border-subtle)] bg-[var(--border-subtle)] shadow-[var(--shadow-card)] overflow-hidden">
+        <div class="bg-[var(--bg-surface)] px-4 py-3.5">
+          <dt class="text-[11px] font-medium uppercase tracking-wider text-[var(--ink-tertiary)]">Q4_K_M @ 8K</dt>
+          <dd class="mt-1 whitespace-nowrap font-mono text-lg font-bold text-[var(--ink-primary)] tabular-nums">{q4VramLabel}</dd>
+          <dd class="mt-0.5 font-mono text-[11px] text-[var(--ink-tertiary)]">{q4WeightsLabel}</dd>
         </div>
-        <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
-          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400">AWQ 4-bit / Q8</dt>
-          <dd class="mt-1 font-mono text-lg font-bold text-sky-300 tabular-nums">{awqVramLabel}</dd>
-          <dd class="mt-0.5 font-mono text-[11px] text-slate-400">Q8: {q8VramLabel} · {fp16VramLabel}</dd>
+        <div class="bg-[var(--bg-surface)] px-4 py-3.5">
+          <dt class="text-[11px] font-medium uppercase tracking-wider text-[var(--ink-tertiary)]">AWQ 4-bit / Q8</dt>
+          <dd class="mt-1 whitespace-nowrap font-mono text-lg font-bold text-[var(--accent-ink)] tabular-nums">{awqVramLabel}</dd>
+          <dd class="mt-0.5 font-mono text-[11px] text-[var(--ink-tertiary)]">Q8: {q8VramLabel} · {fp16VramLabel}</dd>
         </div>
-        <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
-          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400">KV Cache Scaling</dt>
-          <dd class="mt-1 font-mono text-lg font-bold text-white tabular-nums">+{kvPer4k.toFixed(2)} GB/4K</dd>
-          <dd class="mt-0.5 font-mono text-[11px] text-slate-400">
+        <div class="bg-[var(--bg-surface)] px-4 py-3.5">
+          <dt class="text-[11px] font-medium uppercase tracking-wider text-[var(--ink-tertiary)]">KV Cache Scaling</dt>
+          <dd class="mt-1 whitespace-nowrap font-mono text-lg font-bold text-[var(--ink-primary)] tabular-nums">+{kvPer4k.toFixed(2)} GB/4K</dd>
+          <dd class="mt-0.5 font-mono text-[11px] text-[var(--ink-tertiary)]">
             {model.num_kv_heads} KV heads × {model.head_dim}
           </dd>
         </div>
-        <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
-          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400">Max Context Spec</dt>
-          <dd class="mt-1 font-mono text-lg font-bold text-emerald-300 tabular-nums">{maxContextLabel}</dd>
-          <dd class="mt-0.5 font-mono text-[11px] text-slate-400">Released {model.release_year}</dd>
-        </div>
-        <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
-          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400">Hardware Matrix</dt>
-          <dd class="mt-1 font-mono text-lg font-bold text-white tabular-nums">{rows.length} GPUs</dd>
-          <dd class="mt-0.5 font-mono text-[11px] text-emerald-300">{fitsCount} Fits · {tightCount} Tight</dd>
+        <div class="bg-[var(--bg-surface)] px-4 py-3.5">
+          <dt class="text-[11px] font-medium uppercase tracking-wider text-[var(--ink-tertiary)]">Hardware Matrix</dt>
+          <dd class="mt-1 whitespace-nowrap font-mono text-lg font-bold text-[var(--ink-primary)] tabular-nums">{rows.length} GPUs</dd>
+          <dd class="mt-0.5 font-mono text-[11px] text-emerald-600 dark:text-emerald-400">{fitsCount} Fits · {tightCount} Tight</dd>
         </div>
       </dl>
     </header>
 
     {refBenchmarks.length > 0 && (
-      <section class="mt-7 rounded-2xl border border-sky-200 bg-sky-50/70 p-5" aria-labelledby="model-ref-benchmarks">
+      <section class="surface-card mt-2 p-5 border-[var(--accent-border)]" aria-labelledby="model-ref-benchmarks">
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <h2 id="model-ref-benchmarks" class="text-base font-bold text-slate-950" data-i18n="speed.refBenchmark">
+          <h2 id="model-ref-benchmarks" class="text-base font-bold text-[var(--ink-primary)]" data-i18n="speed.refBenchmark">
             Measured Community Benchmarks
           </h2>
-          <span class="rounded-md bg-white/90 px-2 py-0.5 font-mono text-[11px] font-semibold text-emerald-800 border border-emerald-200" data-i18n="speed.measuredBadge">
+          <span class="badge-fits font-mono text-[11px]" data-i18n="speed.measuredBadge">
             Measured
           </span>
         </div>
-        <p class="mt-1 text-xs text-slate-600">{refNote}</p>
+        <p class="mt-1 text-xs text-[var(--ink-secondary)]">{refNote}</p>
         <div class="mt-3 grid gap-3 sm:grid-cols-2">
           {refBenchmarks.map((anc) => {
             const fresh = getFreshnessMeta(anc.date);
             return (
-              <div class="min-w-0 max-w-full rounded-xl border border-sky-200 bg-white p-3.5 text-xs">
+              <div class="surface-inset min-w-0 max-w-full p-3.5 text-xs">
                 <div class="flex flex-wrap items-center justify-between gap-2">
-                  <span class="font-mono font-bold text-slate-950">
+                  <span class="font-mono font-bold text-[var(--ink-primary)]">
                     {anc.hardware_id} · {anc.quant} @ {formatContextLabel(anc.context_tokens)}
                   </span>
-                  <span class="font-mono font-bold text-emerald-700">
+                  <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">
                     {anc.gen_tps_low}–{anc.gen_tps_high} tok/s measured
                   </span>
                 </div>
-                <p class="mt-1 text-slate-600">{anc.notes}</p>
-                <div class="mt-1.5 flex flex-wrap items-center gap-1.5 font-mono text-[10px] text-slate-500">
+                <p class="mt-1 text-[var(--ink-secondary)]">{anc.notes}</p>
+                <div class="mt-1.5 flex flex-wrap items-center gap-1.5 font-mono text-[10px] text-[var(--ink-tertiary)]">
                   <span>{anc.date}</span>
                   <span class={fresh.badgeClass} data-i18n={fresh.key}>{fresh.label}</span>
                   <span>· {anc.prompt_spec} · {anc.runtime_version}</span>
                 </div>
-                <code class="mt-1.5 block w-full max-w-full overflow-x-auto rounded bg-slate-100 px-2 py-1 font-mono text-[10px] text-slate-700">
+                <code class="mt-2 block w-full max-w-full overflow-x-auto rounded-lg bg-[var(--bg-code)] px-2.5 py-1.5 font-mono text-[10px] text-slate-200">
                   {anc.repro_cmd}
                 </code>
-                <div class="mt-1.5 text-[11px] text-slate-500">
+                <div class="mt-1.5 text-[11px] text-[var(--ink-tertiary)]">
                   <span data-i18n="speed.refSource">Source</span>:{' '}
-                  <a href={anc.source_url} target="_blank" rel="noopener noreferrer" class="underline hover:text-slate-900">
+                  <a href={anc.source_url} target="_blank" rel="noopener noreferrer" class="underline hover:text-[var(--ink-primary)]">
                     {anc.source_label}
                   </a>
                 </div>
@@ -307,14 +299,14 @@ const ogImage = `/og/model-${model.id}.png`;
       <section class="mt-10" aria-labelledby="top-hardware-heading">
         <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 id="top-hardware-heading" class="text-xl font-bold tracking-tight text-slate-950" data-i18n="hub.topHwPicks" data-i18n-args={topHwPicksArgs}>
+            <h2 id="top-hardware-heading" class="text-xl font-bold tracking-tight text-[var(--ink-primary)]" data-i18n="hub.topHwPicks" data-i18n-args={topHwPicksArgs}>
               Top Resident Hardware Picks for {model.short_name}
             </h2>
-            <p class="mt-1 text-sm text-slate-600">
+            <p class="mt-1 text-sm text-[var(--ink-secondary)]">
               {model.short_name} · Q4_K_M @ 8K ({q4VramLabel}) · AWQ ({awqVramLabel})
             </p>
           </div>
-          <a href="/" class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0" data-i18n="detail.viewFullMatrix">
+          <a href="/" class="text-xs font-semibold text-[var(--accent-ink)] hover:underline shrink-0" data-i18n="detail.viewFullMatrix">
             View Full Matrix -&gt;
           </a>
         </div>
@@ -339,7 +331,7 @@ const ogImage = `/og/model-${model.id}.png`;
             const ctaText = row.isCurated ? 'Open Guide ->' : 'Simulate ->';
 
             return (
-              <div class="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-xs hover:border-blue-300 transition-colors">
+              <div class="surface-card-interactive flex flex-col justify-between p-5">
                 <div>
                   <div class="flex flex-wrap items-center justify-between gap-2">
                     <span class={roleClass}>{pick.role}</span>
@@ -349,41 +341,41 @@ const ogImage = `/og/model-${model.id}.png`;
                     </div>
                   </div>
 
-                  <h3 class="mt-3 text-lg font-bold tracking-tight text-slate-950">
-                    <a href={row.href} class="hover:text-blue-600 transition-colors">
+                  <h3 class="mt-3 text-lg font-bold tracking-tight text-[var(--ink-primary)]">
+                    <a href={row.href} class="hover:text-[var(--accent-ink)] transition-colors">
                       {row.hardware.name}
                     </a>
                   </h3>
-                  <p class="mt-0.5 font-mono text-xs text-slate-500">
+                  <p class="mt-0.5 font-mono text-xs text-[var(--ink-tertiary)]">
                     {(res.effective_usable_vram_gb ?? row.hardware.usable_vram_gb).toFixed(1)} GB usable · {row.hardware.bandwidth_gbps} GB/s · ${row.hardware.msrp_usd.toLocaleString()} MSRP
                   </p>
 
-                  <p class="mt-2.5 text-xs leading-relaxed text-slate-600 line-clamp-3">
+                  <p class="mt-2.5 text-xs leading-relaxed text-[var(--ink-secondary)] line-clamp-3">
                     {summaryText}
                   </p>
                 </div>
 
-                <div class="mt-4 border-t border-slate-100 pt-3.5">
+                <div class="mt-4 border-t border-[var(--border-hairline)] pt-3.5">
                   <div class="grid grid-cols-3 gap-2 text-xs">
                     <div>
-                      <span class="block text-[11px] text-slate-500" data-i18n="speed.formulaEst">Formula est.</span>
-                      <span class="font-mono font-bold text-slate-950 tabular-nums">{speedText}</span>
+                      <span class="block text-[11px] text-[var(--ink-tertiary)]" data-i18n="speed.formulaEst">Formula est.</span>
+                      <span class="font-mono font-bold text-[var(--ink-primary)] tabular-nums">{speedText}</span>
                     </div>
                     <div>
-                      <span class="block text-[11px] text-slate-500" data-i18n="common.recommended">Rec. Quant</span>
-                      <span class="font-mono font-semibold text-slate-900">{row.recQuant}</span>
+                      <span class="block text-[11px] text-[var(--ink-tertiary)]" data-i18n="common.recommended">Rec. Quant</span>
+                      <span class="font-mono font-semibold text-[var(--ink-primary)]">{row.recQuant}</span>
                     </div>
                     <div>
-                      <span class="block text-[11px] text-slate-500" data-i18n="detail.maxSmoothCtx">Max Fit</span>
-                      <span class="font-mono font-semibold text-slate-900 tabular-nums">{maxCtx}</span>
+                      <span class="block text-[11px] text-[var(--ink-tertiary)]" data-i18n="detail.maxSmoothCtx">Max Fit</span>
+                      <span class="font-mono font-semibold text-[var(--ink-primary)] tabular-nums">{maxCtx}</span>
                     </div>
                   </div>
 
                   <div class="mt-3.5 flex items-center justify-between gap-2 text-xs font-semibold">
-                    <a href={gpuHref} class="text-slate-600 hover:text-slate-950 transition-colors" data-i18n="detail.retAllHw" data-i18n-args={allHwBtnArgs}>
+                    <a href={gpuHref} class="text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] transition-colors" data-i18n="detail.retAllHw" data-i18n-args={allHwBtnArgs}>
                       All {row.hardware.short_name} -&gt;
                     </a>
-                    <a href={row.href} class="text-blue-600 hover:text-blue-800 transition-colors" data-i18n={ctaI18n}>
+                    <a href={row.href} class="text-[var(--accent-ink)] hover:underline" data-i18n={ctaI18n}>
                       {ctaText}
                     </a>
                   </div>
@@ -399,59 +391,49 @@ const ogImage = `/og/model-${model.id}.png`;
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 id="model-leaderboard-heading" class="text-xl font-bold tracking-tight text-slate-950" data-i18n="hub.hwLeaderboardHeading" data-i18n-args={hwLeaderboardArgs}>
+            <h2 id="model-leaderboard-heading" class="text-xl font-bold tracking-tight text-[var(--ink-primary)]" data-i18n="hub.hwLeaderboardHeading" data-i18n-args={hwLeaderboardArgs}>
               Full {rows.length}-Hardware Leaderboard for {model.short_name}
             </h2>
-            <p class="mt-1 text-sm text-slate-600">
-              <span class="font-mono text-slate-900">Q4_K_M @ 8K · Formula Estimate Range (±15–25%)</span>
+            <p class="mt-1 text-sm text-[var(--ink-secondary)]">
+              <span class="font-mono text-[var(--ink-primary)]">Q4_K_M @ 8K · Formula Estimate Range (±15–25%)</span>
             </p>
           </div>
-          <span id="model-filter-count" class="font-mono text-xs text-slate-500 tabular-nums" data-i18n="hub.showingHwConfigs" data-i18n-args={modelCountArgs}>
+          <span id="model-filter-count" class="font-mono text-xs text-[var(--ink-tertiary)] tabular-nums" data-i18n="hub.showingHwConfigs" data-i18n-args={modelCountArgs}>
             Showing {rows.length} of {rows.length} hardware configs
           </span>
         </div>
 
-        <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3">
+        <div class="surface-card flex flex-wrap items-center justify-between gap-3 px-4 py-3">
           <div class="flex flex-wrap items-center gap-3">
             <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter hardware by status">
-              {statusFilters.map((st) => {
-                const btnClass =
-                  st.key === 'all'
-                    ? 'rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-900 bg-slate-900 text-white'
-                    : 'rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100';
-                return (
-                  <button
-                    type="button"
-                    data-model-status-btn={st.key}
-                    data-i18n={st.i18nKey}
-                    data-i18n-args={st.i18nArgs}
-                    class={btnClass}
-                  >
-                    {st.label}
-                  </button>
-                );
-              })}
+              {statusFilters.map((st) => (
+                <button
+                  type="button"
+                  data-model-status-btn={st.key}
+                  data-active={st.key === 'all' ? 'true' : 'false'}
+                  data-i18n={st.i18nKey}
+                  data-i18n-args={st.i18nArgs}
+                  class="pill-filter"
+                >
+                  {st.label}
+                </button>
+              ))}
             </div>
 
-            <span class="hidden h-4 w-px bg-slate-200 sm:inline-block" aria-hidden="true"></span>
+            <span class="hidden h-4 w-px bg-[var(--border-subtle)] sm:inline-block" aria-hidden="true"></span>
 
             <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter hardware by vendor">
-              {vendorFilters.map((vnd) => {
-                const vClass =
-                  vnd.key === 'all'
-                    ? 'rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border-blue-600 bg-blue-600 text-white'
-                    : 'rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-200 bg-white text-slate-700 hover:bg-slate-100';
-                return (
-                  <button
-                    type="button"
-                    data-model-vendor-btn={vnd.key}
-                    data-i18n={vnd.key === 'all' ? 'status.all' : undefined}
-                    class={vClass}
-                  >
-                    {vnd.label}
-                  </button>
-                );
-              })}
+              {vendorFilters.map((vnd) => (
+                <button
+                  type="button"
+                  data-model-vendor-btn={vnd.key}
+                  data-active={vnd.key === 'all' ? 'true' : 'false'}
+                  data-i18n={vnd.key === 'all' ? 'status.all' : undefined}
+                  class="pill-filter"
+                >
+                  {vnd.label}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -459,27 +441,27 @@ const ogImage = `/og/model-${model.id}.png`;
             id="model-filter-reset"
             type="button"
             data-i18n="common.reset"
-            class="hidden text-xs font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
+            class="hidden text-xs font-semibold text-[var(--accent-ink)] hover:underline cursor-pointer"
           >
             Reset
           </button>
         </div>
       </div>
 
-      <div id="model-table-wrap" class="mt-4 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
-        <table class="w-full min-w-[900px] border-collapse text-left text-sm">
+      <div id="model-table-wrap" class="table-shell mt-4">
+        <table class="w-full min-w-[840px] border-collapse text-left text-sm">
           <thead>
-            <tr class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              <th class="px-4 py-3" data-i18n="hub.colRank">Rank</th>
-              <th class="px-4 py-3" data-i18n="hub.colHardware">Hardware</th>
-              <th class="px-4 py-3" data-i18n="detail.colStatus">Fit / Speed</th>
-              <th class="px-4 py-3" data-i18n="hub.colSpeed8k">Formula Speed (Q4 @ 8K)</th>
-              <th class="px-4 py-3" data-i18n="detail.colGpuLayers">GPU Layers</th>
-              <th class="px-4 py-3" data-i18n="hub.bestQuantMaxCtx">Max Fit &amp; @Max VRAM</th>
-              <th class="px-4 py-3 text-right" data-i18n="hub.colCalculator">Calculator</th>
+            <tr class="border-b border-[var(--border-subtle)] bg-[var(--bg-subtle)] text-xs font-semibold uppercase tracking-wider text-[var(--ink-secondary)]">
+              <th class="px-3 py-3" data-i18n="hub.colRank">Rank</th>
+              <th class="px-3 py-3" data-i18n="hub.colHardware">Hardware</th>
+              <th class="px-2.5 py-3" data-i18n="detail.colStatus">Fit / Speed</th>
+              <th class="px-2.5 py-3" data-i18n="hub.colSpeed8k">Formula Speed (Q4 @ 8K)</th>
+              <th class="px-2.5 py-3" data-i18n="detail.colGpuLayers">GPU Layers</th>
+              <th class="px-2.5 py-3" data-i18n="hub.bestQuantMaxCtx">Max Fit &amp; @Max VRAM</th>
+              <th class="px-3 py-3 text-right" data-i18n="hub.colCalculator">Calculator</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">
+          <tbody class="divide-y divide-[var(--border-hairline)]">
             {rows.map((row, idx) => {
               const res = row.result;
               const tier = res.speed_tier ?? 'Readable';
@@ -511,8 +493,8 @@ const ogImage = `/og/model-${model.id}.png`;
               const altSummarySub = `${row.altRow.format}: ${row.altRow.total_vram_gb.toFixed(1)} GB · ${altSpeedStr}`;
               const speedClass =
                 res.status === 'OOM'
-                  ? 'font-mono font-semibold text-rose-700 tabular-nums'
-                  : 'font-mono font-bold text-slate-950 tabular-nums';
+                  ? 'font-mono font-semibold text-rose-600 dark:text-rose-400 tabular-nums whitespace-nowrap'
+                  : 'font-mono font-bold text-[var(--ink-primary)] tabular-nums whitespace-nowrap';
               const ctaI18n = row.isCurated ? 'common.openGuide' : 'common.simulate';
               const ctaLabel = row.isCurated ? 'Open Guide ->' : 'Simulate ->';
               const usableLabel = (res.effective_usable_vram_gb ?? row.hardware.usable_vram_gb).toFixed(1);
@@ -522,61 +504,61 @@ const ogImage = `/og/model-${model.id}.png`;
                   data-model-row
                   data-status={res.status}
                   data-vendor={row.hardware.vendor}
-                  class="hover:bg-slate-50/70 transition-colors"
+                  class="hover:bg-[var(--bg-hover)] transition-colors"
                 >
-                  <td class="px-4 py-3.5 align-top font-mono text-xs font-bold text-slate-500 tabular-nums">
+                  <td class="px-3 py-3.5 align-top font-mono text-xs font-bold text-[var(--ink-tertiary)] tabular-nums">
                     #{idx + 1}
                   </td>
-                  <td class="px-4 py-3.5 align-top">
+                  <td class="px-3 py-3.5 align-top">
                     <div class="flex flex-wrap items-center gap-1.5">
-                      <a href={row.href} class="font-bold text-slate-950 hover:text-blue-600 transition-colors">
+                      <a href={row.href} class="font-bold text-[var(--ink-primary)] hover:text-[var(--accent-ink)] transition-colors">
                         {row.hardware.name}
                       </a>
                       {row.isCurated ? (
-                        <span class="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700" data-i18n="common.fullGuide">
+                        <span class="badge-accent rounded px-1.5 py-0.5 text-[10px]" data-i18n="common.fullGuide">
                           Full Guide
                         </span>
                       ) : (
-                        <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500" data-i18n="common.liveCalc">
+                        <span class="badge-neutral rounded px-1.5 py-0.5 text-[10px]" data-i18n="common.liveCalc">
                           Live Calc
                         </span>
                       )}
                     </div>
-                    <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                    <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-[var(--ink-tertiary)]">
                       <span class="font-mono">
                         {row.hardware.backend} · {usableLabel} GB usable · {row.hardware.bandwidth_gbps} GB/s
                       </span>
                       <span>·</span>
-                      <a href={gpuHubHref} class="hover:text-slate-900 underline decoration-slate-300 underline-offset-2" data-i18n="hub.gpuHubLabel">
+                      <a href={gpuHubHref} class="hover:text-[var(--ink-primary)] underline decoration-[var(--border-strong)] underline-offset-2" data-i18n="hub.gpuHubLabel">
                         GPU Hub -&gt;
                       </a>
                     </div>
                   </td>
-                  <td class="px-4 py-3.5 align-top">
+                  <td class="px-2.5 py-3.5 align-top">
                     <div class="flex flex-wrap items-center gap-1">
                       <StatusBadge status={res.status} />
                       <SpeedBadge tier={tier} />
                     </div>
                   </td>
-                  <td class="px-4 py-3.5 align-top">
+                  <td class="px-2.5 py-3.5 align-top">
                     <div class={speedClass}>{tpsText}</div>
-                    <div class="mt-1.5 h-1.5 w-28 overflow-hidden rounded-full bg-slate-100">
+                    <div class="mt-1.5 h-1.5 w-24 overflow-hidden rounded-full bg-[var(--border-subtle)]">
                       <div class={barClass} style={barStyle}></div>
                     </div>
-                    <div class="mt-1 font-mono text-[11px] text-slate-500 tabular-nums">{altSummarySub}</div>
+                    <div class="mt-1 font-mono text-[11px] text-[var(--ink-tertiary)] tabular-nums">{altSummarySub}</div>
                   </td>
-                  <td class="px-4 py-3.5 align-top font-mono text-slate-700 tabular-nums">
+                  <td class="px-2.5 py-3.5 align-top font-mono text-xs text-[var(--ink-secondary)] tabular-nums whitespace-nowrap">
                     {res.gpu_layers_fit}/{res.total_layers}
                   </td>
-                  <td class="px-4 py-3.5 align-top text-xs">
-                    <div class="font-mono font-semibold text-slate-900">{row.recQuant}</div>
-                    <div class="mt-0.5 text-slate-500">{maxCtxText}</div>
+                  <td class="px-2.5 py-3.5 align-top text-xs">
+                    <div class="font-mono font-semibold text-[var(--ink-primary)]">{row.recQuant}</div>
+                    <div class="mt-0.5 text-[var(--ink-tertiary)]">{maxCtxText}</div>
                   </td>
-                  <td class="px-4 py-3.5 align-top text-right">
+                  <td class="px-3 py-3.5 align-top text-right">
                     <a
                       href={row.href}
                       data-i18n={ctaI18n}
-                      class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                      class={row.isCurated ? 'badge-accent px-2.5 py-1 text-xs font-semibold hover:opacity-85 transition-opacity whitespace-nowrap' : 'btn-secondary px-2.5 py-1 text-xs whitespace-nowrap'}
                     >
                       {ctaLabel}
                     </a>
@@ -590,16 +572,16 @@ const ogImage = `/og/model-${model.id}.png`;
 
       <div
         id="model-empty-state"
-        class="mt-4 hidden rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center"
+        class="surface-card mt-4 hidden border-dashed p-8 text-center"
       >
-        <p class="text-sm font-semibold text-slate-900" data-i18n="hub.noMatchingConfigs">
+        <p class="text-sm font-semibold text-[var(--ink-primary)]" data-i18n="hub.noMatchingConfigs">
           No hardware entries match the selected status and vendor filters.
         </p>
         <button
           id="model-empty-reset"
           type="button"
           data-i18n="common.resetFilters"
-          class="mt-3 rounded-lg bg-slate-900 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 cursor-pointer"
+          class="btn-mono mt-3 text-xs"
         >
           Reset Filters
         </button>
@@ -607,20 +589,20 @@ const ogImage = `/og/model-${model.id}.png`;
     </section>
 
     <section class="mt-10" aria-labelledby="model-faq-heading">
-      <h2 id="model-faq-heading" class="text-xl font-bold tracking-tight text-slate-950" data-i18n="hub.faqForTarget" data-i18n-args={modelFaqArgs}>
+      <h2 id="model-faq-heading" class="text-xl font-bold tracking-tight text-[var(--ink-primary)]" data-i18n="hub.faqForTarget" data-i18n-args={modelFaqArgs}>
         Frequently Asked Questions ({model.short_name})
       </h2>
       <div class="mt-4 space-y-3">
         {faq.map((item, idx) => (
           <details
             open={idx < 2}
-            class="group rounded-xl border border-slate-200 bg-white px-5 py-4 open:border-blue-200"
+            class="surface-card group px-5 py-4 open:border-[var(--accent-border)]"
           >
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-950">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-[var(--ink-primary)]">
               <span>{item.question}</span>
-              <span class="shrink-0 font-mono text-slate-400 group-open:rotate-45 transition-transform">+</span>
+              <span class="shrink-0 font-mono text-[var(--ink-tertiary)] group-open:rotate-45 transition-transform">+</span>
             </summary>
-            <p class="mt-3 text-sm leading-relaxed text-slate-600">
+            <p class="mt-3 text-sm leading-relaxed text-[var(--ink-secondary)]">
               {item.answer}
             </p>
           </details>
@@ -629,17 +611,17 @@ const ogImage = `/og/model-${model.id}.png`;
     </section>
 
     {otherModels.length > 0 && (
-      <section class="mt-12 border-t border-slate-200 pt-8" aria-labelledby="other-models-heading">
+      <section class="mt-12 border-t border-[var(--border-subtle)] pt-8" aria-labelledby="other-models-heading">
         <div class="flex items-center justify-between gap-4">
           <div>
-            <h2 id="other-models-heading" class="text-xl font-bold tracking-tight text-slate-950" data-i18n="hub.exploreOtherModels">
+            <h2 id="other-models-heading" class="text-xl font-bold tracking-tight text-[var(--ink-primary)]" data-i18n="hub.exploreOtherModels">
               Explore Other Open-Weight Model Hubs
             </h2>
-            <p class="mt-1 text-sm text-slate-600">
+            <p class="mt-1 text-sm text-[var(--ink-secondary)]">
               {otherModels.length + 1} LLMs
             </p>
           </div>
-          <a href="/model/" class="text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0" data-i18n="hub.browseAllModels" data-i18n-args={browseAllModelsArgs}>
+          <a href="/model/" class="text-xs font-semibold text-[var(--accent-ink)] hover:underline shrink-0" data-i18n="hub.browseAllModels" data-i18n-args={browseAllModelsArgs}>
             Browse All {allModels.length} Model Hubs -&gt;
           </a>
         </div>
@@ -650,18 +632,18 @@ const ogImage = `/og/model-${model.id}.png`;
             return (
               <a
                 href={otherHref}
-                class="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 hover:border-blue-300 hover:shadow-sm transition-all"
+                class="surface-card-interactive flex flex-col justify-between p-4"
               >
                 <div>
                   <div class="flex items-center justify-between gap-2 text-xs">
-                    <span class="font-mono font-semibold text-slate-500">{other.family}</span>
-                    <span class="font-mono font-bold text-slate-900 tabular-nums">{other.params_b}B</span>
+                    <span class="font-mono font-semibold text-[var(--ink-tertiary)]">{other.family}</span>
+                    <span class="font-mono font-bold text-[var(--ink-primary)] tabular-nums">{other.params_b}B</span>
                   </div>
-                  <p class="mt-2 text-sm font-bold text-slate-950">{other.name}</p>
+                  <p class="mt-2 text-sm font-bold text-[var(--ink-primary)]">{other.name}</p>
                 </div>
-                <div class="mt-3 flex items-center justify-between text-xs text-slate-600">
+                <div class="mt-3 flex items-center justify-between text-xs text-[var(--ink-secondary)]">
                   <span class="font-mono">{other.architecture}</span>
-                  <span class="font-semibold text-blue-600" data-i18n="hub.modelHubLabel">Model Hub -&gt;</span>
+                  <span class="font-semibold text-[var(--accent-ink)]" data-i18n="hub.modelHubLabel">Model Hub -&gt;</span>
                 </div>
               </a>
             );
@@ -692,21 +674,11 @@ const ogImage = `/og/model-${model.id}.png`;
     function updatePills() {
       statusButtons.forEach((b) => {
         const active = (b.getAttribute('data-model-status-btn') || 'all') === selectedStatus;
-        b.classList.toggle('border-slate-900', active);
-        b.classList.toggle('bg-slate-900', active);
-        b.classList.toggle('text-white', active);
-        b.classList.toggle('border-slate-200', !active);
-        b.classList.toggle('bg-slate-50', !active);
-        b.classList.toggle('text-slate-700', !active);
+        b.setAttribute('data-active', active ? 'true' : 'false');
       });
       vendorButtons.forEach((b) => {
         const active = (b.getAttribute('data-model-vendor-btn') || 'all') === selectedVendor;
-        b.classList.toggle('border-blue-600', active);
-        b.classList.toggle('bg-blue-600', active);
-        b.classList.toggle('text-white', active);
-        b.classList.toggle('border-slate-200', !active);
-        b.classList.toggle('bg-white', !active);
-        b.classList.toggle('text-slate-700', !active);
+        b.setAttribute('data-active', active ? 'true' : 'false');
       });
     }
 

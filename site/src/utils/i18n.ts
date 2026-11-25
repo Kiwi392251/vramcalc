@@ -281,29 +281,29 @@ function renderSwitcherMenu(activeLocale: LocaleCode) {
   const itemsHtml = SUPPORTED_LOCALES.map((loc) => {
     const isSelected = !autoActive && loc.code === activeLocale;
     const cls = isSelected
-      ? 'bg-blue-50 text-blue-700 font-semibold'
-      : 'text-slate-700 hover:bg-slate-50 font-medium';
+      ? 'bg-[var(--accent-soft)] text-[var(--accent-ink)] font-semibold'
+      : 'text-[var(--ink-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--ink-primary)] font-medium';
     const check = isSelected
-      ? '<svg class="h-3.5 w-3.5 text-blue-600 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>'
+      ? '<svg class="h-3.5 w-3.5 text-[var(--accent)] shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>'
       : '';
     return `<button type="button" role="menuitemradio" aria-checked="${isSelected ? 'true' : 'false'}" data-lang-choice="${loc.code}" class="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-xs transition-colors cursor-pointer ${cls}">
       <span class="truncate">${loc.nativeName}</span>
       <span class="flex items-center gap-1.5 shrink-0">
-        <span class="font-mono text-[10px] text-slate-400">${loc.short}</span>
+        <span class="font-mono text-[10px] text-[var(--ink-tertiary)]">${loc.short}</span>
         ${check}
       </span>
     </button>`;
   }).join('');
 
   const autoCls = autoActive
-    ? 'bg-slate-100 text-slate-900 font-semibold'
-    : 'text-slate-600 hover:bg-slate-50 font-medium';
+    ? 'bg-[var(--bg-subtle)] text-[var(--ink-primary)] font-semibold'
+    : 'text-[var(--ink-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--ink-primary)] font-medium';
   const autoCheck = autoActive
-    ? '<svg class="h-3.5 w-3.5 text-blue-600 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>'
+    ? '<svg class="h-3.5 w-3.5 text-[var(--accent)] shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>'
     : '';
 
   menuEl.innerHTML = `${itemsHtml}
-    <div class="my-1 border-t border-slate-100"></div>
+    <div class="my-1 border-t border-[var(--border-hairline)]"></div>
     <button type="button" role="menuitemradio" aria-checked="${autoActive ? 'true' : 'false'}" data-lang-auto class="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-xs transition-colors cursor-pointer ${autoCls}">
       <span class="truncate">${t('lang.autoDevice', undefined, activeLocale)}</span>
       ${autoCheck}

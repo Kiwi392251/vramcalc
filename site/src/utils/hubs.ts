@@ -107,7 +107,7 @@ export function getFreshnessMeta(dateStr: string): FreshnessMeta {
       key: 'home.measuredFresh2026',
       label: '2026 run',
       badgeClass:
-        'inline-block rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-800',
+        'badge-fits inline-block rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-semibold',
     };
   }
   if (dateStr.startsWith('2025')) {
@@ -115,14 +115,14 @@ export function getFreshnessMeta(dateStr: string): FreshnessMeta {
       key: 'home.measuredFresh2025',
       label: '2025 baseline',
       badgeClass:
-        'inline-block rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-slate-600',
+        'badge-neutral inline-block rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-medium',
     };
   }
   return {
     key: 'home.measuredFreshLegacy',
     label: 'Legacy 2024',
     badgeClass:
-      'inline-block rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-amber-800',
+      'badge-partial inline-block rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-semibold',
   };
 }
 
@@ -383,13 +383,13 @@ export function buildHardwareHubs(allEntries: VramPageEntry[]): HardwareHub[] {
       picks.push({ role, accent, row });
     };
 
-    addPick('Best Coding & Agent Fit', 'border-blue-200 bg-blue-50 text-blue-700', coding);
-    addPick('Top Reasoning / Writing Fit', 'border-indigo-200 bg-indigo-50 text-indigo-700', reasoning);
-    addPick('Highest Formula Speed', 'border-emerald-200 bg-emerald-50 text-emerald-700', fastest);
+    addPick('Best Coding & Agent Fit', 'badge-accent', coding);
+    addPick('Top Reasoning / Writing Fit', 'badge-neutral', reasoning);
+    addPick('Highest Formula Speed', 'badge-fits', fastest);
 
     for (const r of rows) {
       if (picks.length >= 3) break;
-      addPick('Benchmarked Pair', 'border-slate-200 bg-slate-100 text-slate-700', r);
+      addPick('Benchmarked Pair', 'badge-neutral', r);
     }
 
     hubs.push({
@@ -475,13 +475,13 @@ export function buildModelHubs(allEntries: VramPageEntry[]): ModelHub[] {
     const bestSpeed = [...residentRows].sort((a, b) => b.result.est_tps - a.result.est_tps)[0];
     const bestMac = residentRows.filter((r) => r.hardware.vendor === 'Apple')[0];
 
-    addPick('Best Value Resident GPU', 'border-emerald-200 bg-emerald-50 text-emerald-700', bestValue);
-    addPick('Fastest Formula Speed', 'border-blue-200 bg-blue-50 text-blue-700', bestSpeed);
-    addPick('Best Unified Mac / Studio', 'border-indigo-200 bg-indigo-50 text-indigo-700', bestMac);
+    addPick('Best Value Resident GPU', 'badge-fits', bestValue);
+    addPick('Fastest Formula Speed', 'badge-accent', bestSpeed);
+    addPick('Best Unified Mac / Studio', 'badge-neutral', bestMac);
 
     for (const r of rows) {
       if (topPicks.length >= 3) break;
-      addPick('Evaluated Hardware', 'border-slate-200 bg-slate-100 text-slate-700', r);
+      addPick('Evaluated Hardware', 'badge-neutral', r);
     }
 
     hubs.push({

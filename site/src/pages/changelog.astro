@@ -56,7 +56,7 @@ const releases: ReleaseEntry[] = [
     version: 'v3.3',
     date: '2026-11-24',
     badge: 'Current',
-    badgeClass: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+    badgeClass: 'badge-fits',
     headline: '17/17 Full Range Containment, Homepage Reserve / Custom GB Override & Nearest Anchors',
     summary:
       'Refined CUDA AWQ, CUDA MoE, Apple Metal GGUF, and Hybrid DeltaNet decode efficiency coefficients so all 17 verified community anchors fall completely within predicted ranges (<= 8.7% max midpoint error, 0 misses). Made 17/173 coverage and benchmark dates transparent rather than fabricating unverified runs.',
@@ -81,7 +81,7 @@ const releases: ReleaseEntry[] = [
     version: 'v3.2',
     date: '2026-11-24',
     badge: 'Calibration & Honesty',
-    badgeClass: 'border-sky-200 bg-sky-50 text-sky-800',
+    badgeClass: 'badge-accent',
     headline: 'Reproducible Benchmark Specs, Inline AWQ/MLX, @Max Fit Speed Drops & MoE Anchors',
     summary:
       'Addressed initial audit findings on unverified A10 × Qwen3.8-27B claims, Turing/AWQ overestimation, mixed 8K vs 128K speed numbers, missing MoE telemetry, and uncensored fine-tune compatibility.',
@@ -101,7 +101,7 @@ const releases: ReleaseEntry[] = [
     version: 'v3.1',
     date: '2026-11-24',
     badge: 'Hybrid Models',
-    badgeClass: 'border-indigo-200 bg-indigo-50 text-indigo-800',
+    badgeClass: 'badge-accent',
     headline: 'Added Qwen3.8-27B (48 DeltaNet + 16 GQA), On-Page Measured Table & Zero-JS Matrix',
     summary:
       'Expanded catalog coverage to 23 models × 103 hardware (303 static routes) with exact hybrid KV-layer accounting.',
@@ -117,7 +117,7 @@ const releases: ReleaseEntry[] = [
     version: 'v3.0',
     date: '2026-11-24',
     badge: 'Architecture Overhaul',
-    badgeClass: 'border-blue-200 bg-blue-50 text-blue-800',
+    badgeClass: 'badge-accent',
     headline: 'Replaced "Smooth" & 0.1 Decimal Fake Precision; Added Qwen3, Gemma 3, T4/L4/A10, AWQ & MLX',
     summary:
       'Complete physics & UX overhaul decoupling Fit status from Speed tier, eliminating false single-decimal speeds, and exposing full 1-hop static hubs.',
@@ -135,7 +135,7 @@ const releases: ReleaseEntry[] = [
     version: 'v2.0',
     date: '2026-11-23',
     badge: 'Multilingual & Multi-GPU',
-    badgeClass: 'border-slate-200 bg-slate-100 text-slate-700',
+    badgeClass: 'badge-neutral',
     headline: 'CPU + RAM + 1x–8x GPU Rig Configurator & 7-Language Localization',
     summary:
       'Replaced single-GPU filters with composable CPU, System RAM, Discrete GPU / Unified SoC, and GPU count (1x–8x) selection plus client localization in EN, zh-CN, zh-TW, JA, ES, FR, and KO.',
@@ -151,7 +151,7 @@ const releases: ReleaseEntry[] = [
     version: 'v1.0',
     date: '2026-11-22',
     badge: 'Initial Release',
-    badgeClass: 'border-slate-200 bg-slate-100 text-slate-700',
+    badgeClass: 'badge-neutral',
     headline: 'Initial GGUF Memory & Bandwidth Estimator Matrix',
     summary:
       'Launched static Astro matrix covering 12 core open LLMs and 43 GPUs/Macs with GGUF Q4_K_M/Q8_0/FP16 VRAM calculators.',
@@ -179,77 +179,77 @@ const releases: ReleaseEntry[] = [
 
   <article class="mx-auto min-w-0 w-full max-w-4xl px-4 py-10 sm:px-6">
     <nav aria-label="Breadcrumb" class="mb-4">
-      <ol class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-500">
+      <ol class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-[var(--ink-tertiary)]">
         <li>
-          <a href="/" class="hover:text-slate-900 transition-colors" data-i18n="common.home">Home</a>
+          <a href="/" class="hover:text-[var(--ink-primary)] transition-colors" data-i18n="common.home">Home</a>
         </li>
         <li aria-hidden="true">/</li>
-        <li class="font-semibold text-slate-900" data-i18n="nav.changelog">Changelog</li>
+        <li class="font-semibold text-[var(--ink-primary)]" data-i18n="nav.changelog">Changelog</li>
       </ol>
     </nav>
 
-    <header class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8">
+    <header class="surface-card p-6 sm:p-8">
       <div class="flex flex-wrap items-center gap-2 text-xs">
-        <span class="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 font-mono font-semibold text-emerald-800">
+        <span class="badge-fits font-mono">
           Physics {engineVersion}
         </span>
-        <span class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-mono text-slate-600" data-i18n="common.updated" data-i18n-args={JSON.stringify({ date: updatedAt })}>
+        <span class="badge-neutral font-mono" data-i18n="common.updated" data-i18n-args={JSON.stringify({ date: updatedAt })}>
           Updated {updatedAt}
         </span>
-        <span class="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 font-mono font-semibold text-sky-800">
+        <span class="badge-accent font-mono">
           {anchorCount} / {guideCount} measured · {modelCount}×{hwCount} hubs
         </span>
       </div>
 
-      <h1 class="mt-4 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl" data-i18n="changelog.title">
+      <h1 class="mt-4 text-2xl font-extrabold tracking-tight text-[var(--ink-primary)] sm:text-3xl" data-i18n="changelog.title">
         VRAMCalc.me Engineering &amp; Physics Engine Changelog
       </h1>
-      <p class="mt-2.5 text-sm leading-relaxed text-slate-600 sm:text-base" data-i18n="changelog.sub">
+      <p class="mt-2.5 text-sm leading-relaxed text-[var(--ink-secondary)] sm:text-base" data-i18n="changelog.sub">
         Version-by-version history of Physics v1.0 → {engineVersion} formula coefficients, catalog expansions, verified benchmark additions, and honesty audits.
       </p>
     </header>
 
     <div class="mt-8 space-y-6">
       {releases.map((rel) => (
-        <section class="min-w-0 max-w-full rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
+        <section class="surface-card min-w-0 max-w-full p-6">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-hairline)] pb-4">
             <div class="flex flex-wrap items-center gap-2.5">
-              <span class="font-mono text-lg font-extrabold text-slate-950">{rel.version}</span>
-              <span class={`rounded-full border px-2.5 py-0.5 font-mono text-[11px] font-semibold ${rel.badgeClass}`}>
+              <span class="font-mono text-lg font-extrabold text-[var(--ink-primary)]">{rel.version}</span>
+              <span class={`font-mono text-[11px] ${rel.badgeClass}`}>
                 {rel.badge}
               </span>
             </div>
-            <time datetime={rel.date} class="font-mono text-xs text-slate-500">
+            <time datetime={rel.date} class="font-mono text-xs text-[var(--ink-tertiary)]">
               {rel.date}
             </time>
           </div>
 
-          <h2 class="mt-4 text-base font-bold text-slate-950 sm:text-lg">{rel.headline}</h2>
-          <p class="mt-1.5 text-sm leading-relaxed text-slate-600">{rel.summary}</p>
+          <h2 class="mt-4 text-base font-bold text-[var(--ink-primary)] sm:text-lg">{rel.headline}</h2>
+          <p class="mt-1.5 text-sm leading-relaxed text-[var(--ink-secondary)]">{rel.summary}</p>
 
           <div class="mt-4 grid gap-4 md:grid-cols-2">
-            <div class="min-w-0 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-              <h3 class="font-mono text-xs font-bold uppercase tracking-wider text-slate-700">
+            <div class="surface-inset min-w-0 p-4">
+              <h3 class="font-mono text-xs font-bold uppercase tracking-wider text-[var(--ink-primary)]">
                 Physics &amp; Formula Diffs
               </h3>
-              <ul class="mt-2 space-y-1.5 text-xs leading-relaxed text-slate-700">
+              <ul class="mt-2 space-y-1.5 text-xs leading-relaxed text-[var(--ink-secondary)]">
                 {rel.formulaChanges.map((item) => (
                   <li class="flex items-start gap-2">
-                    <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600" aria-hidden="true"></span>
+                    <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]" aria-hidden="true"></span>
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div class="min-w-0 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-              <h3 class="font-mono text-xs font-bold uppercase tracking-wider text-slate-700">
+            <div class="surface-inset min-w-0 p-4">
+              <h3 class="font-mono text-xs font-bold uppercase tracking-wider text-[var(--ink-primary)]">
                 Data, UI &amp; Audit Updates
               </h3>
-              <ul class="mt-2 space-y-1.5 text-xs leading-relaxed text-slate-700">
+              <ul class="mt-2 space-y-1.5 text-xs leading-relaxed text-[var(--ink-secondary)]">
                 {rel.uiAndDataChanges.map((item) => (
                   <li class="flex items-start gap-2">
-                    <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-600" aria-hidden="true"></span>
+                    <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden="true"></span>
                     <span>{item}</span>
                   </li>
                 ))}
@@ -261,7 +261,7 @@ const releases: ReleaseEntry[] = [
             {rel.links.map((lnk) => (
               <a
                 href={lnk.href}
-                class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                class="btn-secondary text-xs text-[var(--accent-ink)]"
               >
                 {lnk.label}
               </a>

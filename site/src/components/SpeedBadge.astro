@@ -8,19 +8,9 @@ export interface Props {
 }
 
 const { tier, id, short = true } = Astro.props;
-
-const tierStyleMap: Record<SpeedTier, string> = {
-  Fast: 'border-sky-200 bg-sky-50 text-sky-800',
-  Interactive: 'border-indigo-200 bg-indigo-50 text-indigo-800',
-  Readable: 'border-slate-200 bg-slate-100 text-slate-700',
-  Slow: 'border-amber-200 bg-amber-50 text-amber-800',
-  OOM: 'border-rose-200 bg-rose-50 text-rose-800',
-};
-
-const cls = `inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ${tierStyleMap[tier] ?? tierStyleMap.Readable}`;
 const shortAttr = short ? 'true' : 'false';
 ---
 
-<span id={id} class={cls}>
+<span id={id} class="speed-pill">
   <span data-tier-label data-i18n-tier={tier} data-i18n-tier-short={shortAttr}>{tier}</span>
 </span>

@@ -1,5 +1,6 @@
 ---
 import type { VramPageEntry } from '../types/vram';
+import CustomSelect from './CustomSelect.astro';
 import StatusBadge from './StatusBadge.astro';
 import SpeedBadge from './SpeedBadge.astro';
 import {
@@ -121,14 +122,14 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
 <section
   id="vram-calculator"
   aria-label="Interactive VRAM and Speed Calculator"
-  class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-7"
+  class="surface-card p-5 sm:p-7"
 >
-  <div class="flex flex-col gap-3 border-b border-slate-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
+  <div class="flex flex-col gap-3 border-b border-[var(--border-hairline)] pb-5 sm:flex-row sm:items-center sm:justify-between">
     <div>
-      <h2 class="text-lg font-bold tracking-tight text-slate-950" data-i18n="detail.calcTitle">
+      <h2 class="text-lg font-bold tracking-tight text-[var(--ink-primary)]" data-i18n="detail.calcTitle">
         Interactive VRAM, Format &amp; Speed Simulator
       </h2>
-      <p class="mt-0.5 text-sm text-slate-600" data-i18n="detail.calcSub" data-i18n-args={calcSubArgs}>
+      <p class="mt-0.5 text-sm text-[var(--ink-secondary)]" data-i18n="detail.calcSub" data-i18n-args={calcSubArgs}>
         Switch GGUF, AWQ (vLLM), or MLX, adjust Daily Desktop vs Clean OS reserves, KV cache precision, context length, and Multi-GPU topology on {hardware.short_name}.
       </p>
     </div>
@@ -136,7 +137,7 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
       <a
         href={simulatorHref}
         data-i18n="detail.fullRigSim"
-        class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors"
+        class="btn-secondary text-xs text-[var(--accent-ink)]"
       >
         Full Rig Simulator -&gt;
       </a>
@@ -146,19 +147,16 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
   </div>
 
   <!-- Format + OS Reserve Controls -->
-  <div class="mt-5 grid gap-4 border-b border-slate-100 pb-5 sm:grid-cols-2">
-    <div>
-      <span class="block text-xs font-semibold uppercase tracking-wider text-slate-500" data-i18n="fmt.title">
+  <div class="mt-5 grid gap-4 border-b border-[var(--border-hairline)] pb-5 lg:grid-cols-12">
+    <div class="lg:col-span-5">
+      <span class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-tertiary)]" data-i18n="fmt.title">
         Runtime Format
       </span>
-      <div class="mt-2 inline-flex flex-wrap rounded-xl border border-slate-200 bg-slate-50 p-1 gap-1" role="group" aria-label="Runtime format">
+      <div class="mt-2 seg-track" role="group" aria-label="Runtime format">
         {formatTabs.map((ft) => {
           const active = ft.key === 'GGUF';
-          const tabCls = active
-            ? 'rounded-lg px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer bg-slate-900 text-white'
-            : 'rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer text-slate-700 hover:bg-white';
           return (
-            <button type="button" data-fmt-btn={ft.key} class={tabCls}>
+            <button type="button" data-fmt-btn={ft.key} data-active={active ? 'true' : 'false'} class="seg-btn whitespace-nowrap py-1.5 px-3">
               <span data-i18n={ft.i18n}>{ft.label}</span>
             </button>
           );
@@ -166,40 +164,43 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
       </div>
     </div>
 
-    <div>
-      <span class="block text-xs font-semibold uppercase tracking-wider text-slate-500" data-i18n="reserve.title">
+    <div class="lg:col-span-7">
+      <span class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-tertiary)]" data-i18n="reserve.title">
         OS Reserve Profile
       </span>
       <div class="mt-2 flex flex-wrap items-center gap-2">
-        <div class="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1 gap-1" role="group" aria-label="OS Reserve profile">
+        <div class="seg-track" role="group" aria-label="OS Reserve profile">
           <button
             type="button"
             data-reserve-btn="desktop"
+            data-active="true"
             data-i18n="reserve.desktop"
-            class="rounded-lg px-3 py-1.5 text-xs font-bold bg-blue-600 text-white cursor-pointer transition-colors"
+            class="seg-btn whitespace-nowrap py-1.5 px-2.5"
           >
             Daily Desktop
           </button>
           <button
             type="button"
             data-reserve-btn="clean"
+            data-active="false"
             data-i18n="reserve.clean"
-            class="rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-white cursor-pointer transition-colors"
+            class="seg-btn whitespace-nowrap py-1.5 px-2.5"
           >
-            Clean OS
+            Clean OS / Headless
           </button>
           <button
             type="button"
             data-reserve-btn="custom"
+            data-active="false"
             data-i18n="reserve.custom"
-            class="rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-white cursor-pointer transition-colors"
+            class="seg-btn whitespace-nowrap py-1.5 px-2.5"
           >
             Custom GB
           </button>
         </div>
 
         <div id="calc-custom-reserve-wrap" class="hidden">
-          <label class="inline-flex items-center gap-1.5 text-xs text-slate-600">
+          <label class="inline-flex items-center gap-1.5 text-xs text-[var(--ink-secondary)]">
             <span class="sr-only" data-i18n="reserve.customLabel">Usable ceiling (GB)</span>
             <input
               id="calc-custom-usable-input"
@@ -208,9 +209,9 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
               max={hardware.vram_gb * 8}
               step="0.5"
               value={usable.toFixed(1)}
-              class="w-20 rounded-lg border border-slate-300 bg-white px-2.5 py-1 font-mono text-xs font-bold text-slate-900 focus:border-blue-600 focus:outline-none"
+              class="field-input w-20 px-2.5 py-1 font-mono text-xs font-bold"
             />
-            <span class="font-mono text-slate-500">GB</span>
+            <span class="font-mono text-[var(--ink-tertiary)]">GB</span>
           </label>
         </div>
       </div>
@@ -220,21 +221,17 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
   <!-- Quantization + Context Controls -->
   <div class="mt-5 grid gap-6 lg:grid-cols-12">
     <div class="lg:col-span-6">
-      <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500" data-i18n="detail.quantFormat">
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-tertiary)]" data-i18n="detail.quantFormat">
         Runtime Format &amp; Quantization
       </label>
       <div
         role="radiogroup"
         aria-label="Quantization format"
-        class="mt-2.5 flex flex-wrap gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-1.5"
+        class="surface-inset mt-2.5 flex flex-wrap gap-1.5 p-1.5"
       >
         {allQuantOptions.map((q) => {
           const isActive = q.key === 'Q4_K_M';
           const wrapVisible = q.fmt === 'GGUF' ? '' : 'hidden';
-          const btnClass = isActive
-            ? 'flex flex-col items-center rounded-lg px-3 py-2 text-center transition-all cursor-pointer bg-blue-600 text-white shadow-xs min-w-[76px]'
-            : 'flex flex-col items-center rounded-lg px-3 py-2 text-center transition-all cursor-pointer text-slate-700 hover:bg-white hover:text-slate-950 min-w-[76px]';
-          const subClass = isActive ? 'text-[10px] text-blue-100' : 'text-[10px] text-slate-500';
           return (
             <div data-quant-wrap={q.fmt} class={wrapVisible}>
               <button
@@ -243,10 +240,11 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
                 aria-checked={isActive ? 'true' : 'false'}
                 data-quant-btn={q.key}
                 data-quant-fmt={q.fmt}
-                class={btnClass}
+                data-active={isActive ? 'true' : 'false'}
+                class="quant-btn min-w-[76px]"
               >
                 <span class="font-mono text-xs font-bold">{q.key}</span>
-                <span class={subClass}>{q.bpw}</span>
+                <span class="quant-sub text-[10px]">{q.bpw}</span>
               </button>
             </div>
           );
@@ -256,18 +254,15 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
 
     <div class="lg:col-span-6">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <label for="calc-ctx-slider" class="text-xs font-semibold uppercase tracking-wider text-slate-500" data-i18n="detail.ctxWindowKv">
+        <label for="calc-ctx-slider" class="text-xs font-semibold uppercase tracking-wider text-[var(--ink-tertiary)]" data-i18n="detail.ctxWindowKv">
           Context Window &amp; KV Cache
         </label>
-        <div class="flex items-center gap-2">
-          <div class="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5" role="group" aria-label="KV cache quantization">
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="seg-track" role="group" aria-label="KV cache quantization">
             {kvOptions.map((kv) => {
               const isKvActive = kv.key === 'fp16';
-              const kvBtnClass = isKvActive
-                ? 'rounded-md px-2 py-0.5 font-mono text-[11px] font-semibold transition-colors cursor-pointer bg-slate-900 text-white'
-                : 'rounded-md px-2 py-0.5 font-mono text-[11px] font-medium transition-colors cursor-pointer text-slate-600 hover:text-slate-950';
               return (
-                <button type="button" data-kv-btn={kv.key} class={kvBtnClass}>
+                <button type="button" data-kv-btn={kv.key} data-active={isKvActive ? 'true' : 'false'} class="seg-btn font-mono text-[11px] px-2 py-0.5">
                   {kv.label}
                 </button>
               );
@@ -275,7 +270,7 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
           </div>
           <span
             id="calc-ctx-readout"
-            class="rounded-md bg-blue-50 px-2.5 py-0.5 font-mono text-sm font-bold text-blue-700 tabular-nums"
+            class="badge-accent rounded-md px-2.5 py-0.5 font-mono text-sm font-bold tabular-nums"
           >
             {initialCtxLabel} ({entry.default_context.toLocaleString()} tokens)
           </span>
@@ -297,11 +292,8 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
           {contextTicks.map((tick) => {
             const label = formatContextLabel(tick);
             const isDefault = tick === entry.default_context;
-            const presetClass = isDefault
-              ? 'rounded-md px-2 py-1 font-mono text-xs transition-colors cursor-pointer bg-slate-900 font-semibold text-white'
-              : 'rounded-md px-2 py-1 font-mono text-xs transition-colors cursor-pointer text-slate-500 hover:bg-slate-100 hover:text-slate-900';
             return (
-              <button type="button" data-ctx-preset={tick} class={presetClass}>
+              <button type="button" data-ctx-preset={tick} data-active={isDefault ? 'true' : 'false'} class="seg-btn font-mono text-xs px-2 py-1">
                 {label}
               </button>
             );
@@ -313,18 +305,15 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
 
   <!-- Compact Multi-GPU & CPU Override Bar -->
   {!hardware.is_unified ? (
-    <div class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-xs">
+    <div class="surface-inset mt-4 flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 text-xs">
       <div class="flex flex-wrap items-center gap-3">
         <div class="flex items-center gap-1.5">
-          <span class="font-semibold text-slate-600" data-i18n="detail.gpusLabel">GPUs:</span>
-          <div class="inline-flex rounded-lg border border-slate-200 bg-white p-0.5" role="group" aria-label="GPU count">
+          <span class="font-semibold text-[var(--ink-secondary)]" data-i18n="detail.gpusLabel">GPUs:</span>
+          <div class="seg-track" role="group" aria-label="GPU count">
             {gpuCountOptions.map((n) => {
               const active = n === gpuCount;
-              const cls = active
-                ? 'rounded-md px-2 py-0.5 font-mono text-xs font-bold bg-blue-600 text-white cursor-pointer'
-                : 'rounded-md px-2 py-0.5 font-mono text-xs font-medium text-slate-600 hover:text-slate-950 cursor-pointer';
               return (
-                <button type="button" data-gpu-count-btn={n} class={cls}>
+                <button type="button" data-gpu-count-btn={n} data-active={active ? 'true' : 'false'} class="seg-btn font-mono text-xs px-2 py-0.5">
                   {n}x
                 </button>
               );
@@ -334,21 +323,23 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
 
         <div id="calc-split-wrap" class={splitWrapClass}>
           <div class="flex items-center gap-1.5">
-            <span class="font-semibold text-slate-600" data-i18n="detail.splitLabel">Split:</span>
-            <div class="inline-flex rounded-lg border border-slate-200 bg-white p-0.5" role="group" aria-label="Multi-GPU split mode">
+            <span class="font-semibold text-[var(--ink-secondary)]" data-i18n="detail.splitLabel">Split:</span>
+            <div class="seg-track" role="group" aria-label="Multi-GPU split mode">
               <button
                 type="button"
                 data-split-btn="layer"
+                data-active="true"
                 data-i18n="detail.splitLayer"
-                class="rounded-md px-2 py-0.5 font-mono text-xs font-bold bg-slate-900 text-white cursor-pointer"
+                class="seg-btn font-mono text-xs px-2 py-0.5"
               >
                 Layer
               </button>
               <button
                 type="button"
                 data-split-btn="tensor"
+                data-active="false"
                 data-i18n="detail.splitTensor"
-                class="rounded-md px-2 py-0.5 font-mono text-xs font-medium text-slate-600 hover:text-slate-950 cursor-pointer"
+                class="seg-btn font-mono text-xs px-2 py-0.5"
               >
                 Tensor
               </button>
@@ -356,29 +347,29 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
           </div>
         </div>
 
-        <div class="flex items-center gap-1.5">
-          <label for="calc-cpu-select" class="font-semibold text-slate-600" data-i18n="detail.cpuOffloadLabel">Host Offload RAM:</label>
-          <select
+        <div class="flex items-center gap-2">
+          <span class="font-semibold text-[var(--ink-secondary)]" data-i18n="detail.cpuOffloadLabel">Host Offload RAM:</span>
+          <CustomSelect
             id="calc-cpu-select"
-            class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-800 focus:border-blue-600 focus:outline-none"
-          >
-            {cpuPresets.map((c) => (
-              <option value={c.bw}>{c.label}</option>
-            ))}
-          </select>
+            compact={true}
+            options={cpuPresets.map((c) => ({ value: String(c.bw), label: c.label }))}
+            value="35"
+            ariaLabel="Host Offload RAM"
+            menuWidthClass="min-w-[230px]"
+          />
         </div>
       </div>
 
-      <span id="calc-rig-tag" class="font-mono text-[11px] font-medium text-slate-500">
+      <span id="calc-rig-tag" class="font-mono text-[11px] font-medium text-[var(--ink-tertiary)]">
         {gpuCount}x {hardware.short_name} · {usable.toFixed(1)} GB usable VRAM
       </span>
     </div>
   ) : (
-    <div class="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-xs text-slate-600">
+    <div class="surface-inset mt-4 flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-xs text-[var(--ink-secondary)]">
       <span id="calc-unified-note" data-i18n="detail.unifiedNote" data-i18n-args={unifiedNoteArgs}>
         Unified Pool ({usable.toFixed(1)} GB usable in current reserve of {hardware.vram_gb} GB · {hardware.bandwidth_gbps} GB/s).
       </span>
-      <a href={simulatorHref} class="font-semibold text-blue-600 hover:text-blue-800 transition-colors" data-i18n="detail.compareMultiGpu">
+      <a href={simulatorHref} class="font-semibold text-[var(--accent-ink)] hover:underline" data-i18n="detail.compareMultiGpu">
         Compare against 1x–8x GPUs or CPU-Only -&gt;
       </a>
     </div>
@@ -386,52 +377,52 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
 
   <!-- Telemetry KPI Row -->
   <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-    <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-      <p class="text-xs font-medium text-slate-500" data-i18n="detail.estTotalVram">Estimated Total VRAM</p>
-      <div class="mt-1 flex items-baseline gap-2">
-        <span id="calc-total-vram" class="font-mono text-2xl font-bold text-slate-950 tabular-nums">
+    <div class="surface-inset p-4">
+      <p class="text-xs font-medium text-[var(--ink-secondary)]" data-i18n="detail.estTotalVram">Estimated Total VRAM</p>
+      <div class="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <span id="calc-total-vram" class="whitespace-nowrap font-mono text-2xl font-bold text-[var(--ink-primary)] tabular-nums">
           {res.total_vram_gb.toFixed(2)} GB
         </span>
-        <span id="calc-util-pct" class="font-mono text-xs font-semibold text-slate-600 tabular-nums">
+        <span id="calc-util-pct" class="whitespace-nowrap font-mono text-xs font-semibold text-[var(--ink-secondary)] tabular-nums">
           ({utilPct}% of {usable.toFixed(1)} GB)
         </span>
       </div>
     </div>
 
-    <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-      <p class="text-xs font-medium text-slate-500" data-i18n="detail.estDecodeSpeed">Formula Speed Range</p>
-      <div class="mt-1 flex items-baseline gap-2">
-        <span id="calc-tps" class="font-mono text-2xl font-bold text-slate-950 tabular-nums">
+    <div class="surface-inset p-4">
+      <p class="text-xs font-medium text-[var(--ink-secondary)]" data-i18n="detail.estDecodeSpeed">Formula Speed Range</p>
+      <div class="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <span id="calc-tps" class="whitespace-nowrap font-mono text-2xl font-bold text-[var(--ink-primary)] tabular-nums">
           {initialTpsText}
         </span>
       </div>
-      <p id="calc-tps-rating" class="mt-0.5 text-xs text-slate-600">{initialTier} · Formula (±15–25%)</p>
+      <p id="calc-tps-rating" class="mt-1 text-xs text-[var(--ink-secondary)]">{initialTier} · Formula (±15–25%)</p>
     </div>
 
-    <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-      <p class="text-xs font-medium text-slate-500" data-i18n="detail.weightsBuffer">Weights + Buffer</p>
-      <div class="mt-1 flex items-baseline gap-2">
-        <span id="calc-weights-gb" class="font-mono text-xl font-bold text-slate-900 tabular-nums">
+    <div class="surface-inset p-4">
+      <p class="text-xs font-medium text-[var(--ink-secondary)]" data-i18n="detail.weightsBuffer">Weights + Buffer</p>
+      <div class="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <span id="calc-weights-gb" class="whitespace-nowrap font-mono text-2xl font-bold text-[var(--ink-primary)] tabular-nums">
           {res.weights_gb.toFixed(2)} GB
         </span>
-        <span id="calc-overhead-gb" class="font-mono text-xs text-slate-500 tabular-nums">
+        <span id="calc-overhead-gb" class="whitespace-nowrap font-mono text-xs text-[var(--ink-secondary)] tabular-nums">
           + {res.overhead_gb.toFixed(2)} GB sys
         </span>
       </div>
-      <p id="calc-kv-gb" class="mt-0.5 font-mono text-xs text-slate-600 tabular-nums">
+      <p id="calc-kv-gb" class="mt-1 font-mono text-xs text-[var(--ink-secondary)] tabular-nums">
         KV Cache: {res.kv_cache_gb.toFixed(2)} GB (FP16)
       </p>
     </div>
 
-    <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-      <p class="text-xs font-medium text-slate-500" data-i18n="detail.layerResidency" data-i18n-args={layerResidencyArgs}>{hardware.backend} Layer Residency</p>
-      <div class="mt-1 flex items-baseline gap-2">
-        <span id="calc-layers" class="font-mono text-xl font-bold text-slate-900 tabular-nums">
+    <div class="surface-inset p-4">
+      <p class="text-xs font-medium text-[var(--ink-secondary)]" data-i18n="detail.layerResidency" data-i18n-args={layerResidencyArgs}>{hardware.backend} Layer Residency</p>
+      <div class="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <span id="calc-layers" class="whitespace-nowrap font-mono text-2xl font-bold text-[var(--ink-primary)] tabular-nums">
           {res.gpu_layers_fit} / {res.total_layers}
         </span>
-        <span class="text-xs text-slate-500" data-i18n="detail.layersOnGpu">layers on GPU</span>
+        <span class="whitespace-nowrap text-xs text-[var(--ink-secondary)]" data-i18n="detail.layersOnGpu">layers on GPU</span>
       </div>
-      <p id="calc-headroom" class="mt-0.5 text-xs text-slate-600 tabular-nums">
+      <p id="calc-headroom" class="mt-1 text-xs text-[var(--ink-secondary)] tabular-nums">
         {initialHeadroomText}
       </p>
     </div>
@@ -439,7 +430,7 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
 
   <!-- Tight Margin Warning -->
   <div id="calc-tight-warn" class={tightWarnWrapClass} role="note">
-    <div class="rounded-xl border border-orange-200 bg-orange-50/80 px-4 py-3 text-xs text-orange-950">
+    <div class="rounded-xl border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-xs text-orange-800 dark:text-orange-300">
       <strong class="font-bold" data-i18n="warn.tightFitTitle">Tight Margin Warning (&lt;5% / &lt;1 GB free):</strong>{' '}
       <span id="calc-tight-desc" data-i18n="warn.tightFitDesc" data-i18n-args={tightWarnDescArgs}>
         Only {Math.max(0, usable - res.total_vram_gb).toFixed(2)} GB free headroom remains. Display compositor memory, CUDA context growth, or longer context may spill weights to CPU/RAM.
@@ -449,40 +440,40 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
 
   <!-- PCIe All-Reduce Warning -->
   <div id="calc-pcie-warn" class="mt-3 hidden" role="note">
-    <div class="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-xs text-amber-950">
+    <div class="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-800 dark:text-amber-300">
       <strong class="font-bold" data-i18n="warn.pcieTpTitle">PCIe All-Reduce Synchronization Overhead:</strong>{' '}
       <span id="calc-pcie-desc"></span>
     </div>
   </div>
 
   <!-- Stacked Memory Bar -->
-  <div class="mt-5 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+  <div class="surface-inset mt-5 p-4">
     <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
-      <span class="font-semibold text-slate-700" data-i18n="detail.memAllocTitle">Memory Allocation vs Usable Budget</span>
-      <span id="calc-ceiling-text" class="font-mono text-slate-600 tabular-nums">
-        Usable {hardware.backend} Ceiling: <strong class="text-slate-950">{usable.toFixed(1)} GB</strong> (of {hardware.vram_gb} GB physical)
+      <span class="font-semibold text-[var(--ink-primary)]" data-i18n="detail.memAllocTitle">Memory Allocation vs Usable Budget</span>
+      <span id="calc-ceiling-text" class="font-mono text-[var(--ink-secondary)] tabular-nums">
+        Usable {hardware.backend} Ceiling: <strong class="text-[var(--ink-primary)]">{usable.toFixed(1)} GB</strong> (of {hardware.vram_gb} GB physical)
       </span>
     </div>
 
-    <div class="relative mt-3 h-5 w-full overflow-hidden rounded-lg bg-slate-200">
+    <div class="relative mt-3 h-4 w-full overflow-hidden rounded-full bg-[var(--border-subtle)]">
       <div class="flex h-full w-full">
-        <div id="bar-weights" class="h-full bg-blue-600 transition-all duration-150" style={weightsStyle} title="Model Weights"></div>
+        <div id="bar-weights" class="h-full bg-[var(--accent)] transition-all duration-150" style={weightsStyle} title="Model Weights"></div>
         <div id="bar-kv" class="h-full bg-cyan-500 transition-all duration-150" style={kvStyle} title="KV Cache"></div>
-        <div id="bar-overhead" class="h-full bg-slate-500 transition-all duration-150" style={overheadStyle} title="Runtime Buffer"></div>
+        <div id="bar-overhead" class="h-full bg-[var(--ink-tertiary)] transition-all duration-150" style={overheadStyle} title="Runtime Buffer"></div>
       </div>
 
       <div
         id="bar-ceiling-marker"
-        class="pointer-events-none absolute top-0 bottom-0 w-0.5 bg-slate-950"
+        class="pointer-events-none absolute top-0 bottom-0 w-0.5 bg-[var(--ink-primary)]"
         style={ceilingStyle}
         title={ceilingTitle}
       ></div>
     </div>
 
-    <div class="mt-2.5 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
+    <div class="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--ink-secondary)]">
       <div class="flex flex-wrap items-center gap-4">
         <span class="inline-flex items-center gap-1.5">
-          <span class="h-2.5 w-2.5 rounded-xs bg-blue-600"></span>
+          <span class="h-2.5 w-2.5 rounded-xs bg-[var(--accent)]"></span>
           <span data-i18n="sim.legendWeights">Weights</span>
         </span>
         <span class="inline-flex items-center gap-1.5">
@@ -490,22 +481,22 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
           <span data-i18n="sim.legendKv">KV Cache</span>
         </span>
         <span class="inline-flex items-center gap-1.5">
-          <span class="h-2.5 w-2.5 rounded-xs bg-slate-500"></span>
+          <span class="h-2.5 w-2.5 rounded-xs bg-[var(--ink-tertiary)]"></span>
           <span data-i18n="detail.runtimeBuffer">Runtime Buffer</span>
         </span>
         <span id="calc-legend-ceiling" class="inline-flex items-center gap-1.5">
-          <span class="h-3 w-0.5 bg-slate-950"></span>
+          <span class="h-3 w-0.5 bg-[var(--ink-primary)]"></span>
           Usable Ceiling ({usable.toFixed(1)} GB)
         </span>
       </div>
-      <p id="calc-verdict-line" class="font-medium text-slate-800">
+      <p id="calc-verdict-line" class="font-medium text-[var(--ink-primary)]">
         {initialVerdictLine}
       </p>
     </div>
   </div>
 
   <!-- Live Synced CLI Preview -->
-  <div class="mt-4 min-w-0 max-w-full flex flex-col gap-2 rounded-xl bg-slate-950 px-4 py-3 text-slate-100 sm:flex-row sm:items-center sm:justify-between">
+  <div class="code-card mt-4 flex min-w-0 max-w-full flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
     <div class="min-w-0 max-w-full">
       <span id="calc-live-cmd-label" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400" data-i18n="detail.liveFlags">
         Live Flags for Selected Config
@@ -516,7 +507,7 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
       type="button"
       data-copy-target="calc-live-cmd"
       data-copy-label="Live runtime command"
-      class="inline-flex shrink-0 self-start items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer sm:self-center"
+      class="inline-flex shrink-0 self-start items-center gap-1.5 rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:bg-white/20 transition-colors cursor-pointer sm:self-center"
     >
       <span data-copy-icon="copy" aria-hidden="true">
         <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -535,9 +526,9 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
 
   <!-- Live OOM Rescue Banner -->
   <div id="calc-oom-rescue" class={oomRescueWrapClass}>
-    <div class="rounded-xl border border-rose-200 bg-rose-50/80 px-4 py-3.5" role="region" aria-label="Out of Memory Recovery Suggestions">
+    <div class="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3.5" role="region" aria-label="Out of Memory Recovery Suggestions">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div class="text-xs leading-relaxed text-rose-900">
+        <div class="text-xs leading-relaxed text-rose-800 dark:text-rose-300">
           <strong class="font-bold" data-i18n="detail.oomAlertTitle">Out of Memory Alert:</strong>{' '}
           <span data-i18n="detail.oomAlertDesc" data-i18n-args={oomAlertDescArgs}>
             This format and context exceed {hardware.short_name} usable capacity under the active reserve profile.
@@ -556,7 +547,7 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
             href={gpuHubHref}
             data-i18n="detail.modelsFitBtn"
             data-i18n-args={modelsFitBtnArgs}
-            class="rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-semibold text-rose-900 hover:bg-rose-100 transition-colors"
+            class="btn-secondary text-xs"
           >
             Models That Fit {hardware.short_name} -&gt;
           </a>
@@ -564,7 +555,7 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
             href={modelHubHref}
             data-i18n="detail.smoothGpusBtn"
             data-i18n-args={smoothGpusBtnArgs}
-            class="rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-semibold text-rose-900 hover:bg-rose-100 transition-colors"
+            class="btn-secondary text-xs"
           >
             GPUs That Fit {model.short_name} -&gt;
           </a>
@@ -577,6 +568,7 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
 </section>
 
 <script>
+  import { CustomSelect } from '../utils/customSelect';
   import { onLocaleChange, t, tSpeedTier, tStatus } from '../utils/i18n';
   import {
     buildRuntimeCommand,
@@ -650,7 +642,17 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
     const gpuCountBtns = Array.from(document.querySelectorAll('[data-gpu-count-btn]'));
     const splitBtns = Array.from(document.querySelectorAll('[data-split-btn]'));
     const splitWrap = document.getElementById('calc-split-wrap');
-    const cpuSelect = document.getElementById('calc-cpu-select') as HTMLSelectElement | null;
+    const cpuSelectRoot = document.getElementById('calc-cpu-select');
+    const cpuSelect = cpuSelectRoot
+      ? new CustomSelect({
+          root: cpuSelectRoot,
+          initialValue: '35',
+          onChange: (v) => {
+            currentCpuBw = Number(v || 35);
+            render();
+          },
+        })
+      : null;
     const rigTagEl = document.getElementById('calc-rig-tag');
     const unifiedNoteEl = document.getElementById('calc-unified-note');
 
@@ -682,36 +684,17 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
 
     function updateStatusBadge(status: string) {
       if (!statusBadge) return;
-      const dot = statusBadge.querySelector('span:first-child');
       const label = statusBadge.querySelector('[data-status-label]');
       if (label) {
         label.textContent = tStatus(status);
         label.setAttribute('data-i18n-status', status);
       }
 
-      statusBadge.classList.remove(
-        'border-emerald-200', 'bg-emerald-50', 'text-emerald-800',
-        'border-orange-200', 'bg-orange-50', 'text-orange-800',
-        'border-amber-200', 'bg-amber-50', 'text-amber-800',
-        'border-rose-200', 'bg-rose-50', 'text-rose-800',
-      );
-      if (dot) {
-        dot.classList.remove('bg-emerald-600', 'bg-orange-500', 'bg-amber-500', 'bg-rose-500');
-      }
-
-      if (status === 'Fits') {
-        statusBadge.classList.add('border-emerald-200', 'bg-emerald-50', 'text-emerald-800');
-        if (dot) dot.classList.add('bg-emerald-600');
-      } else if (status === 'Tight Fit') {
-        statusBadge.classList.add('border-orange-200', 'bg-orange-50', 'text-orange-800');
-        if (dot) dot.classList.add('bg-orange-500');
-      } else if (status === 'Partial Offload') {
-        statusBadge.classList.add('border-amber-200', 'bg-amber-50', 'text-amber-800');
-        if (dot) dot.classList.add('bg-amber-500');
-      } else {
-        statusBadge.classList.add('border-rose-200', 'bg-rose-50', 'text-rose-800');
-        if (dot) dot.classList.add('bg-rose-500');
-      }
+      statusBadge.classList.remove('badge-fits', 'badge-tight', 'badge-partial', 'badge-oom');
+      if (status === 'Fits') statusBadge.classList.add('badge-fits');
+      else if (status === 'Tight Fit') statusBadge.classList.add('badge-tight');
+      else if (status === 'Partial Offload') statusBadge.classList.add('badge-partial');
+      else statusBadge.classList.add('badge-oom');
     }
 
     function updateSpeedBadge(tier: SpeedTier) {
@@ -721,18 +704,7 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
         label.textContent = tSpeedTier(tier, true);
         label.setAttribute('data-i18n-tier', tier);
       }
-      speedBadge.classList.remove(
-        'border-sky-200', 'bg-sky-50', 'text-sky-800',
-        'border-indigo-200', 'bg-indigo-50', 'text-indigo-800',
-        'border-slate-200', 'bg-slate-100', 'text-slate-700',
-        'border-amber-200', 'bg-amber-50', 'text-amber-800',
-        'border-rose-200', 'bg-rose-50', 'text-rose-800',
-      );
-      if (tier === 'Fast') speedBadge.classList.add('border-sky-200', 'bg-sky-50', 'text-sky-800');
-      else if (tier === 'Interactive') speedBadge.classList.add('border-indigo-200', 'bg-indigo-50', 'text-indigo-800');
-      else if (tier === 'Readable') speedBadge.classList.add('border-slate-200', 'bg-slate-100', 'text-slate-700');
-      else if (tier === 'Slow') speedBadge.classList.add('border-amber-200', 'bg-amber-50', 'text-amber-800');
-      else speedBadge.classList.add('border-rose-200', 'bg-rose-50', 'text-rose-800');
+      speedBadge.setAttribute('data-tier', tier);
     }
 
     function render() {
@@ -798,7 +770,7 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
         });
       }
       if (legendCeilingEl) {
-        legendCeilingEl.innerHTML = `<span class="h-3 w-0.5 bg-slate-950"></span>${t('detail.usableLegend', { usable: usable.toFixed(1) })}`;
+        legendCeilingEl.innerHTML = `<span class="h-3 w-0.5 bg-[var(--ink-primary)]"></span>${t('detail.usableLegend', { usable: usable.toFixed(1) })}`;
       }
       if (rigTagEl) {
         rigTagEl.textContent = `${r.gpu_count}x ${hardware.short_name} · ${usable.toFixed(1)} GB usable VRAM`;
@@ -900,20 +872,12 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
 
       fmtBtns.forEach((btn) => {
         const active = btn.getAttribute('data-fmt-btn') === currentFormat;
-        btn.classList.toggle('bg-slate-900', active);
-        btn.classList.toggle('text-white', active);
-        btn.classList.toggle('font-bold', active);
-        btn.classList.toggle('text-slate-700', !active);
-        btn.classList.toggle('hover:bg-white', !active);
+        btn.setAttribute('data-active', active ? 'true' : 'false');
       });
 
       reserveBtns.forEach((btn) => {
         const active = btn.getAttribute('data-reserve-btn') === currentReserve;
-        btn.classList.toggle('bg-blue-600', active);
-        btn.classList.toggle('text-white', active);
-        btn.classList.toggle('font-bold', active);
-        btn.classList.toggle('text-slate-700', !active);
-        btn.classList.toggle('hover:bg-white', !active);
+        btn.setAttribute('data-active', active ? 'true' : 'false');
       });
 
       quantWraps.forEach((wrap) => {
@@ -924,59 +888,27 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
       quantBtns.forEach((btn) => {
         const active = btn.getAttribute('data-quant-btn') === currentQuant;
         btn.setAttribute('aria-checked', active ? 'true' : 'false');
-        const sub = btn.querySelector('span:last-child');
-        btn.classList.toggle('bg-blue-600', active);
-        btn.classList.toggle('text-white', active);
-        btn.classList.toggle('shadow-xs', active);
-        btn.classList.toggle('text-slate-700', !active);
-        btn.classList.toggle('hover:bg-white', !active);
-        btn.classList.toggle('hover:text-slate-950', !active);
-        if (sub) {
-          sub.classList.toggle('text-blue-100', active);
-          sub.classList.toggle('text-slate-500', !active);
-        }
+        btn.setAttribute('data-active', active ? 'true' : 'false');
       });
 
       kvBtns.forEach((btn) => {
         const active = btn.getAttribute('data-kv-btn') === currentKvQuant;
-        btn.classList.toggle('bg-slate-900', active);
-        btn.classList.toggle('font-semibold', active);
-        btn.classList.toggle('text-white', active);
-        btn.classList.toggle('font-medium', !active);
-        btn.classList.toggle('text-slate-600', !active);
-        btn.classList.toggle('hover:text-slate-950', !active);
+        btn.setAttribute('data-active', active ? 'true' : 'false');
       });
 
       gpuCountBtns.forEach((btn) => {
         const val = Number(btn.getAttribute('data-gpu-count-btn') || 1);
-        const active = val === currentGpuCount;
-        btn.classList.toggle('bg-blue-600', active);
-        btn.classList.toggle('font-bold', active);
-        btn.classList.toggle('text-white', active);
-        btn.classList.toggle('font-medium', !active);
-        btn.classList.toggle('text-slate-600', !active);
-        btn.classList.toggle('hover:text-slate-950', !active);
+        btn.setAttribute('data-active', val === currentGpuCount ? 'true' : 'false');
       });
 
       splitBtns.forEach((btn) => {
         const active = btn.getAttribute('data-split-btn') === currentSplitMode;
-        btn.classList.toggle('bg-slate-900', active);
-        btn.classList.toggle('font-bold', active);
-        btn.classList.toggle('text-white', active);
-        btn.classList.toggle('font-medium', !active);
-        btn.classList.toggle('text-slate-600', !active);
-        btn.classList.toggle('hover:text-slate-950', !active);
+        btn.setAttribute('data-active', active ? 'true' : 'false');
       });
 
       presetBtns.forEach((btn) => {
         const val = Number(btn.getAttribute('data-ctx-preset'));
-        const active = val === currentContext;
-        btn.classList.toggle('bg-slate-900', active);
-        btn.classList.toggle('font-semibold', active);
-        btn.classList.toggle('text-white', active);
-        btn.classList.toggle('text-slate-500', !active);
-        btn.classList.toggle('hover:bg-slate-100', !active);
-        btn.classList.toggle('hover:text-slate-900', !active);
+        btn.setAttribute('data-active', val === currentContext ? 'true' : 'false');
       });
     }
 
@@ -1039,13 +971,6 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
       });
     });
 
-    if (cpuSelect) {
-      cpuSelect.addEventListener('change', () => {
-        currentCpuBw = Number(cpuSelect.value || 35);
-        render();
-      });
-    }
-
     if (slider) {
       slider.addEventListener('input', () => {
         currentContext = Number(slider.value);
@@ -1073,7 +998,7 @@ const tightWarnDescArgs = JSON.stringify({ gb: Math.max(0, usable - res.total_vr
         currentSplitMode = 'layer';
         currentCpuBw = 35;
         if (slider) slider.value = String(currentContext);
-        if (cpuSelect) cpuSelect.value = '35';
+        cpuSelect?.setValue('35', true);
         render();
       });
     }

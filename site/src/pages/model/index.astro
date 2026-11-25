@@ -82,70 +82,71 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
 
   <article class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
     <nav aria-label="Breadcrumb" class="mb-4">
-      <ol class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-500">
+      <ol class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-[var(--ink-tertiary)]">
         <li>
-          <a href="/" class="hover:text-slate-900 transition-colors" data-i18n="common.home">Home</a>
+          <a href="/" class="hover:text-[var(--ink-primary)] transition-colors" data-i18n="common.home">Home</a>
         </li>
         <li aria-hidden="true">/</li>
-        <li aria-current="page" class="text-slate-900 font-semibold" data-i18n="nav.models">Models</li>
+        <li aria-current="page" class="font-semibold text-[var(--ink-primary)]" data-i18n="nav.models">Models</li>
       </ol>
     </nav>
 
-    <header class="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-xs sm:p-8">
+    <header class="pb-6">
       <div class="flex flex-wrap items-center gap-2">
-        <span class="rounded-full border border-blue-500/40 bg-blue-500/15 px-2.5 py-0.5 font-mono text-xs font-semibold text-blue-300" data-i18n="hub.modelDirBadge">
+        <span class="badge-accent font-mono text-xs" data-i18n="hub.modelDirBadge">
           Model Directory
         </span>
-        <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 font-mono text-xs text-slate-300">
+        <span class="badge-neutral font-mono text-xs">
           GGUF · AWQ · MLX
         </span>
-        <span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-xs text-emerald-300" data-i18n="common.updated" data-i18n-args={updatedArgs}>
+        <span class="badge-fits font-mono text-xs" data-i18n="common.updated" data-i18n-args={updatedArgs}>
           Updated {updatedAt}
         </span>
       </div>
 
-      <h1 class="mt-4 text-2xl font-extrabold tracking-tight text-white sm:text-4xl" data-i18n="hub.allModelsHeading" data-i18n-args={hubHeadingArgs}>
+      <h1 class="mt-4 text-2xl font-extrabold tracking-tight text-[var(--ink-primary)] sm:text-4xl" data-i18n="hub.allModelsHeading" data-i18n-args={hubHeadingArgs}>
         All {totalHubs} Open-Weight LLM VRAM &amp; Hardware Hubs
       </h1>
 
-      <p class="mt-3 max-w-3xl text-sm leading-relaxed text-slate-300 sm:text-base" data-i18n="hub.allModelsSub" data-i18n-args={hubAllModelsSubArgs}>
+      <p class="mt-3 max-w-3xl text-sm leading-relaxed text-[var(--ink-secondary)] sm:text-base" data-i18n="hub.allModelsSub" data-i18n-args={hubAllModelsSubArgs}>
         Inspect exact @8K + Max Fit VRAM requirements, KV-cache scaling, AWQ/MLX comparisons, and ranked{' '}
-        <strong class="text-white">{totalHwCount}-GPU</strong> leaderboards across Qwen3, Gemma 3, DeepSeek-R1,
+        <strong class="text-[var(--ink-primary)]">{totalHwCount}-GPU</strong> leaderboards across Qwen3, Gemma 3, DeepSeek-R1,
         Llama-3.3, and Mistral.
       </p>
 
-      <dl class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
-          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400" data-i18n="hub.indexedModels">Static Model Hubs</dt>
-          <dd class="mt-1 font-mono text-xl font-bold text-white tabular-nums">{totalHubs}</dd>
+      <dl class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-px rounded-2xl border border-[var(--border-subtle)] bg-[var(--border-subtle)] shadow-[var(--shadow-card)] overflow-hidden">
+        <div class="bg-[var(--bg-surface)] px-4 py-3.5">
+          <dt class="text-[11px] font-medium uppercase tracking-wider text-[var(--ink-tertiary)]" data-i18n="hub.indexedModels">Static Model Hubs</dt>
+          <dd class="mt-1 font-mono text-xl font-bold text-[var(--ink-primary)] tabular-nums">{totalHubs}</dd>
         </div>
-        <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
-          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400" data-i18n="hub.modelFamilies">Model Families</dt>
-          <dd class="mt-1 font-mono text-xl font-bold text-sky-300 tabular-nums">{families.length}</dd>
+        <div class="bg-[var(--bg-surface)] px-4 py-3.5">
+          <dt class="text-[11px] font-medium uppercase tracking-wider text-[var(--ink-tertiary)]" data-i18n="hub.modelFamilies">Model Families</dt>
+          <dd class="mt-1 font-mono text-xl font-bold text-[var(--accent-ink)] tabular-nums">{families.length}</dd>
         </div>
-        <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
-          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400" data-i18n="hub.paramRange">Parameter Range</dt>
-          <dd class="mt-1 font-mono text-xl font-bold text-emerald-300 tabular-nums">
+        <div class="bg-[var(--bg-surface)] px-4 py-3.5">
+          <dt class="text-[11px] font-medium uppercase tracking-wider text-[var(--ink-tertiary)]" data-i18n="hub.paramRange">Parameter Range</dt>
+          <dd class="mt-1 font-mono text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
             {minParams}B – {maxParams}B
           </dd>
         </div>
-        <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
-          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400" data-i18n="hub.hwBenchmarks">GPUs Evaluated Each</dt>
-          <dd class="mt-1 font-mono text-xl font-bold text-white tabular-nums">{totalHwCount} GPUs</dd>
+        <div class="bg-[var(--bg-surface)] px-4 py-3.5">
+          <dt class="text-[11px] font-medium uppercase tracking-wider text-[var(--ink-tertiary)]" data-i18n="hub.hwBenchmarks">GPUs Evaluated Each</dt>
+          <dd class="mt-1 font-mono text-xl font-bold text-[var(--ink-primary)] tabular-nums">{totalHwCount} GPUs</dd>
         </div>
       </dl>
     </header>
 
-    <section class="mt-7" aria-label="Filter model hubs">
-      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5">
+    <section class="mt-2" aria-label="Filter model hubs">
+      <div class="surface-card p-4 sm:p-5">
         <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by model family">
             <button
               type="button"
               data-dir-family-btn="all"
+              data-active="true"
               data-i18n="hub.allFamilies"
               data-i18n-args={hubAllFamiliesArgs}
-              class="rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-900 bg-slate-900 text-white"
+              class="pill-filter"
             >
               All Families ({totalHubs})
             </button>
@@ -153,7 +154,8 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
               <button
                 type="button"
                 data-dir-family-btn={fam}
-                class="rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
+                data-active="false"
+                class="pill-filter"
               >
                 {fam}
               </button>
@@ -167,12 +169,12 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
               type="search"
               placeholder="Search e.g. Qwen3, Gemma 3, DeepSeek, 27B..."
               data-i18n-placeholder="hub.searchModelPh"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none"
+              class="field-input h-9 px-3 text-sm"
             />
           </div>
         </div>
 
-        <div class="mt-3 flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-xs text-slate-600">
+        <div class="mt-3 flex items-center justify-between gap-3 border-t border-[var(--border-hairline)] pt-3 text-xs text-[var(--ink-secondary)]">
           <span id="dir-model-count" class="font-mono tabular-nums" data-i18n="hub.showingModelHubs" data-i18n-args={hubShowingModelsArgs}>
             Showing {totalHubs} of {totalHubs} model hubs
           </span>
@@ -180,7 +182,7 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
             id="dir-model-reset"
             type="button"
             data-i18n="common.reset"
-            class="hidden font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
+            class="hidden font-semibold text-[var(--accent-ink)] hover:underline cursor-pointer"
           >
             Reset
           </button>
@@ -208,72 +210,72 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
               data-dir-model-card
               data-family={m.family}
               data-search={searchBlob}
-              class="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:border-blue-300 hover:shadow-md"
+              class="surface-card-interactive group flex flex-col justify-between p-5"
             >
               <div>
                 <div class="flex items-center justify-between gap-2">
-                  <span class="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-blue-800">
+                  <span class="badge-accent font-mono text-[11px]">
                     {m.family}
                   </span>
-                  <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-bold text-slate-700 tabular-nums">
+                  <span class="font-mono text-[11px] font-semibold text-[var(--ink-tertiary)] tabular-nums">
                     {m.params_b}B · {formatContextLabel(m.max_context)} max
                   </span>
                 </div>
 
-                <h2 class="mt-3 text-lg font-bold tracking-tight text-slate-950 group-hover:text-blue-600 transition-colors">
+                <h2 class="mt-3 text-lg font-bold tracking-tight text-[var(--ink-primary)] group-hover:text-[var(--accent-ink)] transition-colors">
                   <a href={hubHref} class="focus:outline-none">
                     {m.name}
                   </a>
                 </h2>
-                <p class="mt-0.5 font-mono text-xs text-slate-500">
+                <p class="mt-0.5 font-mono text-xs text-[var(--ink-tertiary)]">
                   {m.architecture} · +{hub.kvPer4k.toFixed(2)} GB KV / 4K
                 </p>
 
-                <dl class="mt-3 grid grid-cols-3 gap-2 rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-xs">
+                <dl class="surface-inset mt-3 grid grid-cols-3 gap-2 p-3 text-xs">
                   <div>
-                    <dt class="text-[11px] text-slate-500">Q4_K_M @ 8K</dt>
-                    <dd class="font-mono font-bold text-slate-950 tabular-nums">{q4Gb}</dd>
+                    <dt class="text-[11px] text-[var(--ink-tertiary)]">Q4_K_M @ 8K</dt>
+                    <dd class="font-mono font-bold text-[var(--ink-primary)] tabular-nums">{q4Gb}</dd>
                   </div>
                   <div>
-                    <dt class="text-[11px] text-slate-500">AWQ 4-bit</dt>
-                    <dd class="font-mono font-semibold text-slate-800 tabular-nums">{awqGb}</dd>
+                    <dt class="text-[11px] text-[var(--ink-tertiary)]">AWQ 4-bit</dt>
+                    <dd class="font-mono font-semibold text-[var(--ink-secondary)] tabular-nums">{awqGb}</dd>
                   </div>
                   <div>
-                    <dt class="text-[11px] text-slate-500">Q8_0 @ 8K</dt>
-                    <dd class="font-mono font-semibold text-slate-800 tabular-nums">{q8Gb}</dd>
+                    <dt class="text-[11px] text-[var(--ink-tertiary)]">Q8_0 @ 8K</dt>
+                    <dd class="font-mono font-semibold text-[var(--ink-secondary)] tabular-nums">{q8Gb}</dd>
                   </div>
                 </dl>
 
                 <div class="mt-3 flex flex-wrap items-center gap-1.5 text-[11px] font-mono">
-                  <span class="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-800 tabular-nums">
+                  <span class="badge-fits tabular-nums">
                     {hub.fitsCount} Fits
                   </span>
                   {hub.tightCount > 0 && (
-                    <span class="rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 font-semibold text-orange-800 tabular-nums">
+                    <span class="badge-tight tabular-nums">
                       {hub.tightCount} Tight
                     </span>
                   )}
                   {hub.partialCount > 0 && (
-                    <span class="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 font-semibold text-amber-800 tabular-nums">
+                    <span class="badge-partial tabular-nums">
                       {hub.partialCount} Partial
                     </span>
                   )}
                 </div>
               </div>
 
-              <div class="mt-4 border-t border-slate-100 pt-3.5">
-                <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold" data-i18n="hub.fastestHw">
+              <div class="mt-4 border-t border-[var(--border-hairline)] pt-3.5">
+                <div class="text-[11px] uppercase tracking-wider text-[var(--ink-tertiary)] font-semibold" data-i18n="hub.fastestHw">
                   Fastest Resident Hardware
                 </div>
-                <div class="mt-0.5 font-mono text-xs font-semibold text-slate-800 truncate">
+                <div class="mt-0.5 font-mono text-xs font-semibold text-[var(--ink-primary)] truncate">
                   {topHwText}
                 </div>
 
                 <div class="mt-3 flex items-center justify-between text-xs">
-                  <span class="font-mono text-slate-500" data-i18n="hub.gpusTested" data-i18n-args={gpusEvalArgs}>
+                  <span class="font-mono text-[var(--ink-tertiary)]" data-i18n="hub.gpusTested" data-i18n-args={gpusEvalArgs}>
                     {hub.rows.length} GPUs evaluated
                   </span>
-                  <a href={hubHref} class="font-semibold text-blue-600 hover:text-blue-800" data-i18n="hub.compareAllGpus">
+                  <a href={hubHref} class="font-semibold text-[var(--accent-ink)] hover:underline" data-i18n="hub.compareAllGpus">
                     Compare All GPUs -&gt;
                   </a>
                 </div>
@@ -285,26 +287,26 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
 
       <div
         id="dir-model-empty"
-        class="mt-8 hidden rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center"
+        class="surface-card mt-8 hidden border-dashed p-10 text-center"
       >
-        <p class="text-base font-semibold text-slate-900" data-i18n="hub.noModelHubs">No matching model hubs</p>
+        <p class="text-base font-semibold text-[var(--ink-primary)]" data-i18n="hub.noModelHubs">No matching model hubs</p>
         <button
           id="dir-model-empty-reset"
           type="button"
           data-i18n="common.resetFilters"
-          class="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 cursor-pointer"
+          class="btn-mono mt-4"
         >
           Reset Filters
         </button>
       </div>
     </section>
 
-    <section class="mt-12 rounded-2xl border border-slate-200 bg-white p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <section class="surface-card mt-12 p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h2 class="text-lg font-bold tracking-tight text-slate-950" data-i18n="hub.shopSpecificGpu">
+        <h2 class="text-lg font-bold tracking-tight text-[var(--ink-primary)]" data-i18n="hub.shopSpecificGpu">
           Shopping or Inspecting a Specific GPU or Cloud Instance?
         </h2>
-        <p class="mt-1 text-sm text-slate-600" data-i18n="hub.shopSpecificGpuSub">
+        <p class="mt-1 text-sm text-[var(--ink-secondary)]" data-i18n="hub.shopSpecificGpuSub">
           Open a hardware hub to filter every model tested on T4, L4, A10, RTX 50/40/30, Apple M1–M5, or Strix Halo.
         </p>
       </div>
@@ -313,14 +315,14 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
           href="/gpu/"
           data-i18n="hub.browseAllHw"
           data-i18n-args={browseAllHwArgs}
-          class="rounded-lg bg-slate-950 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors"
+          class="btn-mono"
         >
           Browse All {totalHwCount} Hardware Hubs -&gt;
         </a>
         <a
           href="/"
           data-i18n="hub.fullMatrixBtn"
-          class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+          class="btn-secondary"
         >
           Full Compatibility Matrix -&gt;
         </a>
@@ -348,12 +350,7 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
     function updateButtons() {
       famBtns.forEach((b) => {
         const active = (b.getAttribute('data-dir-family-btn') || 'all') === selectedFamily;
-        b.classList.toggle('border-slate-900', active);
-        b.classList.toggle('bg-slate-900', active);
-        b.classList.toggle('text-white', active);
-        b.classList.toggle('border-slate-200', !active);
-        b.classList.toggle('bg-slate-50', !active);
-        b.classList.toggle('text-slate-700', !active);
+        b.setAttribute('data-active', active ? 'true' : 'false');
       });
     }
 

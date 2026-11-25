@@ -105,81 +105,76 @@ const groupI18nMap: Record<string, string> = {
   </Fragment>
 
   <article class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-    <nav aria-label="Breadcrumb" class="mb-4">
-      <ol class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-500">
+    <nav aria-label="Breadcrumb" class="mb-5">
+      <ol class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-[var(--ink-tertiary)]">
         <li>
-          <a href="/" class="hover:text-slate-900 transition-colors" data-i18n="common.home">Home</a>
+          <a href="/" class="hover:text-[var(--ink-primary)] transition-colors" data-i18n="common.home">Home</a>
         </li>
         <li aria-hidden="true">/</li>
-        <li aria-current="page" class="text-slate-900 font-semibold" data-i18n="nav.gpus">GPUs</li>
+        <li aria-current="page" class="font-semibold text-[var(--ink-primary)]" data-i18n="nav.gpus">GPUs</li>
       </ol>
     </nav>
 
-    <header class="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-xs sm:p-8">
+    <header class="pb-6">
       <div class="flex flex-wrap items-center gap-2">
-        <span class="rounded-full border border-blue-500/40 bg-blue-500/15 px-2.5 py-0.5 font-mono text-xs font-semibold text-blue-300" data-i18n="hub.hwDirBadge">
+        <span class="badge-accent font-mono text-xs" data-i18n="hub.hwDirBadge">
           Hardware Directory
         </span>
-        <span class="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 font-mono text-xs text-slate-300">
+        <span class="badge-neutral font-mono text-xs">
           CUDA · Metal · ROCm · XPU
         </span>
-        <span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-xs text-emerald-300" data-i18n="common.updated" data-i18n-args={updatedArgs}>
+        <span class="badge-fits font-mono text-xs" data-i18n="common.updated" data-i18n-args={updatedArgs}>
           Updated {updatedAt}
         </span>
       </div>
 
-      <h1 class="mt-4 text-2xl font-extrabold tracking-tight text-white sm:text-4xl" data-i18n="hub.allGpusHeading">
+      <h1 class="mt-4 text-2xl font-extrabold tracking-tight text-[var(--ink-primary)] sm:text-4xl" data-i18n="hub.allGpusHeading">
         All Local &amp; Cloud AI GPUs &amp; Unified Memory Macs
       </h1>
 
-      <p class="mt-3 max-w-3xl text-sm leading-relaxed text-slate-300 sm:text-base" data-i18n="hub.allGpusSub" data-i18n-args={hubAllGpusSubArgs}>
-        Browse all <strong class="text-white">{totalHubs}</strong> dedicated hardware hubs covering Consumer RTX 30/40/50,
+      <p class="mt-3 max-w-3xl text-sm leading-relaxed text-[var(--ink-secondary)] sm:text-base" data-i18n="hub.allGpusSub" data-i18n-args={hubAllGpusSubArgs}>
+        Browse all <strong class="text-[var(--ink-primary)]">{totalHubs}</strong> dedicated hardware hubs covering Consumer RTX 30/40/50,
         Data Center T4/L4/A10/A10G/H100/H200, Apple Silicon M1–M5, DGX Spark GB10, and Strix Halo.
       </p>
 
-      <dl class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
-          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400" data-i18n="hub.indexedGpus">Static GPU Hubs</dt>
-          <dd class="mt-1 font-mono text-xl font-bold text-white tabular-nums">{totalHubs}</dd>
+      <dl class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-px rounded-2xl border border-[var(--border-subtle)] bg-[var(--border-subtle)] shadow-[var(--shadow-card)] overflow-hidden">
+        <div class="bg-[var(--bg-surface)] px-4 py-3.5">
+          <dt class="text-[11px] font-medium uppercase tracking-wider text-[var(--ink-tertiary)]" data-i18n="hub.indexedGpus">Static GPU Hubs</dt>
+          <dd class="mt-1 font-mono text-xl font-bold text-[var(--ink-primary)] tabular-nums">{totalHubs}</dd>
         </div>
-        <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
-          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400" data-i18n="hub.vendorCov">Vendor Coverage</dt>
-          <dd class="mt-1 font-mono text-sm font-bold text-sky-300 tabular-nums">
+        <div class="bg-[var(--bg-surface)] px-4 py-3.5">
+          <dt class="text-[11px] font-medium uppercase tracking-wider text-[var(--ink-tertiary)]" data-i18n="hub.vendorCov">Vendor Coverage</dt>
+          <dd class="mt-1 font-mono text-sm font-bold text-[var(--accent-ink)] tabular-nums">
             {nvidiaCount} NV · {appleCount} Apple · {amdCount} AMD · {intelCount} Intel
           </dd>
         </div>
-        <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
-          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400" data-i18n="hub.usableCeil">Usable Ceiling</dt>
-          <dd class="mt-1 font-mono text-xl font-bold text-emerald-300 tabular-nums">Up to {maxUsableVram.toFixed(0)} GB</dd>
+        <div class="bg-[var(--bg-surface)] px-4 py-3.5">
+          <dt class="text-[11px] font-medium uppercase tracking-wider text-[var(--ink-tertiary)]" data-i18n="hub.usableCeil">Usable Ceiling</dt>
+          <dd class="mt-1 font-mono text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">Up to {maxUsableVram.toFixed(0)} GB</dd>
         </div>
-        <div class="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-3">
-          <dt class="text-[11px] font-medium uppercase tracking-wider text-slate-400" data-i18n="hub.totalBench">Full Pairings + Matrix</dt>
-          <dd class="mt-1 font-mono text-xl font-bold text-white tabular-nums">{totalConfigs} + {totalModels}×{totalHubs}</dd>
+        <div class="bg-[var(--bg-surface)] px-4 py-3.5">
+          <dt class="text-[11px] font-medium uppercase tracking-wider text-[var(--ink-tertiary)]" data-i18n="hub.totalBench">Full Pairings + Matrix</dt>
+          <dd class="mt-1 font-mono text-xl font-bold text-[var(--ink-primary)] tabular-nums">{totalConfigs} + {totalModels}×{totalHubs}</dd>
         </div>
       </dl>
     </header>
 
-    <section class="mt-7" aria-label="Filter hardware hubs">
-      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5">
+    <section class="mt-2" aria-label="Filter hardware hubs">
+      <div class="surface-card p-4 sm:p-5">
         <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by vendor">
-            {vendorFilters.map((vf) => {
-              const vBtnClass =
-                vf.key === 'all'
-                  ? 'rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-900 bg-slate-900 text-white'
-                  : 'rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100';
-              return (
-                <button
-                  type="button"
-                  data-dir-vendor-btn={vf.key}
-                  data-i18n={vf.key === 'all' ? 'hub.allVendors' : undefined}
-                  data-i18n-args={vf.key === 'all' ? hubAllVendorsArgs : undefined}
-                  class={vBtnClass}
-                >
-                  {vf.label}
-                </button>
-              );
-            })}
+            {vendorFilters.map((vf) => (
+              <button
+                type="button"
+                data-dir-vendor-btn={vf.key}
+                data-active={vf.key === 'all' ? 'true' : 'false'}
+                data-i18n={vf.key === 'all' ? 'hub.allVendors' : undefined}
+                data-i18n-args={vf.key === 'all' ? hubAllVendorsArgs : undefined}
+                class="pill-filter"
+              >
+                {vf.label}
+              </button>
+            ))}
           </div>
 
           <div class="w-full md:w-72">
@@ -189,29 +184,31 @@ const groupI18nMap: Record<string, string> = {
               type="search"
               placeholder="Search e.g. T4, A10, M4 16GB, 5090, Halo..."
               data-i18n-placeholder="hub.searchHwPh"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none"
+              class="field-input h-9 px-3 text-sm"
             />
           </div>
         </div>
 
-        <div class="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border-hairline)] pt-3">
           <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by hardware class">
             {groupFilters.map((grp) => {
-              const gBtnClass =
-                grp === 'all'
-                  ? 'rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border-blue-600 bg-blue-600 text-white'
-                  : 'rounded-full border px-3 py-1 text-xs font-semibold transition-colors cursor-pointer border-slate-200 bg-white text-slate-700 hover:bg-slate-100';
               const gLabel = grp === 'all' ? 'All Form Factors' : grp;
               const gI18n = groupI18nMap[grp];
               return (
-                <button type="button" data-dir-group-btn={grp} data-i18n={gI18n} class={gBtnClass}>
+                <button
+                  type="button"
+                  data-dir-group-btn={grp}
+                  data-active={grp === 'all' ? 'true' : 'false'}
+                  data-i18n={gI18n}
+                  class="pill-filter"
+                >
                   {gLabel}
                 </button>
               );
             })}
           </div>
 
-          <div class="flex items-center gap-3 text-xs text-slate-600">
+          <div class="flex items-center gap-3 text-xs text-[var(--ink-secondary)]">
             <span id="dir-gpu-count" class="font-mono tabular-nums" data-i18n="hub.showingHwHubs" data-i18n-args={hubShowingArgs}>
               Showing {totalHubs} of {totalHubs} hardware hubs
             </span>
@@ -219,7 +216,7 @@ const groupI18nMap: Record<string, string> = {
               id="dir-gpu-reset"
               type="button"
               data-i18n="common.reset"
-              class="hidden font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
+              class="hidden font-semibold text-[var(--accent-ink)] hover:underline cursor-pointer"
             >
               Reset
             </button>
@@ -263,72 +260,72 @@ const groupI18nMap: Record<string, string> = {
               data-vendor={hw.vendor}
               data-group={hub.group}
               data-search={searchBlob}
-              class="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:border-blue-300 hover:shadow-md"
+              class="surface-card-interactive group flex flex-col justify-between p-5"
             >
               <div>
                 <div class="flex items-center justify-between gap-2">
-                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-slate-700">
+                  <span class="badge-neutral font-mono text-[11px]">
                     {hw.vendor} · {hw.backend}
                   </span>
-                  <span class="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-medium text-slate-600">
+                  <span class="font-mono text-[11px] font-medium text-[var(--ink-tertiary)]">
                     {hw.category}
                   </span>
                 </div>
 
-                <h2 class="mt-3 text-lg font-bold tracking-tight text-slate-950 group-hover:text-blue-600 transition-colors">
+                <h2 class="mt-3 text-lg font-bold tracking-tight text-[var(--ink-primary)] group-hover:text-[var(--accent-ink)] transition-colors">
                   <a href={hubHref} class="focus:outline-none">
                     {hw.name}
                   </a>
                 </h2>
 
-                <div class="mt-2.5 grid grid-cols-2 gap-2 rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-xs">
+                <div class="surface-inset mt-2.5 grid grid-cols-2 gap-2 p-3 text-xs">
                   <div>
-                    <span class="block text-[11px] text-slate-500" data-i18n="hub.usableTotal">Usable / Total</span>
-                    <span class="font-mono font-bold text-slate-950 tabular-nums">
+                    <span class="block text-[11px] text-[var(--ink-tertiary)]" data-i18n="hub.usableTotal">Usable / Total</span>
+                    <span class="font-mono font-bold text-[var(--ink-primary)] tabular-nums">
                       {hub.effectiveUsableGb.toFixed(1)} / {hw.vram_gb} GB
                     </span>
                   </div>
                   <div>
-                    <span class="block text-[11px] text-slate-500" data-i18n="hub.bandwidth">Bandwidth</span>
-                    <span class="font-mono font-bold text-slate-950 tabular-nums">
+                    <span class="block text-[11px] text-[var(--ink-tertiary)]" data-i18n="hub.bandwidth">Bandwidth</span>
+                    <span class="font-mono font-bold text-[var(--ink-primary)] tabular-nums">
                       {hw.bandwidth_gbps} GB/s
                     </span>
                   </div>
                 </div>
 
                 <div class="mt-3 flex flex-wrap items-center gap-1.5 text-[11px] font-mono">
-                  <span class="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-800 tabular-nums">
+                  <span class="badge-fits tabular-nums">
                     {hub.fitsCount} Fits
                   </span>
                   {hub.tightCount > 0 && (
-                    <span class="rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 font-semibold text-orange-800 tabular-nums">
+                    <span class="badge-tight tabular-nums">
                       {hub.tightCount} Tight
                     </span>
                   )}
                   {hub.partialCount > 0 && (
-                    <span class="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 font-semibold text-amber-800 tabular-nums">
+                    <span class="badge-partial tabular-nums">
                       {hub.partialCount} Partial
                     </span>
                   )}
                   {hub.oomCount > 0 && (
-                    <span class="rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 font-semibold text-rose-800 tabular-nums">
+                    <span class="badge-oom tabular-nums">
                       {hub.oomCount} OOM
                     </span>
                   )}
                 </div>
               </div>
 
-              <div class="mt-4 border-t border-slate-100 pt-3.5">
-                <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold" data-i18n="hub.topFit">
+              <div class="mt-4 border-t border-[var(--border-hairline)] pt-3.5">
+                <div class="text-[11px] uppercase tracking-wider text-[var(--ink-tertiary)] font-semibold" data-i18n="hub.topFit">
                   Top Highlighted Fit
                 </div>
-                <div class="mt-0.5 font-mono text-xs font-semibold text-slate-800 truncate">
+                <div class="mt-0.5 font-mono text-xs font-semibold text-[var(--ink-primary)] truncate">
                   {topPickLabel}
                 </div>
 
                 <div class="mt-3 flex items-center justify-between text-xs">
-                  <span class="font-mono text-slate-500">${hw.msrp_usd.toLocaleString()} MSRP</span>
-                  <a href={hubHref} class="font-semibold text-blue-600 hover:text-blue-800" data-i18n="hub.viewHwHub">
+                  <span class="font-mono text-[var(--ink-tertiary)]">${hw.msrp_usd.toLocaleString()} MSRP</span>
+                  <a href={hubHref} class="font-semibold text-[var(--accent-ink)] hover:underline" data-i18n="hub.viewHwHub">
                     View Hardware Hub -&gt;
                   </a>
                 </div>
@@ -340,26 +337,26 @@ const groupI18nMap: Record<string, string> = {
 
       <div
         id="dir-gpu-empty"
-        class="mt-8 hidden rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center"
+        class="surface-card mt-8 hidden border-dashed p-10 text-center"
       >
-        <p class="text-base font-semibold text-slate-900" data-i18n="hub.noHwHubs">No matching hardware hubs</p>
+        <p class="text-base font-semibold text-[var(--ink-primary)]" data-i18n="hub.noHwHubs">No matching hardware hubs</p>
         <button
           id="dir-gpu-empty-reset"
           type="button"
           data-i18n="common.resetFilters"
-          class="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 cursor-pointer"
+          class="btn-mono mt-4"
         >
           Reset Filters
         </button>
       </div>
     </section>
 
-    <section class="mt-12 rounded-2xl border border-slate-200 bg-white p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <section class="surface-card mt-12 p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h2 class="text-lg font-bold tracking-tight text-slate-950" data-i18n="hub.preferByModel">
+        <h2 class="text-lg font-bold tracking-tight text-[var(--ink-primary)]" data-i18n="hub.preferByModel">
           Prefer Browsing by Open-Weight Model?
         </h2>
-        <p class="mt-1 text-sm text-slate-600" data-i18n="hub.preferByModelSub">
+        <p class="mt-1 text-sm text-[var(--ink-secondary)]" data-i18n="hub.preferByModelSub">
           Compare GPUs ranked side-by-side for Qwen3, Gemma 3, DeepSeek-R1, Qwen2.5-Coder, and Llama-3.3.
         </p>
       </div>
@@ -368,14 +365,14 @@ const groupI18nMap: Record<string, string> = {
           href="/model/"
           data-i18n="hub.browseAllModels"
           data-i18n-args={browseModelsArgs}
-          class="rounded-lg bg-slate-950 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors"
+          class="btn-mono"
         >
           Browse All {totalModels} Model Hubs -&gt;
         </a>
         <a
           href="/"
           data-i18n="hub.fullMatrixBtn"
-          class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+          class="btn-secondary"
         >
           Full Compatibility Matrix -&gt;
         </a>
@@ -405,21 +402,11 @@ const groupI18nMap: Record<string, string> = {
     function updateButtons() {
       vendorBtns.forEach((b) => {
         const active = (b.getAttribute('data-dir-vendor-btn') || 'all') === selectedVendor;
-        b.classList.toggle('border-slate-900', active);
-        b.classList.toggle('bg-slate-900', active);
-        b.classList.toggle('text-white', active);
-        b.classList.toggle('border-slate-200', !active);
-        b.classList.toggle('bg-slate-50', !active);
-        b.classList.toggle('text-slate-700', !active);
+        b.setAttribute('data-active', active ? 'true' : 'false');
       });
       groupBtns.forEach((b) => {
         const active = (b.getAttribute('data-dir-group-btn') || 'all') === selectedGroup;
-        b.classList.toggle('border-blue-600', active);
-        b.classList.toggle('bg-blue-600', active);
-        b.classList.toggle('text-white', active);
-        b.classList.toggle('border-slate-200', !active);
-        b.classList.toggle('bg-white', !active);
-        b.classList.toggle('text-slate-700', !active);
+        b.setAttribute('data-active', active ? 'true' : 'false');
       });
     }
 
