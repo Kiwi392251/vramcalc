@@ -365,7 +365,10 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
                       <span class="font-mono font-bold text-[var(--ink-primary)] tabular-nums">{speedText}</span>
                     </div>
                     <div>
-                      <span class="block text-[11px] text-[var(--ink-tertiary)]" data-i18n="common.vram8kLabel">VRAM @ 8K</span>
+                      <span class="block text-[11px] text-[var(--ink-tertiary)]">
+                        <span data-i18n="common.vram8kLabel">VRAM @ 8K</span>{' '}
+                        <span class="font-mono text-[10px]">({res.quant})</span>
+                      </span>
                       <span class="font-mono font-semibold text-[var(--ink-primary)] tabular-nums">
                         {res.total_vram_gb.toFixed(1)} GB
                       </span>
@@ -425,7 +428,7 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
             <tr class="border-b border-[var(--border-subtle)] bg-[var(--bg-subtle)] text-xs font-semibold uppercase tracking-wider text-[var(--ink-secondary)]">
               <th class="px-3 py-3" data-i18n="sim.colModel">Model</th>
               <th class="px-2.5 py-3" data-i18n="detail.colStatus">Fit / Speed</th>
-              <th class="px-2.5 py-3" data-i18n="detail.colTotalVram">VRAM @ 8K</th>
+              <th class="px-2.5 py-3" data-i18n="home.modelTableQ4">Q4_K_M @ 8K</th>
               <th class="px-2.5 py-3" data-i18n="detail.colGpuLayers">GPU Layers</th>
               <th class="px-2.5 py-3" data-i18n="hub.colSpeed8k">Formula Speed (Q4 @ 8K)</th>
               <th class="px-2.5 py-3">AWQ / MLX @ 8K</th>

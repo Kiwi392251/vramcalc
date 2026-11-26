@@ -195,8 +195,9 @@ export const en = {
   'home.ctxMultiGpu': 'Multi-GPU Rig: {n}× {hw} = {total} GB VRAM ({usable} GB usable) · {bw} GB/s/card',
   'home.ctxCpuOnly':
     'CPU-Only Mode (-ngl 0): {cpu} · {ram} GB RAM ({usable} GB usable after OS reserve) — Discrete GPU set to None.',
+  'home.quantLabel': 'Quantization',
   'home.countInitial': '{shown} / {total} guides · {models}×{hw} static hubs',
-  'home.countRig': '{count} models matched (Q4 @ 8K)',
+  'home.countRig': '{count} models matched ({quant} @ 8K)',
   'home.countModelPlusLive': '{guides} guides + {live} live GPUs',
   'home.countMatched': '{shown} / {matched} matched',
   'home.viewingGuides': 'Viewing {shown} of {total} matching curated guides',
@@ -207,7 +208,7 @@ export const en = {
   'home.headingRigModels': '{count} Models on {rig}',
   'home.headingRigModelOne': '1 Model on {rig}',
   'home.subRigSummary':
-    '{fits} Fits · {tight} Tight Fit · {partial} Partial Offload · {oom} OOM @ 8K ({guides} Curated Guides included). Toggle GGUF/AWQ/MLX or Desktop/Clean OS headroom per rig.',
+    '{fits} Fits · {tight} Tight Fit · {partial} Partial Offload · {oom} OOM ({quant} @ 8K · {guides} Curated Guides included).',
   'home.headingAdditionalGpus': '{count} Additional GPUs for {model}',
   'home.subAdditionalGpus':
     'Instant @8K + Max Fit calculations across all {hwTotal} catalog GPUs. Click any card for AWQ/MLX format toggles, reserve profiles, and multi-GPU splits.',
@@ -226,7 +227,7 @@ export const en = {
   'home.awaitDesc':
     'Until you pick a CPU/chip, RAM, or GPU above, no "Fits in VRAM" or speed verdict is shown. Choose any hardware to run live estimates across all {models} models.',
   'home.awaitModelReq':
-    'Selected model: {model} requires ~{gb} GB (Q4_K_M @ 8K) — pick your hardware above to check fit.',
+    'Selected model: {model} requires ~{gb} GB ({quant} @ 8K) — pick your hardware above to check fit.',
   'home.awaitQuickTry': 'Or pick a common device to calculate right away:',
   'home.awaitBrowsePresets': 'Just browsing? View {total} preset GPU reference pairings ↓',
   'home.modeClosePresets': 'Hide References',

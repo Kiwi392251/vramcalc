@@ -5,7 +5,7 @@ import CustomSelect from '../components/CustomSelect.astro';
 import StatusBadge from '../components/StatusBadge.astro';
 import catalogRaw from '../data/catalog_data.json';
 import rawPagesData from '../data/pages_data.json';
-import type { CatalogData, PageEntry, SpeedTier } from '../types/vram';
+import type { CatalogData, PageEntry, QuantKey, RuntimeFormat, SpeedTier } from '../types/vram';
 import {
   buildHardwareHubs,
   buildModelHubs,
@@ -19,9 +19,23 @@ import {
   estimateRigRun,
   formatContextLabel,
   formatTpsRange,
+  QUANT_SHORT_LABELS,
 } from '../utils/physics';
 
 const PAGE_SIZE = 24;
+const HOME_QUANT_OPTIONS: ReadonlyArray<{
+  key: QuantKey;
+  label: string;
+  title: string;
+}> = [
+  { key: 'Q4_K_M', label: 'Q4_K_M', title: 'GGUF · 4.85 bpw (Default 4-bit)' },
+  { key: 'Q5_K_M', label: 'Q5_K_M', title: 'GGUF · 5.65 bpw (5-bit)' },
+  { key: 'Q6_K', label: 'Q6_K', title: 'GGUF · 6.56 bpw (6-bit)' },
+  { key: 'Q8_0', label: 'Q8_0', title: 'GGUF · 8.50 bpw (8-bit)' },
+  { key: 'FP16', label: 'FP16', title: 'Unquantized · 16.0 bpw' },
+  { key: 'MLX_4BIT', label: 'MLX 4-bit', title: 'Apple Silicon MLX · 4.55 bpw' },
+  { key: 'AWQ_4BIT', label: 'AWQ 4-bit', title: 'vLLM AWQ Marlin · 4.75 bpw' },
+];
 const catalog = catalogRaw as CatalogData;
 const rawEntries = rawPagesData as PageEntry[];
 const updatedAt = catalog.updated_at ?? '2026-11-24';
@@ -96,11 +110,21 @@ const measuredAnchors = getReferenceBenchmarks({});
 const measuredNote = getBenchmarksMethodologyNote();
 const measuredByPair = new Map<string, (typeof measuredAnchors)[number]>();
 const measuredPairs: Record<string, string> = {};
+const measuredAnchorDetails: Record<
+  string,
+  { low: number; high: number; quant: QuantKey; format: RuntimeFormat }
+> = {};
 for (const anc of measuredAnchors) {
   const pk = `${anc.model_id}::${anc.hardware_id}`;
   if (!measuredByPair.has(pk)) {
     measuredByPair.set(pk, anc);
     measuredPairs[pk] = `${anc.gen_tps_low}–${anc.gen_tps_high} tok/s measured`;
+    measuredAnchorDetails[pk] = {
+      low: anc.gen_tps_low,
+      high: anc.gen_tps_high,
+      quant: anc.quant,
+      format: anc.format,
+    };
   }
 }
 const homeCatalogPayload = JSON.stringify({
@@ -110,6 +134,7 @@ const homeCatalogPayload = JSON.stringify({
   curatedKeys,
   curatedSlugs,
   measuredPairs,
+  measuredAnchorDetails,
 });
 
 const websiteSchema = {
@@ -459,8 +484,32 @@ const staticIndexSubArgs = JSON.stringify({
         </div>
       </div>
 
-      <!-- OS Reserve Profile Selector (Daily Desktop / Clean OS / Custom GB) -->
-      <div class="mt-3.5 flex flex-wrap items-center justify-between gap-2.5 border-t border-[var(--border-hairline)] pt-3.5">
+      <!-- Quantization + OS Reserve Profile Strip -->
+      <div class="mt-3.5 flex flex-wrap items-center justify-between gap-x-5 gap-y-2.5 border-t border-[var(--border-hairline)] pt-3.5">
+        <div class="flex flex-wrap items-center gap-2.5">
+          <span class="text-xs font-medium text-[var(--ink-secondary)]" data-i18n="home.quantLabel">
+            Quantization
+          </span>
+          <div class="seg-track" role="radiogroup" aria-label="Quantization" data-i18n-aria="home.quantLabel">
+            {HOME_QUANT_OPTIONS.map((q) => {
+              const active = q.key === 'Q4_K_M';
+              return (
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={active ? 'true' : 'false'}
+                  data-home-quant={q.key}
+                  data-active={active ? 'true' : 'false'}
+                  title={q.title}
+                  class="seg-btn font-mono text-[11px] sm:text-xs"
+                >
+                  {q.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div class="flex flex-wrap items-center gap-2.5">
           <span class="text-xs font-medium text-[var(--ink-secondary)]" data-i18n="reserve.title">
             OS Reserve Profile
@@ -879,9 +928,14 @@ const staticIndexSubArgs = JSON.stringify({
             </div>
 
             <div class="mt-4 border-t border-[var(--border-hairline)] pt-3.5">
-              <div class="flex items-center justify-between text-xs">
-                <span class="text-[var(--ink-secondary)]" data-i18n="common.vram8kLabel">VRAM @ 8K</span>
-                <span class="font-mono font-semibold text-[var(--ink-primary)] tabular-nums">
+              <div class="flex items-center justify-between gap-2 text-xs">
+                <span class="inline-flex min-w-0 items-center gap-1.5 text-[var(--ink-secondary)]">
+                  <span class="whitespace-nowrap" data-i18n="common.vram8kLabel">VRAM @ 8K</span>
+                  <span class="rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-px font-mono text-[10px] font-semibold text-[var(--ink-primary)] whitespace-nowrap">
+                    {QUANT_SHORT_LABELS[res.quant] ?? res.quant}
+                  </span>
+                </span>
+                <span class="shrink-0 font-mono font-semibold text-[var(--ink-primary)] tabular-nums">
                   {res.total_vram_gb.toFixed(1)} / {usable.toFixed(1)} GB
                 </span>
               </div>
@@ -899,7 +953,7 @@ const staticIndexSubArgs = JSON.stringify({
                 </div>
               )}
 
-              <div class="mt-3.5 flex items-end justify-between gap-2">
+              <div class="mt-3.5 flex flex-wrap items-end justify-between gap-x-2 gap-y-1.5">
                 <div class="min-w-0">
                   <div class="flex flex-wrap items-baseline gap-1.5">
                     <span class="font-mono text-base sm:text-[17px] font-semibold text-[var(--ink-primary)] tabular-nums" data-i18n={statusAttrs}>
@@ -913,13 +967,14 @@ const staticIndexSubArgs = JSON.stringify({
                       ({res.gpu_layers_fit}/{res.total_layers} layers)
                     </span>
                   </div>
-                  {showMeasuredBadge && (
-                    <span
-                      class="badge-fits mt-1 inline-flex items-center rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-semibold"
-                      data-i18n="speed.measuredUnit"
-                      data-i18n-args={cardMeasuredArgs}
-                    >
-                      {cardMeasuredText}
+                  {showMeasuredBadge && cardMeasured && (
+                    <span class="badge-fits mt-1 inline-flex items-center rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-semibold">
+                      <span data-i18n="speed.measuredUnit" data-i18n-args={cardMeasuredArgs}>
+                        {cardMeasuredText}
+                      </span>
+                      {cardMeasured.quant !== 'Q4_K_M' && (
+                        <span title={QUANT_SHORT_LABELS[cardMeasured.quant] ?? cardMeasured.quant}>&nbsp;· {cardMeasured.format}</span>
+                      )}
                     </span>
                   )}
                   {showFormulaText && (
@@ -931,7 +986,7 @@ const staticIndexSubArgs = JSON.stringify({
 
                 <a
                   href={detailHref}
-                  class="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-[var(--accent-ink)] hover:underline whitespace-nowrap"
+                  class="ml-auto inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-[var(--accent-ink)] hover:underline whitespace-nowrap"
                   data-i18n="common.openCalc"
                 >
                   Open Calc -&gt;
@@ -1333,7 +1388,7 @@ const staticIndexSubArgs = JSON.stringify({
                 <th class="pr-2 py-2.5" data-i18n="home.modelTableModel">Model</th>
                 <th class="px-2 py-2.5" data-i18n="hub.colHardware">Hardware</th>
                 <th class="px-2 py-2.5" data-i18n="detail.colStatus">Fit</th>
-                <th class="px-2 py-2.5" data-i18n="common.vram8kLabel">VRAM @ 8K</th>
+                <th class="px-2 py-2.5" data-i18n="home.modelTableQ4">Q4_K_M @ 8K</th>
                 <th class="px-2 py-2.5">AWQ / MLX @ 8K</th>
                 <th class="px-2 py-2.5 max-w-[115px] whitespace-normal leading-snug" data-i18n="hub.bestQuantMaxCtx">Max Fit</th>
                 <th class="px-2 py-2.5" data-i18n="sim.colSpeed">Est. Range</th>
@@ -1448,9 +1503,12 @@ const staticIndexSubArgs = JSON.stringify({
     effectiveUsableVramGb,
     estimateRigRun,
     formatContextLabel,
+    formatForQuant,
     formatTpsRange,
     maxFitContextDetails,
     osRamReserveGb,
+    QUANT_LABELS,
+    QUANT_SHORT_LABELS,
   } from '../utils/physics';
   import {
     buildSimulatorUrl,
@@ -1469,10 +1527,19 @@ const staticIndexSubArgs = JSON.stringify({
     CpuSpec,
     HardwareSpec,
     ModelSpec,
+    QuantKey,
     ReserveProfile,
     RigRunEstimate,
+    RuntimeFormat,
     SplitMode,
   } from '../types/vram';
+
+  interface MeasuredAnchorDetail {
+    low: number;
+    high: number;
+    quant: QuantKey;
+    format: RuntimeFormat;
+  }
 
   interface HomeCatalogPayload {
     models: ModelSpec[];
@@ -1481,7 +1548,20 @@ const staticIndexSubArgs = JSON.stringify({
     curatedKeys: string[];
     curatedSlugs: Record<string, string>;
     measuredPairs?: Record<string, string>;
+    measuredAnchorDetails?: Record<string, MeasuredAnchorDetail>;
   }
+
+  const VALID_QUANTS: readonly QuantKey[] = [
+    'Q4_K_M',
+    'Q5_K_M',
+    'Q6_K',
+    'Q8_0',
+    'FP16',
+    'AWQ_4BIT',
+    'FP8',
+    'MLX_4BIT',
+    'MLX_8BIT',
+  ];
 
   interface LiveItem {
     model: ModelSpec;
@@ -1532,6 +1612,7 @@ const staticIndexSubArgs = JSON.stringify({
     const contextTextEl = document.getElementById('rig-context-text');
     const splitToggleEl = document.getElementById('rig-split-toggle');
     const splitBtns = Array.from(document.querySelectorAll('[data-home-split]'));
+    const quantBtns = Array.from(document.querySelectorAll('[data-home-quant]'));
     const reserveBtns = Array.from(document.querySelectorAll('[data-home-reserve]'));
     const customGbWrap = document.getElementById('home-custom-gb-wrap');
     const customGbInput = document.getElementById('home-custom-gb') as HTMLInputElement | null;
@@ -1589,7 +1670,9 @@ const staticIndexSubArgs = JSON.stringify({
 
     const curatedKeySet = new Set(catData.curatedKeys || []);
     const curatedSlugMap = new Map<string, string>(Object.entries(catData.curatedSlugs || {}));
-    const measuredPairMap = new Map<string, string>(Object.entries(catData.measuredPairs || {}));
+    const measuredAnchorMap = new Map<string, MeasuredAnchorDetail>(
+      Object.entries(catData.measuredAnchorDetails || {}),
+    );
     const hwById = new Map(catData.hardware.map((h) => [h.id, h]));
     const cpuById = new Map(catData.cpus.map((c) => [c.id, c]));
     const modelById = new Map(catData.models.map((m) => [m.id, m]));
@@ -1604,6 +1687,7 @@ const staticIndexSubArgs = JSON.stringify({
     let selectedGpuVal: string = '';
     let gpuCount = 1;
     let splitMode: SplitMode = 'layer';
+    let selectedQuant: QuantKey = 'Q4_K_M';
     let reserveProfile: ReserveProfile = 'desktop';
     let customUsableGb: number | null = null;
     let selectedModel = 'all';
@@ -1624,6 +1708,14 @@ const staticIndexSubArgs = JSON.stringify({
     }
 
     const totalCurated = cards.length;
+
+    function updateQuantUi() {
+      quantBtns.forEach((b) => {
+        const active = (b.getAttribute('data-home-quant') || 'Q4_K_M') === selectedQuant;
+        b.setAttribute('data-active', active ? 'true' : 'false');
+        b.setAttribute('aria-checked', active ? 'true' : 'false');
+      });
+    }
 
     function updateReserveUi() {
       reserveBtns.forEach((b) => {
@@ -2090,6 +2182,7 @@ const staticIndexSubArgs = JSON.stringify({
       if (selectedModel !== 'all') params.set('model', selectedModel);
       if (selectedStatus !== 'all') params.set('status', selectedStatus);
       if (currentSort !== 'featured') params.set('sort', currentSort);
+      if (selectedQuant !== 'Q4_K_M') params.set('quant', selectedQuant);
       if (reserveProfile !== 'desktop') {
         params.set('reserve', reserveProfile);
         if (reserveProfile === 'custom' && customUsableGb !== null && customUsableGb > 0) {
@@ -2125,19 +2218,20 @@ const staticIndexSubArgs = JSON.stringify({
 
     function buildLiveItemForPair(model: ModelSpec, h: HardwareSpec, guideSlug?: string): LiveItem | null {
       const effCustom = reserveProfile === 'custom' ? customUsableGb : null;
+      const activeFormat = formatForQuant(selectedQuant);
       const res = estimateRigRun({
         model,
         hardware: h,
         gpuCount: h.gpu_count || 1,
-        quant: 'Q4_K_M',
-        format: 'GGUF',
+        quant: selectedQuant,
+        format: activeFormat,
         contextTokens: 8192,
         kvQuant: 'fp16',
         reserveProfile,
         customUsableGb: effCustom,
       });
       if (selectedStatus !== 'all' && res.status !== selectedStatus) return null;
-      const maxFit = maxFitContextDetails(model, h, 'Q4_K_M', reserveProfile, 'fp16', effCustom);
+      const maxFit = maxFitContextDetails(model, h, selectedQuant, reserveProfile, 'fp16', effCustom);
       const maxFitLabel =
         maxFit.contextTokens > 0 && maxFit.estTpsHigh > 0
           ? t('common.maxFitWithSpeed', {
@@ -2152,12 +2246,20 @@ const staticIndexSubArgs = JSON.stringify({
                 gb: maxFit.totalVramGb.toFixed(1),
               })
             : t('common.maxFitNone');
+      const simParams = new URLSearchParams({ model: model.id, hw: h.id });
+      if (selectedQuant !== 'Q4_K_M') {
+        simParams.set('fmt', activeFormat);
+        simParams.set('quant', selectedQuant);
+      }
+      if (reserveProfile !== 'desktop') {
+        simParams.set('reserve', reserveProfile);
+      }
       return {
         model,
         hw: h,
         res,
         rank: rankOf(res.status),
-        simHref: `/calculator/?model=${encodeURIComponent(model.id)}&hw=${encodeURIComponent(h.id)}`,
+        simHref: `/calculator/?${simParams.toString()}`,
         guideSlug,
         chipLabel: `${h.backend} · ${h.bandwidth_gbps} GB/s`,
         hwSubtitle: t('common.onPrefix', { hw: h.name }),
@@ -2234,6 +2336,7 @@ const staticIndexSubArgs = JSON.stringify({
       let allOom = 0;
 
       const effCustom = reserveProfile === 'custom' ? customUsableGb : null;
+      const activeFormat = formatForQuant(selectedQuant);
       for (const m of candidateModels) {
         const res = estimateRigRun({
           model: m,
@@ -2241,8 +2344,8 @@ const staticIndexSubArgs = JSON.stringify({
           gpuCount: rig.effGpuCount,
           cpu: rig.cpu,
           systemRamGb: rig.systemRamArg ?? undefined,
-          quant: 'Q4_K_M',
-          format: 'GGUF',
+          quant: selectedQuant,
+          format: activeFormat,
           contextTokens: 8192,
           kvQuant: 'fp16',
           splitMode,
@@ -2265,6 +2368,9 @@ const staticIndexSubArgs = JSON.stringify({
           splitMode,
           cpuId: rig.cpu.id,
           ramGb: rig.ramForLink,
+          quant: selectedQuant,
+          format: activeFormat,
+          reserveProfile,
         });
 
         const guideSlug = resolveCuratedGuideSlug(
@@ -2285,7 +2391,7 @@ const staticIndexSubArgs = JSON.stringify({
 
         let maxFitLabel = '';
         if (rig.hw && res.gpu_count === 1) {
-          const maxFit = maxFitContextDetails(m, rig.hw, 'Q4_K_M', reserveProfile, 'fp16', effCustom);
+          const maxFit = maxFitContextDetails(m, rig.hw, selectedQuant, reserveProfile, 'fp16', effCustom);
           maxFitLabel =
             maxFit.contextTokens > 0 && maxFit.estTpsHigh > 0
               ? t('common.maxFitWithSpeed', {
@@ -2332,6 +2438,9 @@ const staticIndexSubArgs = JSON.stringify({
         splitMode,
         cpuId: rig.cpu.id,
         ramGb: rig.ramForLink,
+        quant: selectedQuant,
+        format: activeFormat,
+        reserveProfile,
       });
 
       return {
@@ -2387,6 +2496,7 @@ const staticIndexSubArgs = JSON.stringify({
           tight: rig.allTight,
           partial: rig.allPartial,
           oom: rig.allOom,
+          quant: QUANT_SHORT_LABELS[selectedQuant],
           guides: guideCount,
         });
 
@@ -2409,6 +2519,9 @@ const staticIndexSubArgs = JSON.stringify({
       if (selectedModel !== 'all') {
         const m = modelById.get(selectedModel);
         if (m) detailParts.push(m.short_name);
+      }
+      if (selectedQuant !== 'Q4_K_M') {
+        detailParts.push(QUANT_SHORT_LABELS[selectedQuant]);
       }
       if (reserveProfile === 'clean') {
         detailParts.push(t('reserve.clean'));
@@ -2459,7 +2572,8 @@ const staticIndexSubArgs = JSON.stringify({
 
       liveSection.classList.remove('hidden');
 
-      const showSubHeader = !isRigMode && reserveProfile === 'desktop';
+      const showSubHeader =
+        !isRigMode && reserveProfile === 'desktop' && selectedQuant === 'Q4_K_M';
       if (liveHeader) {
         liveHeader.classList.toggle('hidden', !showSubHeader);
         liveHeader.classList.toggle('flex', showSubHeader);
@@ -2482,27 +2596,44 @@ const staticIndexSubArgs = JSON.stringify({
             tight: bannerMeta.allTight,
             partial: bannerMeta.allPartial,
             oom: bannerMeta.allOom,
+            quant: QUANT_SHORT_LABELS[selectedQuant],
             guides: guideCount,
           });
           liveSimCta.textContent = t('home.openRigSim');
           liveSimCta.href = bannerMeta.rigSimHref;
-        } else if (reserveProfile !== 'desktop') {
-          const profTitle =
-            reserveProfile === 'custom' && customUsableGb !== null
-              ? `${t('reserve.custom')} (${customUsableGb} GB)`
-              : reserveProfile === 'clean'
-                ? t('reserve.clean')
-                : t('reserve.desktop');
-          liveBadge.textContent = profTitle;
-          liveHeading.textContent = `${profTitle} · ${t('home.countRig', { count: items.length })}`;
+        } else if (reserveProfile !== 'desktop' || selectedQuant !== 'Q4_K_M') {
+          const badgeParts: string[] = [];
+          if (selectedQuant !== 'Q4_K_M') {
+            badgeParts.push(QUANT_SHORT_LABELS[selectedQuant]);
+          }
+          if (reserveProfile !== 'desktop') {
+            const profTitle =
+              reserveProfile === 'custom' && customUsableGb !== null
+                ? `${t('reserve.custom')} (${customUsableGb} GB)`
+                : t('reserve.clean');
+            badgeParts.push(profTitle);
+          }
+          const combinedLabel = badgeParts.join(' · ');
+          liveBadge.textContent = combinedLabel;
+          liveHeading.textContent = `${combinedLabel} · ${t('home.countRig', {
+            count: items.length,
+            quant: QUANT_SHORT_LABELS[selectedQuant],
+          })}`;
           liveSub.textContent = t('home.subAdditionalGpus', {
             hwTotal: catData.hardware.length,
           });
           liveSimCta.textContent = t('common.openFullSim');
-          liveSimCta.href =
-            selectedModel !== 'all'
-              ? `/calculator/?model=${encodeURIComponent(selectedModel)}`
-              : '/calculator/';
+          const ctaParams = new URLSearchParams();
+          if (selectedModel !== 'all') ctaParams.set('model', selectedModel);
+          if (selectedQuant !== 'Q4_K_M') {
+            ctaParams.set('fmt', formatForQuant(selectedQuant));
+            ctaParams.set('quant', selectedQuant);
+          }
+          if (reserveProfile !== 'desktop') {
+            ctaParams.set('reserve', reserveProfile);
+          }
+          const ctaQs = ctaParams.toString();
+          liveSimCta.href = ctaQs ? `/calculator/?${ctaQs}` : '/calculator/';
         } else {
           const model = modelById.get(selectedModel);
           liveBadge.textContent = t('home.badgeCatalog');
@@ -2540,14 +2671,27 @@ const staticIndexSubArgs = JSON.stringify({
               ? escapeHtml(t('status.oom'))
               : escapeHtml(formatTpsRange(res.est_tps_low, res.est_tps_high, res.est_tps, res.status));
           const budgetLabel = isCpuOnly ? t('common.ram8kLabel') : t('common.vram8kLabel');
-          const measuredText = hw && !isCpuOnly ? measuredPairMap.get(`${model.id}::${hw.id}`) : undefined;
-          const mm = measuredText?.match(/^(\d+)[–-](\d+)/);
-          const dispMeasured = mm ? t('speed.measuredUnit', { low: mm[1], high: mm[2] }) : measuredText;
-          const provenanceTag = dispMeasured
-            ? `<span class="badge-fits mt-1 inline-flex items-center rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-semibold">${escapeHtml(dispMeasured)}</span>`
-            : res.status !== 'OOM'
-              ? `<span class="mt-0.5 block text-[11px] text-[var(--ink-tertiary)]">${escapeHtml(t('speed.formulaOnly'))}</span>`
-              : '';
+          const quantLabel = QUANT_SHORT_LABELS[res.quant] || res.quant;
+          const quantBadgeCls =
+            res.quant === 'Q4_K_M'
+              ? 'border-[var(--border-hairline)] bg-[var(--bg-subtle)] text-[var(--ink-primary)]'
+              : 'border-[var(--accent-border)] bg-[var(--accent-soft)] text-[var(--accent-ink)]';
+          const anc =
+            hw && !isCpuOnly && res.gpu_count === 1
+              ? measuredAnchorMap.get(`${model.id}::${hw.id}`)
+              : undefined;
+          let provenanceTag = '';
+          if (anc && anc.quant === selectedQuant) {
+            provenanceTag = `<span class="badge-fits mt-1 inline-flex items-center rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-semibold">${escapeHtml(t('speed.measuredUnit', { low: anc.low, high: anc.high }))}</span>`;
+          } else if (
+            anc &&
+            selectedQuant === 'Q4_K_M' &&
+            (anc.quant === 'MLX_4BIT' || anc.quant === 'AWQ_4BIT')
+          ) {
+            provenanceTag = `<span class="badge-fits mt-1 inline-flex items-center rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-semibold" title="${escapeHtml(QUANT_SHORT_LABELS[anc.quant] || anc.quant)}">${escapeHtml(t('speed.measuredUnit', { low: anc.low, high: anc.high }))} · ${escapeHtml(anc.format)}</span>`;
+          } else if (res.status !== 'OOM') {
+            provenanceTag = `<span class="mt-0.5 block text-[11px] text-[var(--ink-tertiary)]">${escapeHtml(t('speed.formulaOnly'))}</span>`;
+          }
           const moeLine = model.active_params_b
             ? t('common.moeLine', {
                 params: model.params_b,
@@ -2561,11 +2705,11 @@ const staticIndexSubArgs = JSON.stringify({
 
           const primaryHref = guideSlug ? `/can-i-run/${encodeURIComponent(guideSlug)}/` : simHref;
           const footerActions = guideSlug
-            ? `<div class="flex items-center gap-2.5 shrink-0">
+            ? `<div class="ml-auto flex items-center gap-2.5 shrink-0">
                  <a href="${simHref}" class="text-[11px] font-medium text-[var(--ink-tertiary)] hover:text-[var(--ink-primary)] transition-colors">${escapeHtml(t('common.simShort'))}</a>
                  <a href="${primaryHref}" class="inline-flex items-center gap-1 text-xs font-semibold text-[var(--accent-ink)] hover:underline whitespace-nowrap">${escapeHtml(t('common.openGuide'))}</a>
                </div>`
-            : `<a href="${simHref}" class="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-[var(--accent-ink)] hover:underline whitespace-nowrap">${escapeHtml(t('common.simulate'))}</a>`;
+            : `<a href="${simHref}" class="ml-auto inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-[var(--accent-ink)] hover:underline whitespace-nowrap">${escapeHtml(t('common.simulate'))}</a>`;
 
           return `
             <article class="surface-card-interactive group flex flex-col justify-between p-5">
@@ -2589,9 +2733,12 @@ const staticIndexSubArgs = JSON.stringify({
               </div>
 
               <div class="mt-4 border-t border-[var(--border-hairline)] pt-3.5">
-                <div class="flex items-center justify-between text-xs">
-                  <span class="text-[var(--ink-secondary)]">${escapeHtml(budgetLabel)}</span>
-                  <span class="font-mono font-semibold text-[var(--ink-primary)] tabular-nums">${res.total_vram_gb.toFixed(1)} / ${budget.toFixed(1)} GB</span>
+                <div class="flex items-center justify-between gap-2 text-xs">
+                  <span class="inline-flex min-w-0 items-center gap-1.5 text-[var(--ink-secondary)]">
+                    <span class="whitespace-nowrap">${escapeHtml(budgetLabel)}</span>
+                    <span class="rounded border px-1.5 py-px font-mono text-[10px] font-semibold whitespace-nowrap ${quantBadgeCls}" title="${escapeHtml(QUANT_LABELS[res.quant] || res.quant)}">${escapeHtml(quantLabel)}</span>
+                  </span>
+                  <span class="shrink-0 font-mono font-semibold text-[var(--ink-primary)] tabular-nums">${res.total_vram_gb.toFixed(1)} / ${budget.toFixed(1)} GB</span>
                 </div>
                 <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-subtle)]">
                   <div class="h-full rounded-full ${barColor}" style="width: ${pct}%"></div>
@@ -2600,7 +2747,7 @@ const staticIndexSubArgs = JSON.stringify({
                   <span>${escapeHtml(maxFitLabel)}</span>
                 </div>
 
-                <div class="mt-3.5 flex items-end justify-between gap-2">
+                <div class="mt-3.5 flex flex-wrap items-end justify-between gap-x-2 gap-y-1.5">
                   <div class="min-w-0">
                     <div class="flex flex-wrap items-baseline gap-1.5">
                       <span class="font-mono text-base sm:text-[17px] font-semibold text-[var(--ink-primary)] tabular-nums">${tpsDisplay}</span>
@@ -2656,7 +2803,10 @@ const staticIndexSubArgs = JSON.stringify({
         if (countEl) {
           countEl.removeAttribute('data-i18n');
           countEl.removeAttribute('data-i18n-args');
-          countEl.textContent = t('home.countRig', { count: rigResult.items.length });
+          countEl.textContent = t('home.countRig', {
+            count: rigResult.items.length,
+            quant: QUANT_SHORT_LABELS[selectedQuant],
+          });
         }
         if (emptySimLink) {
           emptySimLink.href = rigResult.rigSimHref;
@@ -2684,15 +2834,17 @@ const staticIndexSubArgs = JSON.stringify({
         if (awaitModelReq) {
           const selModelObj = selectedModel !== 'all' ? modelById.get(selectedModel) : undefined;
           if (selModelObj) {
+            const activeFormat = formatForQuant(selectedQuant);
             const mReq = estimateRigRun({
               model: selModelObj,
               hardware: null,
-              quant: 'Q4_K_M',
-              format: 'GGUF',
+              quant: selectedQuant,
+              format: activeFormat,
               contextTokens: 8192,
             });
             awaitModelReq.textContent = t('home.awaitModelReq', {
               model: selModelObj.short_name,
+              quant: QUANT_SHORT_LABELS[selectedQuant],
               gb: mReq.total_vram_gb.toFixed(1),
             });
             awaitModelReq.classList.remove('hidden');
@@ -2716,6 +2868,7 @@ const staticIndexSubArgs = JSON.stringify({
         const hasFilterInAwait =
           selectedModel !== 'all' ||
           selectedStatus !== 'all' ||
+          selectedQuant !== 'Q4_K_M' ||
           reserveProfile !== 'desktop' ||
           currentSort !== 'featured';
         if (resetBtn) resetBtn.classList.toggle('hidden', !hasFilterInAwait);
@@ -2723,7 +2876,7 @@ const staticIndexSubArgs = JSON.stringify({
         return;
       }
 
-      if (reserveProfile !== 'desktop') {
+      if (reserveProfile !== 'desktop' || selectedQuant !== 'Q4_K_M') {
         if (awaitPanel) awaitPanel.classList.add('hidden');
         setGridVisible(cardsGrid, false, 'grid');
         setGridVisible(paginationBar, false, 'flex');
@@ -2735,7 +2888,10 @@ const staticIndexSubArgs = JSON.stringify({
         if (countEl) {
           countEl.removeAttribute('data-i18n');
           countEl.removeAttribute('data-i18n-args');
-          countEl.textContent = t('home.countRig', { count: reserveLiveItems.length });
+          countEl.textContent = t('home.countRig', {
+            count: reserveLiveItems.length,
+            quant: QUANT_SHORT_LABELS[selectedQuant],
+          });
         }
         if (emptySimLink) {
           emptySimLink.href = '/calculator/';
@@ -2887,6 +3043,7 @@ const staticIndexSubArgs = JSON.stringify({
       const modParam = params.get('model');
       const stParam = params.get('status');
       const sortParam = params.get('sort');
+      const quantParam = params.get('quant');
       const resParam = params.get('reserve');
       const customGbParam = params.get('customGb');
       const qParam = params.get('q');
@@ -2985,6 +3142,10 @@ const staticIndexSubArgs = JSON.stringify({
         sortSelect.setValue(sortParam, true);
         hadParam = true;
       }
+      if (quantParam && (VALID_QUANTS as readonly string[]).includes(quantParam)) {
+        selectedQuant = quantParam as QuantKey;
+        hadParam = true;
+      }
       if (resParam === 'clean' || resParam === 'custom') {
         reserveProfile = resParam;
         hadParam = true;
@@ -3022,6 +3183,7 @@ const staticIndexSubArgs = JSON.stringify({
       }
 
       syncGpuQtyControl();
+      updateQuantUi();
       updateReserveUi();
       updateContextBar();
       if (hadParam) {
@@ -3037,6 +3199,7 @@ const staticIndexSubArgs = JSON.stringify({
       selectedGpuVal = '';
       gpuCount = 1;
       splitMode = 'layer';
+      selectedQuant = 'Q4_K_M';
       reserveProfile = 'desktop';
       customUsableGb = null;
       selectedModel = 'all';
@@ -3052,11 +3215,22 @@ const staticIndexSubArgs = JSON.stringify({
       sortSelect.setValue('featured', true);
 
       syncGpuQtyControl();
+      updateQuantUi();
       updateReserveUi();
       updateContextBar();
       updateStatusPills();
       applyFilters(true);
     }
+
+    quantBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const qVal = btn.getAttribute('data-home-quant') as QuantKey | null;
+        if (!qVal || !(VALID_QUANTS as readonly string[]).includes(qVal) || qVal === selectedQuant) return;
+        selectedQuant = qVal;
+        updateQuantUi();
+        applyFilters(true);
+      });
+    });
 
     reserveBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -3339,6 +3513,7 @@ const staticIndexSubArgs = JSON.stringify({
     });
 
     syncGpuQtyControl();
+    updateQuantUi();
     updateReserveUi();
     hydrateFromUrl();
   }

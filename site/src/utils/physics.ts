@@ -45,6 +45,18 @@ export const QUANT_LABELS: Record<QuantKey, string> = {
   MLX_8BIT: '8.25 bpw · 8-bit Affine (Apple MLX)',
 };
 
+export const QUANT_SHORT_LABELS: Record<QuantKey, string> = {
+  Q4_K_M: 'Q4_K_M',
+  Q5_K_M: 'Q5_K_M',
+  Q6_K: 'Q6_K',
+  Q8_0: 'Q8_0',
+  FP16: 'FP16',
+  AWQ_4BIT: 'AWQ 4-bit',
+  FP8: 'FP8',
+  MLX_4BIT: 'MLX 4-bit',
+  MLX_8BIT: 'MLX 8-bit',
+};
+
 export const FORMAT_QUANTS: Record<RuntimeFormat, QuantKey[]> = {
   GGUF: ['Q4_K_M', 'Q5_K_M', 'Q6_K', 'Q8_0', 'FP16'],
   AWQ: ['AWQ_4BIT', 'FP8'],

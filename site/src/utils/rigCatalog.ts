@@ -1,4 +1,13 @@
-import type { HardwareBackend, HardwareSpec, HardwareVendor, SplitMode } from '../types/vram';
+import type {
+  HardwareBackend,
+  HardwareSpec,
+  HardwareVendor,
+  QuantKey,
+  ReserveProfile,
+  RuntimeFormat,
+  SplitMode,
+} from '../types/vram';
+import { formatForQuant } from './physics';
 
 export const STANDARD_RAM_OPTIONS: readonly number[] = [
   8, 16, 24, 32, 36, 48, 64, 96, 128, 192, 256, 512,
@@ -330,11 +339,25 @@ export interface SimulatorLinkParams {
   splitMode: SplitMode;
   cpuId: string;
   ramGb: number;
+  quant?: QuantKey;
+  format?: RuntimeFormat;
+  reserveProfile?: ReserveProfile;
 }
 
 export function buildSimulatorUrl(params: SimulatorLinkParams): string {
   const q = new URLSearchParams();
-  const { modelId, hw, isExactCatalogSku = true, gpuCount, splitMode, cpuId, ramGb } = params;
+  const {
+    modelId,
+    hw,
+    isExactCatalogSku = true,
+    gpuCount,
+    splitMode,
+    cpuId,
+    ramGb,
+    quant,
+    format,
+    reserveProfile,
+  } = params;
 
   if (!hw || gpuCount <= 0) {
     q.set('mode', 'cpu');
@@ -364,6 +387,13 @@ export function buildSimulatorUrl(params: SimulatorLinkParams): string {
 
   if (modelId && modelId !== 'all') {
     q.set('model', modelId);
+  }
+  if (quant && quant !== 'Q4_K_M') {
+    q.set('fmt', format ?? formatForQuant(quant));
+    q.set('quant', quant);
+  }
+  if (reserveProfile && reserveProfile !== 'desktop') {
+    q.set('reserve', reserveProfile);
   }
   return `/calculator/?${q.toString()}`;
 }
