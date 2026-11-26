@@ -229,6 +229,8 @@ const measuredRows = measuredAnchors
       model: m,
       hardware: h,
       est,
+      measMid,
+      aiScore: aiCapabilitySortScore(m),
       pairHref: slug ? `/can-i-run/${slug}/` : `/gpu/${h.id}/`,
       ctxLabel: formatContextLabel(anc.context_tokens),
       measuredText: `${anc.gen_tps_low}–${anc.gen_tps_high} tok/s measured`,
@@ -241,7 +243,13 @@ const measuredRows = measuredAnchors
       vendorDotClass,
     };
   })
-  .filter((x): x is NonNullable<typeof x> => x !== null);
+  .filter((x): x is NonNullable<typeof x> => x !== null)
+  .sort(
+    (a, b) =>
+      (b.model.releaseDate || '').localeCompare(a.model.releaseDate || '') ||
+      b.anc.date.localeCompare(a.anc.date) ||
+      b.measMid - a.measMid,
+  );
 
 const modelHubRows = buildModelHubs(entries);
 const hwHubRows = buildHardwareHubs(entries);
@@ -289,6 +297,14 @@ const sortSelectOptions = [
   { value: 'tps-desc', label: 'Fastest tok/s', dataI18n: 'home.sortFastest' },
   { value: 'vram-asc', label: 'Lowest VRAM', dataI18n: 'home.sortLowestVram' },
   { value: 'params-desc', label: 'Largest Model', dataI18n: 'home.sortLargestModel' },
+];
+
+const measuredSortOptions = [
+  { value: 'newest', label: 'Newest First', dataI18n: 'home.sortNewest' },
+  { value: 'tps-desc', label: 'Fastest tok/s', dataI18n: 'home.sortFastest' },
+  { value: 'params-desc', label: 'Largest Model', dataI18n: 'home.sortLargestModel' },
+  { value: 'ai-score', label: 'Best AI Score (AA + Arena)', dataI18n: 'home.sortAiScore' },
+  { value: 'featured', label: 'Recommended', dataI18n: 'home.sortRecommended' },
 ];
 
 const heroDescArgs = JSON.stringify({ models: catalogModelCount, hw: catalogHwCount });
@@ -1179,15 +1195,32 @@ const staticIndexSubArgs = JSON.stringify({
             Side-by-side comparison of {measuredRows.length} reproducible community &amp; framework runs (batch=1 decode, including Qwen3-30B-A3B MoE) against calibrated Physics {engineVersion} formula ranges.
           </p>
         </div>
-        <a
-          href="https://github.com/Kiwi392251/vramcalc/issues/new?title=Benchmark+Submission&labels=benchmark"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn-secondary shrink-0 self-start px-3.5 py-2 text-xs"
-          data-i18n="home.submitBenchmark"
-        >
-          Submit Real Run -&gt;
-        </a>
+        <div class="flex flex-wrap items-center gap-2.5 shrink-0 self-start">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[11px] font-medium text-[var(--ink-tertiary)]" data-i18n="home.sortLabel">
+              Sort
+            </span>
+            <CustomSelect
+              id="measured-sort"
+              compact={true}
+              align="right"
+              options={measuredSortOptions}
+              value="newest"
+              ariaLabel="Sort measured benchmarks"
+              ariaLabelI18n="home.sortLabel"
+              buttonClass="min-w-[136px]"
+            />
+          </div>
+          <a
+            href="https://github.com/Kiwi392251/vramcalc/issues/new?title=Benchmark+Submission&labels=benchmark"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-secondary shrink-0 px-3.5 py-2 text-xs"
+            data-i18n="home.submitBenchmark"
+          >
+            Submit Real Run -&gt;
+          </a>
+        </div>
       </div>
 
       <div class="mt-5 w-full max-w-full overflow-x-auto border-y border-[var(--border-hairline)] thin-scrollbar">
@@ -1203,9 +1236,18 @@ const staticIndexSubArgs = JSON.stringify({
               <th class="pl-2 py-2.5" data-i18n="home.measuredColSource">Source</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[var(--border-hairline)]">
-            {measuredRows.map((row) => (
-              <tr class="hover:bg-[var(--bg-subtle)] transition-colors">
+          <tbody id="measured-tbody" class="divide-y divide-[var(--border-hairline)]">
+            {measuredRows.map((row, idx) => (
+              <tr
+                data-measured-row
+                data-index={idx}
+                data-release-date={row.model.releaseDate}
+                data-run-date={row.anc.date}
+                data-tps={row.measMid}
+                data-params={row.model.params_b}
+                data-ai-score={row.aiScore}
+                class="hover:bg-[var(--bg-subtle)] transition-colors"
+              >
                 <td class="pr-2 py-3.5 align-top">
                   <div class="flex flex-wrap items-center gap-1.5 whitespace-nowrap">
                     <a href={row.pairHref} class="text-sm font-semibold tracking-[-0.01em] text-[var(--ink-primary)] hover:text-[var(--accent-ink)] transition-colors">
@@ -1709,6 +1751,8 @@ const staticIndexSubArgs = JSON.stringify({
     const modelRoot = document.getElementById('cb-model');
     const gpuCountRoot = document.getElementById('rig-gpu-count');
     const sortRoot = document.getElementById('filter-sort');
+    const measuredSortRoot = document.getElementById('measured-sort');
+    const measuredTbody = document.getElementById('measured-tbody');
     const contextBar = document.getElementById('rig-context-bar');
     const contextTextEl = document.getElementById('rig-context-text');
     const splitToggleEl = document.getElementById('rig-split-toggle');
@@ -1888,6 +1932,58 @@ const staticIndexSubArgs = JSON.stringify({
         applyFilters(true);
       },
     });
+
+    function sortMeasuredRows(mode: string) {
+      if (!measuredTbody) return;
+      const rows = Array.from(measuredTbody.querySelectorAll('[data-measured-row]'));
+      rows.sort((a, b) => {
+        if (mode === 'tps-desc') {
+          const td = Number(b.getAttribute('data-tps') || 0) - Number(a.getAttribute('data-tps') || 0);
+          if (td !== 0) return td;
+          return (b.getAttribute('data-release-date') || '').localeCompare(
+            a.getAttribute('data-release-date') || '',
+          );
+        }
+        if (mode === 'params-desc') {
+          const pd = Number(b.getAttribute('data-params') || 0) - Number(a.getAttribute('data-params') || 0);
+          if (pd !== 0) return pd;
+          return (b.getAttribute('data-release-date') || '').localeCompare(
+            a.getAttribute('data-release-date') || '',
+          );
+        }
+        if (mode === 'ai-score') {
+          const ad = Number(b.getAttribute('data-ai-score') || 0) - Number(a.getAttribute('data-ai-score') || 0);
+          if (ad !== 0) return ad;
+          return Number(b.getAttribute('data-tps') || 0) - Number(a.getAttribute('data-tps') || 0);
+        }
+        if (mode === 'featured') {
+          return Number(a.getAttribute('data-index') || 0) - Number(b.getAttribute('data-index') || 0);
+        }
+        return (
+          (b.getAttribute('data-release-date') || '').localeCompare(
+            a.getAttribute('data-release-date') || '',
+          ) ||
+          (b.getAttribute('data-run-date') || '').localeCompare(
+            a.getAttribute('data-run-date') || '',
+          ) ||
+          Number(b.getAttribute('data-tps') || 0) - Number(a.getAttribute('data-tps') || 0)
+        );
+      });
+      const frag = document.createDocumentFragment();
+      rows.forEach((r) => frag.appendChild(r));
+      measuredTbody.appendChild(frag);
+    }
+
+    const measuredSortSelect = measuredSortRoot
+      ? new CustomSelect({
+          root: measuredSortRoot,
+          align: 'right',
+          initialValue: 'newest',
+          onChange: (val) => {
+            sortMeasuredRows(val);
+          },
+        })
+      : null;
 
     function getActiveUnifiedSoc(): UnifiedSocProfile | null {
       if (!selectedCpuVal.startsWith('soc:')) return null;
@@ -3660,6 +3756,7 @@ const staticIndexSubArgs = JSON.stringify({
       modelCombo.setValue(selectedModel);
 
       sortSelect.syncLocaleLabels();
+      measuredSortSelect?.syncLocaleLabels();
       syncGpuQtyControl();
       updateContextBar();
       applyFilters(false);
