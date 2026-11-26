@@ -88,17 +88,18 @@ const footerMetaArgs = JSON.stringify({ date: updatedAt, ver: engineVersion });
       (function () {
         var valid = { en: 'en', 'zh-CN': 'zh-CN', 'zh-TW': 'zh-TW', ja: 'ja', es: 'es', fr: 'fr', ko: 'ko' };
         var loc = '';
+        var st = '';
         try {
           var qp = new URLSearchParams(window.location.search).get('lang');
           if (qp && valid[qp]) loc = qp;
         } catch (e) {}
         if (!loc) {
           try {
-            var st = window.localStorage.getItem('vramcalc_lang');
+            st = window.localStorage.getItem('vramcalc_lang') || '';
             if (st && valid[st]) loc = st;
           } catch (e) {}
         }
-        if (!loc) {
+        if (!loc && st === 'auto') {
           var list = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en'];
           for (var i = 0; i < list.length; i++) {
             var tag = String(list[i] || '').trim().toLowerCase().replace(/_/g, '-');

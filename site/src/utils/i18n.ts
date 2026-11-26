@@ -18,6 +18,7 @@ export { SUPPORTED_LOCALES };
 export type { LocaleCode, LocaleMeta, TranslationKey };
 
 export const STORAGE_KEY = 'vramcalc_lang';
+const AUTO_LOCALE_VALUE = 'auto';
 
 const DICTS: Record<LocaleCode, TranslationDict> = {
   en,
@@ -82,31 +83,36 @@ function getQueryLocale(): LocaleCode | null {
   return null;
 }
 
-function getStoredLocale(): LocaleCode | null {
+function getRawStoredLocale(): string | null {
   if (typeof window === 'undefined') return null;
   try {
-    const val = window.localStorage.getItem(STORAGE_KEY);
-    if (isValidLocale(val)) return val;
+    return window.localStorage.getItem(STORAGE_KEY);
   } catch {
     // ignore storage errors in private contexts
+    return null;
   }
-  return null;
+}
+
+function getStoredLocale(): LocaleCode | null {
+  const val = getRawStoredLocale();
+  return isValidLocale(val) ? val : null;
 }
 
 export function isAutoLocale(): boolean {
-  return getQueryLocale() === null && getStoredLocale() === null;
+  return getQueryLocale() === null && getRawStoredLocale() === AUTO_LOCALE_VALUE;
 }
 
 export function getLocale(): LocaleCode {
   if (typeof document !== 'undefined') {
     const q = getQueryLocale();
     if (q) return q;
-    const stored = getStoredLocale();
-    if (stored) return stored;
+    const raw = getRawStoredLocale();
+    if (raw === AUTO_LOCALE_VALUE) return detectDeviceLocale();
+    if (isValidLocale(raw)) return raw;
     const attr = document.documentElement.dataset.locale;
     if (isValidLocale(attr)) return attr;
   }
-  return detectDeviceLocale();
+  return 'en';
 }
 
 export function t(
@@ -256,7 +262,7 @@ export function setLocale(code: LocaleCode): void {
 
 export function resetToAutoLocale(): void {
   try {
-    window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.setItem(STORAGE_KEY, AUTO_LOCALE_VALUE);
   } catch {
     // ignore
   }
