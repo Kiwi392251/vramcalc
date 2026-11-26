@@ -270,6 +270,7 @@ const staticIndexRows = entries.map((e) => {
   return {
     href: `/can-i-run/${e.slug}/`,
     modelShort: e.model.short_name,
+    releaseDate: e.model.releaseDate,
     hwShort: e.hardware.name,
     vramText: `${res.total_vram_gb.toFixed(1)} / ${usable.toFixed(1)} GB`,
     altText,
@@ -1206,9 +1207,14 @@ const staticIndexSubArgs = JSON.stringify({
             {measuredRows.map((row) => (
               <tr class="hover:bg-[var(--bg-subtle)] transition-colors">
                 <td class="pr-2 py-3.5 align-top">
-                  <a href={row.pairHref} class="text-sm font-semibold tracking-[-0.01em] text-[var(--ink-primary)] hover:text-[var(--accent-ink)] transition-colors whitespace-nowrap">
-                    {row.model.short_name}
-                  </a>
+                  <div class="flex flex-wrap items-center gap-1.5 whitespace-nowrap">
+                    <a href={row.pairHref} class="text-sm font-semibold tracking-[-0.01em] text-[var(--ink-primary)] hover:text-[var(--accent-ink)] transition-colors">
+                      {row.model.short_name}
+                    </a>
+                    <span class="rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-px font-mono text-[10px] text-[var(--ink-tertiary)] tabular-nums">
+                      {row.model.releaseDate}
+                    </span>
+                  </div>
                   <div class="mt-1.5">
                     <span class="inline-flex items-center gap-1.5 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-2 py-0.5 text-[13px] font-semibold text-[var(--ink-primary)] whitespace-nowrap">
                       <span class={`h-1.5 w-1.5 shrink-0 rounded-full ${row.vendorDotClass}`} aria-hidden="true"></span>
@@ -1487,7 +1493,12 @@ const staticIndexSubArgs = JSON.stringify({
             <tbody class="divide-y divide-[var(--border-hairline)]">
               {staticIndexRows.map((row) => (
                 <tr class="hover:bg-[var(--bg-subtle)] transition-colors">
-                  <td class="pr-2 py-2.5 text-[13px] font-semibold text-[var(--ink-primary)] whitespace-nowrap">{row.modelShort}</td>
+                  <td class="pr-2 py-2.5 whitespace-nowrap">
+                    <span class="text-[13px] font-semibold text-[var(--ink-primary)]">{row.modelShort}</span>
+                    <span class="ml-1.5 rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-px font-mono text-[10px] text-[var(--ink-tertiary)] tabular-nums">
+                      {row.releaseDate}
+                    </span>
+                  </td>
                   <td class="px-2 py-2.5 max-w-[215px] text-[13px] font-medium text-[var(--ink-secondary)] leading-snug">{row.hwShort}</td>
                   <td class="px-2 py-2.5">
                     <StatusBadge status={row.status} />
