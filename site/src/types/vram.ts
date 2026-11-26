@@ -17,7 +17,13 @@ export type ReserveProfile = 'desktop' | 'clean' | 'custom';
 export type CompatStatus = 'Fits' | 'Tight Fit' | 'Partial Offload' | 'OOM';
 export type SpeedTier = 'Fast' | 'Interactive' | 'Readable' | 'Slow' | 'OOM';
 
-export type HardwareVendor = 'NVIDIA' | 'Apple' | 'AMD' | 'Intel';
+export type HardwareVendor =
+  | 'NVIDIA'
+  | 'Apple'
+  | 'AMD'
+  | 'Intel'
+  | 'Qualcomm'
+  | 'Raspberry Pi';
 export type HardwareBackend = 'CUDA' | 'Metal' | 'ROCm' | 'Vulkan' | 'CPU';
 export type HardwareCategory =
   | 'Desktop GPU'
@@ -25,7 +31,15 @@ export type HardwareCategory =
   | 'Multi-GPU'
   | 'Workstation'
   | 'Unified Memory'
-  | 'Data Center';
+  | 'Data Center'
+  | 'Edge / SBC';
+
+export type HardwarePriceType =
+  | 'official_msrp'
+  | 'official_bto'
+  | 'oem_system'
+  | 'enterprise_quote'
+  | 'cloud_only';
 
 export type CpuTier =
   | 'Consumer DDR4'
@@ -54,6 +68,10 @@ export interface ModelSpec {
   mlx_repo?: string;
   release_year: number;
   use_cases: string[];
+  aa_index?: number;
+  aa_label?: string;
+  arena_elo?: number;
+  arena_rank?: number;
 }
 
 export interface HardwareSpec {
@@ -71,6 +89,8 @@ export interface HardwareSpec {
   is_unified: boolean;
   backend: HardwareBackend;
   msrp_usd: number;
+  price_type?: HardwarePriceType;
+  price_note?: string;
   has_nvlink?: boolean;
 }
 

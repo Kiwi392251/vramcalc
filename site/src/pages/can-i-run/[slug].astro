@@ -3,8 +3,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
 import SpeedBadge from '../../components/SpeedBadge.astro';
 import VramCalculator from '../../components/VramCalculator.astro';
+import rawCatalog from '../../data/catalog_data.json';
 import rawPagesData from '../../data/pages_data.json';
-import type { VramPageEntry } from '../../types/vram';
+import type { CatalogData, VramPageEntry } from '../../types/vram';
+import { officialPriceI18n, officialPriceSortValue } from '../../utils/pricing';
 import {
   classifySpeedTier,
   formatContextLabel,
@@ -35,6 +37,7 @@ const { entry, allEntries } = Astro.props;
 const { model, hardware, default_result: res, quant_table, commands, context_analysis, faq } = entry;
 
 const updatedAt = entry.updated_at || '2026-11-24';
+const totalCatalogHardware = (rawCatalog as CatalogData).hardware.length;
 const effectiveUsable = res.effective_usable_vram_gb ?? hardware.usable_vram_gb;
 const speedTier = res.speed_tier ?? classifySpeedTier(res.est_tps, res.status);
 const tpsRangeText = formatTpsRange(res.est_tps_low, res.est_tps_high, res.est_tps, res.status);
@@ -133,8 +136,9 @@ const pickedUpgradeSlugs = new Set<string>();
 
 if (fittingSameModel.length > 0) {
   const affordablePick = [...fittingSameModel].sort((a, b) => {
-    if (a.hardware.msrp_usd !== b.hardware.msrp_usd) {
-      return a.hardware.msrp_usd - b.hardware.msrp_usd;
+    const priceDiff = officialPriceSortValue(a.hardware) - officialPriceSortValue(b.hardware);
+    if (priceDiff !== 0) {
+      return priceDiff;
     }
     return b.default_result.est_tps - a.default_result.est_tps;
   })[0];
@@ -323,6 +327,22 @@ const appSchema = {
           <span class="font-mono text-xs text-[var(--ink-tertiary)]">
             {hardware.backend} · {hardware.memory_type} · {model.params_b}B · {model.num_layers}L
           </span>
+          {model.aa_index && (
+            <span
+              class="badge-accent font-mono text-xs font-semibold"
+              title={model.aa_label ?? 'Artificial Analysis Intelligence Index v5.0.2'}
+            >
+              AA v5 · {model.aa_index}
+            </span>
+          )}
+          {model.arena_elo && (
+            <span
+              class="badge-neutral font-mono text-xs"
+              title={model.arena_rank ? `LMArena Text Arena #${model.arena_rank} (2026-11-22)` : 'LMArena Text Arena Elo (2026-11-22)'}
+            >
+              Arena · {model.arena_elo}
+            </span>
+          )}
           <span class="badge-neutral font-mono text-xs" data-i18n="common.updated" data-i18n-args={updatedArgs}>
             Updated {updatedAt}
           </span>
@@ -614,7 +634,21 @@ const appSchema = {
                             </span>
                           </div>
                           <div class="mt-0.5 font-mono text-xs text-[var(--ink-tertiary)]">
-                            {upUsable} GB usable · ${upEntry.hardware.msrp_usd.toLocaleString()} MSRP
+                            {(() => {
+                              const upPrice = officialPriceI18n(upEntry.hardware, false);
+                              return (
+                                <>
+                                  {upUsable} GB usable ·{' '}
+                                  <span
+                                    title={upEntry.hardware.price_note ?? ''}
+                                    data-i18n={upPrice.key}
+                                    data-i18n-args={upPrice.args}
+                                  >
+                                    {upPrice.text}
+                                  </span>
+                                </>
+                              );
+                            })()}
                           </div>
                         </div>
                         <div class="text-right shrink-0">
@@ -629,7 +663,7 @@ const appSchema = {
                 </div>
               ) : (
                 <p class="mt-3 text-xs text-[var(--ink-secondary)]">
-                  Compare all 103 hardware specs and offload speeds on the {model.short_name} leaderboard.
+                  Compare all {totalCatalogHardware} hardware specs and offload speeds on the {model.short_name} leaderboard.
                 </p>
               )}
             </div>

@@ -162,6 +162,42 @@ const SOC_DISPLAY_META: Record<
     order: 21,
     aliases: 'nvidia grace blackwell gb10 dgx spark project digits cuda unified',
   },
+  'jetson-agx-thor': {
+    name: 'NVIDIA Jetson AGX Thor (Blackwell Unified)',
+    shortName: 'Jetson AGX Thor',
+    order: 22,
+    aliases: 'nvidia jetson agx thor robotics blackwell edge unified 128gb',
+  },
+  'jetson-agx-orin': {
+    name: 'NVIDIA Jetson AGX Orin (Unified Edge)',
+    shortName: 'Jetson AGX Orin',
+    order: 23,
+    aliases: 'nvidia jetson agx orin edge embedded cuda unified 32gb 64gb',
+  },
+  'jetson-orin-nx': {
+    name: 'NVIDIA Jetson Orin NX (Unified Edge)',
+    shortName: 'Jetson Orin NX',
+    order: 24,
+    aliases: 'nvidia jetson orin nx edge embedded cuda unified 16gb',
+  },
+  'jetson-orin-nano-super': {
+    name: 'NVIDIA Jetson Orin Nano Super (Unified Edge)',
+    shortName: 'Jetson Orin Nano Super',
+    order: 25,
+    aliases: 'nvidia jetson orin nano super 249 developer kit edge cuda 8gb',
+  },
+  'snapdragon-x-elite': {
+    name: 'Qualcomm Snapdragon X Elite (Hexagon NPU / Vulkan)',
+    shortName: 'Snapdragon X Elite',
+    order: 26,
+    aliases: 'qualcomm snapdragon x elite arm copilot+ surface hexagon vulkan 32gb',
+  },
+  'raspberry-pi-5': {
+    name: 'Raspberry Pi 5 (Cortex-A76 SBC)',
+    shortName: 'Raspberry Pi 5',
+    order: 27,
+    aliases: 'raspberry pi 5 rpi5 sbc arm edge linux 8gb 16gb',
+  },
 };
 
 export function extractUnifiedSocProfiles(hardware: HardwareSpec[]): UnifiedSocProfile[] {

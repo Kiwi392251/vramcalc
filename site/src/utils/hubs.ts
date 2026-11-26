@@ -23,12 +23,14 @@ import {
   kvGbPer4k,
   maxFitContextDetails,
 } from './physics';
+import { aiCapabilitySortScore } from './pricing';
 
 export type HardwareClassGroup =
   | 'Desktop GPU'
   | 'Multi-GPU & Workstation'
   | 'Unified Memory'
-  | 'Laptop GPU';
+  | 'Laptop GPU'
+  | 'Edge & SBC';
 
 export interface HubPairRow {
   model: ModelSpec;
@@ -200,6 +202,7 @@ export function statusRank(status: CompatStatus | string): number {
 }
 
 export function classifyCatalogGroup(hw: HardwareSpec): HardwareClassGroup {
+  if (hw.category === 'Edge / SBC') return 'Edge & SBC';
   if (hw.category === 'Unified Memory' || hw.is_unified) return 'Unified Memory';
   if (hw.category === 'Laptop GPU') return 'Laptop GPU';
   if (hw.category === 'Multi-GPU' || hw.category === 'Workstation' || hw.category === 'Data Center' || hw.gpu_count > 1) {
@@ -259,6 +262,10 @@ export function groupCatalogHardware(list: HardwareSpec[]): HardwareCatalogGroup
     {
       label: 'Intel Arc',
       items: list.filter((h) => h.vendor === 'Intel'),
+    },
+    {
+      label: 'Edge & SBC (Jetson · Pi · Snapdragon)',
+      items: list.filter((h) => h.category === 'Edge / SBC'),
     },
   ];
   return groups.filter((g) => g.items.length > 0);
@@ -372,8 +379,26 @@ export function buildHardwareHubs(allEntries: VramPageEntry[]): HardwareHub[] {
 
     const reasoning =
       residentRows
-        .filter((r) => r.model.family === 'DeepSeek-R1' || r.model.family === 'Gemma 3')
-        .sort((a, b) => b.model.params_b - a.model.params_b || b.result.est_tps - a.result.est_tps)[0];
+        .filter((r) =>
+          [
+            'DeepSeek-V4',
+            'DeepSeek-V3',
+            'DeepSeek-R1',
+            'Qwen3.8',
+            'Qwen3.6',
+            'Qwen3.5',
+            'Gemma 4',
+            'Gemma 3',
+            'GPT-OSS',
+            'GLM',
+          ].includes(r.model.family),
+        )
+        .sort(
+          (a, b) =>
+            aiCapabilitySortScore(b.model) - aiCapabilitySortScore(a.model) ||
+            b.model.params_b - a.model.params_b ||
+            b.result.est_tps - a.result.est_tps,
+        )[0];
 
     const fastest = [...residentRows].sort((a, b) => b.result.est_tps - a.result.est_tps)[0];
 

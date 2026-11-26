@@ -5,6 +5,7 @@ import rawCatalog from '../../data/catalog_data.json';
 import type { CatalogData, VramPageEntry } from '../../types/vram';
 import { buildModelHubs, getCatalogUpdatedAt } from '../../utils/hubs';
 import { formatContextLabel } from '../../utils/physics';
+import { aiCapabilitySortScore } from '../../utils/pricing';
 
 const allEntries = rawPagesData as VramPageEntry[];
 const catalog = rawCatalog as CatalogData;
@@ -20,7 +21,7 @@ const maxParams = hubs.reduce((acc, h) => Math.max(acc, h.model.params_b), 0);
 
 const canonicalPath = '/model/';
 const pageTitle = `All ${totalHubs} Open-Weight LLM VRAM & GPU Hubs — VRAMCalc.me`;
-const pageDescription = `Compare @8K & Max Fit VRAM, AWQ/MLX sizes, and ${totalHwCount}-GPU leaderboards for all ${totalHubs} open-weight LLMs (${minParams}B–${maxParams}B): Qwen3.8-27B, Qwen3, Gemma 3, DeepSeek-R1, Llama-3.3 & Mistral.`;
+const pageDescription = `Compare AA v5 intelligence, Arena Elo, @8K & Max Fit VRAM, AWQ/MLX sizes, and ${totalHwCount}-GPU leaderboards across ${totalHubs} open-weight LLMs (${minParams}B–${maxParams}B): Qwen3.5/3.6/3.8, DeepSeek-V4.1/R1, Gemma 4, GPT-OSS, Llama 4 & GLM.`;
 
 const breadcrumbSchema = {
   '@context': 'https://schema.org',
@@ -52,7 +53,7 @@ const itemListSchema = {
   })),
 };
 
-const ogTitle = `All ${totalHubs} Open-Weight LLM VRAM Hubs (Qwen3.8-27B, Qwen3, Gemma 3, DeepSeek) | VRAMCalc.me`;
+const ogTitle = `All ${totalHubs} Open-Weight LLM VRAM Hubs (AA v5 + Arena Elo) | VRAMCalc.me`;
 const ogDescription = `Exact Q4_K_M / AWQ 4-bit / Q8_0 / FP16 requirements and ${totalHwCount}-GPU speed rankings across ${totalHubs} open models.`;
 
 const hubHeadingArgs = JSON.stringify({ count: totalHubs });
@@ -174,24 +175,65 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
           </div>
         </div>
 
-        <div class="mt-3 flex items-center justify-between gap-3 border-t border-[var(--border-hairline)] pt-3 text-xs text-[var(--ink-secondary)]">
-          <span id="dir-model-count" class="font-mono tabular-nums" data-i18n="hub.showingModelHubs" data-i18n-args={hubShowingModelsArgs}>
-            Showing {totalHubs} of {totalHubs} model hubs
-          </span>
-          <button
-            id="dir-model-reset"
-            type="button"
-            data-i18n="common.reset"
-            class="hidden font-semibold text-[var(--accent-ink)] hover:underline cursor-pointer"
-          >
-            Reset
-          </button>
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border-hairline)] pt-3 text-xs text-[var(--ink-secondary)]">
+          <div class="flex flex-wrap items-center gap-3">
+            <span id="dir-model-count" class="font-mono tabular-nums" data-i18n="hub.showingModelHubs" data-i18n-args={hubShowingModelsArgs}>
+              Showing {totalHubs} of {totalHubs} model hubs
+            </span>
+            <button
+              id="dir-model-reset"
+              type="button"
+              data-i18n="common.reset"
+              class="hidden font-semibold text-[var(--accent-ink)] hover:underline cursor-pointer"
+            >
+              Reset
+            </button>
+          </div>
+          <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Sort models">
+            <button
+              type="button"
+              data-dir-model-sort="default"
+              data-active="true"
+              class="pill-filter text-[11px]"
+              data-i18n="home.sortRecommended"
+            >
+              Recommended
+            </button>
+            <button
+              type="button"
+              data-dir-model-sort="ai-score"
+              data-active="false"
+              class="pill-filter text-[11px]"
+              data-i18n="model.sortAiScore"
+            >
+              AI Score ↓
+            </button>
+            <button
+              type="button"
+              data-dir-model-sort="params-asc"
+              data-active="false"
+              class="pill-filter text-[11px]"
+              data-i18n="model.sortParamsAsc"
+            >
+              Params ↑
+            </button>
+          </div>
         </div>
       </div>
 
-      <div id="dir-model-grid" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {hubs.map((hub) => {
+      <p class="mt-3 text-xs leading-relaxed text-[var(--ink-tertiary)]">
+        <span data-i18n="score.methodologyNote">
+          Open-weight capability scores cross-reference Artificial Analysis Intelligence Index v5.0.2 (AA v5) and LMArena Text Arena Elo (2026-11-22). Models showing “—” have no published entry in that benchmark version.
+        </span>{' '}
+        <a href="https://artificialanalysis.ai/models" target="_blank" rel="noopener noreferrer" class="underline hover:text-[var(--ink-primary)]">Artificial Analysis</a>
+        {' · '}
+        <a href="https://lmarena.ai/leaderboard" target="_blank" rel="noopener noreferrer" class="underline hover:text-[var(--ink-primary)]">LMArena</a>
+      </p>
+
+      <div id="dir-model-grid" class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {hubs.map((hub, idx) => {
           const m = hub.model;
+          const aiScore = aiCapabilitySortScore(m);
           const hubHref = `/model/${m.id}/`;
           const q4Gb = `${hub.q4Row.total_vram_gb.toFixed(1)} GB`;
           const awqGb = `${hub.awqRow.total_vram_gb.toFixed(1)} GB`;
@@ -208,6 +250,9 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
           return (
             <article
               data-dir-model-card
+              data-index={idx}
+              data-ai-score={aiScore}
+              data-params={m.params_b}
               data-family={m.family}
               data-search={searchBlob}
               class="surface-card-interactive group flex flex-col justify-between p-5"
@@ -230,6 +275,30 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
                 <p class="mt-0.5 font-mono text-xs text-[var(--ink-tertiary)]">
                   {m.architecture} · +{hub.kvPer4k.toFixed(2)} GB KV / 4K
                 </p>
+
+                <div class="mt-2 flex flex-wrap items-center gap-1.5 font-mono text-[10.5px]">
+                  {m.aa_index ? (
+                    <span
+                      class="badge-accent rounded px-1.5 py-0.5 font-semibold"
+                      title={m.aa_label ?? 'Artificial Analysis Intelligence Index v5.0.2'}
+                    >
+                      AA v5 · {m.aa_index}
+                    </span>
+                  ) : null}
+                  {m.arena_elo ? (
+                    <span
+                      class="rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-0.5 font-medium text-[var(--ink-secondary)]"
+                      title={m.arena_rank ? `LMArena Text Arena #${m.arena_rank} (2026-11-22)` : 'LMArena Text Arena Elo (2026-11-22)'}
+                    >
+                      Arena · {m.arena_elo}
+                    </span>
+                  ) : null}
+                  {!m.aa_index && !m.arena_elo && (
+                    <span class="rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-0.5 text-[var(--ink-tertiary)]" data-i18n="score.unscored">
+                      Unscored in AA v5
+                    </span>
+                  )}
+                </div>
 
                 <dl class="surface-inset mt-3 grid grid-cols-3 gap-2 p-3 text-xs">
                   <div>
@@ -336,6 +405,7 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
 
   function initModelDirectory() {
     const famBtns = Array.from(document.querySelectorAll('[data-dir-family-btn]'));
+    const sortBtns = Array.from(document.querySelectorAll('[data-dir-model-sort]'));
     const searchInput = document.getElementById('dir-model-search') as HTMLInputElement | null;
     const cards = Array.from(document.querySelectorAll('[data-dir-model-card]'));
     const countEl = document.getElementById('dir-model-count');
@@ -345,6 +415,7 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
     const grid = document.getElementById('dir-model-grid');
 
     let selectedFamily = 'all';
+    let selectedSort = 'default';
     const total = cards.length;
 
     function updateButtons() {
@@ -352,6 +423,30 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
         const active = (b.getAttribute('data-dir-family-btn') || 'all') === selectedFamily;
         b.setAttribute('data-active', active ? 'true' : 'false');
       });
+      sortBtns.forEach((b) => {
+        const active = (b.getAttribute('data-dir-model-sort') || 'default') === selectedSort;
+        b.setAttribute('data-active', active ? 'true' : 'false');
+      });
+    }
+
+    function applySort() {
+      if (!grid) return;
+      const sorted = [...cards].sort((a, b) => {
+        if (selectedSort === 'ai-score') {
+          const sd = Number(b.getAttribute('data-ai-score') || 0) - Number(a.getAttribute('data-ai-score') || 0);
+          if (sd !== 0) return sd;
+          return Number(a.getAttribute('data-index') || 0) - Number(b.getAttribute('data-index') || 0);
+        }
+        if (selectedSort === 'params-asc') {
+          const pd = Number(a.getAttribute('data-params') || 0) - Number(b.getAttribute('data-params') || 0);
+          if (pd !== 0) return pd;
+          return Number(b.getAttribute('data-ai-score') || 0) - Number(a.getAttribute('data-ai-score') || 0);
+        }
+        return Number(a.getAttribute('data-index') || 0) - Number(b.getAttribute('data-index') || 0);
+      });
+      const frag = document.createDocumentFragment();
+      sorted.forEach((c) => frag.appendChild(c));
+      grid.appendChild(frag);
     }
 
     function applyFilter() {
@@ -376,8 +471,10 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
 
     function resetAll() {
       selectedFamily = 'all';
+      selectedSort = 'default';
       if (searchInput) searchInput.value = '';
       updateButtons();
+      applySort();
       applyFilter();
     }
 
@@ -386,6 +483,14 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
         selectedFamily = btn.getAttribute('data-dir-family-btn') || 'all';
         updateButtons();
         applyFilter();
+      });
+    });
+
+    sortBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        selectedSort = btn.getAttribute('data-dir-model-sort') || 'default';
+        updateButtons();
+        applySort();
       });
     });
 

@@ -5,6 +5,7 @@ import rawCatalog from '../../data/catalog_data.json';
 import type { CatalogData, VramPageEntry } from '../../types/vram';
 import { buildHardwareHubs, getCatalogUpdatedAt } from '../../utils/hubs';
 import { formatTpsRange } from '../../utils/physics';
+import { officialPriceI18n, officialPriceSortValue } from '../../utils/pricing';
 
 const allEntries = rawPagesData as VramPageEntry[];
 const catalog = rawCatalog as CatalogData;
@@ -18,11 +19,13 @@ const nvidiaCount = hubs.filter((h) => h.hardware.vendor === 'NVIDIA').length;
 const appleCount = hubs.filter((h) => h.hardware.vendor === 'Apple').length;
 const amdCount = hubs.filter((h) => h.hardware.vendor === 'AMD').length;
 const intelCount = hubs.filter((h) => h.hardware.vendor === 'Intel').length;
+const qualcommCount = hubs.filter((h) => h.hardware.vendor === 'Qualcomm').length;
+const rpiCount = hubs.filter((h) => h.hardware.vendor === 'Raspberry Pi').length;
 const maxUsableVram = hubs.reduce((acc, h) => Math.max(acc, h.effectiveUsableGb), 0);
 
 const canonicalPath = '/gpu/';
 const pageTitle = `All Local & Cloud AI GPUs & Macs (${totalHubs} Hardware Hubs) — VRAMCalc.me`;
-const pageDescription = `Compare ${totalHubs} local and data-center AI accelerators across NVIDIA (${nvidiaCount}, including T4/L4/A10/A10G/H200), Apple Silicon (${appleCount}), AMD (${amdCount}), and Intel (${intelCount}). Inspect usable VRAM up to ${maxUsableVram.toFixed(0)} GB and honest tok/s ranges.`;
+const pageDescription = `Compare ${totalHubs} local, edge/SBC, multi-GPU, and data-center AI accelerators with official manufacturer pricing across NVIDIA (${nvidiaCount}), Apple Silicon (${appleCount}), AMD (${amdCount}), Intel (${intelCount}), Qualcomm (${qualcommCount}), and Raspberry Pi (${rpiCount}).`;
 
 const breadcrumbSchema = {
   '@context': 'https://schema.org',
@@ -60,6 +63,8 @@ const vendorFilters = [
   { key: 'Apple', label: `Apple (${appleCount})` },
   { key: 'AMD', label: `AMD (${amdCount})` },
   { key: 'Intel', label: `Intel (${intelCount})` },
+  { key: 'Qualcomm', label: `Qualcomm (${qualcommCount})` },
+  { key: 'Raspberry Pi', label: `Raspberry Pi (${rpiCount})` },
 ] as const;
 
 const groupFilters = [
@@ -68,10 +73,11 @@ const groupFilters = [
   'Multi-GPU & Workstation',
   'Unified Memory',
   'Laptop GPU',
+  'Edge & SBC',
 ] as const;
 
 const ogTitle = `All ${totalHubs} Local & Cloud AI GPUs & Macs | VRAMCalc.me`;
-const ogDescription = `Compare realistic usable VRAM, bandwidth, Tight Fit thresholds, and GGUF/AWQ/MLX speed across ${totalHubs} GPUs & Macs (${totalModels} models each).`;
+const ogDescription = `Compare realistic usable VRAM, bandwidth, Tight Fit thresholds, official manufacturer pricing, and GGUF/AWQ/MLX speed across ${totalHubs} GPUs & Macs (${totalModels} models each).`;
 
 const hubAllGpusSubArgs = JSON.stringify({ hubs: totalHubs });
 const hubAllVendorsArgs = JSON.stringify({ count: totalHubs });
@@ -84,6 +90,7 @@ const groupI18nMap: Record<string, string> = {
   'Multi-GPU & Workstation': 'hub.multiGpuWorkstation',
   'Unified Memory': 'hub.unifiedMem',
   'Laptop GPU': 'hub.laptopGpu',
+  'Edge & SBC': 'hub.edgeSbc',
 };
 ---
 
@@ -208,7 +215,45 @@ const groupI18nMap: Record<string, string> = {
             })}
           </div>
 
-          <div class="flex items-center gap-3 text-xs text-[var(--ink-secondary)]">
+          <div class="flex flex-wrap items-center gap-3 text-xs text-[var(--ink-secondary)]">
+            <div class="flex flex-wrap items-center gap-1" role="group" aria-label="Sort hardware">
+              <button
+                type="button"
+                data-dir-gpu-sort="default"
+                data-active="true"
+                class="pill-filter text-[11px]"
+                data-i18n="home.sortRecommended"
+              >
+                Recommended
+              </button>
+              <button
+                type="button"
+                data-dir-gpu-sort="price-asc"
+                data-active="false"
+                class="pill-filter text-[11px]"
+                data-i18n="gpu.sortOfficialPrice"
+              >
+                Official Price ↑
+              </button>
+              <button
+                type="button"
+                data-dir-gpu-sort="vram-desc"
+                data-active="false"
+                class="pill-filter text-[11px]"
+                data-i18n="gpu.sortVramDesc"
+              >
+                VRAM ↓
+              </button>
+              <button
+                type="button"
+                data-dir-gpu-sort="bw-desc"
+                data-active="false"
+                class="pill-filter text-[11px]"
+                data-i18n="gpu.sortBandwidthDesc"
+              >
+                Bandwidth ↓
+              </button>
+            </div>
             <span id="dir-gpu-count" class="font-mono tabular-nums" data-i18n="hub.showingHwHubs" data-i18n-args={hubShowingArgs}>
               Showing {totalHubs} of {totalHubs} hardware hubs
             </span>
@@ -225,9 +270,11 @@ const groupI18nMap: Record<string, string> = {
       </div>
 
       <div id="dir-gpu-grid" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {hubs.map((hub) => {
+        {hubs.map((hub, idx) => {
           const hw = hub.hardware;
           const hubHref = `/gpu/${hw.id}/`;
+          const priceMeta = officialPriceI18n(hw, false);
+          const sortPrice = officialPriceSortValue(hw);
           const topPickRow = hub.picks[0]?.row;
           const topPickTps = topPickRow
             ? formatTpsRange(
@@ -257,6 +304,10 @@ const groupI18nMap: Record<string, string> = {
           return (
             <article
               data-dir-hw-card
+              data-index={idx}
+              data-price={sortPrice}
+              data-vram={hw.vram_gb}
+              data-bw={hw.bandwidth_gbps}
               data-vendor={hw.vendor}
               data-group={hub.group}
               data-search={searchBlob}
@@ -323,9 +374,16 @@ const groupI18nMap: Record<string, string> = {
                   {topPickLabel}
                 </div>
 
-                <div class="mt-3 flex items-center justify-between text-xs">
-                  <span class="font-mono text-[var(--ink-tertiary)]">${hw.msrp_usd.toLocaleString()} MSRP</span>
-                  <a href={hubHref} class="font-semibold text-[var(--accent-ink)] hover:underline" data-i18n="hub.viewHwHub">
+                <div class="mt-3 flex items-center justify-between gap-2 text-xs">
+                  <span
+                    class="font-mono text-[var(--ink-tertiary)] truncate"
+                    title={hw.price_note ?? ''}
+                    data-i18n={priceMeta.key}
+                    data-i18n-args={priceMeta.args}
+                  >
+                    {priceMeta.text}
+                  </span>
+                  <a href={hubHref} class="font-semibold text-[var(--accent-ink)] hover:underline shrink-0" data-i18n="hub.viewHwHub">
                     View Hardware Hub -&gt;
                   </a>
                 </div>
@@ -387,6 +445,7 @@ const groupI18nMap: Record<string, string> = {
   function initGpuDirectory() {
     const vendorBtns = Array.from(document.querySelectorAll('[data-dir-vendor-btn]'));
     const groupBtns = Array.from(document.querySelectorAll('[data-dir-group-btn]'));
+    const sortBtns = Array.from(document.querySelectorAll('[data-dir-gpu-sort]'));
     const searchInput = document.getElementById('dir-gpu-search') as HTMLInputElement | null;
     const cards = Array.from(document.querySelectorAll('[data-dir-hw-card]'));
     const countEl = document.getElementById('dir-gpu-count');
@@ -397,6 +456,7 @@ const groupI18nMap: Record<string, string> = {
 
     let selectedVendor = 'all';
     let selectedGroup = 'all';
+    let selectedSort = 'default';
     const total = cards.length;
 
     function updateButtons() {
@@ -408,6 +468,35 @@ const groupI18nMap: Record<string, string> = {
         const active = (b.getAttribute('data-dir-group-btn') || 'all') === selectedGroup;
         b.setAttribute('data-active', active ? 'true' : 'false');
       });
+      sortBtns.forEach((b) => {
+        const active = (b.getAttribute('data-dir-gpu-sort') || 'default') === selectedSort;
+        b.setAttribute('data-active', active ? 'true' : 'false');
+      });
+    }
+
+    function applySort() {
+      if (!grid) return;
+      const sorted = [...cards].sort((a, b) => {
+        if (selectedSort === 'price-asc') {
+          const pd = Number(a.getAttribute('data-price') || 0) - Number(b.getAttribute('data-price') || 0);
+          if (pd !== 0) return pd;
+          return Number(b.getAttribute('data-vram') || 0) - Number(a.getAttribute('data-vram') || 0);
+        }
+        if (selectedSort === 'vram-desc') {
+          const vd = Number(b.getAttribute('data-vram') || 0) - Number(a.getAttribute('data-vram') || 0);
+          if (vd !== 0) return vd;
+          return Number(b.getAttribute('data-bw') || 0) - Number(a.getAttribute('data-bw') || 0);
+        }
+        if (selectedSort === 'bw-desc') {
+          const bd = Number(b.getAttribute('data-bw') || 0) - Number(a.getAttribute('data-bw') || 0);
+          if (bd !== 0) return bd;
+          return Number(b.getAttribute('data-vram') || 0) - Number(a.getAttribute('data-vram') || 0);
+        }
+        return Number(a.getAttribute('data-index') || 0) - Number(b.getAttribute('data-index') || 0);
+      });
+      const frag = document.createDocumentFragment();
+      sorted.forEach((c) => frag.appendChild(c));
+      grid.appendChild(frag);
     }
 
     function applyFilter() {
@@ -434,8 +523,10 @@ const groupI18nMap: Record<string, string> = {
     function resetAll() {
       selectedVendor = 'all';
       selectedGroup = 'all';
+      selectedSort = 'default';
       if (searchInput) searchInput.value = '';
       updateButtons();
+      applySort();
       applyFilter();
     }
 
@@ -452,6 +543,14 @@ const groupI18nMap: Record<string, string> = {
         selectedGroup = btn.getAttribute('data-dir-group-btn') || 'all';
         updateButtons();
         applyFilter();
+      });
+    });
+
+    sortBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        selectedSort = btn.getAttribute('data-dir-gpu-sort') || 'default';
+        updateButtons();
+        applySort();
       });
     });
 

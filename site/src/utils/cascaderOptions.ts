@@ -1,6 +1,7 @@
 import type { TranslationKey } from '../i18n/types';
 import type { CpuSpec, HardwareSpec, ModelSpec } from '../types/vram';
 import type { ComboboxOption } from './combobox';
+import { formatModelScoreInline, formatOfficialPriceShort } from './pricing';
 import type { UnifiedSocProfile } from './rigCatalog';
 
 export type TranslatorFn = (key: TranslationKey, vars?: Record<string, string | number>) => string;
@@ -11,6 +12,7 @@ const CPU_BRAND_ORDER: Record<string, number> = {
   AMD: 3,
   Qualcomm: 4,
   NVIDIA: 5,
+  'Raspberry Pi': 6,
 };
 
 const CPU_SERIES_ORDER: Record<string, number> = {
@@ -33,6 +35,9 @@ const CPU_SERIES_ORDER: Record<string, number> = {
   'Xeon Workstation & Server': 14,
   'EPYC Server': 15,
   'Snapdragon X (ARM AI PC)': 20,
+  'NVIDIA Jetson Edge': 21,
+  'Snapdragon X Edge': 22,
+  'Raspberry Pi SBC': 23,
   'Generic Presets': 90,
 };
 
@@ -41,6 +46,8 @@ const HW_BRAND_ORDER: Record<string, number> = {
   Apple: 2,
   AMD: 3,
   Intel: 4,
+  Qualcomm: 5,
+  'Raspberry Pi': 6,
 };
 
 const HW_SERIES_ORDER: Record<string, number> = {
@@ -55,8 +62,11 @@ const HW_SERIES_ORDER: Record<string, number> = {
   'RTX 30 Laptop': 9,
   'RTX Workstation': 10,
   'Data Center & Homelab': 11,
-  'Multi-GPU RTX': 12,
-  'DGX Workstation': 13,
+  'Cloud GPU Nodes': 12,
+  'Multi-GPU RTX': 13,
+  'Multi-GPU Clusters': 14,
+  'DGX Workstation': 15,
+  'NVIDIA Jetson Edge': 16,
   'Apple Silicon M5': 1,
   'Apple Silicon M4': 2,
   'Apple Silicon M3': 3,
@@ -70,6 +80,8 @@ const HW_SERIES_ORDER: Record<string, number> = {
   'Instinct Data Center': 6,
   'Intel Arc Battlemage': 1,
   'Intel Arc Alchemist': 2,
+  'Snapdragon X Edge': 1,
+  'Raspberry Pi SBC': 1,
 };
 
 export function buildCpuCascaderOptions(params: {
@@ -186,9 +198,12 @@ export function buildHardwareCascaderOptions(params: {
       series: h.series,
       seriesOrder: HW_SERIES_ORDER[h.series] ?? 50,
       badge: `${h.vram_gb} GB`,
-      sublabel: h.is_unified
-        ? t('home.unifiedChipNote', { ram: h.vram_gb, backend: h.backend })
-        : `${h.vram_gb} GB ${h.memory_type} · ${h.bandwidth_gbps} GB/s · ${h.backend}`,
+      sublabel: (() => {
+        const priceTag = formatOfficialPriceShort(h, t);
+        return h.is_unified
+          ? `${t('home.unifiedChipNote', { ram: h.vram_gb, backend: h.backend })} · ${priceTag}`
+          : `${h.vram_gb} GB ${h.memory_type} · ${h.bandwidth_gbps} GB/s · ${h.backend} · ${priceTag}`;
+      })(),
       searchBlob: [
         h.id,
         h.name,
@@ -213,34 +228,55 @@ export function buildHardwareCascaderOptions(params: {
 
 function resolveModelBrand(family: string): { brand: string; brandOrder: number; seriesOrder: number } {
   if (family.startsWith('Qwen')) {
-    const seriesOrder =
-      family === 'Qwen3.8'
-        ? 1
-        : family === 'Qwen3'
-          ? 2
-          : family === 'Qwen2.5-Coder'
-            ? 3
-            : family === 'Qwen2.5'
-              ? 4
-              : 10;
-    return { brand: 'Qwen (Alibaba)', brandOrder: 1, seriesOrder };
+    const orderMap: Record<string, number> = {
+      'Qwen3.8': 1,
+      'Qwen3.6': 2,
+      'Qwen3.5': 3,
+      'Qwen3-Coder': 4,
+      'Qwen3-VL': 5,
+      Qwen3: 6,
+      'Qwen2.5-Coder': 7,
+      'Qwen2.5': 8,
+    };
+    return { brand: 'Qwen (Alibaba)', brandOrder: 1, seriesOrder: orderMap[family] ?? 10 };
   }
-  if (family === 'DeepSeek-R1') {
-    return { brand: 'DeepSeek', brandOrder: 2, seriesOrder: 1 };
+  if (family.startsWith('DeepSeek')) {
+    const orderMap: Record<string, number> = {
+      'DeepSeek-V4': 1,
+      'DeepSeek-V3': 2,
+      'DeepSeek-R1': 3,
+    };
+    return { brand: 'DeepSeek', brandOrder: 2, seriesOrder: orderMap[family] ?? 10 };
   }
-  if (family === 'Gemma 3') {
-    return { brand: 'Google Gemma', brandOrder: 3, seriesOrder: 1 };
+  if (family === 'GPT-OSS') {
+    return { brand: 'OpenAI GPT-OSS', brandOrder: 3, seriesOrder: 1 };
+  }
+  if (family.startsWith('Gemma')) {
+    return { brand: 'Google Gemma', brandOrder: 4, seriesOrder: family === 'Gemma 4' ? 1 : 2 };
   }
   if (family.startsWith('Llama-')) {
-    const seriesOrder =
-      family === 'Llama-3.3' ? 1 : family === 'Llama-3.2' ? 2 : family === 'Llama-3.1' ? 3 : 10;
-    return { brand: 'Meta Llama', brandOrder: 4, seriesOrder };
+    const orderMap: Record<string, number> = {
+      'Llama-4': 1,
+      'Llama-3.3': 2,
+      'Llama-3.2': 3,
+      'Llama-3.1': 4,
+    };
+    return { brand: 'Meta Llama', brandOrder: 5, seriesOrder: orderMap[family] ?? 10 };
   }
-  if (family === 'Mistral') {
-    return { brand: 'Mistral', brandOrder: 5, seriesOrder: 1 };
+  if (family === 'GLM') {
+    return { brand: 'Zhipu GLM', brandOrder: 6, seriesOrder: 1 };
+  }
+  if (family === 'Kimi') {
+    return { brand: 'Moonshot Kimi', brandOrder: 7, seriesOrder: 1 };
+  }
+  if (family === 'Mistral' || family === 'Mixtral') {
+    return { brand: 'Mistral', brandOrder: 8, seriesOrder: family === 'Mistral' ? 1 : 2 };
+  }
+  if (family === 'Nemotron') {
+    return { brand: 'NVIDIA Nemotron', brandOrder: 9, seriesOrder: 1 };
   }
   if (family === 'Phi-4') {
-    return { brand: 'Microsoft Phi', brandOrder: 6, seriesOrder: 1 };
+    return { brand: 'Microsoft Phi', brandOrder: 10, seriesOrder: 1 };
   }
   return { brand: family, brandOrder: 50, seriesOrder: 50 };
 }
@@ -272,9 +308,11 @@ export function buildModelCascaderOptions(params: {
   for (const m of sorted) {
     const { brand, brandOrder, seriesOrder } = resolveModelBrand(m.family);
     const moeBadge = m.active_params_b ? `${m.params_b}B MoE` : `${m.params_b}B`;
-    const sublabel = m.active_params_b
+    const scoreTag = formatModelScoreInline(m);
+    const archSummary = m.active_params_b
       ? `${m.active_params_b}B active · ${m.architecture}`
       : `${m.architecture} · ${m.num_layers}L`;
+    const sublabel = scoreTag !== '—' ? `${archSummary} · ${scoreTag}` : archSummary;
 
     opts.push({
       value: m.id,

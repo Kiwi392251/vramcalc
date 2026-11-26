@@ -21,6 +21,7 @@ import {
   formatTpsRange,
   QUANT_SHORT_LABELS,
 } from '../utils/physics';
+import { aiCapabilitySortScore, officialPriceI18n } from '../utils/pricing';
 
 const PAGE_SIZE = 24;
 const HOME_QUANT_OPTIONS: ReadonlyArray<{
@@ -281,6 +282,7 @@ const staticIndexRows = entries.map((e) => {
 
 const sortSelectOptions = [
   { value: 'featured', label: 'Recommended', dataI18n: 'home.sortRecommended' },
+  { value: 'ai-score', label: 'Best AI Score (AA + Arena)', dataI18n: 'home.sortAiScore' },
   { value: 'tps-desc', label: 'Fastest tok/s', dataI18n: 'home.sortFastest' },
   { value: 'vram-asc', label: 'Lowest VRAM', dataI18n: 'home.sortLowestVram' },
   { value: 'params-desc', label: 'Largest Model', dataI18n: 'home.sortLargestModel' },
@@ -879,10 +881,13 @@ const staticIndexSubArgs = JSON.stringify({
           arch: entry.model.architecture,
         });
 
+        const aiScore = aiCapabilitySortScore(entry.model);
+
         return (
           <article
             data-card
             data-index={idx}
+            data-ai-score={aiScore}
             data-tps={res.est_tps}
             data-vram={res.total_vram_gb}
             data-params={entry.model.params_b}
@@ -916,6 +921,27 @@ const staticIndexSubArgs = JSON.stringify({
                   </span>
                 </a>
               </h2>
+
+              {(entry.model.aa_index || entry.model.arena_elo) && (
+                <div class="mt-2 flex flex-wrap items-center gap-1.5 font-mono text-[10px]">
+                  {entry.model.aa_index && (
+                    <span
+                      class="badge-accent rounded px-1.5 py-px font-semibold"
+                      title={entry.model.aa_label ?? 'Artificial Analysis Intelligence Index v5.0.2'}
+                    >
+                      AA v5 · {entry.model.aa_index}
+                    </span>
+                  )}
+                  {entry.model.arena_elo && (
+                    <span
+                      class="rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-px font-medium text-[var(--ink-secondary)]"
+                      title={entry.model.arena_rank ? `LMArena Text Arena #${entry.model.arena_rank} (2026-11-22)` : 'LMArena Text Arena Elo (2026-11-22)'}
+                    >
+                      Arena · {entry.model.arena_elo}
+                    </span>
+                  )}
+                </div>
+              )}
 
               <p
                 class="mt-2 line-clamp-2 text-xs leading-relaxed text-[var(--ink-tertiary)]"
@@ -1305,13 +1331,14 @@ const staticIndexSubArgs = JSON.stringify({
         </button>
       </div>
 
-      <!-- Tab 1: All 23 Model Hubs -->
+      <!-- Tab 1: All Catalog Model Hubs -->
       <div data-dir-panel="models" role="tabpanel" class="mt-4">
         <div class="w-full max-w-full overflow-x-auto thin-scrollbar">
-          <table class="w-full min-w-[780px] border-collapse text-left text-xs">
+          <table class="w-full min-w-[900px] border-collapse text-left text-xs">
             <thead>
               <tr class="border-b border-[var(--border-subtle)] text-[11px] font-medium text-[var(--ink-tertiary)] whitespace-nowrap">
                 <th class="pr-2.5 py-2.5" data-i18n="home.modelTableModel">Model</th>
+                <th class="px-2.5 py-2.5" data-i18n="score.aiCol">AI Score (AA / Arena)</th>
                 <th class="px-2.5 py-2.5" data-i18n="home.modelTableQ4">Q4_K_M @ 8K</th>
                 <th class="px-2.5 py-2.5" data-i18n="home.modelTableAwq">AWQ 4-bit @ 8K</th>
                 <th class="px-2.5 py-2.5" data-i18n="home.modelTableKv">KV / 4K</th>
@@ -1337,6 +1364,30 @@ const staticIndexSubArgs = JSON.stringify({
                       </a>
                       <span class="ml-1.5 font-mono text-[11px] text-[var(--ink-tertiary)]">{hub.model.architecture}</span>
                     </td>
+                    <td class="px-2.5 py-2.5 font-mono text-[10.5px] whitespace-nowrap">
+                      {hub.model.aa_index || hub.model.arena_elo ? (
+                        <span class="inline-flex items-center gap-1.5">
+                          {hub.model.aa_index && (
+                            <span
+                              class="badge-accent rounded px-1.5 py-px font-semibold"
+                              title={hub.model.aa_label ?? 'Artificial Analysis Intelligence Index v5.0.2'}
+                            >
+                              AA {hub.model.aa_index}
+                            </span>
+                          )}
+                          {hub.model.arena_elo && (
+                            <span
+                              class="rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-px text-[var(--ink-secondary)]"
+                              title={hub.model.arena_rank ? `LMArena Text Arena #${hub.model.arena_rank} (2026-11-22)` : 'LMArena Text Arena Elo (2026-11-22)'}
+                            >
+                              Arena {hub.model.arena_elo}
+                            </span>
+                          )}
+                        </span>
+                      ) : (
+                        <span class="text-[var(--ink-tertiary)]">—</span>
+                      )}
+                    </td>
                     <td class="px-2.5 py-2.5 font-mono text-[var(--ink-primary)] whitespace-nowrap tabular-nums">{q4Gb} GB</td>
                     <td class="px-2.5 py-2.5 font-mono text-[var(--ink-secondary)] whitespace-nowrap tabular-nums">{awqGb} GB</td>
                     <td class="px-2.5 py-2.5 font-mono text-[var(--ink-tertiary)] whitespace-nowrap tabular-nums">+{kvStr} GB</td>
@@ -1352,21 +1403,40 @@ const staticIndexSubArgs = JSON.stringify({
             </tbody>
           </table>
         </div>
+        <p class="mt-2.5 text-[11px] leading-relaxed text-[var(--ink-tertiary)]">
+          <span data-i18n="score.methodologyNote">
+            Open-weight capability scores cross-reference Artificial Analysis Intelligence Index v5.0.2 (AA v5) and LMArena Text Arena Elo (2026-11-22). Models showing “—” have no published entry in that benchmark version.
+          </span>{' '}
+          <a href="https://artificialanalysis.ai/models" target="_blank" rel="noopener noreferrer" class="underline hover:text-[var(--ink-primary)]">Artificial Analysis</a>
+          {' · '}
+          <a href="https://lmarena.ai/leaderboard" target="_blank" rel="noopener noreferrer" class="underline hover:text-[var(--ink-primary)]">LMArena</a>
+        </p>
       </div>
 
-      <!-- Tab 2: All 168 Hardware Hubs -->
+      <!-- Tab 2: All Catalog Hardware Hubs -->
       <div data-dir-panel="hardware" role="tabpanel" class="hidden mt-4">
         <div class="max-h-[380px] overflow-y-auto pr-1 thin-scrollbar grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {hwHubRows.map((hub) => {
             const hHref = `/gpu/${hub.hardware.id}/`;
             const fitTotal = hub.fitsCount + hub.tightCount;
             const usableStr = hub.effectiveUsableGb.toFixed(1);
+            const hp = officialPriceI18n(hub.hardware, true);
             return (
               <a
                 href={hHref}
+                title={hub.hardware.price_note ?? ''}
                 class="flex items-center justify-between gap-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-3 py-2 text-xs hover:border-[var(--accent-border)] hover:bg-[var(--accent-soft)] transition-colors"
               >
-                <span class="truncate text-[13px] font-semibold text-[var(--ink-primary)]">{hub.hardware.short_name}</span>
+                <span class="min-w-0 truncate">
+                  <span class="block truncate text-[13px] font-semibold text-[var(--ink-primary)]">{hub.hardware.short_name}</span>
+                  <span
+                    class="block truncate font-mono text-[10.5px] text-[var(--ink-tertiary)]"
+                    data-i18n={hp.key}
+                    data-i18n-args={hp.args}
+                  >
+                    {hp.text}
+                  </span>
+                </span>
                 <span class="shrink-0 font-mono text-[11px] text-[var(--ink-tertiary)] tabular-nums">
                   {usableStr}G · {fitTotal}/{uniqueHubModelCount}
                 </span>
@@ -1376,10 +1446,10 @@ const staticIndexSubArgs = JSON.stringify({
         </div>
       </div>
 
-      <!-- Tab 3: Complete Static Compatibility Index (All 173 Curated Pairings, Zero-JS DOM) -->
+      <!-- Tab 3: Complete Static Compatibility Index (Zero-JS DOM) -->
       <div id="static-compatibility-index" data-dir-panel="index" role="tabpanel" class="hidden mt-4">
         <p class="mb-3 text-xs leading-relaxed text-[var(--ink-secondary)]" data-i18n="home.staticIndexSub" data-i18n-args={staticIndexSubArgs}>
-          All {totalCount} curated guides below include full @8K, @Max Fit &amp; AWQ/MLX speeds directly on this page. The remaining {catalogModelCount * catalogHwCount} full-matrix speed rows live statically across the {catalogModelCount} Model Hub pages (168 GPUs each) and {catalogHwCount} GPU Hub pages (23 models each) — 1 click away, zero JS required.
+          All {totalCount} curated guides below include full @8K, @Max Fit &amp; AWQ/MLX speeds directly on this page. The remaining {catalogModelCount * catalogHwCount} full-matrix speed rows live statically across the {catalogModelCount} Model Hub pages ({catalogHwCount} GPUs each) and {catalogHwCount} GPU Hub pages ({catalogModelCount} models each) — 1 click away, zero JS required.
         </p>
         <div class="w-full max-w-full max-h-[420px] overflow-auto border-y border-[var(--border-hairline)] thin-scrollbar">
           <table class="w-full min-w-[840px] border-collapse text-left text-xs">
@@ -1471,9 +1541,9 @@ const staticIndexSubArgs = JSON.stringify({
           </p>
         </div>
         <div>
-          <h3 class="font-semibold text-[var(--ink-primary)]" data-i18n="home.method3Title">3. MoE/Turing Calibration &amp; Transparent 17/173 Coverage</h3>
+          <h3 class="font-semibold text-[var(--ink-primary)]" data-i18n="home.method3Title">3. MoE/Turing Calibration &amp; Transparent {measuredRows.length}/{totalCount} Coverage</h3>
           <p class="mt-1.5" data-i18n="home.method3Desc">
-            Physics v3.3 achieves 17/17 full range containment (max midpoint error 8.7%) across Turing/Volta, CUDA MoE router gather, and DeltaNet dispatch benchmarks. Only 17/173 curated guides have verified telemetry; the remaining 156 stay clearly tagged "Formula only (unverified)".
+            Physics {engineVersion} achieves 17/17 full range containment (max midpoint error 8.7%) across Turing/Volta, CUDA MoE router gather, and DeltaNet dispatch benchmarks. Only {measuredRows.length}/{totalCount} curated guides have verified telemetry; the remaining {formulaOnlyCount} stay clearly tagged "Formula only (unverified)".
           </p>
         </div>
       </div>
@@ -1510,6 +1580,7 @@ const staticIndexSubArgs = JSON.stringify({
     QUANT_LABELS,
     QUANT_SHORT_LABELS,
   } from '../utils/physics';
+  import { aiCapabilitySortScore } from '../utils/pricing';
   import {
     buildSimulatorUrl,
     extractUnifiedSocProfiles,
@@ -2143,6 +2214,13 @@ const staticIndexSubArgs = JSON.stringify({
     function sortCardsInDom(sortMode: string) {
       if (!cardsGrid) return;
       const sorted = [...cards].sort((a, b) => {
+        if (sortMode === 'ai-score') {
+          const ad = Number(b.getAttribute('data-ai-score') || 0) - Number(a.getAttribute('data-ai-score') || 0);
+          if (ad !== 0) return ad;
+          const sr = Number(a.getAttribute('data-status-rank') || 0) - Number(b.getAttribute('data-status-rank') || 0);
+          if (sr !== 0) return sr;
+          return Number(b.getAttribute('data-tps') || 0) - Number(a.getAttribute('data-tps') || 0);
+        }
         if (sortMode === 'tps-desc') {
           const td = Number(b.getAttribute('data-tps') || 0) - Number(a.getAttribute('data-tps') || 0);
           if (td !== 0) return td;
@@ -2197,6 +2275,12 @@ const staticIndexSubArgs = JSON.stringify({
 
     function sortLiveItems(items: LiveItem[], sortVal: string) {
       items.sort((a, b) => {
+        if (sortVal === 'ai-score') {
+          const sd = aiCapabilitySortScore(b.model) - aiCapabilitySortScore(a.model);
+          if (sd !== 0) return sd;
+          if (a.rank !== b.rank) return a.rank - b.rank;
+          return b.res.est_tps - a.res.est_tps;
+        }
         if (sortVal === 'tps-desc') {
           if (b.res.est_tps !== a.res.est_tps) return b.res.est_tps - a.res.est_tps;
           return a.rank - b.rank;
@@ -2702,6 +2786,17 @@ const staticIndexSubArgs = JSON.stringify({
                 params: model.params_b,
                 arch: model.architecture,
               });
+          const scorePillsHtml = (model.aa_index || model.arena_elo)
+            ? `<div class="mt-2 flex flex-wrap items-center gap-1.5 font-mono text-[10px]">${
+                model.aa_index
+                  ? `<span class="badge-accent rounded px-1.5 py-px font-semibold" title="${escapeHtml(model.aa_label || 'Artificial Analysis Intelligence Index v5.0.2')}">AA v5 · ${model.aa_index}</span>`
+                  : ''
+              }${
+                model.arena_elo
+                  ? `<span class="rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-px font-medium text-[var(--ink-secondary)]" title="${escapeHtml(model.arena_rank ? `LMArena Text Arena #${model.arena_rank} (2026-11-22)` : 'LMArena Text Arena Elo (2026-11-22)')}">Arena · ${model.arena_elo}</span>`
+                  : ''
+              }</div>`
+            : '';
 
           const primaryHref = guideSlug ? `/can-i-run/${encodeURIComponent(guideSlug)}/` : simHref;
           const footerActions = guideSlug
@@ -2728,6 +2823,8 @@ const staticIndexSubArgs = JSON.stringify({
                     <span class="mt-0.5 block text-[13.5px] font-medium text-[var(--ink-secondary)]">${escapeHtml(hwSubtitle)}</span>
                   </a>
                 </h3>
+
+                ${scorePillsHtml}
 
                 <p class="mt-1.5 font-mono text-xs text-[var(--ink-tertiary)]">${escapeHtml(moeLine)}</p>
               </div>

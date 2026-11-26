@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-24",
+  "updated_at": "2026-11-25",
   "engine_version": "v3.3",
   "models": [
     {
@@ -183,7 +183,9 @@
         "Full-repo code review",
         "Agentic coding",
         "SQL & architecture generation"
-      ]
+      ],
+      "arena_elo": 1271,
+      "arena_rank": 140
     },
     {
       "id": "llama-3.3-70b",
@@ -206,7 +208,9 @@
         "General-purpose flagship assistant",
         "Long-document synthesis",
         "Structured JSON & tool calling"
-      ]
+      ],
+      "arena_elo": 1318,
+      "arena_rank": 110
     },
     {
       "id": "llama-3.1-8b",
@@ -229,7 +233,9 @@
         "Fast local chat",
         "Summarization",
         "8GB-12GB GPU baseline"
-      ]
+      ],
+      "arena_elo": 1211,
+      "arena_rank": 160
     },
     {
       "id": "qwen2.5-72b",
@@ -252,7 +258,9 @@
         "Multilingual enterprise chat",
         "RAG over large docs",
         "High-memory workstations"
-      ]
+      ],
+      "arena_elo": 1303,
+      "arena_rank": 123
     },
     {
       "id": "mistral-small-24b",
@@ -275,7 +283,9 @@
         "Low-latency 24GB GPU reasoning",
         "Function calling",
         "European language fluency"
-      ]
+      ],
+      "arena_elo": 1274,
+      "arena_rank": 139
     },
     {
       "id": "llama-3.2-3b",
@@ -297,7 +307,9 @@
         "Edge chat",
         "Fast summarization",
         "6GB GPU / 8GB Mac fit"
-      ]
+      ],
+      "arena_elo": 1167,
+      "arena_rank": 185
     },
     {
       "id": "gemma-3-4b",
@@ -320,7 +332,9 @@
         "Lightweight reasoning",
         "Multilingual chat",
         "6GB-8GB laptops"
-      ]
+      ],
+      "arena_elo": 1303,
+      "arena_rank": 122
     },
     {
       "id": "qwen3-4b",
@@ -389,7 +403,9 @@
         "High-quality writing",
         "12GB GPU sweet spot",
         "Long-context RAG"
-      ]
+      ],
+      "arena_elo": 1342,
+      "arena_rank": 97
     },
     {
       "id": "phi-4-14b",
@@ -412,7 +428,9 @@
         "Math & STEM logic",
         "Structured reasoning",
         "12GB-16GB GPUs"
-      ]
+      ],
+      "arena_elo": 1256,
+      "arena_rank": 146
     },
     {
       "id": "qwen3-14b",
@@ -458,7 +476,9 @@
         "24GB-32GB flagship prose",
         "Nuanced instruction following",
         "Workstation AI"
-      ]
+      ],
+      "arena_elo": 1365,
+      "arena_rank": 80
     },
     {
       "id": "qwen3-30b-a3b",
@@ -482,7 +502,9 @@
         "Ultra-fast MoE decoding",
         "24GB GPU / 32GB Mac speed king",
         "CPU+GPU hybrid friendly"
-      ]
+      ],
+      "arena_elo": 1326,
+      "arena_rank": 105
     },
     {
       "id": "qwen3-32b",
@@ -505,7 +527,9 @@
         "Dense 32B reasoning",
         "Full-repo coding",
         "24GB-48GB rigs"
-      ]
+      ],
+      "arena_elo": 1347,
+      "arena_rank": 93
     },
     {
       "id": "qwen3.8-27b",
@@ -529,7 +553,848 @@
         "Hybrid 262K long-context reasoning",
         "Single 24GB GPU / A10 AWQ (~18.5 GB)",
         "Apple Silicon MLX 4-bit"
+      ],
+      "aa_index": 20,
+      "aa_label": "Qwen3.8 27B Xhigh",
+      "arena_elo": 1435,
+      "arena_rank": 25
+    },
+    {
+      "id": "qwen3.5-9b",
+      "name": "Qwen3.5-9B",
+      "short_name": "Qwen3.5 9B",
+      "family": "Qwen3.5",
+      "params_b": 9.6,
+      "architecture": "Hybrid (24 DeltaNet + 8 GQA)",
+      "num_layers": 32,
+      "kv_layers": 8,
+      "num_kv_heads": 4,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "qwen3.5:9b",
+      "hf_repo": "unsloth/Qwen3.5-9B-GGUF",
+      "gguf_file_q4": "Qwen3.5-9B-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3.5-9B-AWQ",
+      "mlx_repo": "mlx-community/Qwen3.5-9B-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "12GB-16GB GPUs & Macs",
+        "Hybrid 262K long context",
+        "Fast edge multimodal reasoning"
       ]
+    },
+    {
+      "id": "qwen3.5-27b",
+      "name": "Qwen3.5-27B",
+      "short_name": "Qwen3.5 27B",
+      "family": "Qwen3.5",
+      "params_b": 27.8,
+      "architecture": "Hybrid (48 DeltaNet + 16 GQA)",
+      "num_layers": 64,
+      "kv_layers": 16,
+      "num_kv_heads": 4,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "qwen3.5:27b",
+      "hf_repo": "unsloth/Qwen3.5-27B-GGUF",
+      "gguf_file_q4": "Qwen3.5-27B-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3.5-27B-AWQ",
+      "mlx_repo": "mlx-community/Qwen3.5-27B-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "Single 24GB GPU dense flagship",
+        "262K long-context reasoning",
+        "Multimodal coding & docs"
+      ],
+      "arena_elo": 1409,
+      "arena_rank": 56
+    },
+    {
+      "id": "qwen3.5-35b-a3b",
+      "name": "Qwen3.5-35B-A3B (MoE)",
+      "short_name": "Qwen3.5 35B MoE",
+      "family": "Qwen3.5",
+      "params_b": 35.5,
+      "active_params_b": 3.0,
+      "architecture": "Hybrid MoE (30 DeltaNet + 10 GQA)",
+      "num_layers": 40,
+      "kv_layers": 10,
+      "num_kv_heads": 2,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "qwen3.5:35b",
+      "hf_repo": "unsloth/Qwen3.5-35B-A3B-GGUF",
+      "gguf_file_q4": "Qwen3.5-35B-A3B-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3.5-35B-A3B-AWQ",
+      "mlx_repo": "mlx-community/Qwen3.5-35B-A3B-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "Ultra-fast 3B-active MoE decode",
+        "32GB GPU / 36GB+ Mac sweet spot",
+        "Low-KV 262K workflows"
+      ],
+      "arena_elo": 1394,
+      "arena_rank": 65
+    },
+    {
+      "id": "qwen3.5-122b-a10b",
+      "name": "Qwen3.5-122B-A10B (MoE)",
+      "short_name": "Qwen3.5 122B MoE",
+      "family": "Qwen3.5",
+      "params_b": 122.0,
+      "active_params_b": 10.0,
+      "architecture": "Hybrid MoE (36 DeltaNet + 12 GQA)",
+      "num_layers": 48,
+      "kv_layers": 12,
+      "num_kv_heads": 2,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "qwen3.5:122b",
+      "hf_repo": "unsloth/Qwen3.5-122B-A10B-GGUF",
+      "gguf_file_q4": "Qwen3.5-122B-A10B-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3.5-122B-A10B-AWQ",
+      "mlx_repo": "mlx-community/Qwen3.5-122B-A10B-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "96GB-128GB workstation flagship",
+        "10B-active fast MoE inference",
+        "Enterprise RAG & agents"
+      ],
+      "arena_elo": 1417,
+      "arena_rank": 45
+    },
+    {
+      "id": "qwen3.5-397b-a17b",
+      "name": "Qwen3.5-397B-A17B (MoE)",
+      "short_name": "Qwen3.5 397B MoE",
+      "family": "Qwen3.5",
+      "params_b": 397.0,
+      "active_params_b": 17.0,
+      "architecture": "Hybrid MoE (45 DeltaNet + 15 GQA)",
+      "num_layers": 60,
+      "kv_layers": 15,
+      "num_kv_heads": 2,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "qwen3.5:397b",
+      "hf_repo": "unsloth/Qwen3.5-397B-A17B-GGUF",
+      "gguf_file_q4": "Qwen3.5-397B-A17B-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3.5-397B-A17B-AWQ",
+      "mlx_repo": "mlx-community/Qwen3.5-397B-A17B-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "Mac Studio M3 Ultra 512GB target",
+        "Multi-GPU cluster reasoning",
+        "Top-20 open-weight chat"
+      ],
+      "arena_elo": 1441,
+      "arena_rank": 20
+    },
+    {
+      "id": "qwen3.6-35b-a3b",
+      "name": "Qwen3.6-35B-A3B (MoE)",
+      "short_name": "Qwen3.6 35B MoE",
+      "family": "Qwen3.6",
+      "params_b": 35.5,
+      "active_params_b": 3.0,
+      "architecture": "Hybrid MoE (30 DeltaNet + 10 GQA)",
+      "num_layers": 40,
+      "kv_layers": 10,
+      "num_kv_heads": 2,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "qwen3.6:35b",
+      "hf_repo": "unsloth/Qwen3.6-35B-A3B-GGUF",
+      "gguf_file_q4": "Qwen3.6-35B-A3B-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3.6-35B-A3B-AWQ",
+      "mlx_repo": "mlx-community/Qwen3.6-35B-A3B-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "Agentic coding & tool preservation",
+        "32GB GPU / 48GB Mac daily driver",
+        "262K multimodal tasks"
+      ]
+    },
+    {
+      "id": "qwen3.8-flash-next",
+      "name": "Qwen3.8-Flash-Next (MoE)",
+      "short_name": "Qwen3.8 Flash",
+      "family": "Qwen3.8",
+      "params_b": 125.0,
+      "active_params_b": 6.0,
+      "architecture": "Hybrid MoE (DeltaNet + QSA)",
+      "num_layers": 48,
+      "kv_layers": 12,
+      "num_kv_heads": 4,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "qwen3.8-flash",
+      "hf_repo": "unsloth/Qwen3.8-Flash-Next-GGUF",
+      "gguf_file_q4": "Qwen3.8-Flash-Next-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3.8-Flash-Next-AWQ",
+      "mlx_repo": "mlx-community/Qwen3.8-Flash-Next-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "High-efficiency 6B active decoding",
+        "96GB-128GB workstation reasoning",
+        "1M-capable sparse context"
+      ],
+      "aa_index": 28,
+      "aa_label": "Qwen3.8-Flash-Next"
+    },
+    {
+      "id": "qwen3-coder-30b-a3b",
+      "name": "Qwen3-Coder-30B-A3B-Instruct",
+      "short_name": "Qwen3 Coder 30B",
+      "family": "Qwen3-Coder",
+      "params_b": 30.5,
+      "active_params_b": 3.3,
+      "architecture": "Qwen3 MoE (3.3B active)",
+      "num_layers": 48,
+      "num_kv_heads": 4,
+      "head_dim": 128,
+      "max_context": 262144,
+      "ollama_tag": "qwen3-coder:30b",
+      "hf_repo": "unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF",
+      "gguf_file_q4": "Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3-Coder-30B-A3B-Instruct-AWQ",
+      "mlx_repo": "mlx-community/Qwen3-Coder-30B-A3B-Instruct-4bit",
+      "release_year": 2025,
+      "use_cases": [
+        "256K repository coding agent",
+        "24GB GPU / 32GB Mac fast FIM",
+        "Tool-use software engineering"
+      ]
+    },
+    {
+      "id": "qwen3-coder-480b-a35b",
+      "name": "Qwen3-Coder-480B-A35B-Instruct",
+      "short_name": "Qwen3 Coder 480B",
+      "family": "Qwen3-Coder",
+      "params_b": 480.0,
+      "active_params_b": 35.0,
+      "architecture": "Qwen3 MoE (35B active)",
+      "num_layers": 62,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 262144,
+      "ollama_tag": "qwen3-coder:480b",
+      "hf_repo": "unsloth/Qwen3-Coder-480B-A35B-Instruct-GGUF",
+      "gguf_file_q4": "Qwen3-Coder-480B-A35B-Instruct-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
+      "mlx_repo": "mlx-community/Qwen3-Coder-480B-A35B-Instruct-4bit",
+      "release_year": 2025,
+      "use_cases": [
+        "Flagship open agentic coding",
+        "Multi-H100/H200 or 512GB Studio",
+        "Autonomous repo debugging"
+      ],
+      "arena_elo": 1387,
+      "arena_rank": 69
+    },
+    {
+      "id": "qwen3-vl-8b",
+      "name": "Qwen3-VL-8B-Instruct",
+      "short_name": "Qwen3-VL 8B",
+      "family": "Qwen3-VL",
+      "params_b": 8.8,
+      "architecture": "Qwen3 VL (Dense + ViT)",
+      "num_layers": 36,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 262144,
+      "ollama_tag": "qwen3-vl:8b",
+      "hf_repo": "bartowski/Qwen_Qwen3-VL-8B-Instruct-GGUF",
+      "gguf_file_q4": "Qwen_Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3-VL-8B-Instruct-AWQ",
+      "mlx_repo": "mlx-community/Qwen3-VL-8B-Instruct-4bit",
+      "release_year": 2025,
+      "use_cases": [
+        "GUI/screenshot understanding",
+        "8GB-12GB GPU vision chat",
+        "Local OCR & document parsing"
+      ]
+    },
+    {
+      "id": "qwen3-vl-32b",
+      "name": "Qwen3-VL-32B-Instruct",
+      "short_name": "Qwen3-VL 32B",
+      "family": "Qwen3-VL",
+      "params_b": 32.8,
+      "architecture": "Qwen3 VL (Dense + ViT)",
+      "num_layers": 64,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 262144,
+      "ollama_tag": "qwen3-vl:32b",
+      "hf_repo": "bartowski/Qwen_Qwen3-VL-32B-Instruct-GGUF",
+      "gguf_file_q4": "Qwen_Qwen3-VL-32B-Instruct-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3-VL-32B-Instruct-AWQ",
+      "mlx_repo": "mlx-community/Qwen3-VL-32B-Instruct-4bit",
+      "release_year": 2025,
+      "use_cases": [
+        "High-accuracy visual reasoning",
+        "32GB-48GB GPU multimodal",
+        "Chart & diagram analysis"
+      ]
+    },
+    {
+      "id": "qwen3-235b-a22b",
+      "name": "Qwen3-235B-A22B-Instruct",
+      "short_name": "Qwen3 235B MoE",
+      "family": "Qwen3",
+      "params_b": 235.0,
+      "active_params_b": 22.0,
+      "architecture": "Qwen3 MoE (22B active)",
+      "num_layers": 94,
+      "num_kv_heads": 4,
+      "head_dim": 128,
+      "max_context": 262144,
+      "ollama_tag": "qwen3:235b",
+      "hf_repo": "bartowski/Qwen_Qwen3-235B-A22B-GGUF",
+      "gguf_file_q4": "Qwen_Qwen3-235B-A22B-Q4_K_M.gguf",
+      "awq_repo": "Qwen/Qwen3-235B-A22B-AWQ",
+      "mlx_repo": "mlx-community/Qwen3-235B-A22B-4bit",
+      "release_year": 2025,
+      "use_cases": [
+        "256GB+ Mac Studio flagship",
+        "Multi-GPU cluster MoE",
+        "Complex multilingual & math"
+      ],
+      "arena_elo": 1422,
+      "arena_rank": 39
+    },
+    {
+      "id": "deepseek-v3-671b",
+      "name": "DeepSeek-V3 (671B MoE)",
+      "short_name": "DeepSeek-V3 671B",
+      "family": "DeepSeek-V3",
+      "params_b": 671.0,
+      "active_params_b": 37.0,
+      "architecture": "DeepSeek MoE + MLA (37B active)",
+      "num_layers": 61,
+      "num_kv_heads": 1,
+      "head_dim": 288,
+      "max_context": 131072,
+      "ollama_tag": "deepseek-v3:671b",
+      "hf_repo": "unsloth/DeepSeek-V3-0324-GGUF",
+      "gguf_file_q4": "DeepSeek-V3-0324-Q4_K_M.gguf",
+      "awq_repo": "deepseek-ai/DeepSeek-V3-0324",
+      "mlx_repo": "mlx-community/DeepSeek-V3-0324-4bit",
+      "release_year": 2025,
+      "use_cases": [
+        "8x H100/H200 cluster deployment",
+        "512GB Mac Ultra MLX",
+        "Ultra-low KV footprint via MLA"
+      ],
+      "arena_elo": 1395,
+      "arena_rank": 63
+    },
+    {
+      "id": "deepseek-r1-671b",
+      "name": "DeepSeek-R1 (671B MoE)",
+      "short_name": "DeepSeek-R1 671B",
+      "family": "DeepSeek-R1",
+      "params_b": 671.0,
+      "active_params_b": 37.0,
+      "architecture": "DeepSeek MoE + MLA (37B active)",
+      "num_layers": 61,
+      "num_kv_heads": 1,
+      "head_dim": 288,
+      "max_context": 131072,
+      "ollama_tag": "deepseek-r1:671b",
+      "hf_repo": "unsloth/DeepSeek-R1-0528-GGUF",
+      "gguf_file_q4": "DeepSeek-R1-0528-Q4_K_M.gguf",
+      "awq_repo": "deepseek-ai/DeepSeek-R1-0528",
+      "mlx_repo": "mlx-community/DeepSeek-R1-0528-4bit",
+      "release_year": 2025,
+      "use_cases": [
+        "Full 671B reasoning benchmark",
+        "Multi-GPU H200 / 8x H100 nodes",
+        "512GB M3 Ultra local research"
+      ],
+      "arena_elo": 1421,
+      "arena_rank": 41
+    },
+    {
+      "id": "deepseek-v3.2-685b",
+      "name": "DeepSeek-V3.2 (685B MoE)",
+      "short_name": "DeepSeek-V3.2 685B",
+      "family": "DeepSeek-V3",
+      "params_b": 685.0,
+      "active_params_b": 37.0,
+      "architecture": "DeepSeek MoE + MLA/DSA (37B active)",
+      "num_layers": 61,
+      "num_kv_heads": 1,
+      "head_dim": 288,
+      "max_context": 131072,
+      "ollama_tag": "deepseek-v3.2:685b",
+      "hf_repo": "unsloth/DeepSeek-V3.2-GGUF",
+      "gguf_file_q4": "DeepSeek-V3.2-Q4_K_M.gguf",
+      "awq_repo": "deepseek-ai/DeepSeek-V3.2",
+      "mlx_repo": "mlx-community/DeepSeek-V3.2-4bit",
+      "release_year": 2025,
+      "use_cases": [
+        "Sparse long-context datacenter node",
+        "Reasoning & coding clusters",
+        "8x H200 / B200 serving"
+      ],
+      "arena_elo": 1425,
+      "arena_rank": 35
+    },
+    {
+      "id": "deepseek-v4.1-flash",
+      "name": "DeepSeek-V4.1-Flash (552B MoE)",
+      "short_name": "DeepSeek-V4.1 Flash",
+      "family": "DeepSeek-V4",
+      "params_b": 552.0,
+      "active_params_b": 16.0,
+      "architecture": "DeepSeek CED MoE + MLA (16B active)",
+      "num_layers": 40,
+      "num_kv_heads": 1,
+      "head_dim": 288,
+      "max_context": 262144,
+      "ollama_tag": "deepseek-v4.1-flash",
+      "hf_repo": "unsloth/DeepSeek-V4.1-Flash-GGUF",
+      "gguf_file_q4": "DeepSeek-V4.1-Flash-Q4_K_M.gguf",
+      "awq_repo": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "mlx_repo": "mlx-community/DeepSeek-V4.1-Flash-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "Top-tier AA v5 open-weight frontier",
+        "16B-decode fast cluster MoE",
+        "512GB Mac Ultra / 8x H100"
+      ],
+      "aa_index": 32,
+      "aa_label": "DeepSeek V4.1 Flash 1017 Max",
+      "arena_elo": 1474,
+      "arena_rank": 7
+    },
+    {
+      "id": "gpt-oss-20b",
+      "name": "gpt-oss-20b (MoE)",
+      "short_name": "gpt-oss 20B",
+      "family": "GPT-OSS",
+      "params_b": 20.9,
+      "active_params_b": 3.6,
+      "architecture": "GPT-OSS MoE (3.6B active)",
+      "num_layers": 24,
+      "kv_layers": 12,
+      "num_kv_heads": 8,
+      "head_dim": 64,
+      "max_context": 131072,
+      "ollama_tag": "gpt-oss:20b",
+      "hf_repo": "unsloth/gpt-oss-20b-GGUF",
+      "gguf_file_q4": "gpt-oss-20b-Q4_K_M.gguf",
+      "awq_repo": "openai/gpt-oss-20b",
+      "mlx_repo": "mlx-community/gpt-oss-20b-MXFP4-Q4",
+      "release_year": 2025,
+      "use_cases": [
+        "16GB GPU / 24GB Mac fast MoE",
+        "OpenAI Apache-2.0 reasoning",
+        "Low-KV local assistant"
+      ],
+      "arena_elo": 1317,
+      "arena_rank": 113
+    },
+    {
+      "id": "gpt-oss-120b",
+      "name": "gpt-oss-120b (MoE)",
+      "short_name": "gpt-oss 120B",
+      "family": "GPT-OSS",
+      "params_b": 116.8,
+      "active_params_b": 5.1,
+      "architecture": "GPT-OSS MoE (5.1B active)",
+      "num_layers": 36,
+      "kv_layers": 18,
+      "num_kv_heads": 8,
+      "head_dim": 64,
+      "max_context": 131072,
+      "ollama_tag": "gpt-oss:120b",
+      "hf_repo": "unsloth/gpt-oss-120b-GGUF",
+      "gguf_file_q4": "gpt-oss-120b-Q4_K_M.gguf",
+      "awq_repo": "openai/gpt-oss-120b",
+      "mlx_repo": "mlx-community/gpt-oss-120b-4bit",
+      "release_year": 2025,
+      "use_cases": [
+        "Single 80GB H100 / 96GB PRO 6000",
+        "96GB-128GB Mac Studio fast 5.1B MoE",
+        "High-throughput reasoning"
+      ],
+      "aa_index": 4,
+      "aa_label": "gpt-oss-120b High",
+      "arena_elo": 1352,
+      "arena_rank": 90
+    },
+    {
+      "id": "gemma-4-e4b",
+      "name": "Gemma-4-E4B-Instruct",
+      "short_name": "Gemma 4 E4B",
+      "family": "Gemma 4",
+      "params_b": 8.0,
+      "active_params_b": 4.5,
+      "architecture": "Gemma 4 PLE (4.5B eff.)",
+      "num_layers": 42,
+      "kv_layers": 7,
+      "num_kv_heads": 4,
+      "head_dim": 256,
+      "max_context": 131072,
+      "ollama_tag": "gemma4:e4b",
+      "hf_repo": "unsloth/gemma-4-E4B-it-GGUF",
+      "gguf_file_q4": "gemma-4-E4B-it-Q4_K_M.gguf",
+      "mlx_repo": "mlx-community/gemma-4-e4b-it-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "8GB GPU / 16GB Mac multimodal edge",
+        "Shared-KV 128K context",
+        "On-device audio + vision"
+      ],
+      "aa_index": 5,
+      "aa_label": "Gemma 4 E4B Reasoning"
+    },
+    {
+      "id": "gemma-4-26b-a4b",
+      "name": "Gemma-4-26B-A4B (MoE)",
+      "short_name": "Gemma 4 26B MoE",
+      "family": "Gemma 4",
+      "params_b": 25.2,
+      "active_params_b": 4.0,
+      "architecture": "Gemma 4 MoE (4B active)",
+      "num_layers": 48,
+      "kv_layers": 8,
+      "num_kv_heads": 8,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "gemma4:26b",
+      "hf_repo": "unsloth/gemma-4-26B-A4B-it-GGUF",
+      "gguf_file_q4": "gemma-4-26B-A4B-it-Q4_K_M.gguf",
+      "awq_repo": "google/gemma-4-26b-a4b-it",
+      "mlx_repo": "mlx-community/gemma-4-26b-a4b-it-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "24GB GPU / Mac Pro fast 4B MoE",
+        "256K context with Shared KV",
+        "Top-25 Arena open-source chat"
+      ],
+      "arena_elo": 1438,
+      "arena_rank": 23
+    },
+    {
+      "id": "gemma-4-31b",
+      "name": "Gemma-4-31B-Instruct",
+      "short_name": "Gemma 4 31B",
+      "family": "Gemma 4",
+      "params_b": 30.7,
+      "architecture": "Gemma 4 (Dense + Shared KV)",
+      "num_layers": 60,
+      "kv_layers": 10,
+      "num_kv_heads": 8,
+      "head_dim": 256,
+      "max_context": 262144,
+      "ollama_tag": "gemma4:31b",
+      "hf_repo": "unsloth/gemma-4-31B-it-GGUF",
+      "gguf_file_q4": "gemma-4-31B-it-Q4_K_M.gguf",
+      "awq_repo": "google/gemma-4-31b-it",
+      "mlx_repo": "mlx-community/gemma-4-31b-it-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "24GB-32GB GPU & 48GB Mac flagship",
+        "Top-20 Arena quality in 31B",
+        "256K multimodal understanding"
+      ],
+      "aa_index": 4,
+      "aa_label": "Gemma 4 31B Reasoning",
+      "arena_elo": 1452,
+      "arena_rank": 16
+    },
+    {
+      "id": "llama-4-scout",
+      "name": "Llama-4-Scout-17B-16E (109B MoE)",
+      "short_name": "Llama 4 Scout 109B",
+      "family": "Llama-4",
+      "params_b": 109.0,
+      "active_params_b": 17.0,
+      "architecture": "Llama 4 MoE (17B active)",
+      "num_layers": 48,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 262144,
+      "ollama_tag": "llama4:scout",
+      "hf_repo": "unsloth/Llama-4-Scout-17B-16E-Instruct-GGUF",
+      "gguf_file_q4": "Llama-4-Scout-17B-16E-Instruct-Q4_K_M.gguf",
+      "awq_repo": "meta-llama/Llama-4-Scout-17B-16E-Instruct-FP8",
+      "mlx_repo": "mlx-community/Llama-4-Scout-17B-16E-Instruct-4bit",
+      "release_year": 2025,
+      "use_cases": [
+        "96GB-128GB unified / 80GB GPU MoE",
+        "Extreme multi-document ingestion",
+        "Native multimodal RAG"
+      ],
+      "arena_elo": 1321,
+      "arena_rank": 108
+    },
+    {
+      "id": "llama-4-maverick",
+      "name": "Llama-4-Maverick-17B-128E (400B MoE)",
+      "short_name": "Llama 4 Maverick 400B",
+      "family": "Llama-4",
+      "params_b": 400.0,
+      "active_params_b": 17.0,
+      "architecture": "Llama 4 MoE (17B active)",
+      "num_layers": 48,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 262144,
+      "ollama_tag": "llama4:maverick",
+      "hf_repo": "unsloth/Llama-4-Maverick-17B-128E-Instruct-GGUF",
+      "gguf_file_q4": "Llama-4-Maverick-17B-128E-Instruct-Q4_K_M.gguf",
+      "awq_repo": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+      "mlx_repo": "mlx-community/Llama-4-Maverick-17B-128E-Instruct-4bit",
+      "release_year": 2025,
+      "use_cases": [
+        "512GB M3 Ultra / Quad PRO 6000",
+        "4x-8x H100 enterprise serving",
+        "Fast 17B-active multimodal MoE"
+      ],
+      "arena_elo": 1327,
+      "arena_rank": 104
+    },
+    {
+      "id": "mixtral-8x7b",
+      "name": "Mixtral-8x7B-Instruct-v0.1 (MoE)",
+      "short_name": "Mixtral 8x7B",
+      "family": "Mixtral",
+      "params_b": 46.7,
+      "active_params_b": 12.9,
+      "architecture": "Mixtral MoE (12.9B active)",
+      "num_layers": 32,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 32768,
+      "ollama_tag": "mixtral:8x7b",
+      "hf_repo": "TheBloke/Mixtral-8x7B-Instruct-v0.1-GGUF",
+      "gguf_file_q4": "mixtral-8x7b-instruct-v0.1.Q4_K_M.gguf",
+      "awq_repo": "TheBloke/Mixtral-8x7B-Instruct-v0.1-AWQ",
+      "mlx_repo": "mlx-community/Mixtral-8x7B-Instruct-v0.1-4bit",
+      "release_year": 2024,
+      "use_cases": [
+        "Classic 48GB GPU / 64GB Mac MoE",
+        "Multilingual Apache-2.0 baseline",
+        "Fast Dual-RTX 3090 serving"
+      ],
+      "arena_elo": 1197,
+      "arena_rank": 165
+    },
+    {
+      "id": "mixtral-8x22b",
+      "name": "Mixtral-8x22B-Instruct-v0.1 (MoE)",
+      "short_name": "Mixtral 8x22B",
+      "family": "Mixtral",
+      "params_b": 141.0,
+      "active_params_b": 39.0,
+      "architecture": "Mixtral MoE (39B active)",
+      "num_layers": 56,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 65536,
+      "ollama_tag": "mixtral:8x22b",
+      "hf_repo": "bartowski/Mixtral-8x22B-Instruct-v0.1-GGUF",
+      "gguf_file_q4": "Mixtral-8x22B-Instruct-v0.1-Q4_K_M.gguf",
+      "awq_repo": "solidrust/Mixtral-8x22B-Instruct-v0.1-AWQ",
+      "mlx_repo": "mlx-community/Mixtral-8x22B-Instruct-v0.1-4bit",
+      "release_year": 2024,
+      "use_cases": [
+        "128GB Mac / Multi-GPU workstation",
+        "High-capacity Apache-2.0 MoE",
+        "Function calling & coding"
+      ],
+      "arena_elo": 1230,
+      "arena_rank": 153
+    },
+    {
+      "id": "devstral-small-24b",
+      "name": "Devstral-Small-2507 (24B)",
+      "short_name": "Devstral Small 24B",
+      "family": "Mistral",
+      "params_b": 24.0,
+      "architecture": "Mistral Agentic Coder (Dense)",
+      "num_layers": 40,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "devstral:24b",
+      "hf_repo": "bartowski/mistralai_Devstral-Small-2507-GGUF",
+      "gguf_file_q4": "mistralai_Devstral-Small-2507-Q4_K_M.gguf",
+      "awq_repo": "solidrust/Devstral-Small-2507-AWQ",
+      "mlx_repo": "mlx-community/Devstral-Small-2507-4bit",
+      "release_year": 2025,
+      "use_cases": [
+        "SWE-bench local software agent",
+        "24GB RTX 4090 / A10 coding",
+        "32GB+ Mac multi-file edits"
+      ]
+    },
+    {
+      "id": "mistral-small-4-119b",
+      "name": "Mistral-Small-4-119B (MoE)",
+      "short_name": "Mistral Small 4 119B",
+      "family": "Mistral",
+      "params_b": 119.0,
+      "active_params_b": 6.5,
+      "architecture": "Mistral MoE (6.5B active)",
+      "num_layers": 48,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 262144,
+      "ollama_tag": "mistral-small4:119b",
+      "hf_repo": "unsloth/Mistral-Small-4-119B-2603-GGUF",
+      "gguf_file_q4": "Mistral-Small-4-119B-2603-Q4_K_M.gguf",
+      "awq_repo": "mistralai/Mistral-Small-4-119B-2603",
+      "mlx_repo": "mlx-community/Mistral-Small-4-119B-2603-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "96GB PRO 6000 / 128GB Mac MoE",
+        "6.5B active fast reasoning",
+        "Multimodal Apache-2.0 agents"
+      ],
+      "aa_index": 4,
+      "aa_label": "Mistral Small 4 Reasoning"
+    },
+    {
+      "id": "glm-4.7-flash",
+      "name": "GLM-4.7-Flash (31B MoE)",
+      "short_name": "GLM-4.7 Flash 31B",
+      "family": "GLM",
+      "params_b": 31.0,
+      "active_params_b": 3.6,
+      "architecture": "GLM MoE + MLA (3.6B active)",
+      "num_layers": 48,
+      "num_kv_heads": 1,
+      "head_dim": 288,
+      "max_context": 204800,
+      "ollama_tag": "glm-4.7-flash",
+      "hf_repo": "unsloth/GLM-4.7-Flash-GGUF",
+      "gguf_file_q4": "GLM-4.7-Flash-Q4_K_M.gguf",
+      "awq_repo": "zai-org/GLM-4.7-Flash",
+      "mlx_repo": "mlx-community/GLM-4.7-Flash-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "24GB GPU / 32GB Mac fast MoE",
+        "200K MLA long-context agent",
+        "C/C++ & Python tool calling"
+      ],
+      "arena_elo": 1365,
+      "arena_rank": 81
+    },
+    {
+      "id": "glm-4.5-air",
+      "name": "GLM-4.5-Air (106B MoE)",
+      "short_name": "GLM-4.5 Air 106B",
+      "family": "GLM",
+      "params_b": 106.0,
+      "active_params_b": 12.0,
+      "architecture": "GLM MoE (12B active)",
+      "num_layers": 46,
+      "num_kv_heads": 8,
+      "head_dim": 128,
+      "max_context": 131072,
+      "ollama_tag": "glm-4.5-air",
+      "hf_repo": "unsloth/GLM-4.5-Air-GGUF",
+      "gguf_file_q4": "GLM-4.5-Air-Q4_K_M.gguf",
+      "awq_repo": "zai-org/GLM-4.5-Air-FP8",
+      "mlx_repo": "mlx-community/GLM-4.5-Air-4bit",
+      "release_year": 2025,
+      "use_cases": [
+        "96GB-128GB workstation agent",
+        "80GB H100 / A100 single-card",
+        "Hybrid thinking chat"
+      ],
+      "arena_elo": 1373,
+      "arena_rank": 76
+    },
+    {
+      "id": "glm-5.3-flash",
+      "name": "GLM-5.3-Flash (320B MoE)",
+      "short_name": "GLM-5.3 Flash 320B",
+      "family": "GLM",
+      "params_b": 320.0,
+      "active_params_b": 18.0,
+      "architecture": "GLM Hybrid KDA+MLA (18B active)",
+      "num_layers": 45,
+      "kv_layers": 12,
+      "num_kv_heads": 1,
+      "head_dim": 288,
+      "max_context": 262144,
+      "ollama_tag": "glm-5.3-flash",
+      "hf_repo": "unsloth/GLM-5.3-Flash-GGUF",
+      "gguf_file_q4": "GLM-5.3-Flash-Q4_K_M.gguf",
+      "awq_repo": "zai-org/GLM-5.3-Flash",
+      "mlx_repo": "mlx-community/GLM-5.3-Flash-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "Top-5 Arena open-weight leader",
+        "256GB-512GB Mac Ultra studio",
+        "Quad PRO 6000 / multi-H100"
+      ],
+      "aa_index": 28,
+      "aa_label": "GLM-5.3-Flash Max",
+      "arena_elo": 1476,
+      "arena_rank": 5
+    },
+    {
+      "id": "nemotron-3.5-lightning-30b",
+      "name": "Nemotron-3.5-Lightning-30B (MoE)",
+      "short_name": "Nemotron 3.5 30B",
+      "family": "Nemotron",
+      "params_b": 30.0,
+      "active_params_b": 3.0,
+      "architecture": "Hybrid Mamba-2 + MoE (3B active)",
+      "num_layers": 52,
+      "kv_layers": 6,
+      "num_kv_heads": 4,
+      "head_dim": 128,
+      "max_context": 262144,
+      "ollama_tag": "nemotron-3.5-lightning:30b",
+      "hf_repo": "unsloth/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF",
+      "gguf_file_q4": "NVIDIA-Nemotron-3.5-Lightning-30B-A3B-Q4_K_M.gguf",
+      "awq_repo": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4",
+      "mlx_repo": "mlx-community/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-4bit",
+      "release_year": 2026,
+      "use_cases": [
+        "NVIDIA Mamba-2 hybrid 3B decode",
+        "24GB RTX / 32GB Mac ultra-low KV",
+        "262K-1M context enterprise"
+      ],
+      "aa_index": 6,
+      "aa_label": "Nemotron 3.5 Lightning",
+      "arena_elo": 1352,
+      "arena_rank": 89
+    },
+    {
+      "id": "kimi-k2-1t",
+      "name": "Kimi-K2-Instruct (1T MoE)",
+      "short_name": "Kimi K2 1T",
+      "family": "Kimi",
+      "params_b": 1040.0,
+      "active_params_b": 32.0,
+      "architecture": "Kimi MoE + MLA (32B active)",
+      "num_layers": 61,
+      "num_kv_heads": 1,
+      "head_dim": 288,
+      "max_context": 131072,
+      "ollama_tag": "kimi-k2:1t",
+      "hf_repo": "unsloth/Kimi-K2-Instruct-0905-GGUF",
+      "gguf_file_q4": "Kimi-K2-Instruct-0905-Q4_K_M.gguf",
+      "awq_repo": "moonshotai/Kimi-K2-Instruct-0905",
+      "mlx_repo": "mlx-community/Kimi-K2-Instruct-0905-4bit",
+      "release_year": 2025,
+      "use_cases": [
+        "8x H200 / 8x B200 multi-GPU node",
+        "1T parameter agentic coding cluster",
+        "Dual 512GB Ultra / cluster"
+      ],
+      "arena_elo": 1419,
+      "arena_rank": 42
     }
   ],
   "hardware": [
@@ -547,7 +1412,9 @@
       "memory_type": "LPDDR4X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 999
+      "msrp_usd": 999,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Air M1 base)"
     },
     {
       "id": "apple-m1-16gb",
@@ -563,7 +1430,9 @@
       "memory_type": "LPDDR4X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 1199
+      "msrp_usd": 1199,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Air M1 16GB)"
     },
     {
       "id": "apple-m1-pro-16gb",
@@ -579,7 +1448,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 1999
+      "msrp_usd": 1999,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 14\" M1 Pro)"
     },
     {
       "id": "apple-m1-pro-32gb",
@@ -595,7 +1466,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 2399
+      "msrp_usd": 2399,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 14\" M1 Pro 32GB)"
     },
     {
       "id": "apple-m1-max-64gb",
@@ -611,7 +1484,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 3499
+      "msrp_usd": 3499,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac Studio M1 Max 64GB)"
     },
     {
       "id": "apple-m2-16gb",
@@ -627,7 +1502,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 1399
+      "msrp_usd": 799,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac mini M2 16GB)"
     },
     {
       "id": "apple-m2-24gb",
@@ -643,7 +1520,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 1599
+      "msrp_usd": 999,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac mini M2 24GB)"
     },
     {
       "id": "apple-m2-max-64gb",
@@ -659,7 +1538,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 3499
+      "msrp_usd": 2399,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac Studio M2 Max 64GB)"
     },
     {
       "id": "apple-m2-ultra-192gb",
@@ -675,7 +1556,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 5599
+      "msrp_usd": 5199,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac Studio M2 Ultra 192GB)"
     },
     {
       "id": "apple-m3-16gb",
@@ -691,7 +1574,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 1299
+      "msrp_usd": 1099,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Air M3 16GB)"
     },
     {
       "id": "apple-m3-pro-36gb",
@@ -707,7 +1592,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 2499
+      "msrp_usd": 2399,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 14\" M3 Pro 36GB)"
     },
     {
       "id": "apple-m3-max-64gb",
@@ -723,7 +1610,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 3699
+      "msrp_usd": 3699,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 14\" M3 Max 64GB)"
     },
     {
       "id": "apple-m3-max-128gb",
@@ -739,7 +1628,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 4499
+      "msrp_usd": 4199,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 14\" M3 Max 128GB)"
     },
     {
       "id": "apple-m4-16gb",
@@ -755,7 +1646,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 1599
+      "msrp_usd": 599,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac mini M4 base)"
     },
     {
       "id": "apple-m4-24gb",
@@ -771,7 +1664,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 1799
+      "msrp_usd": 799,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac mini M4 24GB)"
     },
     {
       "id": "apple-m4-32gb",
@@ -787,7 +1682,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 1999
+      "msrp_usd": 999,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac mini M4 32GB)"
     },
     {
       "id": "apple-m4-pro-24gb",
@@ -803,7 +1700,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 1999
+      "msrp_usd": 1399,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac mini M4 Pro base)"
     },
     {
       "id": "apple-m4-pro-48gb",
@@ -819,7 +1718,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 2399
+      "msrp_usd": 1799,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac mini M4 Pro 48GB)"
     },
     {
       "id": "apple-m4-max-36gb",
@@ -835,7 +1736,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 3199
+      "msrp_usd": 1999,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac Studio M4 Max base)"
     },
     {
       "id": "apple-m4-max-64gb",
@@ -851,7 +1754,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 3699
+      "msrp_usd": 2699,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac Studio M4 Max 64GB)"
     },
     {
       "id": "apple-m4-max-128gb",
@@ -867,7 +1772,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 4699
+      "msrp_usd": 3499,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac Studio M4 Max 128GB)"
     },
     {
       "id": "apple-m5-pro-24gb",
@@ -883,7 +1790,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 1999
+      "msrp_usd": 2499,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 14\" M5 Pro base)"
     },
     {
       "id": "apple-m5-pro-48gb",
@@ -899,7 +1808,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 2399
+      "msrp_usd": 2899,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 14\" M5 Pro 48GB)"
     },
     {
       "id": "apple-m5-pro-64gb",
@@ -915,7 +1826,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 2799
+      "msrp_usd": 3099,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 14\" M5 Pro 64GB)"
     },
     {
       "id": "apple-m5-max-36gb",
@@ -931,7 +1844,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 3199
+      "msrp_usd": 3399,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 14\" M5 Max base)"
     },
     {
       "id": "apple-m5-max-64gb",
@@ -947,7 +1862,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 3699
+      "msrp_usd": 3799,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 14\" M5 Max 64GB)"
     },
     {
       "id": "apple-m5-max-128gb",
@@ -963,7 +1880,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 4699
+      "msrp_usd": 4499,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 14\" M5 Max 128GB)"
     },
     {
       "id": "rtx-3060-12gb",
@@ -979,7 +1898,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 329
+      "msrp_usd": 329,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-3070-8gb",
@@ -995,7 +1916,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 499
+      "msrp_usd": 499,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-3080-10gb",
@@ -1011,7 +1934,9 @@
       "memory_type": "GDDR6X",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 699
+      "msrp_usd": 699,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-3090-24gb",
@@ -1027,7 +1952,9 @@
       "memory_type": "GDDR6X",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 1499
+      "msrp_usd": 1499,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-4060-8gb",
@@ -1043,7 +1970,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 299
+      "msrp_usd": 299,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-4060-ti-16gb",
@@ -1059,7 +1988,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 499
+      "msrp_usd": 499,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-4070-12gb",
@@ -1075,7 +2006,9 @@
       "memory_type": "GDDR6X",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 599
+      "msrp_usd": 599,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-4070-super-12gb",
@@ -1091,7 +2024,9 @@
       "memory_type": "GDDR6X",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 599
+      "msrp_usd": 599,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-4070-ti-super-16gb",
@@ -1107,7 +2042,9 @@
       "memory_type": "GDDR6X",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 799
+      "msrp_usd": 799,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-4080-super-16gb",
@@ -1123,7 +2060,9 @@
       "memory_type": "GDDR6X",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 999
+      "msrp_usd": 999,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-4090-24gb",
@@ -1139,7 +2078,9 @@
       "memory_type": "GDDR6X",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 1599
+      "msrp_usd": 1599,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-5060-8gb",
@@ -1155,7 +2096,9 @@
       "memory_type": "GDDR7",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 299
+      "msrp_usd": 299,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-5060-ti-16gb",
@@ -1171,7 +2114,9 @@
       "memory_type": "GDDR7",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 429
+      "msrp_usd": 429,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-5070-12gb",
@@ -1187,7 +2132,9 @@
       "memory_type": "GDDR7",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 549
+      "msrp_usd": 549,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-5070-ti-16gb",
@@ -1203,7 +2150,9 @@
       "memory_type": "GDDR7",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 749
+      "msrp_usd": 749,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-5080-16gb",
@@ -1219,7 +2168,9 @@
       "memory_type": "GDDR7",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 999
+      "msrp_usd": 999,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-5090-32gb",
@@ -1235,7 +2186,9 @@
       "memory_type": "GDDR7",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 1999
+      "msrp_usd": 1999,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "dual-rtx-3090-48gb",
@@ -1251,7 +2204,9 @@
       "memory_type": "GDDR6X (2x24GB)",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 2998
+      "msrp_usd": 2998,
+      "price_type": "official_msrp",
+      "price_note": "2x NVIDIA FE MSRP ($1,499 ea)"
     },
     {
       "id": "dual-rtx-4090-48gb",
@@ -1267,7 +2222,9 @@
       "memory_type": "GDDR6X (2x24GB)",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 3198
+      "msrp_usd": 3198,
+      "price_type": "official_msrp",
+      "price_note": "2x NVIDIA FE MSRP ($1,599 ea)"
     },
     {
       "id": "rtx-a6000-48gb",
@@ -1283,7 +2240,9 @@
       "memory_type": "GDDR6 ECC",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 4650
+      "msrp_usd": 4650,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Official Launch MSRP"
     },
     {
       "id": "nvidia-dgx-spark-gb10-128gb",
@@ -1299,7 +2258,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "CUDA",
-      "msrp_usd": 3999
+      "msrp_usd": 3999,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Official MSRP"
     },
     {
       "id": "rtx-4060-laptop-8gb",
@@ -1315,7 +2276,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 1099
+      "msrp_usd": 0,
+      "price_type": "oem_system",
+      "price_note": "OEM system only"
     },
     {
       "id": "rtx-4070-laptop-8gb",
@@ -1331,7 +2294,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 1499
+      "msrp_usd": 0,
+      "price_type": "oem_system",
+      "price_note": "OEM system only"
     },
     {
       "id": "rtx-4090-laptop-16gb",
@@ -1347,7 +2312,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 2999
+      "msrp_usd": 0,
+      "price_type": "oem_system",
+      "price_note": "OEM system only"
     },
     {
       "id": "rx-9070-xt-16gb",
@@ -1363,7 +2330,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 599
+      "msrp_usd": 599,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "rx-7900-xtx-24gb",
@@ -1379,7 +2348,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 999
+      "msrp_usd": 999,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "ryzen-ai-max-395-128gb",
@@ -1395,7 +2366,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "ROCm",
-      "msrp_usd": 2199
+      "msrp_usd": 0,
+      "price_type": "oem_system",
+      "price_note": "OEM system only"
     },
     {
       "id": "gtx-1060-6gb",
@@ -1411,7 +2384,9 @@
       "memory_type": "GDDR5",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 249
+      "msrp_usd": 249,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "gtx-1070-8gb",
@@ -1427,7 +2402,9 @@
       "memory_type": "GDDR5",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 379
+      "msrp_usd": 379,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "gtx-1080-8gb",
@@ -1443,7 +2420,9 @@
       "memory_type": "GDDR5X",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 599
+      "msrp_usd": 599,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "gtx-1080-ti-11gb",
@@ -1459,7 +2438,9 @@
       "memory_type": "GDDR5X",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 699
+      "msrp_usd": 699,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-2060-6gb",
@@ -1475,7 +2456,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 349
+      "msrp_usd": 349,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-2060-super-8gb",
@@ -1491,7 +2474,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 399
+      "msrp_usd": 399,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-2070-super-8gb",
@@ -1507,7 +2492,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 499
+      "msrp_usd": 499,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-2080-ti-11gb",
@@ -1523,7 +2510,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 999
+      "msrp_usd": 999,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-3060-ti-8gb",
@@ -1539,7 +2528,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 399
+      "msrp_usd": 399,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-3070-ti-8gb",
@@ -1555,7 +2546,9 @@
       "memory_type": "GDDR6X",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 599
+      "msrp_usd": 599,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-3080-12gb",
@@ -1571,7 +2564,9 @@
       "memory_type": "GDDR6X",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 799
+      "msrp_usd": 799,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-3080-ti-12gb",
@@ -1587,7 +2582,9 @@
       "memory_type": "GDDR6X",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 1199
+      "msrp_usd": 1199,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-3090-ti-24gb",
@@ -1603,7 +2600,9 @@
       "memory_type": "GDDR6X",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 1999
+      "msrp_usd": 1999,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-4070-ti-12gb",
@@ -1619,7 +2618,9 @@
       "memory_type": "GDDR6X",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 799
+      "msrp_usd": 799,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-4080-16gb",
@@ -1635,7 +2636,9 @@
       "memory_type": "GDDR6X",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 1199
+      "msrp_usd": 1199,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-4080-laptop-12gb",
@@ -1651,7 +2654,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 2299
+      "msrp_usd": 0,
+      "price_type": "oem_system",
+      "price_note": "OEM system only"
     },
     {
       "id": "rtx-5070-laptop-8gb",
@@ -1667,7 +2672,9 @@
       "memory_type": "GDDR7",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 1799
+      "msrp_usd": 0,
+      "price_type": "oem_system",
+      "price_note": "OEM system only"
     },
     {
       "id": "rtx-5080-laptop-16gb",
@@ -1683,7 +2690,9 @@
       "memory_type": "GDDR7",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 2599
+      "msrp_usd": 0,
+      "price_type": "oem_system",
+      "price_note": "OEM system only"
     },
     {
       "id": "rtx-5090-laptop-24gb",
@@ -1699,7 +2708,9 @@
       "memory_type": "GDDR7",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 3499
+      "msrp_usd": 0,
+      "price_type": "oem_system",
+      "price_note": "OEM system only"
     },
     {
       "id": "tesla-p40-24gb",
@@ -1715,7 +2726,9 @@
       "memory_type": "GDDR5",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 250
+      "msrp_usd": 0,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "tesla-v100-32gb",
@@ -1731,8 +2744,10 @@
       "memory_type": "HBM2",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 650,
-      "has_nvlink": true
+      "msrp_usd": 0,
+      "has_nvlink": true,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "rtx-a4000-16gb",
@@ -1748,7 +2763,9 @@
       "memory_type": "GDDR6 ECC",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 1000
+      "msrp_usd": 1000,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Official Launch MSRP"
     },
     {
       "id": "rtx-a5000-24gb",
@@ -1764,7 +2781,9 @@
       "memory_type": "GDDR6 ECC",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 2250
+      "msrp_usd": 2250,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Official Launch MSRP"
     },
     {
       "id": "rtx-6000-ada-48gb",
@@ -1780,7 +2799,9 @@
       "memory_type": "GDDR6 ECC",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 6800
+      "msrp_usd": 6800,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Official Launch MSRP"
     },
     {
       "id": "rtx-pro-6000-96gb",
@@ -1796,7 +2817,9 @@
       "memory_type": "GDDR7 ECC",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 8500
+      "msrp_usd": 8565,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Store Official MSRP"
     },
     {
       "id": "l40s-48gb",
@@ -1812,7 +2835,9 @@
       "memory_type": "GDDR6 ECC",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 8000
+      "msrp_usd": 0,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "a100-80gb-sxm",
@@ -1828,8 +2853,10 @@
       "memory_type": "HBM2e",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 12000,
-      "has_nvlink": true
+      "msrp_usd": 0,
+      "has_nvlink": true,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "h100-80gb-sxm",
@@ -1845,8 +2872,10 @@
       "memory_type": "HBM3",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 30000,
-      "has_nvlink": true
+      "msrp_usd": 0,
+      "has_nvlink": true,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "nvidia-t4-16gb",
@@ -1862,8 +2891,10 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 2200,
-      "has_nvlink": false
+      "msrp_usd": 0,
+      "has_nvlink": false,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "nvidia-l4-24gb",
@@ -1879,8 +2910,10 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 2800,
-      "has_nvlink": false
+      "msrp_usd": 0,
+      "has_nvlink": false,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "nvidia-a10-24gb",
@@ -1896,8 +2929,10 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 3200,
-      "has_nvlink": false
+      "msrp_usd": 0,
+      "has_nvlink": false,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "nvidia-a10g-24gb",
@@ -1913,8 +2948,10 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 3200,
-      "has_nvlink": false
+      "msrp_usd": 0,
+      "has_nvlink": false,
+      "price_type": "cloud_only",
+      "price_note": "AWS Cloud instance (g5)"
     },
     {
       "id": "rtx-4000-ada-20gb",
@@ -1931,7 +2968,9 @@
       "is_unified": false,
       "backend": "CUDA",
       "msrp_usd": 1250,
-      "has_nvlink": false
+      "has_nvlink": false,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Official Launch MSRP"
     },
     {
       "id": "h200-141gb-sxm",
@@ -1947,8 +2986,10 @@
       "memory_type": "HBM3e",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 38000,
-      "has_nvlink": true
+      "msrp_usd": 0,
+      "has_nvlink": true,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "rx-6700-xt-12gb",
@@ -1964,7 +3005,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 479
+      "msrp_usd": 479,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "rx-6800-xt-16gb",
@@ -1980,7 +3023,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 649
+      "msrp_usd": 649,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "rx-7800-xt-16gb",
@@ -1996,7 +3041,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 499
+      "msrp_usd": 499,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "rx-7900-xt-20gb",
@@ -2012,7 +3059,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 699
+      "msrp_usd": 699,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "radeon-pro-w7900-48gb",
@@ -2028,7 +3077,9 @@
       "memory_type": "GDDR6 ECC",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 3999
+      "msrp_usd": 3999,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "intel-arc-a770-16gb",
@@ -2044,7 +3095,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "Vulkan",
-      "msrp_usd": 329
+      "msrp_usd": 329,
+      "price_type": "official_msrp",
+      "price_note": "Intel Official MSRP"
     },
     {
       "id": "intel-arc-b580-12gb",
@@ -2060,7 +3113,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "Vulkan",
-      "msrp_usd": 249
+      "msrp_usd": 249,
+      "price_type": "official_msrp",
+      "price_note": "Intel Official MSRP"
     },
     {
       "id": "apple-m1-max-32gb",
@@ -2076,7 +3131,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 2899
+      "msrp_usd": 2899,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 14\" M1 Max)"
     },
     {
       "id": "apple-m2-pro-16gb",
@@ -2092,7 +3149,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 1999
+      "msrp_usd": 1299,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac mini M2 Pro base)"
     },
     {
       "id": "apple-m2-pro-32gb",
@@ -2108,7 +3167,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 2399
+      "msrp_usd": 1699,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac mini M2 Pro 32GB)"
     },
     {
       "id": "apple-m3-pro-18gb",
@@ -2124,7 +3185,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 1999
+      "msrp_usd": 1999,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 14\" M3 Pro)"
     },
     {
       "id": "apple-m3-max-36gb",
@@ -2140,7 +3203,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 3199
+      "msrp_usd": 3199,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 14\" M3 Max)"
     },
     {
       "id": "apple-m3-max-48gb",
@@ -2156,7 +3221,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 3499
+      "msrp_usd": 3499,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 16\" M3 Max 48GB)"
     },
     {
       "id": "apple-m4-pro-64gb",
@@ -2172,7 +3239,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 2799
+      "msrp_usd": 1999,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac mini M4 Pro 64GB)"
     },
     {
       "id": "apple-m4-max-48gb",
@@ -2188,7 +3257,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 3399
+      "msrp_usd": 2499,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac Studio M4 Max 48GB)"
     },
     {
       "id": "rtx-5060-ti-8gb",
@@ -2204,7 +3275,9 @@
       "memory_type": "GDDR7",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 379
+      "msrp_usd": 379,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-5090-d-32gb",
@@ -2220,7 +3293,9 @@
       "memory_type": "GDDR7",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 1999
+      "msrp_usd": 1999,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-4060-ti-8gb",
@@ -2236,7 +3311,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 399
+      "msrp_usd": 399,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-4090-d-24gb",
@@ -2252,7 +3329,9 @@
       "memory_type": "GDDR6X",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 1599
+      "msrp_usd": 1599,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-3050-8gb",
@@ -2268,7 +3347,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 249
+      "msrp_usd": 249,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-3060-8gb",
@@ -2284,7 +3365,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 299
+      "msrp_usd": 299,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-2060-12gb",
@@ -2300,7 +3383,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 369
+      "msrp_usd": 369,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-2080-super-8gb",
@@ -2316,7 +3401,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 699
+      "msrp_usd": 699,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "titan-rtx-24gb",
@@ -2332,7 +3419,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 2499
+      "msrp_usd": 2499,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "gtx-1660-super-6gb",
@@ -2348,7 +3437,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 229
+      "msrp_usd": 229,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "gtx-1660-ti-6gb",
@@ -2364,7 +3455,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 279
+      "msrp_usd": 279,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA FE / Official MSRP"
     },
     {
       "id": "rtx-5060-laptop-8gb",
@@ -2380,7 +3473,9 @@
       "memory_type": "GDDR7",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 1299
+      "msrp_usd": 0,
+      "price_type": "oem_system",
+      "price_note": "OEM system only"
     },
     {
       "id": "rtx-5070-ti-laptop-12gb",
@@ -2396,7 +3491,9 @@
       "memory_type": "GDDR7",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 2199
+      "msrp_usd": 0,
+      "price_type": "oem_system",
+      "price_note": "OEM system only"
     },
     {
       "id": "rtx-4050-laptop-6gb",
@@ -2412,7 +3509,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 899
+      "msrp_usd": 0,
+      "price_type": "oem_system",
+      "price_note": "OEM system only"
     },
     {
       "id": "rtx-3060-laptop-6gb",
@@ -2428,7 +3527,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 1099
+      "msrp_usd": 0,
+      "price_type": "oem_system",
+      "price_note": "OEM system only"
     },
     {
       "id": "rtx-3070-laptop-8gb",
@@ -2444,7 +3545,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 1499
+      "msrp_usd": 0,
+      "price_type": "oem_system",
+      "price_note": "OEM system only"
     },
     {
       "id": "rtx-3080-laptop-16gb",
@@ -2460,7 +3563,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 2499
+      "msrp_usd": 0,
+      "price_type": "oem_system",
+      "price_note": "OEM system only"
     },
     {
       "id": "rtx-a2000-12gb",
@@ -2476,7 +3581,9 @@
       "memory_type": "GDDR6 ECC",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 550
+      "msrp_usd": 550,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Official Launch MSRP"
     },
     {
       "id": "rtx-a4500-20gb",
@@ -2492,7 +3599,9 @@
       "memory_type": "GDDR6 ECC",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 1750
+      "msrp_usd": 1750,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Official Launch MSRP"
     },
     {
       "id": "rtx-2000-ada-16gb",
@@ -2508,7 +3617,9 @@
       "memory_type": "GDDR6 ECC",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 625
+      "msrp_usd": 625,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Official Launch MSRP"
     },
     {
       "id": "rtx-5000-ada-32gb",
@@ -2524,7 +3635,9 @@
       "memory_type": "GDDR6 ECC",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 4000
+      "msrp_usd": 4000,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Official Launch MSRP"
     },
     {
       "id": "rtx-pro-4500-32gb",
@@ -2540,7 +3653,9 @@
       "memory_type": "GDDR7 ECC",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 2800
+      "msrp_usd": 3299,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Workstation Official MSRP"
     },
     {
       "id": "rtx-pro-5000-48gb",
@@ -2556,7 +3671,9 @@
       "memory_type": "GDDR7 ECC",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 4500
+      "msrp_usd": 4500,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Workstation Official MSRP"
     },
     {
       "id": "tesla-p100-16gb",
@@ -2572,7 +3689,9 @@
       "memory_type": "HBM2",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 200
+      "msrp_usd": 0,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "tesla-v100-16gb",
@@ -2588,8 +3707,10 @@
       "memory_type": "HBM2",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 350,
-      "has_nvlink": true
+      "msrp_usd": 0,
+      "has_nvlink": true,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "nvidia-a40-48gb",
@@ -2605,8 +3726,10 @@
       "memory_type": "GDDR6 ECC",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 4500,
-      "has_nvlink": true
+      "msrp_usd": 0,
+      "has_nvlink": true,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "a100-40gb-pcie",
@@ -2622,7 +3745,9 @@
       "memory_type": "HBM2e",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 7500
+      "msrp_usd": 0,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "a100-80gb-pcie",
@@ -2638,7 +3763,9 @@
       "memory_type": "HBM2e",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 10500
+      "msrp_usd": 0,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "nvidia-l40-48gb",
@@ -2654,7 +3781,9 @@
       "memory_type": "GDDR6 ECC",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 7200
+      "msrp_usd": 0,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "h100-80gb-pcie",
@@ -2670,7 +3799,9 @@
       "memory_type": "HBM2e",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 25000
+      "msrp_usd": 0,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "b200-192gb-sxm",
@@ -2686,8 +3817,10 @@
       "memory_type": "HBM3e",
       "is_unified": false,
       "backend": "CUDA",
-      "msrp_usd": 45000,
-      "has_nvlink": true
+      "msrp_usd": 0,
+      "has_nvlink": true,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "apple-m5-16gb",
@@ -2703,7 +3836,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 1599
+      "msrp_usd": 1599,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 14\" M5 base)"
     },
     {
       "id": "apple-m5-24gb",
@@ -2719,7 +3854,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 1799
+      "msrp_usd": 1799,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 14\" M5 24GB)"
     },
     {
       "id": "apple-m5-32gb",
@@ -2735,7 +3872,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 1999
+      "msrp_usd": 1999,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Pro 14\" M5 32GB)"
     },
     {
       "id": "apple-m3-24gb",
@@ -2751,7 +3890,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 1499
+      "msrp_usd": 1299,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Air M3 24GB)"
     },
     {
       "id": "apple-m3-ultra-96gb",
@@ -2767,7 +3908,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 3999
+      "msrp_usd": 3999,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac Studio M3 Ultra base)"
     },
     {
       "id": "apple-m3-ultra-256gb",
@@ -2783,7 +3926,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 6999
+      "msrp_usd": 5599,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac Studio M3 Ultra 256GB)"
     },
     {
       "id": "apple-m3-ultra-512gb",
@@ -2799,7 +3944,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 9499
+      "msrp_usd": 9499,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac Studio M3 Ultra 512GB)"
     },
     {
       "id": "apple-m2-ultra-128gb",
@@ -2815,7 +3962,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 4799
+      "msrp_usd": 4799,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac Studio M2 Ultra 128GB)"
     },
     {
       "id": "apple-m1-ultra-64gb",
@@ -2831,7 +3980,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 3999
+      "msrp_usd": 3999,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac Studio M1 Ultra base)"
     },
     {
       "id": "apple-m1-ultra-128gb",
@@ -2847,7 +3998,9 @@
       "memory_type": "LPDDR5 Unified",
       "is_unified": true,
       "backend": "Metal",
-      "msrp_usd": 4999
+      "msrp_usd": 4799,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac Studio M1 Ultra 128GB)"
     },
     {
       "id": "rx-9070-16gb",
@@ -2863,7 +4016,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 549
+      "msrp_usd": 549,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "rx-9060-xt-16gb",
@@ -2879,7 +4034,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 349
+      "msrp_usd": 349,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "rx-9060-xt-8gb",
@@ -2895,7 +4052,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 299
+      "msrp_usd": 299,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "rx-7900-gre-16gb",
@@ -2911,7 +4070,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 549
+      "msrp_usd": 549,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "rx-7700-xt-12gb",
@@ -2927,7 +4088,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 449
+      "msrp_usd": 449,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "rx-7600-xt-16gb",
@@ -2943,7 +4106,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 329
+      "msrp_usd": 329,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "rx-7600-8gb",
@@ -2959,7 +4124,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 269
+      "msrp_usd": 269,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "rx-6950-xt-16gb",
@@ -2975,7 +4142,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 1099
+      "msrp_usd": 1099,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "rx-6900-xt-16gb",
@@ -2991,7 +4160,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 999
+      "msrp_usd": 999,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "rx-6800-16gb",
@@ -3007,7 +4178,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 579
+      "msrp_usd": 579,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "rx-6600-xt-8gb",
@@ -3023,7 +4196,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 379
+      "msrp_usd": 379,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "radeon-pro-w7800-32gb",
@@ -3039,7 +4214,9 @@
       "memory_type": "GDDR6 ECC",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 2499
+      "msrp_usd": 2499,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "radeon-pro-w6800-32gb",
@@ -3055,7 +4232,9 @@
       "memory_type": "GDDR6 ECC",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 2249
+      "msrp_usd": 2249,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
     },
     {
       "id": "instinct-mi250x-128gb",
@@ -3071,8 +4250,10 @@
       "memory_type": "HBM2e",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 14000,
-      "has_nvlink": true
+      "msrp_usd": 0,
+      "has_nvlink": true,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "instinct-mi300x-192gb",
@@ -3088,8 +4269,10 @@
       "memory_type": "HBM3",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 18000,
-      "has_nvlink": true
+      "msrp_usd": 0,
+      "has_nvlink": true,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "instinct-mi325x-256gb",
@@ -3105,8 +4288,10 @@
       "memory_type": "HBM3e",
       "is_unified": false,
       "backend": "ROCm",
-      "msrp_usd": 22000,
-      "has_nvlink": true
+      "msrp_usd": 0,
+      "has_nvlink": true,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
     },
     {
       "id": "ryzen-ai-max-395-64gb",
@@ -3122,7 +4307,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "ROCm",
-      "msrp_usd": 1799
+      "msrp_usd": 0,
+      "price_type": "oem_system",
+      "price_note": "OEM system only"
     },
     {
       "id": "ryzen-ai-max-390-64gb",
@@ -3138,7 +4325,9 @@
       "memory_type": "LPDDR5X Unified",
       "is_unified": true,
       "backend": "ROCm",
-      "msrp_usd": 1599
+      "msrp_usd": 0,
+      "price_type": "oem_system",
+      "price_note": "OEM system only"
     },
     {
       "id": "intel-arc-b570-10gb",
@@ -3154,7 +4343,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "Vulkan",
-      "msrp_usd": 219
+      "msrp_usd": 219,
+      "price_type": "official_msrp",
+      "price_note": "Intel Official MSRP"
     },
     {
       "id": "intel-arc-pro-b60-24gb",
@@ -3170,7 +4361,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "Vulkan",
-      "msrp_usd": 500
+      "msrp_usd": 500,
+      "price_type": "official_msrp",
+      "price_note": "Intel Official Launch MSRP"
     },
     {
       "id": "intel-arc-a770-8gb",
@@ -3186,7 +4379,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "Vulkan",
-      "msrp_usd": 279
+      "msrp_usd": 279,
+      "price_type": "official_msrp",
+      "price_note": "Intel Official MSRP"
     },
     {
       "id": "intel-arc-a750-8gb",
@@ -3202,7 +4397,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "Vulkan",
-      "msrp_usd": 249
+      "msrp_usd": 249,
+      "price_type": "official_msrp",
+      "price_note": "Intel Official MSRP"
     },
     {
       "id": "intel-arc-a580-8gb",
@@ -3218,7 +4415,9 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "Vulkan",
-      "msrp_usd": 179
+      "msrp_usd": 179,
+      "price_type": "official_msrp",
+      "price_note": "Intel Official MSRP"
     },
     {
       "id": "intel-arc-a380-6gb",
@@ -3234,7 +4433,690 @@
       "memory_type": "GDDR6",
       "is_unified": false,
       "backend": "Vulkan",
-      "msrp_usd": 119
+      "msrp_usd": 119,
+      "price_type": "official_msrp",
+      "price_note": "Intel Official MSRP"
+    },
+    {
+      "id": "tesla-p4-8gb",
+      "name": "NVIDIA Tesla P4 (8GB)",
+      "short_name": "Tesla P4 8GB",
+      "vendor": "NVIDIA",
+      "series": "Data Center & Homelab",
+      "category": "Data Center",
+      "gpu_count": 1,
+      "vram_gb": 8.0,
+      "usable_vram_gb": 7.5,
+      "bandwidth_gbps": 192.0,
+      "memory_type": "GDDR5",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 0,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only",
+      "has_nvlink": false
+    },
+    {
+      "id": "nvidia-a2-16gb",
+      "name": "NVIDIA A2 (16GB GDDR6)",
+      "short_name": "NVIDIA A2 16GB",
+      "vendor": "NVIDIA",
+      "series": "Data Center & Homelab",
+      "category": "Data Center",
+      "gpu_count": 1,
+      "vram_gb": 16.0,
+      "usable_vram_gb": 15.2,
+      "bandwidth_gbps": 200.0,
+      "memory_type": "GDDR6",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 0,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only",
+      "has_nvlink": false
+    },
+    {
+      "id": "nvidia-a16-64gb",
+      "name": "NVIDIA A16 (64GB · 4x16GB GDDR6)",
+      "short_name": "NVIDIA A16 64GB",
+      "vendor": "NVIDIA",
+      "series": "Data Center & Homelab",
+      "category": "Data Center",
+      "gpu_count": 4,
+      "vram_gb": 64.0,
+      "usable_vram_gb": 60.8,
+      "bandwidth_gbps": 200.0,
+      "memory_type": "GDDR6 (4x16GB)",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 0,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only",
+      "has_nvlink": false
+    },
+    {
+      "id": "nvidia-a30-24gb",
+      "name": "NVIDIA A30 (24GB HBM2e)",
+      "short_name": "NVIDIA A30 24GB",
+      "vendor": "NVIDIA",
+      "series": "Data Center & Homelab",
+      "category": "Data Center",
+      "gpu_count": 1,
+      "vram_gb": 24.0,
+      "usable_vram_gb": 23.0,
+      "bandwidth_gbps": 933.0,
+      "memory_type": "HBM2e",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 0,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only",
+      "has_nvlink": true
+    },
+    {
+      "id": "rtx-a5500-24gb",
+      "name": "NVIDIA RTX A5500 (24GB ECC)",
+      "short_name": "RTX A5500 24GB",
+      "vendor": "NVIDIA",
+      "series": "RTX Workstation",
+      "category": "Workstation",
+      "gpu_count": 1,
+      "vram_gb": 24.0,
+      "usable_vram_gb": 22.8,
+      "bandwidth_gbps": 768.0,
+      "memory_type": "GDDR6 ECC",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 3600,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Official Launch MSRP"
+    },
+    {
+      "id": "rtx-4500-ada-24gb",
+      "name": "NVIDIA RTX 4500 Ada (24GB ECC)",
+      "short_name": "RTX 4500 Ada 24GB",
+      "vendor": "NVIDIA",
+      "series": "RTX Workstation",
+      "category": "Workstation",
+      "gpu_count": 1,
+      "vram_gb": 24.0,
+      "usable_vram_gb": 22.8,
+      "bandwidth_gbps": 432.0,
+      "memory_type": "GDDR6 ECC",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 2250,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Official Launch MSRP"
+    },
+    {
+      "id": "nvidia-t1000-8gb",
+      "name": "NVIDIA T1000 (8GB Low-Profile)",
+      "short_name": "NVIDIA T1000 8GB",
+      "vendor": "NVIDIA",
+      "series": "RTX Workstation",
+      "category": "Workstation",
+      "gpu_count": 1,
+      "vram_gb": 8.0,
+      "usable_vram_gb": 7.4,
+      "bandwidth_gbps": 160.0,
+      "memory_type": "GDDR6",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 399,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Official Launch MSRP"
+    },
+    {
+      "id": "rtx-5050-8gb",
+      "name": "NVIDIA RTX 5050 (8GB)",
+      "short_name": "RTX 5050 8GB",
+      "vendor": "NVIDIA",
+      "series": "RTX 50 Series",
+      "category": "Desktop GPU",
+      "gpu_count": 1,
+      "vram_gb": 8.0,
+      "usable_vram_gb": 7.4,
+      "bandwidth_gbps": 320.0,
+      "memory_type": "GDDR6",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 249,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Official MSRP"
+    },
+    {
+      "id": "gtx-1650-4gb",
+      "name": "NVIDIA GTX 1650 (4GB)",
+      "short_name": "GTX 1650 4GB",
+      "vendor": "NVIDIA",
+      "series": "GTX 16 Series",
+      "category": "Desktop GPU",
+      "gpu_count": 1,
+      "vram_gb": 4.0,
+      "usable_vram_gb": 3.6,
+      "bandwidth_gbps": 128.0,
+      "memory_type": "GDDR5",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 149,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Official Launch MSRP"
+    },
+    {
+      "id": "rx-6750-xt-12gb",
+      "name": "AMD Radeon RX 6750 XT (12GB)",
+      "short_name": "RX 6750 XT 12GB",
+      "vendor": "AMD",
+      "series": "Radeon RX 6000",
+      "category": "Desktop GPU",
+      "gpu_count": 1,
+      "vram_gb": 12.0,
+      "usable_vram_gb": 11.4,
+      "bandwidth_gbps": 432.0,
+      "memory_type": "GDDR6",
+      "is_unified": false,
+      "backend": "ROCm",
+      "msrp_usd": 549,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
+    },
+    {
+      "id": "rx-6600-8gb",
+      "name": "AMD Radeon RX 6600 (8GB)",
+      "short_name": "RX 6600 8GB",
+      "vendor": "AMD",
+      "series": "Radeon RX 6000",
+      "category": "Desktop GPU",
+      "gpu_count": 1,
+      "vram_gb": 8.0,
+      "usable_vram_gb": 7.4,
+      "bandwidth_gbps": 224.0,
+      "memory_type": "GDDR6",
+      "is_unified": false,
+      "backend": "ROCm",
+      "msrp_usd": 329,
+      "price_type": "official_msrp",
+      "price_note": "AMD Official MSRP"
+    },
+    {
+      "id": "intel-arc-pro-b50-16gb",
+      "name": "Intel Arc Pro B50 (16GB)",
+      "short_name": "Arc Pro B50 16GB",
+      "vendor": "Intel",
+      "series": "Intel Arc Battlemage",
+      "category": "Workstation",
+      "gpu_count": 1,
+      "vram_gb": 16.0,
+      "usable_vram_gb": 15.2,
+      "bandwidth_gbps": 224.0,
+      "memory_type": "GDDR6",
+      "is_unified": false,
+      "backend": "Vulkan",
+      "msrp_usd": 349,
+      "price_type": "official_msrp",
+      "price_note": "Intel Official MSRP"
+    },
+    {
+      "id": "instinct-mi210-64gb",
+      "name": "AMD Instinct MI210 (64GB HBM2e)",
+      "short_name": "Instinct MI210 64GB",
+      "vendor": "AMD",
+      "series": "Instinct Data Center",
+      "category": "Data Center",
+      "gpu_count": 1,
+      "vram_gb": 64.0,
+      "usable_vram_gb": 62.0,
+      "bandwidth_gbps": 1638.0,
+      "memory_type": "HBM2e",
+      "is_unified": false,
+      "backend": "ROCm",
+      "msrp_usd": 0,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only"
+    },
+    {
+      "id": "apple-m2-8gb",
+      "name": "Apple M2 (8GB Unified)",
+      "short_name": "M2 8GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M2",
+      "category": "Unified Memory",
+      "gpu_count": 1,
+      "vram_gb": 8.0,
+      "usable_vram_gb": 4.8,
+      "bandwidth_gbps": 100.0,
+      "memory_type": "LPDDR5 Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 599,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac mini M2 base)"
+    },
+    {
+      "id": "apple-m2-max-32gb",
+      "name": "Apple M2 Max (32GB Unified)",
+      "short_name": "M2 Max 32GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M2",
+      "category": "Unified Memory",
+      "gpu_count": 1,
+      "vram_gb": 32.0,
+      "usable_vram_gb": 23.7,
+      "bandwidth_gbps": 400.0,
+      "memory_type": "LPDDR5 Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 1999,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac Studio M2 Max base)"
+    },
+    {
+      "id": "apple-m2-max-96gb",
+      "name": "Apple M2 Max (96GB Unified)",
+      "short_name": "M2 Max 96GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M2",
+      "category": "Unified Memory",
+      "gpu_count": 1,
+      "vram_gb": 96.0,
+      "usable_vram_gb": 74.9,
+      "bandwidth_gbps": 400.0,
+      "memory_type": "LPDDR5 Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 2599,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac Studio M2 Max 96GB)"
+    },
+    {
+      "id": "apple-m2-ultra-64gb",
+      "name": "Apple M2 Ultra (64GB Unified)",
+      "short_name": "M2 Ultra 64GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M2",
+      "category": "Unified Memory",
+      "gpu_count": 1,
+      "vram_gb": 64.0,
+      "usable_vram_gb": 48.6,
+      "bandwidth_gbps": 800.0,
+      "memory_type": "LPDDR5 Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 3999,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (Mac Studio M2 Ultra base)"
+    },
+    {
+      "id": "apple-m3-8gb",
+      "name": "Apple M3 (8GB Unified)",
+      "short_name": "M3 8GB",
+      "vendor": "Apple",
+      "series": "Apple Silicon M3",
+      "category": "Unified Memory",
+      "gpu_count": 1,
+      "vram_gb": 8.0,
+      "usable_vram_gb": 4.8,
+      "bandwidth_gbps": 100.0,
+      "memory_type": "LPDDR5 Unified",
+      "is_unified": true,
+      "backend": "Metal",
+      "msrp_usd": 1099,
+      "price_type": "official_bto",
+      "price_note": "Apple Store (MacBook Air M3 base)"
+    },
+    {
+      "id": "jetson-orin-nano-super-8gb",
+      "name": "NVIDIA Jetson Orin Nano Super (8GB Unified)",
+      "short_name": "Jetson Orin Nano 8GB",
+      "vendor": "NVIDIA",
+      "series": "NVIDIA Jetson Edge",
+      "category": "Edge / SBC",
+      "gpu_count": 1,
+      "vram_gb": 8.0,
+      "usable_vram_gb": 4.8,
+      "bandwidth_gbps": 102.0,
+      "memory_type": "LPDDR5 Unified",
+      "is_unified": true,
+      "backend": "CUDA",
+      "msrp_usd": 249,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Dev Kit Official MSRP"
+    },
+    {
+      "id": "jetson-orin-nx-16gb",
+      "name": "NVIDIA Jetson Orin NX (16GB Unified)",
+      "short_name": "Jetson Orin NX 16GB",
+      "vendor": "NVIDIA",
+      "series": "NVIDIA Jetson Edge",
+      "category": "Edge / SBC",
+      "gpu_count": 1,
+      "vram_gb": 16.0,
+      "usable_vram_gb": 10.5,
+      "bandwidth_gbps": 102.0,
+      "memory_type": "LPDDR5 Unified",
+      "is_unified": true,
+      "backend": "CUDA",
+      "msrp_usd": 599,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Module Official MSRP"
+    },
+    {
+      "id": "jetson-agx-orin-32gb",
+      "name": "NVIDIA Jetson AGX Orin (32GB Unified)",
+      "short_name": "Jetson AGX Orin 32GB",
+      "vendor": "NVIDIA",
+      "series": "NVIDIA Jetson Edge",
+      "category": "Edge / SBC",
+      "gpu_count": 1,
+      "vram_gb": 32.0,
+      "usable_vram_gb": 23.7,
+      "bandwidth_gbps": 204.8,
+      "memory_type": "LPDDR5 Unified",
+      "is_unified": true,
+      "backend": "CUDA",
+      "msrp_usd": 1299,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Module Official MSRP"
+    },
+    {
+      "id": "jetson-agx-orin-64gb",
+      "name": "NVIDIA Jetson AGX Orin (64GB Unified)",
+      "short_name": "Jetson AGX Orin 64GB",
+      "vendor": "NVIDIA",
+      "series": "NVIDIA Jetson Edge",
+      "category": "Edge / SBC",
+      "gpu_count": 1,
+      "vram_gb": 64.0,
+      "usable_vram_gb": 48.6,
+      "bandwidth_gbps": 204.8,
+      "memory_type": "LPDDR5 Unified",
+      "is_unified": true,
+      "backend": "CUDA",
+      "msrp_usd": 1999,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Dev Kit Official MSRP"
+    },
+    {
+      "id": "jetson-agx-thor-128gb",
+      "name": "NVIDIA Jetson AGX Thor (128GB Unified)",
+      "short_name": "Jetson AGX Thor 128GB",
+      "vendor": "NVIDIA",
+      "series": "NVIDIA Jetson Edge",
+      "category": "Edge / SBC",
+      "gpu_count": 1,
+      "vram_gb": 128.0,
+      "usable_vram_gb": 99.8,
+      "bandwidth_gbps": 273.0,
+      "memory_type": "LPDDR5X Unified",
+      "is_unified": true,
+      "backend": "CUDA",
+      "msrp_usd": 3499,
+      "price_type": "official_msrp",
+      "price_note": "NVIDIA Dev Kit Launch MSRP"
+    },
+    {
+      "id": "raspberry-pi-5-8gb",
+      "name": "Raspberry Pi 5 (8GB ARM SBC)",
+      "short_name": "Raspberry Pi 5 8GB",
+      "vendor": "Raspberry Pi",
+      "series": "Raspberry Pi SBC",
+      "category": "Edge / SBC",
+      "gpu_count": 1,
+      "vram_gb": 8.0,
+      "usable_vram_gb": 4.8,
+      "bandwidth_gbps": 17.0,
+      "memory_type": "LPDDR4X-4267",
+      "is_unified": true,
+      "backend": "CPU",
+      "msrp_usd": 80,
+      "price_type": "official_msrp",
+      "price_note": "Raspberry Pi Official MSRP"
+    },
+    {
+      "id": "raspberry-pi-5-16gb",
+      "name": "Raspberry Pi 5 (16GB ARM SBC)",
+      "short_name": "Raspberry Pi 5 16GB",
+      "vendor": "Raspberry Pi",
+      "series": "Raspberry Pi SBC",
+      "category": "Edge / SBC",
+      "gpu_count": 1,
+      "vram_gb": 16.0,
+      "usable_vram_gb": 10.5,
+      "bandwidth_gbps": 17.0,
+      "memory_type": "LPDDR4X-4267",
+      "is_unified": true,
+      "backend": "CPU",
+      "msrp_usd": 120,
+      "price_type": "official_msrp",
+      "price_note": "Raspberry Pi Official Launch MSRP"
+    },
+    {
+      "id": "snapdragon-x-elite-32gb",
+      "name": "Qualcomm Snapdragon X Elite (32GB Unified)",
+      "short_name": "Snapdragon X Elite 32GB",
+      "vendor": "Qualcomm",
+      "series": "Snapdragon X Edge",
+      "category": "Edge / SBC",
+      "gpu_count": 1,
+      "vram_gb": 32.0,
+      "usable_vram_gb": 23.7,
+      "bandwidth_gbps": 135.0,
+      "memory_type": "LPDDR5X Unified",
+      "is_unified": true,
+      "backend": "Vulkan",
+      "msrp_usd": 0,
+      "price_type": "oem_system",
+      "price_note": "OEM laptop only"
+    },
+    {
+      "id": "dual-rtx-5090-64gb",
+      "name": "Dual NVIDIA RTX 5090 (64GB)",
+      "short_name": "Dual RTX 5090 64GB",
+      "vendor": "NVIDIA",
+      "series": "Multi-GPU Clusters",
+      "category": "Multi-GPU",
+      "gpu_count": 2,
+      "vram_gb": 64.0,
+      "usable_vram_gb": 62.0,
+      "bandwidth_gbps": 1792.0,
+      "memory_type": "GDDR7 (2x32GB)",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 3998,
+      "price_type": "official_msrp",
+      "price_note": "2x NVIDIA FE MSRP ($1,999 ea)",
+      "has_nvlink": false
+    },
+    {
+      "id": "quad-rtx-3090-96gb",
+      "name": "Quad NVIDIA RTX 3090 (96GB)",
+      "short_name": "4x RTX 3090 96GB",
+      "vendor": "NVIDIA",
+      "series": "Multi-GPU Clusters",
+      "category": "Multi-GPU",
+      "gpu_count": 4,
+      "vram_gb": 96.0,
+      "usable_vram_gb": 94.0,
+      "bandwidth_gbps": 936.0,
+      "memory_type": "GDDR6X (4x24GB)",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 5996,
+      "price_type": "official_msrp",
+      "price_note": "4x NVIDIA FE MSRP ($1,499 ea)",
+      "has_nvlink": false
+    },
+    {
+      "id": "quad-rtx-4090-96gb",
+      "name": "Quad NVIDIA RTX 4090 (96GB)",
+      "short_name": "4x RTX 4090 96GB",
+      "vendor": "NVIDIA",
+      "series": "Multi-GPU Clusters",
+      "category": "Multi-GPU",
+      "gpu_count": 4,
+      "vram_gb": 96.0,
+      "usable_vram_gb": 94.0,
+      "bandwidth_gbps": 1008.0,
+      "memory_type": "GDDR6X (4x24GB)",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 6396,
+      "price_type": "official_msrp",
+      "price_note": "4x NVIDIA FE MSRP ($1,599 ea)",
+      "has_nvlink": false
+    },
+    {
+      "id": "quad-rtx-5090-128gb",
+      "name": "Quad NVIDIA RTX 5090 (128GB)",
+      "short_name": "4x RTX 5090 128GB",
+      "vendor": "NVIDIA",
+      "series": "Multi-GPU Clusters",
+      "category": "Multi-GPU",
+      "gpu_count": 4,
+      "vram_gb": 128.0,
+      "usable_vram_gb": 124.0,
+      "bandwidth_gbps": 1792.0,
+      "memory_type": "GDDR7 (4x32GB)",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 7996,
+      "price_type": "official_msrp",
+      "price_note": "4x NVIDIA FE MSRP ($1,999 ea)",
+      "has_nvlink": false
+    },
+    {
+      "id": "quad-rtx-pro-6000-384gb",
+      "name": "Quad NVIDIA RTX PRO 6000 Blackwell (384GB)",
+      "short_name": "4x RTX PRO 6000 384GB",
+      "vendor": "NVIDIA",
+      "series": "Multi-GPU Clusters",
+      "category": "Multi-GPU",
+      "gpu_count": 4,
+      "vram_gb": 384.0,
+      "usable_vram_gb": 376.0,
+      "bandwidth_gbps": 1792.0,
+      "memory_type": "GDDR7 ECC (4x96GB)",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 34260,
+      "price_type": "official_msrp",
+      "price_note": "4x NVIDIA Store MSRP ($8,565 ea)",
+      "has_nvlink": false
+    },
+    {
+      "id": "aws-g5-12xlarge-4xa10g",
+      "name": "AWS g5.12xlarge (4x A10G · 96GB)",
+      "short_name": "AWS 4x A10G 96GB",
+      "vendor": "NVIDIA",
+      "series": "Cloud GPU Nodes",
+      "category": "Data Center",
+      "gpu_count": 4,
+      "vram_gb": 96.0,
+      "usable_vram_gb": 91.2,
+      "bandwidth_gbps": 600.0,
+      "memory_type": "GDDR6 (4x24GB)",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 0,
+      "price_type": "cloud_only",
+      "price_note": "AWS Cloud instance",
+      "has_nvlink": false
+    },
+    {
+      "id": "aws-g6-12xlarge-4xl4",
+      "name": "AWS g6.12xlarge (4x L4 · 96GB)",
+      "short_name": "AWS 4x L4 96GB",
+      "vendor": "NVIDIA",
+      "series": "Cloud GPU Nodes",
+      "category": "Data Center",
+      "gpu_count": 4,
+      "vram_gb": 96.0,
+      "usable_vram_gb": 91.2,
+      "bandwidth_gbps": 300.0,
+      "memory_type": "GDDR6 (4x24GB)",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 0,
+      "price_type": "cloud_only",
+      "price_note": "AWS Cloud instance",
+      "has_nvlink": false
+    },
+    {
+      "id": "quad-a100-80gb-sxm",
+      "name": "4x NVIDIA A100 SXM Node (320GB NVLink)",
+      "short_name": "4x A100 SXM 320GB",
+      "vendor": "NVIDIA",
+      "series": "Multi-GPU Clusters",
+      "category": "Multi-GPU",
+      "gpu_count": 4,
+      "vram_gb": 320.0,
+      "usable_vram_gb": 312.0,
+      "bandwidth_gbps": 2039.0,
+      "memory_type": "HBM2e (4x80GB)",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 0,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only",
+      "has_nvlink": true
+    },
+    {
+      "id": "octa-h100-80gb-sxm",
+      "name": "8x NVIDIA H100 SXM Node (640GB NVLink)",
+      "short_name": "8x H100 SXM 640GB",
+      "vendor": "NVIDIA",
+      "series": "Multi-GPU Clusters",
+      "category": "Multi-GPU",
+      "gpu_count": 8,
+      "vram_gb": 640.0,
+      "usable_vram_gb": 624.0,
+      "bandwidth_gbps": 3350.0,
+      "memory_type": "HBM3 (8x80GB)",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 0,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only",
+      "has_nvlink": true
+    },
+    {
+      "id": "octa-h200-141gb-sxm",
+      "name": "8x NVIDIA H200 SXM Node (1,128GB NVLink)",
+      "short_name": "8x H200 SXM 1.1TB",
+      "vendor": "NVIDIA",
+      "series": "Multi-GPU Clusters",
+      "category": "Multi-GPU",
+      "gpu_count": 8,
+      "vram_gb": 1128.0,
+      "usable_vram_gb": 1104.0,
+      "bandwidth_gbps": 4800.0,
+      "memory_type": "HBM3e (8x141GB)",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 0,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only",
+      "has_nvlink": true
+    },
+    {
+      "id": "octa-b200-192gb-sxm",
+      "name": "8x NVIDIA B200 SXM Node (1,536GB NVLink)",
+      "short_name": "8x B200 SXM 1.5TB",
+      "vendor": "NVIDIA",
+      "series": "Multi-GPU Clusters",
+      "category": "Multi-GPU",
+      "gpu_count": 8,
+      "vram_gb": 1536.0,
+      "usable_vram_gb": 1500.0,
+      "bandwidth_gbps": 8000.0,
+      "memory_type": "HBM3e (8x192GB)",
+      "is_unified": false,
+      "backend": "CUDA",
+      "msrp_usd": 0,
+      "price_type": "enterprise_quote",
+      "price_note": "Enterprise quote only",
+      "has_nvlink": true
     }
   ],
   "cpus": [

@@ -5,6 +5,7 @@ import SpeedBadge from '../../components/SpeedBadge.astro';
 import rawPagesData from '../../data/pages_data.json';
 import type { HardwareSpec, VramPageEntry } from '../../types/vram';
 import { formatContextLabel, formatTpsRange } from '../../utils/physics';
+import { officialPriceI18n } from '../../utils/pricing';
 import {
   buildHardwareFaq,
   buildHardwareHubs,
@@ -51,6 +52,7 @@ const {
 const updatedAt = getCatalogUpdatedAt();
 const faq = buildHardwareFaq(hub);
 const allModelsCount = rows.length;
+const hwPrice = officialPriceI18n(hardware, false);
 const refBenchmarks = getReferenceBenchmarks({ hardwareId: hardware.id });
 const refNote = getBenchmarksMethodologyNote();
 
@@ -195,8 +197,21 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
             {hardware.vendor} · {hardware.backend}
           </span>
           <span class="font-mono text-xs text-[var(--ink-tertiary)]">
-            {hardware.series} · {hardware.category} · {hardware.memory_type} · ${hardware.msrp_usd.toLocaleString()} MSRP
+            {hardware.series} · {hardware.category} · {hardware.memory_type} ·{' '}
+            <span
+              class="font-semibold text-[var(--ink-secondary)]"
+              title={hardware.price_note ?? ''}
+              data-i18n={hwPrice.key}
+              data-i18n-args={hwPrice.args}
+            >
+              {hwPrice.text}
+            </span>
           </span>
+          {hardware.price_note && (
+            <span class="rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-2 py-0.5 text-[11px] text-[var(--ink-tertiary)]">
+              {hardware.price_note}
+            </span>
+          )}
           <span class="badge-fits font-mono text-xs" data-i18n="common.updated" data-i18n-args={updatedArgs}>
             Updated {updatedAt}
           </span>
@@ -427,6 +442,7 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
           <thead>
             <tr class="border-b border-[var(--border-subtle)] bg-[var(--bg-subtle)] text-xs font-semibold uppercase tracking-wider text-[var(--ink-secondary)]">
               <th class="px-3 py-3" data-i18n="sim.colModel">Model</th>
+              <th class="px-2.5 py-3" data-i18n="score.aiCol">AI Score (AA / Arena)</th>
               <th class="px-2.5 py-3" data-i18n="detail.colStatus">Fit / Speed</th>
               <th class="px-2.5 py-3" data-i18n="home.modelTableQ4">Q4_K_M @ 8K</th>
               <th class="px-2.5 py-3" data-i18n="detail.colGpuLayers">GPU Layers</th>
@@ -503,6 +519,30 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
                         {row.model.family}
                       </a>
                     </div>
+                  </td>
+                  <td class="px-2.5 py-3.5 align-top font-mono text-[11px] whitespace-nowrap">
+                    {row.model.aa_index || row.model.arena_elo ? (
+                      <div class="flex flex-col gap-1">
+                        {row.model.aa_index && (
+                          <span
+                            class="badge-accent inline-flex w-fit rounded px-1.5 py-0.5 font-semibold"
+                            title={row.model.aa_label ?? 'Artificial Analysis Intelligence Index v5.0.2'}
+                          >
+                            AA v5 · {row.model.aa_index}
+                          </span>
+                        )}
+                        {row.model.arena_elo && (
+                          <span
+                            class="inline-flex w-fit rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-0.5 text-[var(--ink-secondary)]"
+                            title={row.model.arena_rank ? `LMArena Text Arena #${row.model.arena_rank} (2026-11-22)` : 'LMArena Text Arena Elo (2026-11-22)'}
+                          >
+                            Arena · {row.model.arena_elo}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span class="text-[var(--ink-tertiary)]">—</span>
+                    )}
                   </td>
                   <td class="px-2.5 py-3.5 align-top">
                     <div class="flex flex-wrap items-center gap-1">
