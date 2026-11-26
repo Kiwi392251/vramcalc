@@ -1,3 +1,10 @@
+export type ComboboxSortMode = 'newest' | 'params-asc' | 'params-desc';
+
+export interface ComboboxSortOption {
+  key: ComboboxSortMode;
+  label: string;
+}
+
 export interface ComboboxOption {
   value: string;
   label: string;
@@ -7,6 +14,10 @@ export interface ComboboxOption {
   series?: string;
   seriesOrder?: number;
   badge?: string;
+  metaTag?: string;
+  sortDate?: string;
+  sortParams?: number;
+  pinned?: boolean;
   sublabel?: string;
   searchBlob: string;
 }
@@ -19,6 +30,7 @@ export interface CascaderLabelsConfig {
   allBrandsLabel?: (count: number) => string;
   allSeriesLabel?: (count: number) => string;
   itemsCountFormatter?: (count: number) => string;
+  sortModes?: ComboboxSortOption[];
 }
 
 export interface SearchableComboboxConfig extends CascaderLabelsConfig {
@@ -29,6 +41,8 @@ export interface SearchableComboboxConfig extends CascaderLabelsConfig {
   emptyValue?: string;
   emptyText?: string;
   initialValue?: string;
+  defaultShowAll?: boolean;
+  initialSortMode?: ComboboxSortMode;
   allowCustomNumeric?: boolean;
   parseCustomNumeric?: (raw: string) => number | null;
   formatCustomNumeric?: (num: number) => string;
@@ -78,11 +92,15 @@ export class SearchableCombobox {
   private allBrandsLabel: (count: number) => string;
   private allSeriesLabel: (count: number) => string;
   private itemsCountFormatter: (count: number) => string;
+  private sortModes: ComboboxSortOption[];
+  private activeSortMode: ComboboxSortMode;
+  private defaultShowAll: boolean;
 
   // Persistent cascader DOM nodes (kept mounted while typing inside panel search)
   private panelSearchInput: HTMLInputElement | null = null;
   private panelClearBtn: HTMLButtonElement | null = null;
   private panelCountEl: HTMLElement | null = null;
+  private sortBarEl: HTMLElement | null = null;
   private brandHeaderEl: HTMLElement | null = null;
   private seriesHeaderEl: HTMLElement | null = null;
   private modelHeaderEl: HTMLElement | null = null;
@@ -139,6 +157,9 @@ export class SearchableCombobox {
     this.allBrandsLabel = config.allBrandsLabel ?? ((n) => `All (${n})`);
     this.allSeriesLabel = config.allSeriesLabel ?? ((n) => `All Series (${n})`);
     this.itemsCountFormatter = config.itemsCountFormatter ?? ((n) => `${n} models`);
+    this.sortModes = config.sortModes ? [...config.sortModes] : [];
+    this.activeSortMode = config.initialSortMode ?? 'newest';
+    this.defaultShowAll = Boolean(config.defaultShowAll);
 
     if (config.placeholder) {
       this.input.placeholder = config.placeholder;
@@ -206,6 +227,7 @@ export class SearchableCombobox {
           </div>
           <span data-cb-panel-count class="shrink-0 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2 py-1 font-mono text-[10px] font-semibold text-[var(--ink-secondary)] tabular-nums"></span>
         </div>
+        <div data-cb-sort-bar class="mt-2 hidden flex-wrap items-center gap-1.5"></div>
       </div>
       <div class="grid grid-cols-[86px_112px_minmax(0,1fr)] sm:grid-cols-[132px_176px_minmax(0,1fr)] divide-x divide-[var(--border-hairline)] bg-[var(--bg-surface)]">
         <div class="min-w-0 flex flex-col">
@@ -226,6 +248,7 @@ export class SearchableCombobox {
     this.panelSearchInput = this.listEl.querySelector('[data-cb-panel-search]') as HTMLInputElement | null;
     this.panelClearBtn = this.listEl.querySelector('[data-cb-panel-clear]') as HTMLButtonElement | null;
     this.panelCountEl = this.listEl.querySelector('[data-cb-panel-count]') as HTMLElement | null;
+    this.sortBarEl = this.listEl.querySelector('[data-cb-sort-bar]') as HTMLElement | null;
     this.brandHeaderEl = this.listEl.querySelector('[data-cb-brand-hdr]') as HTMLElement | null;
     this.seriesHeaderEl = this.listEl.querySelector('[data-cb-series-hdr]') as HTMLElement | null;
     this.modelHeaderEl = this.listEl.querySelector('[data-cb-model-hdr]') as HTMLElement | null;
@@ -433,6 +456,18 @@ export class SearchableCombobox {
 
     this.listEl.addEventListener('mousedown', (ev: MouseEvent) => {
       const targetEl = ev.target as HTMLElement;
+      const sortBtn = targetEl.closest('[data-cb-sort-mode]') as HTMLElement | null;
+      if (sortBtn) {
+        ev.preventDefault();
+        const nextMode = sortBtn.getAttribute('data-cb-sort-mode') as ComboboxSortMode | null;
+        if (nextMode) {
+          this.activeSortMode = nextMode;
+          this.activeIndex = 0;
+          this.renderCascader();
+        }
+        return;
+      }
+
       const brandBtn = targetEl.closest('[data-cb-brand]') as HTMLElement | null;
       if (brandBtn) {
         ev.preventDefault();
@@ -623,15 +658,21 @@ export class SearchableCombobox {
       this.selectedValue && this.displayOverride === null
         ? this.options.find((o) => o.value === this.selectedValue)
         : undefined;
-    if (selectedOpt) {
+    if (selectedOpt && !selectedOpt.pinned) {
       this.activeBrand = this.getBrandOf(selectedOpt);
       this.activeSeries = this.getSeriesOf(selectedOpt);
       return;
     }
-    const brands = this.getSortedBrands(this.options);
+    if (this.defaultShowAll || selectedOpt?.pinned) {
+      this.activeBrand = ALL_TOKEN;
+      this.activeSeries = ALL_TOKEN;
+      return;
+    }
+    const normalPool = this.options.filter((o) => !o.pinned);
+    const brands = this.getSortedBrands(normalPool);
     if (brands.length > 0) {
       this.activeBrand = brands[0].name;
-      const seriesList = this.getSortedSeries(this.options, this.activeBrand);
+      const seriesList = this.getSortedSeries(normalPool, this.activeBrand);
       this.activeSeries = seriesList[0]?.name ?? ALL_TOKEN;
     } else {
       this.activeBrand = ALL_TOKEN;
@@ -645,15 +686,16 @@ export class SearchableCombobox {
     const tokens = query.split(/\s+/).filter(Boolean);
     const pool =
       tokens.length === 0
-        ? this.options
-        : this.options.filter((opt) => tokens.every((t) => opt.searchBlob.includes(t)));
+        ? this.options.filter((o) => !o.pinned)
+        : this.options.filter((o) => !o.pinned && tokens.every((t) => o.searchBlob.includes(t)));
     if (nextBrand === ALL_TOKEN) {
       this.activeSeries = ALL_TOKEN;
     } else {
       const seriesList = this.getSortedSeries(pool, nextBrand);
-      this.activeSeries = tokens.length > 0 && seriesList.length > 1
-        ? ALL_TOKEN
-        : (seriesList[0]?.name ?? ALL_TOKEN);
+      this.activeSeries =
+        (tokens.length > 0 || this.defaultShowAll) && seriesList.length > 1
+          ? ALL_TOKEN
+          : (seriesList[0]?.name ?? ALL_TOKEN);
     }
     this.activeIndex = 0;
     this.renderCascader();
@@ -668,20 +710,38 @@ export class SearchableCombobox {
       tokens.length === 0
         ? this.options
         : this.options.filter((opt) => tokens.every((t) => opt.searchBlob.includes(t)));
+    const pinnedPool = matchedPool.filter((o) => o.pinned);
+    const normalPool = matchedPool.filter((o) => !o.pinned);
 
     if (this.panelClearBtn) {
       this.panelClearBtn.classList.toggle('hidden', query.length === 0);
     }
     if (this.panelCountEl) {
-      this.panelCountEl.textContent = this.itemsCountFormatter(matchedPool.length);
+      const countTarget = normalPool.length > 0 || pinnedPool.length === 0 ? normalPool.length : matchedPool.length;
+      this.panelCountEl.textContent = this.itemsCountFormatter(countTarget);
+    }
+    if (this.sortBarEl) {
+      if (this.sortModes.length > 0) {
+        this.sortBarEl.classList.remove('hidden');
+        this.sortBarEl.classList.add('flex');
+        this.sortBarEl.innerHTML = this.sortModes
+          .map((m) => {
+            const active = m.key === this.activeSortMode;
+            return `<button type="button" data-cb-sort-mode="${escapeHtml(m.key)}" data-active="${active ? 'true' : 'false'}" class="pill-filter text-[11px]">${escapeHtml(m.label)}</button>`;
+          })
+          .join('');
+      } else {
+        this.sortBarEl.classList.add('hidden');
+        this.sortBarEl.classList.remove('flex');
+      }
     }
     if (this.brandHeaderEl) this.brandHeaderEl.textContent = this.brandHeader;
     if (this.seriesHeaderEl) this.seriesHeaderEl.textContent = this.seriesHeader;
     if (this.modelHeaderEl) this.modelHeaderEl.textContent = this.modelHeader;
 
-    const brands = this.getSortedBrands(matchedPool);
+    const brands = this.getSortedBrands(normalPool);
 
-    if (brands.length === 0) {
+    if (brands.length === 0 && pinnedPool.length === 0) {
       this.brandsColEl.innerHTML = `<div class="px-2.5 py-3 text-[11px] text-[var(--ink-tertiary)]">—</div>`;
       this.seriesColEl.innerHTML = `<div class="px-2.5 py-3 text-[11px] text-[var(--ink-tertiary)]">—</div>`;
       this.renderedItems = [];
@@ -694,20 +754,22 @@ export class SearchableCombobox {
       this.activeBrand !== ALL_TOKEN &&
       !brands.some((b) => b.name === this.activeBrand)
     ) {
-      this.activeBrand = tokens.length > 0 ? ALL_TOKEN : brands[0].name;
+      this.activeBrand =
+        tokens.length > 0 || this.defaultShowAll ? ALL_TOKEN : (brands[0]?.name ?? ALL_TOKEN);
     } else if (!this.activeBrand) {
-      this.activeBrand = tokens.length > 0 ? ALL_TOKEN : brands[0].name;
+      this.activeBrand =
+        tokens.length > 0 || this.defaultShowAll ? ALL_TOKEN : (brands[0]?.name ?? ALL_TOKEN);
     }
 
     const brandParts: string[] = [];
-    if (tokens.length > 0 && brands.length > 1) {
+    if ((tokens.length > 0 || this.defaultShowAll) && brands.length > 1) {
       const isAllBrands = this.activeBrand === ALL_TOKEN;
       const cls = isAllBrands
         ? 'bg-[var(--accent-soft)] text-[var(--accent-ink)] font-semibold border-l-2 border-[var(--accent)]'
         : 'text-[var(--ink-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--ink-primary)] border-l-2 border-transparent';
       brandParts.push(
         `<button type="button" data-cb-brand="${ALL_TOKEN}" class="flex w-full items-center justify-between gap-1 px-2 sm:px-2.5 py-2 text-left text-[11px] sm:text-xs transition-colors cursor-pointer ${cls}">
-          <span class="truncate">${escapeHtml(this.allBrandsLabel(matchedPool.length))}</span>
+          <span class="truncate">${escapeHtml(this.allBrandsLabel(normalPool.length))}</span>
         </button>`,
       );
     }
@@ -726,29 +788,29 @@ export class SearchableCombobox {
     }
     this.brandsColEl.innerHTML = brandParts.join('');
 
-    const seriesList = this.getSortedSeries(matchedPool, this.activeBrand);
+    const seriesList = this.getSortedSeries(normalPool, this.activeBrand);
     const brandFilteredPool =
       this.activeBrand === ALL_TOKEN
-        ? matchedPool
-        : matchedPool.filter((o) => this.getBrandOf(o) === this.activeBrand);
+        ? normalPool
+        : normalPool.filter((o) => this.getBrandOf(o) === this.activeBrand);
 
     if (
       this.activeSeries !== ALL_TOKEN &&
       !seriesList.some((s) => s.name === this.activeSeries)
     ) {
       this.activeSeries =
-        tokens.length > 0 && seriesList.length > 1
+        (tokens.length > 0 || this.defaultShowAll) && seriesList.length > 1
           ? ALL_TOKEN
           : (seriesList[0]?.name ?? ALL_TOKEN);
     } else if (!this.activeSeries) {
       this.activeSeries =
-        tokens.length > 0 && seriesList.length > 1
+        (tokens.length > 0 || this.defaultShowAll) && seriesList.length > 1
           ? ALL_TOKEN
           : (seriesList[0]?.name ?? ALL_TOKEN);
     }
 
     const seriesParts: string[] = [];
-    if ((tokens.length > 0 || this.activeBrand === ALL_TOKEN) && seriesList.length > 1) {
+    if ((tokens.length > 0 || this.defaultShowAll || this.activeBrand === ALL_TOKEN) && seriesList.length > 1) {
       const isAllSer = this.activeSeries === ALL_TOKEN;
       const cls = isAllSer
         ? 'bg-[var(--accent-soft)] text-[var(--accent-ink)] font-semibold border-l-2 border-[var(--accent)]'
@@ -774,10 +836,36 @@ export class SearchableCombobox {
     }
     this.seriesColEl.innerHTML = seriesParts.join('');
 
-    const visibleOpts =
+    const filteredNormal =
       this.activeSeries === ALL_TOKEN
         ? brandFilteredPool
         : brandFilteredPool.filter((o) => this.getSeriesOf(o) === this.activeSeries);
+
+    const orderedNormal =
+      this.sortModes.length > 0
+        ? [...filteredNormal].sort((a, b) => {
+            if (this.activeSortMode === 'params-asc') {
+              const pd = (a.sortParams ?? 0) - (b.sortParams ?? 0);
+              if (pd !== 0) return pd;
+              return (b.sortDate || '').localeCompare(a.sortDate || '') || a.label.localeCompare(b.label);
+            }
+            if (this.activeSortMode === 'params-desc') {
+              const pd = (b.sortParams ?? 0) - (a.sortParams ?? 0);
+              if (pd !== 0) return pd;
+              return (b.sortDate || '').localeCompare(a.sortDate || '') || a.label.localeCompare(b.label);
+            }
+            return (
+              (b.sortDate || '').localeCompare(a.sortDate || '') ||
+              (b.sortParams ?? 0) - (a.sortParams ?? 0) ||
+              a.label.localeCompare(b.label)
+            );
+          })
+        : filteredNormal;
+
+    const visibleOpts =
+      this.activeBrand === ALL_TOKEN && this.activeSeries === ALL_TOKEN && pinnedPool.length > 0
+        ? [...pinnedPool, ...orderedNormal]
+        : orderedNormal;
 
     const items: RenderedOption[] = visibleOpts.map((opt) => ({ opt }));
     this.renderedItems = items;
@@ -795,7 +883,8 @@ export class SearchableCombobox {
       this.activeIndex = 0;
     }
 
-    const showSeriesHeaderInModels = this.activeSeries === ALL_TOKEN && seriesList.length > 1;
+    const showSeriesHeaderInModels =
+      this.sortModes.length === 0 && this.activeSeries === ALL_TOKEN && seriesList.length > 1;
     let lastSeries = '';
     const modelParts: string[] = [];
 
@@ -817,6 +906,10 @@ export class SearchableCombobox {
           ? 'bg-[var(--bg-subtle)] text-[var(--accent-ink)]'
           : 'text-[var(--ink-primary)] hover:bg-[var(--bg-subtle)]';
 
+      const metaTagHtml = opt.metaTag
+        ? `<span class="shrink-0 rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--ink-tertiary)] tabular-nums">${escapeHtml(opt.metaTag)}</span>`
+        : '';
+
       const badgeHtml = opt.badge
         ? `<span class="hidden sm:inline-block shrink-0 rounded-md border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-0.5 font-mono text-[10px] font-medium text-[var(--ink-secondary)]">${escapeHtml(opt.badge)}</span>`
         : '';
@@ -836,6 +929,7 @@ export class SearchableCombobox {
             ${subHtml}
           </span>
           <span class="flex items-center gap-1.5 shrink-0">
+            ${metaTagHtml}
             ${badgeHtml}
             ${checkHtml}
           </span>
@@ -1027,6 +1121,7 @@ export class SearchableCombobox {
     if (labels.allBrandsLabel !== undefined) this.allBrandsLabel = labels.allBrandsLabel;
     if (labels.allSeriesLabel !== undefined) this.allSeriesLabel = labels.allSeriesLabel;
     if (labels.itemsCountFormatter !== undefined) this.itemsCountFormatter = labels.itemsCountFormatter;
+    if (labels.sortModes !== undefined) this.sortModes = [...labels.sortModes];
     if (this.mode === 'cascader' && this.isOpen) {
       this.renderCascader();
     }

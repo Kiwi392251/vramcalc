@@ -505,5 +505,9 @@ export const fr: TranslationDict = {
   "gpu.sortVramDesc": "VRAM ↓",
   "gpu.sortBandwidthDesc": "Bande passante ↓",
   "model.sortAiScore": "Score IA ↓",
-  "model.sortParamsAsc": "Paramètres ↑"
+  "model.sortParamsAsc": "Paramètres ↑",
+  "model.sortParamsDesc": "Paramètres ↓",
+  "model.sortNewest": "Plus récents ↓",
+  "home.sortNewest": "Plus récents",
+  "common.lastUpdated": "Dernière mise à jour : {date}"
 };

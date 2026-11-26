@@ -505,5 +505,9 @@ export const ja: TranslationDict = {
   "gpu.sortVramDesc": "VRAM ↓",
   "gpu.sortBandwidthDesc": "帯域幅 ↓",
   "model.sortAiScore": "AI能力 ↓",
-  "model.sortParamsAsc": "パラメータ ↑"
+  "model.sortParamsAsc": "パラメータ ↑",
+  "model.sortParamsDesc": "パラメータ ↓",
+  "model.sortNewest": "新着順 ↓",
+  "home.sortNewest": "新着順",
+  "common.lastUpdated": "最終更新: {date}"
 };

@@ -83,6 +83,16 @@ NEW_GUIDE_PAIRS: list[tuple[str, str]] = [
     ("mixtral-8x7b", "rtx-5090-32gb"),
     ("glm-4.7-flash", "rtx-4090-24gb"),
     ("nemotron-3.5-lightning-30b", "rtx-4090-24gb"),
+    ("qwen3-next-80b-a3b", "apple-m4-max-128gb"),
+    ("qwen3-next-80b-a3b", "apple-m4-pro-64gb"),
+    ("gemma-4-e2b", "raspberry-pi-5-8gb"),
+    ("gemma-4-e2b", "jetson-orin-nano-super-8gb"),
+    ("deepseek-r1-0528-qwen3-8b", "rtx-4060-8gb"),
+    ("deepseek-r1-0528-qwen3-8b", "apple-m4-16gb"),
+    ("minimax-m2.5-230b", "apple-m3-ultra-256gb"),
+    ("step-3.5-flash-196b", "apple-m4-max-128gb"),
+    ("seed-oss-36b", "rtx-5090-32gb"),
+    ("magistral-small-24b", "rtx-4090-24gb"),
 ]
 
 

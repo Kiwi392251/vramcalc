@@ -3,13 +3,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import rawPagesData from '../../data/pages_data.json';
 import rawCatalog from '../../data/catalog_data.json';
 import type { CatalogData, VramPageEntry } from '../../types/vram';
-import { buildHardwareHubs, getCatalogUpdatedAt } from '../../utils/hubs';
+import { buildHardwareHubs, getBuildDateIso } from '../../utils/hubs';
 import { formatTpsRange } from '../../utils/physics';
 import { officialPriceI18n, officialPriceSortValue } from '../../utils/pricing';
 
 const allEntries = rawPagesData as VramPageEntry[];
 const catalog = rawCatalog as CatalogData;
-const updatedAt = getCatalogUpdatedAt();
+const updatedAt = getBuildDateIso();
 const hubs = buildHardwareHubs(allEntries);
 
 const totalHubs = hubs.length;
@@ -130,8 +130,8 @@ const groupI18nMap: Record<string, string> = {
         <span class="badge-neutral font-mono text-xs">
           CUDA · Metal · ROCm · XPU
         </span>
-        <span class="badge-fits font-mono text-xs" data-i18n="common.updated" data-i18n-args={updatedArgs}>
-          Updated {updatedAt}
+        <span class="badge-fits font-mono text-xs" data-i18n="common.lastUpdated" data-i18n-args={updatedArgs}>
+          Last updated: {updatedAt}
         </span>
       </div>
 
@@ -168,8 +168,8 @@ const groupI18nMap: Record<string, string> = {
 
     <section class="mt-2" aria-label="Filter hardware hubs">
       <div class="surface-card p-4 sm:p-5">
-        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by vendor">
+        <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-1.5" role="group" aria-label="Filter by vendor">
             {vendorFilters.map((vf) => (
               <button
                 type="button"
@@ -184,7 +184,7 @@ const groupI18nMap: Record<string, string> = {
             ))}
           </div>
 
-          <div class="w-full md:w-72">
+          <div class="w-full shrink-0 md:w-72">
             <label for="dir-gpu-search" class="sr-only">Search hardware</label>
             <input
               id="dir-gpu-search"

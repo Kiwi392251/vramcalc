@@ -505,5 +505,9 @@ export const zhTW: TranslationDict = {
   "gpu.sortVramDesc": "顯存 ↓",
   "gpu.sortBandwidthDesc": "頻寬 ↓",
   "model.sortAiScore": "AI 能力 ↓",
-  "model.sortParamsAsc": "參數量 ↑"
+  "model.sortParamsAsc": "參數量 ↑",
+  "model.sortParamsDesc": "參數量 ↓",
+  "model.sortNewest": "最新發布 ↓",
+  "home.sortNewest": "最新發布優先",
+  "common.lastUpdated": "最後更新：{date}"
 };

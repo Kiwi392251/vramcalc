@@ -563,4 +563,8 @@ export const en = {
   'gpu.sortBandwidthDesc': 'Bandwidth ↓',
   'model.sortAiScore': 'AI Score ↓',
   'model.sortParamsAsc': 'Params ↑',
+  'model.sortParamsDesc': 'Params ↓',
+  'model.sortNewest': 'Newest First',
+  'home.sortNewest': 'Newest First',
+  'common.lastUpdated': 'Last updated: {date}',
 } as const;

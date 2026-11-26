@@ -10,7 +10,7 @@ import {
   buildModelFaq,
   buildModelHubs,
   getBenchmarksMethodologyNote,
-  getCatalogUpdatedAt,
+  getBuildDateIso,
   getFreshnessMeta,
   getReferenceBenchmarks,
   type ModelHub,
@@ -55,14 +55,19 @@ const {
   topPicks,
 } = hub;
 
-const updatedAt = getCatalogUpdatedAt();
+const updatedAt = getBuildDateIso();
 const faq = buildModelFaq(hub);
 const refBenchmarks = getReferenceBenchmarks({ modelId: model.id });
 const refNote = getBenchmarksMethodologyNote();
 
 const otherModels = allModels
   .filter((m) => m.id !== model.id)
-  .sort((a, b) => a.params_b - b.params_b || a.name.localeCompare(b.name));
+  .sort(
+    (a, b) =>
+      (b.releaseDate || '').localeCompare(a.releaseDate || '') ||
+      b.params_b - a.params_b ||
+      a.name.localeCompare(b.name),
+  );
 
 const q4VramLabel = `${q4Row.total_vram_gb.toFixed(2)} GB`;
 const q4WeightsLabel = `${q4Row.weights_gb.toFixed(2)} GB weights`;
@@ -187,7 +192,7 @@ const ogImage = `/og/model-${model.id}.png`;
             {model.family}
           </span>
           <span class="font-mono text-xs text-[var(--ink-tertiary)]">
-            {model.params_b}B · {model.num_layers}L · {model.architecture} · {maxContextLabel} max ({model.release_year})
+            {model.params_b}B · {model.num_layers}L · {model.architecture} · {maxContextLabel} max · {model.releaseDate}
           </span>
           {model.aa_index && (
             <span
@@ -205,8 +210,8 @@ const ogImage = `/og/model-${model.id}.png`;
               Arena · {model.arena_elo}{model.arena_rank ? ` (#${model.arena_rank})` : ''}
             </span>
           )}
-          <span class="badge-fits font-mono text-xs" data-i18n="common.updated" data-i18n-args={updatedArgs}>
-            Updated {updatedAt}
+          <span class="badge-fits font-mono text-xs" data-i18n="common.lastUpdated" data-i18n-args={updatedArgs}>
+            Last updated: {updatedAt}
           </span>
         </div>
 

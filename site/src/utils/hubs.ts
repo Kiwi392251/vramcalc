@@ -85,8 +85,14 @@ export interface ModelHub {
 const catalogData = rawCatalog as CatalogData;
 const benchmarksData = rawBenchmarks as BenchmarksData;
 
+const BUILD_DATE_ISO = new Date().toISOString().slice(0, 10);
+
+export function getBuildDateIso(): string {
+  return BUILD_DATE_ISO;
+}
+
 export function getCatalogUpdatedAt(): string {
-  return catalogData.updated_at ?? '2026-11-24';
+  return catalogData.updated_at ?? BUILD_DATE_ISO;
 }
 
 export function getEngineVersion(): string {
@@ -529,7 +535,12 @@ export function buildModelHubs(allEntries: VramPageEntry[]): ModelHub[] {
     });
   }
 
-  return hubs.sort((a, b) => a.model.params_b - b.model.params_b || a.model.name.localeCompare(b.model.name));
+  return hubs.sort(
+    (a, b) =>
+      (b.model.releaseDate || '').localeCompare(a.model.releaseDate || '') ||
+      b.model.params_b - a.model.params_b ||
+      a.model.name.localeCompare(b.model.name),
+  );
 }
 
 export function buildHardwareFaq(hub: HardwareHub): FaqItem[] {

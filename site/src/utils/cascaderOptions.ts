@@ -232,11 +232,12 @@ function resolveModelBrand(family: string): { brand: string; brandOrder: number;
       'Qwen3.8': 1,
       'Qwen3.6': 2,
       'Qwen3.5': 3,
-      'Qwen3-Coder': 4,
-      'Qwen3-VL': 5,
-      Qwen3: 6,
-      'Qwen2.5-Coder': 7,
-      'Qwen2.5': 8,
+      'Qwen3-Next': 4,
+      'Qwen3-Coder': 5,
+      'Qwen3-VL': 6,
+      Qwen3: 7,
+      'Qwen2.5-Coder': 8,
+      'Qwen2.5': 9,
     };
     return { brand: 'Qwen (Alibaba)', brandOrder: 1, seriesOrder: orderMap[family] ?? 10 };
   }
@@ -269,14 +270,26 @@ function resolveModelBrand(family: string): { brand: string; brandOrder: number;
   if (family === 'Kimi') {
     return { brand: 'Moonshot Kimi', brandOrder: 7, seriesOrder: 1 };
   }
+  if (family === 'MiniMax') {
+    return { brand: 'MiniMax', brandOrder: 8, seriesOrder: 1 };
+  }
+  if (family === 'StepFun') {
+    return { brand: 'StepFun', brandOrder: 9, seriesOrder: 1 };
+  }
+  if (family === 'Seed-OSS') {
+    return { brand: 'ByteDance Seed', brandOrder: 10, seriesOrder: 1 };
+  }
   if (family === 'Mistral' || family === 'Mixtral') {
-    return { brand: 'Mistral', brandOrder: 8, seriesOrder: family === 'Mistral' ? 1 : 2 };
+    return { brand: 'Mistral', brandOrder: 11, seriesOrder: family === 'Mistral' ? 1 : 2 };
   }
   if (family === 'Nemotron') {
-    return { brand: 'NVIDIA Nemotron', brandOrder: 9, seriesOrder: 1 };
+    return { brand: 'NVIDIA Nemotron', brandOrder: 12, seriesOrder: 1 };
   }
   if (family === 'Phi-4') {
-    return { brand: 'Microsoft Phi', brandOrder: 10, seriesOrder: 1 };
+    return { brand: 'Microsoft Phi', brandOrder: 13, seriesOrder: 1 };
+  }
+  if (family === 'SmolLM3') {
+    return { brand: 'HuggingFace SmolLM', brandOrder: 14, seriesOrder: 1 };
   }
   return { brand: family, brandOrder: 50, seriesOrder: 50 };
 }
@@ -294,17 +307,23 @@ export function buildModelCascaderOptions(params: {
     opts.push({
       value: 'all',
       label: allLabel,
+      pinned: true,
       brand: t('status.all'),
       brandOrder: 0,
       series: allLabel,
       seriesOrder: 0,
       badge: `${models.length} LLMs`,
-      sublabel: 'Qwen3.8 · Qwen3 · DeepSeek-R1 · Gemma 3 · Llama-3.3',
+      sublabel: 'DeepSeek-V4.1 · Qwen3.8 · Gemma 4 · GLM-5.3 · MiniMax-M2.5',
       searchBlob: `all models every llm 全部模型 所有模型 ${allLabel}`.toLowerCase(),
     });
   }
 
-  const sorted = [...models].sort((a, b) => a.params_b - b.params_b);
+  const sorted = [...models].sort(
+    (a, b) =>
+      (b.releaseDate || '').localeCompare(a.releaseDate || '') ||
+      b.params_b - a.params_b ||
+      a.name.localeCompare(b.name),
+  );
   for (const m of sorted) {
     const { brand, brandOrder, seriesOrder } = resolveModelBrand(m.family);
     const moeBadge = m.active_params_b ? `${m.params_b}B MoE` : `${m.params_b}B`;
@@ -322,6 +341,9 @@ export function buildModelCascaderOptions(params: {
       series: m.family,
       seriesOrder,
       badge: moeBadge,
+      metaTag: m.releaseDate,
+      sortDate: m.releaseDate,
+      sortParams: m.params_b,
       sublabel,
       searchBlob: [
         m.id,
@@ -331,6 +353,8 @@ export function buildModelCascaderOptions(params: {
         brand,
         m.architecture,
         m.ollama_tag,
+        m.releaseDate,
+        m.releaseDate.slice(0, 4),
         `${m.params_b}b`,
         m.active_params_b ? `${m.active_params_b}b moe` : 'dense',
         'uncensored abliterated heretic',

@@ -1150,8 +1150,15 @@ const simRamNoteArgs = JSON.stringify({
           options: makeModelOpts(),
           mode: 'cascader',
           initialValue: modelId,
+          defaultShowAll: true,
+          initialSortMode: 'newest',
           emptyText: t('home.modelEmpty'),
           ...cascaderLabels('cb.searchModelPh'),
+          sortModes: [
+            { key: 'newest', label: t('model.sortNewest') },
+            { key: 'params-asc', label: t('model.sortParamsAsc') },
+            { key: 'params-desc', label: t('model.sortParamsDesc') },
+          ],
           onChange: (val) => {
             if (val && modelById.has(val)) {
               modelId = val;
@@ -1920,7 +1927,14 @@ const simRamNoteArgs = JSON.stringify({
         modelCb.setOptions(makeModelOpts(), true);
         modelCb.setEmptyText(t('home.modelEmpty'));
         modelCb.setPlaceholder(t('sim.selectModelPh'));
-        modelCb.setCascaderLabels(cascaderLabels('cb.searchModelPh'));
+        modelCb.setCascaderLabels({
+          ...cascaderLabels('cb.searchModelPh'),
+          sortModes: [
+            { key: 'newest', label: t('model.sortNewest') },
+            { key: 'params-asc', label: t('model.sortParamsAsc') },
+            { key: 'params-desc', label: t('model.sortParamsDesc') },
+          ],
+        });
       }
       render();
     });

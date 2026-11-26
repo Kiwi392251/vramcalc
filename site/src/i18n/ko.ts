@@ -505,5 +505,9 @@ export const ko: TranslationDict = {
   "gpu.sortVramDesc": "VRAM ↓",
   "gpu.sortBandwidthDesc": "대역폭 ↓",
   "model.sortAiScore": "AI 점수 ↓",
-  "model.sortParamsAsc": "파라미터 ↑"
+  "model.sortParamsAsc": "파라미터 ↑",
+  "model.sortParamsDesc": "파라미터 ↓",
+  "model.sortNewest": "최신순 ↓",
+  "home.sortNewest": "최신순",
+  "common.lastUpdated": "마지막 업데이트: {date}"
 };

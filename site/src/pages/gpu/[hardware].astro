@@ -10,7 +10,7 @@ import {
   buildHardwareFaq,
   buildHardwareHubs,
   getBenchmarksMethodologyNote,
-  getCatalogUpdatedAt,
+  getBuildDateIso,
   getFreshnessMeta,
   getReferenceBenchmarks,
   type HardwareHub,
@@ -49,7 +49,7 @@ const {
   picks,
 } = hub;
 
-const updatedAt = getCatalogUpdatedAt();
+const updatedAt = getBuildDateIso();
 const faq = buildHardwareFaq(hub);
 const allModelsCount = rows.length;
 const hwPrice = officialPriceI18n(hardware, false);
@@ -212,8 +212,8 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
               {hardware.price_note}
             </span>
           )}
-          <span class="badge-fits font-mono text-xs" data-i18n="common.updated" data-i18n-args={updatedArgs}>
-            Updated {updatedAt}
+          <span class="badge-fits font-mono text-xs" data-i18n="common.lastUpdated" data-i18n-args={updatedArgs}>
+            Last updated: {updatedAt}
           </span>
         </div>
 
@@ -514,6 +514,8 @@ const ogImage = `/og/gpu-${hardware.id}.png`;
                     </div>
                     <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-[var(--ink-tertiary)]">
                       <span class="font-mono">{row.model.params_b}B{moeLabel}</span>
+                      <span>·</span>
+                      <span class="font-mono">{row.model.releaseDate}</span>
                       <span>·</span>
                       <a href={modelHubHref} class="hover:text-[var(--ink-primary)] underline decoration-[var(--border-strong)] underline-offset-2">
                         {row.model.family}

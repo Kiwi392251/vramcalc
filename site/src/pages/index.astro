@@ -10,6 +10,7 @@ import {
   buildHardwareHubs,
   buildModelHubs,
   getBenchmarksMethodologyNote,
+  getBuildDateIso,
   getReferenceBenchmarks,
   statusRank,
 } from '../utils/hubs';
@@ -39,7 +40,7 @@ const HOME_QUANT_OPTIONS: ReadonlyArray<{
 ];
 const catalog = catalogRaw as CatalogData;
 const rawEntries = rawPagesData as PageEntry[];
-const updatedAt = catalog.updated_at ?? '2026-11-24';
+const updatedAt = getBuildDateIso();
 const engineVersion = catalog.engine_version ?? 'v3.3';
 
 const FEATURED_TOP_SLUGS = [
@@ -282,6 +283,7 @@ const staticIndexRows = entries.map((e) => {
 
 const sortSelectOptions = [
   { value: 'featured', label: 'Recommended', dataI18n: 'home.sortRecommended' },
+  { value: 'newest', label: 'Newest First', dataI18n: 'home.sortNewest' },
   { value: 'ai-score', label: 'Best AI Score (AA + Arena)', dataI18n: 'home.sortAiScore' },
   { value: 'tps-desc', label: 'Fastest tok/s', dataI18n: 'home.sortFastest' },
   { value: 'vram-asc', label: 'Lowest VRAM', dataI18n: 'home.sortLowestVram' },
@@ -334,6 +336,18 @@ const staticIndexSubArgs = JSON.stringify({
   <section class="border-b border-[var(--border-hairline)] bg-[var(--bg-surface)]">
     <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
       <div class="max-w-3xl">
+        <div class="mb-4 inline-flex flex-wrap items-center gap-2 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-1 text-xs">
+          <span class="inline-flex items-center gap-1.5 font-mono font-semibold text-emerald-600 dark:text-emerald-400">
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true"></span>
+            <span data-i18n="common.lastUpdated" data-i18n-args={updatedArgs}>
+              Last updated: {updatedAt}
+            </span>
+          </span>
+          <span class="text-[var(--border-strong)]" aria-hidden="true">·</span>
+          <span class="font-mono text-[var(--ink-secondary)] tabular-nums">
+            {catalogModelCount} Models × {catalogHwCount} Hardware
+          </span>
+        </div>
         <h1 class="text-3xl sm:text-[42px] font-bold tracking-[-0.03em] leading-[1.12] text-[var(--ink-primary)]" data-i18n="home.heroTitle">
           Local AI Model VRAM &amp; Inference Speed Matrix
         </h1>
@@ -887,6 +901,7 @@ const staticIndexSubArgs = JSON.stringify({
           <article
             data-card
             data-index={idx}
+            data-release-date={entry.model.releaseDate}
             data-ai-score={aiScore}
             data-tps={res.est_tps}
             data-vram={res.total_vram_gb}
@@ -922,26 +937,27 @@ const staticIndexSubArgs = JSON.stringify({
                 </a>
               </h2>
 
-              {(entry.model.aa_index || entry.model.arena_elo) && (
-                <div class="mt-2 flex flex-wrap items-center gap-1.5 font-mono text-[10px]">
-                  {entry.model.aa_index && (
-                    <span
-                      class="badge-accent rounded px-1.5 py-px font-semibold"
-                      title={entry.model.aa_label ?? 'Artificial Analysis Intelligence Index v5.0.2'}
-                    >
-                      AA Score · {entry.model.aa_index}
-                    </span>
-                  )}
-                  {entry.model.arena_elo && (
-                    <span
-                      class="rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-px font-medium text-[var(--ink-secondary)]"
-                      title={entry.model.arena_rank ? `LMArena Text Arena #${entry.model.arena_rank} (2026-11-22)` : 'LMArena Text Arena Elo (2026-11-22)'}
-                    >
-                      Arena · {entry.model.arena_elo}
-                    </span>
-                  )}
-                </div>
-              )}
+              <div class="mt-2 flex flex-wrap items-center gap-1.5 font-mono text-[10px]">
+                <span class="rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-px text-[var(--ink-tertiary)] tabular-nums">
+                  {entry.model.releaseDate}
+                </span>
+                {entry.model.aa_index && (
+                  <span
+                    class="badge-accent rounded px-1.5 py-px font-semibold"
+                    title={entry.model.aa_label ?? 'Artificial Analysis Intelligence Index v5.0.2'}
+                  >
+                    AA Score · {entry.model.aa_index}
+                  </span>
+                )}
+                {entry.model.arena_elo && (
+                  <span
+                    class="rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-px font-medium text-[var(--ink-secondary)]"
+                    title={entry.model.arena_rank ? `LMArena Text Arena #${entry.model.arena_rank} (2026-11-22)` : 'LMArena Text Arena Elo (2026-11-22)'}
+                  >
+                    Arena · {entry.model.arena_elo}
+                  </span>
+                )}
+              </div>
 
               <p
                 class="mt-2 line-clamp-2 text-xs leading-relaxed text-[var(--ink-tertiary)]"
@@ -1362,6 +1378,9 @@ const staticIndexSubArgs = JSON.stringify({
                       <a href={mHref} class="text-[13px] font-semibold text-[var(--ink-primary)] hover:text-[var(--accent-ink)] transition-colors">
                         {hub.model.name}
                       </a>
+                      <span class="ml-1.5 rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-px font-mono text-[10px] text-[var(--ink-tertiary)] tabular-nums">
+                        {hub.model.releaseDate}
+                      </span>
                       <span class="ml-1.5 font-mono text-[11px] text-[var(--ink-tertiary)]">{hub.model.architecture}</span>
                     </td>
                     <td class="px-2.5 py-2.5 font-mono text-[10.5px] whitespace-nowrap">
@@ -2038,6 +2057,13 @@ const staticIndexSubArgs = JSON.stringify({
       allBrandsLabel: (n) => t('cb.allBrands', { count: n }),
       allSeriesLabel: (n) => t('cb.allSeries', { count: n }),
       itemsCountFormatter: (n) => t('cb.countItems', { count: n }),
+      defaultShowAll: true,
+      initialSortMode: 'newest',
+      sortModes: [
+        { key: 'newest', label: t('model.sortNewest') },
+        { key: 'params-asc', label: t('model.sortParamsAsc') },
+        { key: 'params-desc', label: t('model.sortParamsDesc') },
+      ],
       emptyValue: 'all',
       initialValue: 'all',
       emptyText: t('home.modelEmpty'),
@@ -2214,6 +2240,15 @@ const staticIndexSubArgs = JSON.stringify({
     function sortCardsInDom(sortMode: string) {
       if (!cardsGrid) return;
       const sorted = [...cards].sort((a, b) => {
+        if (sortMode === 'newest') {
+          const dd = (b.getAttribute('data-release-date') || '').localeCompare(
+            a.getAttribute('data-release-date') || '',
+          );
+          if (dd !== 0) return dd;
+          const sr = Number(a.getAttribute('data-status-rank') || 0) - Number(b.getAttribute('data-status-rank') || 0);
+          if (sr !== 0) return sr;
+          return Number(b.getAttribute('data-params') || 0) - Number(a.getAttribute('data-params') || 0);
+        }
         if (sortMode === 'ai-score') {
           const ad = Number(b.getAttribute('data-ai-score') || 0) - Number(a.getAttribute('data-ai-score') || 0);
           if (ad !== 0) return ad;
@@ -2275,6 +2310,13 @@ const staticIndexSubArgs = JSON.stringify({
 
     function sortLiveItems(items: LiveItem[], sortVal: string) {
       items.sort((a, b) => {
+        if (sortVal === 'newest') {
+          const dd = (b.model.releaseDate || '').localeCompare(a.model.releaseDate || '');
+          if (dd !== 0) return dd;
+          if (a.rank !== b.rank) return a.rank - b.rank;
+          if (b.model.params_b !== a.model.params_b) return b.model.params_b - a.model.params_b;
+          return b.res.est_tps - a.res.est_tps;
+        }
         if (sortVal === 'ai-score') {
           const sd = aiCapabilitySortScore(b.model) - aiCapabilitySortScore(a.model);
           if (sd !== 0) return sd;
@@ -2786,17 +2828,15 @@ const staticIndexSubArgs = JSON.stringify({
                 params: model.params_b,
                 arch: model.architecture,
               });
-          const scorePillsHtml = (model.aa_index || model.arena_elo)
-            ? `<div class="mt-2 flex flex-wrap items-center gap-1.5 font-mono text-[10px]">${
-                model.aa_index
-                  ? `<span class="badge-accent rounded px-1.5 py-px font-semibold" title="${escapeHtml(model.aa_label || 'Artificial Analysis Intelligence Index v5.0.2')}">AA Score · ${model.aa_index}</span>`
-                  : ''
-              }${
-                model.arena_elo
-                  ? `<span class="rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-px font-medium text-[var(--ink-secondary)]" title="${escapeHtml(model.arena_rank ? `LMArena Text Arena #${model.arena_rank} (2026-11-22)` : 'LMArena Text Arena Elo (2026-11-22)')}">Arena · ${model.arena_elo}</span>`
-                  : ''
-              }</div>`
-            : '';
+          const scorePillsHtml = `<div class="mt-2 flex flex-wrap items-center gap-1.5 font-mono text-[10px]"><span class="rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-px text-[var(--ink-tertiary)] tabular-nums">${escapeHtml(model.releaseDate)}</span>${
+            model.aa_index
+              ? `<span class="badge-accent rounded px-1.5 py-px font-semibold" title="${escapeHtml(model.aa_label || 'Artificial Analysis Intelligence Index v5.0.2')}">AA Score · ${model.aa_index}</span>`
+              : ''
+          }${
+            model.arena_elo
+              ? `<span class="rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-px font-medium text-[var(--ink-secondary)]" title="${escapeHtml(model.arena_rank ? `LMArena Text Arena #${model.arena_rank} (2026-11-22)` : 'LMArena Text Arena Elo (2026-11-22)')}">Arena · ${model.arena_elo}</span>`
+              : ''
+          }</div>`;
 
           const primaryHref = guideSlug ? `/can-i-run/${encodeURIComponent(guideSlug)}/` : simHref;
           const footerActions = guideSlug
@@ -3600,6 +3640,11 @@ const staticIndexSubArgs = JSON.stringify({
         allBrandsLabel: (n) => t('cb.allBrands', { count: n }),
         allSeriesLabel: (n) => t('cb.allSeries', { count: n }),
         itemsCountFormatter: (n) => t('cb.countItems', { count: n }),
+        sortModes: [
+          { key: 'newest', label: t('model.sortNewest') },
+          { key: 'params-asc', label: t('model.sortParamsAsc') },
+          { key: 'params-desc', label: t('model.sortParamsDesc') },
+        ],
       });
       modelCombo.setValue(selectedModel);
 

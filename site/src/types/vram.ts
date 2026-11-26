@@ -67,6 +67,7 @@ export interface ModelSpec {
   awq_repo?: string;
   mlx_repo?: string;
   release_year: number;
+  releaseDate: string;
   use_cases: string[];
   aa_index?: number;
   aa_label?: string;

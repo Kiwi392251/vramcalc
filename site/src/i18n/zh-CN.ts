@@ -505,5 +505,9 @@ export const zhCN: TranslationDict = {
   "gpu.sortVramDesc": "显存 ↓",
   "gpu.sortBandwidthDesc": "带宽 ↓",
   "model.sortAiScore": "AI 能力 ↓",
-  "model.sortParamsAsc": "参数量 ↑"
+  "model.sortParamsAsc": "参数量 ↑",
+  "model.sortParamsDesc": "参数量 ↓",
+  "model.sortNewest": "最新发布 ↓",
+  "home.sortNewest": "最新发布优先",
+  "common.lastUpdated": "最后更新：{date}"
 };

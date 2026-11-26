@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal, TypedDict
 
-CATALOG_UPDATED_AT = "2026-11-25"
+CATALOG_UPDATED_AT = "2026-11-26"
 ENGINE_VERSION = "v3.3"
 
 HardwareVendor = Literal["NVIDIA", "Apple", "AMD", "Intel", "Qualcomm", "Raspberry Pi"]
@@ -49,6 +49,7 @@ class _ModelSpecRequired(TypedDict):
     hf_repo: str
     gguf_file_q4: str
     release_year: int
+    releaseDate: str
     use_cases: list[str]
 
 
@@ -121,7 +122,12 @@ MODELS: list[ModelSpec] = [
         "gguf_file_q4": "DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf",
         "mlx_repo": "mlx-community/DeepSeek-R1-Distill-Qwen-1.5B-4bit",
         "release_year": 2025,
-        "use_cases": ["Edge reasoning", "Fast math scratchpad", "Ultrabook offline assistant"],
+        "use_cases": [
+            "Edge reasoning",
+            "Fast math scratchpad",
+            "Ultrabook offline assistant"
+        ],
+        "releaseDate": "2025-01"
     },
     {
         "id": "deepseek-r1-7b",
@@ -140,7 +146,12 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "casperhansen/deepseek-r1-distill-qwen-7b-awq",
         "mlx_repo": "mlx-community/DeepSeek-R1-Distill-Qwen-7B-4bit",
         "release_year": 2025,
-        "use_cases": ["Chain-of-thought reasoning", "Local math & logic", "8GB-12GB GPU workstations"],
+        "use_cases": [
+            "Chain-of-thought reasoning",
+            "Local math & logic",
+            "8GB-12GB GPU workstations"
+        ],
+        "releaseDate": "2025-01"
     },
     {
         "id": "deepseek-r1-14b",
@@ -159,7 +170,12 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "casperhansen/deepseek-r1-distill-qwen-14b-awq",
         "mlx_repo": "mlx-community/DeepSeek-R1-Distill-Qwen-14B-4bit",
         "release_year": 2025,
-        "use_cases": ["Mid-size reasoning", "Algorithmic problem solving", "16GB GPU sweet spot"],
+        "use_cases": [
+            "Mid-size reasoning",
+            "Algorithmic problem solving",
+            "16GB GPU sweet spot"
+        ],
+        "releaseDate": "2025-01"
     },
     {
         "id": "deepseek-r1-32b",
@@ -178,7 +194,12 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "casperhansen/deepseek-r1-distill-qwen-32b-awq",
         "mlx_repo": "mlx-community/DeepSeek-R1-Distill-Qwen-32B-4bit",
         "release_year": 2025,
-        "use_cases": ["Deep STEM reasoning", "Complex debugging", "Code verification"],
+        "use_cases": [
+            "Deep STEM reasoning",
+            "Complex debugging",
+            "Code verification"
+        ],
+        "releaseDate": "2025-01"
     },
     {
         "id": "deepseek-r1-70b",
@@ -200,8 +221,9 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "Frontier-class local reasoning",
             "Research synthesis",
-            "High-memory Mac Studio / multi-GPU",
+            "High-memory Mac Studio / multi-GPU"
         ],
+        "releaseDate": "2025-01"
     },
     {
         "id": "qwen2.5-coder-7b",
@@ -220,7 +242,12 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "Qwen/Qwen2.5-Coder-7B-Instruct-AWQ",
         "mlx_repo": "mlx-community/Qwen2.5-Coder-7B-Instruct-4bit",
         "release_year": 2024,
-        "use_cases": ["IDE autocomplete", "Fast FIM snippets", "Low-latency local copilot"],
+        "use_cases": [
+            "IDE autocomplete",
+            "Fast FIM snippets",
+            "Low-latency local copilot"
+        ],
+        "releaseDate": "2024-11"
     },
     {
         "id": "qwen2.5-coder-14b",
@@ -239,7 +266,12 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "Qwen/Qwen2.5-Coder-14B-Instruct-AWQ",
         "mlx_repo": "mlx-community/Qwen2.5-Coder-14B-Instruct-4bit",
         "release_year": 2024,
-        "use_cases": ["Multi-file refactoring", "Unit test generation", "16GB GPU coding agent"],
+        "use_cases": [
+            "Multi-file refactoring",
+            "Unit test generation",
+            "16GB GPU coding agent"
+        ],
+        "releaseDate": "2024-11"
     },
     {
         "id": "qwen2.5-coder-32b",
@@ -258,9 +290,14 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "Qwen/Qwen2.5-Coder-32B-Instruct-AWQ",
         "mlx_repo": "mlx-community/Qwen2.5-Coder-32B-Instruct-4bit",
         "release_year": 2024,
-        "use_cases": ["Full-repo code review", "Agentic coding", "SQL & architecture generation"],
+        "use_cases": [
+            "Full-repo code review",
+            "Agentic coding",
+            "SQL & architecture generation"
+        ],
         "arena_elo": 1271,
         "arena_rank": 140,
+        "releaseDate": "2024-11"
     },
     {
         "id": "llama-3.3-70b",
@@ -282,10 +319,11 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "General-purpose flagship assistant",
             "Long-document synthesis",
-            "Structured JSON & tool calling",
+            "Structured JSON & tool calling"
         ],
         "arena_elo": 1318,
         "arena_rank": 110,
+        "releaseDate": "2024-12"
     },
     {
         "id": "llama-3.1-8b",
@@ -304,9 +342,14 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "hugging-quants/Meta-Llama-3.1-8B-Instruct-AWQ-INT4",
         "mlx_repo": "mlx-community/Meta-Llama-3.1-8B-Instruct-4bit",
         "release_year": 2024,
-        "use_cases": ["Fast local chat", "Summarization", "8GB-12GB GPU baseline"],
+        "use_cases": [
+            "Fast local chat",
+            "Summarization",
+            "8GB-12GB GPU baseline"
+        ],
         "arena_elo": 1211,
         "arena_rank": 160,
+        "releaseDate": "2024-07"
     },
     {
         "id": "qwen2.5-72b",
@@ -325,9 +368,14 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "Qwen/Qwen2.5-72B-Instruct-AWQ",
         "mlx_repo": "mlx-community/Qwen2.5-72B-Instruct-4bit",
         "release_year": 2024,
-        "use_cases": ["Multilingual enterprise chat", "RAG over large docs", "High-memory workstations"],
+        "use_cases": [
+            "Multilingual enterprise chat",
+            "RAG over large docs",
+            "High-memory workstations"
+        ],
         "arena_elo": 1303,
         "arena_rank": 123,
+        "releaseDate": "2024-09"
     },
     {
         "id": "mistral-small-24b",
@@ -346,9 +394,14 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "solidrust/Mistral-Small-24B-Instruct-2501-AWQ",
         "mlx_repo": "mlx-community/Mistral-Small-24B-Instruct-2501-4bit",
         "release_year": 2025,
-        "use_cases": ["Low-latency 24GB GPU reasoning", "Function calling", "European language fluency"],
+        "use_cases": [
+            "Low-latency 24GB GPU reasoning",
+            "Function calling",
+            "European language fluency"
+        ],
         "arena_elo": 1274,
         "arena_rank": 139,
+        "releaseDate": "2025-01"
     },
     {
         "id": "llama-3.2-3b",
@@ -366,9 +419,14 @@ MODELS: list[ModelSpec] = [
         "gguf_file_q4": "Llama-3.2-3B-Instruct-Q4_K_M.gguf",
         "mlx_repo": "mlx-community/Llama-3.2-3B-Instruct-4bit",
         "release_year": 2024,
-        "use_cases": ["Edge chat", "Fast summarization", "6GB GPU / 8GB Mac fit"],
+        "use_cases": [
+            "Edge chat",
+            "Fast summarization",
+            "6GB GPU / 8GB Mac fit"
+        ],
         "arena_elo": 1167,
         "arena_rank": 185,
+        "releaseDate": "2024-09"
     },
     {
         "id": "gemma-3-4b",
@@ -387,9 +445,14 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "solidrust/gemma-3-4b-it-AWQ",
         "mlx_repo": "mlx-community/gemma-3-4b-it-4bit",
         "release_year": 2025,
-        "use_cases": ["Lightweight reasoning", "Multilingual chat", "6GB-8GB laptops"],
+        "use_cases": [
+            "Lightweight reasoning",
+            "Multilingual chat",
+            "6GB-8GB laptops"
+        ],
         "arena_elo": 1303,
         "arena_rank": 122,
+        "releaseDate": "2025-03"
     },
     {
         "id": "qwen3-4b",
@@ -408,7 +471,12 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "Qwen/Qwen3-4B-AWQ",
         "mlx_repo": "mlx-community/Qwen3-4B-4bit",
         "release_year": 2025,
-        "use_cases": ["Hybrid thinking mode", "Fast local assistant", "Low-VRAM GPUs"],
+        "use_cases": [
+            "Hybrid thinking mode",
+            "Fast local assistant",
+            "Low-VRAM GPUs"
+        ],
+        "releaseDate": "2025-04"
     },
     {
         "id": "qwen3-8b",
@@ -427,7 +495,12 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "Qwen/Qwen3-8B-AWQ",
         "mlx_repo": "mlx-community/Qwen3-8B-4bit",
         "release_year": 2025,
-        "use_cases": ["Thinking/non-thinking chat", "Tool calling", "8GB-16GB GPUs & Macs"],
+        "use_cases": [
+            "Thinking/non-thinking chat",
+            "Tool calling",
+            "8GB-16GB GPUs & Macs"
+        ],
+        "releaseDate": "2025-04"
     },
     {
         "id": "gemma-3-12b",
@@ -446,9 +519,14 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "solidrust/gemma-3-12b-it-AWQ",
         "mlx_repo": "mlx-community/gemma-3-12b-it-4bit",
         "release_year": 2025,
-        "use_cases": ["High-quality writing", "12GB GPU sweet spot", "Long-context RAG"],
+        "use_cases": [
+            "High-quality writing",
+            "12GB GPU sweet spot",
+            "Long-context RAG"
+        ],
         "arena_elo": 1342,
         "arena_rank": 97,
+        "releaseDate": "2025-03"
     },
     {
         "id": "phi-4-14b",
@@ -467,9 +545,14 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "solidrust/phi-4-AWQ",
         "mlx_repo": "mlx-community/phi-4-4bit",
         "release_year": 2024,
-        "use_cases": ["Math & STEM logic", "Structured reasoning", "12GB-16GB GPUs"],
+        "use_cases": [
+            "Math & STEM logic",
+            "Structured reasoning",
+            "12GB-16GB GPUs"
+        ],
         "arena_elo": 1256,
         "arena_rank": 146,
+        "releaseDate": "2024-12"
     },
     {
         "id": "qwen3-14b",
@@ -488,7 +571,12 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "Qwen/Qwen3-14B-AWQ",
         "mlx_repo": "mlx-community/Qwen3-14B-4bit",
         "release_year": 2025,
-        "use_cases": ["Everyday coding & thinking", "Agentic workflows", "16GB GPUs & 24GB Macs"],
+        "use_cases": [
+            "Everyday coding & thinking",
+            "Agentic workflows",
+            "16GB GPUs & 24GB Macs"
+        ],
+        "releaseDate": "2025-04"
     },
     {
         "id": "gemma-3-27b",
@@ -507,9 +595,14 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "solidrust/gemma-3-27b-it-AWQ",
         "mlx_repo": "mlx-community/gemma-3-27b-it-4bit",
         "release_year": 2025,
-        "use_cases": ["24GB-32GB flagship prose", "Nuanced instruction following", "Workstation AI"],
+        "use_cases": [
+            "24GB-32GB flagship prose",
+            "Nuanced instruction following",
+            "Workstation AI"
+        ],
         "arena_elo": 1365,
         "arena_rank": 80,
+        "releaseDate": "2025-03"
     },
     {
         "id": "qwen3-30b-a3b",
@@ -529,9 +622,14 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "Qwen/Qwen3-30B-A3B-AWQ",
         "mlx_repo": "mlx-community/Qwen3-30B-A3B-4bit",
         "release_year": 2025,
-        "use_cases": ["Ultra-fast MoE decoding", "24GB GPU / 32GB Mac speed king", "CPU+GPU hybrid friendly"],
+        "use_cases": [
+            "Ultra-fast MoE decoding",
+            "24GB GPU / 32GB Mac speed king",
+            "CPU+GPU hybrid friendly"
+        ],
         "arena_elo": 1326,
         "arena_rank": 105,
+        "releaseDate": "2025-04"
     },
     {
         "id": "qwen3-32b",
@@ -550,9 +648,14 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "Qwen/Qwen3-32B-AWQ",
         "mlx_repo": "mlx-community/Qwen3-32B-4bit",
         "release_year": 2025,
-        "use_cases": ["Dense 32B reasoning", "Full-repo coding", "24GB-48GB rigs"],
+        "use_cases": [
+            "Dense 32B reasoning",
+            "Full-repo coding",
+            "24GB-48GB rigs"
+        ],
         "arena_elo": 1347,
         "arena_rank": 93,
+        "releaseDate": "2025-04"
     },
     {
         "id": "qwen3.8-27b",
@@ -575,12 +678,13 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "Hybrid 262K long-context reasoning",
             "Single 24GB GPU / A10 AWQ (~18.5 GB)",
-            "Apple Silicon MLX 4-bit",
+            "Apple Silicon MLX 4-bit"
         ],
         "aa_index": 20,
         "aa_label": "Qwen3.8 27B Xhigh",
         "arena_elo": 1435,
         "arena_rank": 25,
+        "releaseDate": "2026-08"
     },
     {
         "id": "qwen3.5-9b",
@@ -600,7 +704,12 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "Qwen/Qwen3.5-9B-AWQ",
         "mlx_repo": "mlx-community/Qwen3.5-9B-4bit",
         "release_year": 2026,
-        "use_cases": ["12GB-16GB GPUs & Macs", "Hybrid 262K long context", "Fast edge multimodal reasoning"],
+        "use_cases": [
+            "12GB-16GB GPUs & Macs",
+            "Hybrid 262K long context",
+            "Fast edge multimodal reasoning"
+        ],
+        "releaseDate": "2026-03"
     },
     {
         "id": "qwen3.5-27b",
@@ -623,10 +732,11 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "Single 24GB GPU dense flagship",
             "262K long-context reasoning",
-            "Multimodal coding & docs",
+            "Multimodal coding & docs"
         ],
         "arena_elo": 1409,
         "arena_rank": 56,
+        "releaseDate": "2026-02"
     },
     {
         "id": "qwen3.5-35b-a3b",
@@ -650,10 +760,11 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "Ultra-fast 3B-active MoE decode",
             "32GB GPU / 36GB+ Mac sweet spot",
-            "Low-KV 262K workflows",
+            "Low-KV 262K workflows"
         ],
         "arena_elo": 1394,
         "arena_rank": 65,
+        "releaseDate": "2026-02"
     },
     {
         "id": "qwen3.5-122b-a10b",
@@ -677,10 +788,11 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "96GB-128GB workstation flagship",
             "10B-active fast MoE inference",
-            "Enterprise RAG & agents",
+            "Enterprise RAG & agents"
         ],
         "arena_elo": 1417,
         "arena_rank": 45,
+        "releaseDate": "2026-02"
     },
     {
         "id": "qwen3.5-397b-a17b",
@@ -704,10 +816,11 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "Mac Studio M3 Ultra 512GB target",
             "Multi-GPU cluster reasoning",
-            "Top-20 open-weight chat",
+            "Top-20 open-weight chat"
         ],
         "arena_elo": 1441,
         "arena_rank": 20,
+        "releaseDate": "2026-02"
     },
     {
         "id": "qwen3.6-35b-a3b",
@@ -731,8 +844,9 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "Agentic coding & tool preservation",
             "32GB GPU / 48GB Mac daily driver",
-            "262K multimodal tasks",
+            "262K multimodal tasks"
         ],
+        "releaseDate": "2026-04"
     },
     {
         "id": "qwen3.8-flash-next",
@@ -756,10 +870,11 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "High-efficiency 6B active decoding",
             "96GB-128GB workstation reasoning",
-            "1M-capable sparse context",
+            "1M-capable sparse context"
         ],
         "aa_index": 28,
         "aa_label": "Qwen3.8-Flash-Next",
+        "releaseDate": "2026-08"
     },
     {
         "id": "qwen3-coder-30b-a3b",
@@ -782,8 +897,9 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "256K repository coding agent",
             "24GB GPU / 32GB Mac fast FIM",
-            "Tool-use software engineering",
+            "Tool-use software engineering"
         ],
+        "releaseDate": "2025-07"
     },
     {
         "id": "qwen3-coder-480b-a35b",
@@ -806,10 +922,11 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "Flagship open agentic coding",
             "Multi-H100/H200 or 512GB Studio",
-            "Autonomous repo debugging",
+            "Autonomous repo debugging"
         ],
         "arena_elo": 1387,
         "arena_rank": 69,
+        "releaseDate": "2025-07"
     },
     {
         "id": "qwen3-vl-8b",
@@ -831,8 +948,9 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "GUI/screenshot understanding",
             "8GB-12GB GPU vision chat",
-            "Local OCR & document parsing",
+            "Local OCR & document parsing"
         ],
+        "releaseDate": "2025-09"
     },
     {
         "id": "qwen3-vl-32b",
@@ -854,8 +972,9 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "High-accuracy visual reasoning",
             "32GB-48GB GPU multimodal",
-            "Chart & diagram analysis",
+            "Chart & diagram analysis"
         ],
+        "releaseDate": "2025-10"
     },
     {
         "id": "qwen3-235b-a22b",
@@ -875,9 +994,14 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "Qwen/Qwen3-235B-A22B-AWQ",
         "mlx_repo": "mlx-community/Qwen3-235B-A22B-4bit",
         "release_year": 2025,
-        "use_cases": ["256GB+ Mac Studio flagship", "Multi-GPU cluster MoE", "Complex multilingual & math"],
+        "use_cases": [
+            "256GB+ Mac Studio flagship",
+            "Multi-GPU cluster MoE",
+            "Complex multilingual & math"
+        ],
         "arena_elo": 1422,
         "arena_rank": 39,
+        "releaseDate": "2025-04"
     },
     {
         "id": "deepseek-v3-671b",
@@ -900,10 +1024,11 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "8x H100/H200 cluster deployment",
             "512GB Mac Ultra MLX",
-            "Ultra-low KV footprint via MLA",
+            "Ultra-low KV footprint via MLA"
         ],
         "arena_elo": 1395,
         "arena_rank": 63,
+        "releaseDate": "2025-03"
     },
     {
         "id": "deepseek-r1-671b",
@@ -926,10 +1051,11 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "Full 671B reasoning benchmark",
             "Multi-GPU H200 / 8x H100 nodes",
-            "512GB M3 Ultra local research",
+            "512GB M3 Ultra local research"
         ],
         "arena_elo": 1421,
         "arena_rank": 41,
+        "releaseDate": "2025-01"
     },
     {
         "id": "deepseek-v3.2-685b",
@@ -952,10 +1078,11 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "Sparse long-context datacenter node",
             "Reasoning & coding clusters",
-            "8x H200 / B200 serving",
+            "8x H200 / B200 serving"
         ],
         "arena_elo": 1425,
         "arena_rank": 35,
+        "releaseDate": "2025-12"
     },
     {
         "id": "deepseek-v4.1-flash",
@@ -978,12 +1105,13 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "Top-tier AA Score open-weight frontier",
             "16B-decode fast cluster MoE",
-            "512GB Mac Ultra / 8x H100",
+            "512GB Mac Ultra / 8x H100"
         ],
         "aa_index": 32,
         "aa_label": "DeepSeek V4.1 Flash 1017 Max",
         "arena_elo": 1474,
         "arena_rank": 7,
+        "releaseDate": "2026-09"
     },
     {
         "id": "gpt-oss-20b",
@@ -1004,9 +1132,14 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "openai/gpt-oss-20b",
         "mlx_repo": "mlx-community/gpt-oss-20b-MXFP4-Q4",
         "release_year": 2025,
-        "use_cases": ["16GB GPU / 24GB Mac fast MoE", "OpenAI Apache-2.0 reasoning", "Low-KV local assistant"],
+        "use_cases": [
+            "16GB GPU / 24GB Mac fast MoE",
+            "OpenAI Apache-2.0 reasoning",
+            "Low-KV local assistant"
+        ],
         "arena_elo": 1317,
         "arena_rank": 113,
+        "releaseDate": "2025-08"
     },
     {
         "id": "gpt-oss-120b",
@@ -1030,12 +1163,13 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "Single 80GB H100 / 96GB PRO 6000",
             "96GB-128GB Mac Studio fast 5.1B MoE",
-            "High-throughput reasoning",
+            "High-throughput reasoning"
         ],
         "aa_index": 4,
         "aa_label": "gpt-oss-120b High",
         "arena_elo": 1352,
         "arena_rank": 90,
+        "releaseDate": "2025-08"
     },
     {
         "id": "gemma-4-e4b",
@@ -1058,10 +1192,11 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "8GB GPU / 16GB Mac multimodal edge",
             "Shared-KV 128K context",
-            "On-device audio + vision",
+            "On-device audio + vision"
         ],
         "aa_index": 5,
         "aa_label": "Gemma 4 E4B Reasoning",
+        "releaseDate": "2026-04"
     },
     {
         "id": "gemma-4-26b-a4b",
@@ -1085,10 +1220,11 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "24GB GPU / Mac Pro fast 4B MoE",
             "256K context with Shared KV",
-            "Top-25 Arena open-source chat",
+            "Top-25 Arena open-source chat"
         ],
         "arena_elo": 1438,
         "arena_rank": 23,
+        "releaseDate": "2026-04"
     },
     {
         "id": "gemma-4-31b",
@@ -1111,12 +1247,13 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "24GB-32GB GPU & 48GB Mac flagship",
             "Top-20 Arena quality in 31B",
-            "256K multimodal understanding",
+            "256K multimodal understanding"
         ],
         "aa_index": 4,
         "aa_label": "Gemma 4 31B Reasoning",
         "arena_elo": 1452,
         "arena_rank": 16,
+        "releaseDate": "2026-04"
     },
     {
         "id": "llama-4-scout",
@@ -1139,10 +1276,11 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "96GB-128GB unified / 80GB GPU MoE",
             "Extreme multi-document ingestion",
-            "Native multimodal RAG",
+            "Native multimodal RAG"
         ],
         "arena_elo": 1321,
         "arena_rank": 108,
+        "releaseDate": "2025-04"
     },
     {
         "id": "llama-4-maverick",
@@ -1165,10 +1303,11 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "512GB M3 Ultra / Quad PRO 6000",
             "4x-8x H100 enterprise serving",
-            "Fast 17B-active multimodal MoE",
+            "Fast 17B-active multimodal MoE"
         ],
         "arena_elo": 1327,
         "arena_rank": 104,
+        "releaseDate": "2025-04"
     },
     {
         "id": "mixtral-8x7b",
@@ -1187,14 +1326,15 @@ MODELS: list[ModelSpec] = [
         "gguf_file_q4": "mixtral-8x7b-instruct-v0.1.Q4_K_M.gguf",
         "awq_repo": "TheBloke/Mixtral-8x7B-Instruct-v0.1-AWQ",
         "mlx_repo": "mlx-community/Mixtral-8x7B-Instruct-v0.1-4bit",
-        "release_year": 2024,
+        "release_year": 2023,
         "use_cases": [
             "Classic 48GB GPU / 64GB Mac MoE",
             "Multilingual Apache-2.0 baseline",
-            "Fast Dual-RTX 3090 serving",
+            "Fast Dual-RTX 3090 serving"
         ],
         "arena_elo": 1197,
         "arena_rank": 165,
+        "releaseDate": "2023-12"
     },
     {
         "id": "mixtral-8x22b",
@@ -1217,10 +1357,11 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "128GB Mac / Multi-GPU workstation",
             "High-capacity Apache-2.0 MoE",
-            "Function calling & coding",
+            "Function calling & coding"
         ],
         "arena_elo": 1230,
         "arena_rank": 153,
+        "releaseDate": "2024-04"
     },
     {
         "id": "devstral-small-24b",
@@ -1242,8 +1383,9 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "SWE-bench local software agent",
             "24GB RTX 4090 / A10 coding",
-            "32GB+ Mac multi-file edits",
+            "32GB+ Mac multi-file edits"
         ],
+        "releaseDate": "2025-07"
     },
     {
         "id": "mistral-small-4-119b",
@@ -1266,10 +1408,11 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "96GB PRO 6000 / 128GB Mac MoE",
             "6.5B active fast reasoning",
-            "Multimodal Apache-2.0 agents",
+            "Multimodal Apache-2.0 agents"
         ],
         "aa_index": 4,
         "aa_label": "Mistral Small 4 Reasoning",
+        "releaseDate": "2026-03"
     },
     {
         "id": "glm-4.7-flash",
@@ -1292,10 +1435,11 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "24GB GPU / 32GB Mac fast MoE",
             "200K MLA long-context agent",
-            "C/C++ & Python tool calling",
+            "C/C++ & Python tool calling"
         ],
         "arena_elo": 1365,
         "arena_rank": 81,
+        "releaseDate": "2026-01"
     },
     {
         "id": "glm-4.5-air",
@@ -1315,9 +1459,14 @@ MODELS: list[ModelSpec] = [
         "awq_repo": "zai-org/GLM-4.5-Air-FP8",
         "mlx_repo": "mlx-community/GLM-4.5-Air-4bit",
         "release_year": 2025,
-        "use_cases": ["96GB-128GB workstation agent", "80GB H100 / A100 single-card", "Hybrid thinking chat"],
+        "use_cases": [
+            "96GB-128GB workstation agent",
+            "80GB H100 / A100 single-card",
+            "Hybrid thinking chat"
+        ],
         "arena_elo": 1373,
         "arena_rank": 76,
+        "releaseDate": "2025-07"
     },
     {
         "id": "glm-5.3-flash",
@@ -1341,12 +1490,13 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "Top-5 Arena open-weight leader",
             "256GB-512GB Mac Ultra studio",
-            "Quad PRO 6000 / multi-H100",
+            "Quad PRO 6000 / multi-H100"
         ],
         "aa_index": 28,
         "aa_label": "GLM-5.3-Flash Max",
         "arena_elo": 1476,
         "arena_rank": 5,
+        "releaseDate": "2026-08"
     },
     {
         "id": "nemotron-3.5-lightning-30b",
@@ -1370,12 +1520,13 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "NVIDIA Mamba-2 hybrid 3B decode",
             "24GB RTX / 32GB Mac ultra-low KV",
-            "262K-1M context enterprise",
+            "262K-1M context enterprise"
         ],
         "aa_index": 6,
         "aa_label": "Nemotron 3.5 Lightning",
         "arena_elo": 1352,
         "arena_rank": 89,
+        "releaseDate": "2026-08"
     },
     {
         "id": "kimi-k2-1t",
@@ -1398,11 +1549,277 @@ MODELS: list[ModelSpec] = [
         "use_cases": [
             "8x H200 / 8x B200 multi-GPU node",
             "1T parameter agentic coding cluster",
-            "Dual 512GB Ultra / cluster",
+            "Dual 512GB Ultra / cluster"
         ],
         "arena_elo": 1419,
         "arena_rank": 42,
+        "releaseDate": "2025-07"
     },
+    {
+        "id": "gemma-4-e2b",
+        "name": "Gemma-4-E2B-Instruct",
+        "short_name": "Gemma 4 E2B",
+        "family": "Gemma 4",
+        "params_b": 5.1,
+        "active_params_b": 2.3,
+        "architecture": "Gemma4 PLE (2.3B effective, Shared KV)",
+        "num_layers": 35,
+        "kv_layers": 15,
+        "num_kv_heads": 1,
+        "head_dim": 256,
+        "max_context": 131072,
+        "ollama_tag": "gemma4:e2b",
+        "hf_repo": "google/gemma-4-E2B-it",
+        "gguf_file_q4": "gemma-4-E2B-it-Q4_K_M.gguf",
+        "mlx_repo": "mlx-community/gemma-4-E2B-it-4bit",
+        "release_year": 2026,
+        "releaseDate": "2026-04",
+        "use_cases": [
+            "Edge / SBC 8GB RAM",
+            "2.3B effective compute",
+            "Multimodal + Audio"
+        ]
+    },
+    {
+        "id": "minimax-m2.5-230b",
+        "name": "MiniMax-M2.5 (230B MoE)",
+        "short_name": "MiniMax-M2.5 230B",
+        "family": "MiniMax",
+        "params_b": 229.0,
+        "active_params_b": 10.0,
+        "architecture": "MiniMaxM2 Sparse MoE (10B active)",
+        "num_layers": 62,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "max_context": 204800,
+        "ollama_tag": "hf.co/unsloth/MiniMax-M2.5-GGUF",
+        "hf_repo": "MiniMaxAI/MiniMax-M2.5",
+        "gguf_file_q4": "MiniMax-M2.5-Q4_K_M.gguf",
+        "release_year": 2026,
+        "releaseDate": "2026-02",
+        "use_cases": [
+            "10B-active fast coding & agents",
+            "Mac Studio 192GB–256GB",
+            "Workstation MoE"
+        ],
+        "arena_elo": 1391,
+        "arena_rank": 68
+    },
+    {
+        "id": "step-3.5-flash-196b",
+        "name": "Step-3.5-Flash (196B MoE)",
+        "short_name": "Step-3.5 Flash 196B",
+        "family": "StepFun",
+        "params_b": 196.8,
+        "active_params_b": 11.0,
+        "architecture": "Step3.5 Sparse MoE (11B active)",
+        "num_layers": 45,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "max_context": 262144,
+        "ollama_tag": "hf.co/unsloth/Step-3.5-Flash-GGUF",
+        "hf_repo": "stepfun-ai/Step-3.5-Flash",
+        "gguf_file_q4": "Step-3.5-Flash-Q4_K_M.gguf",
+        "release_year": 2026,
+        "releaseDate": "2026-02",
+        "use_cases": [
+            "11B-active fast reasoning MoE",
+            "128GB–256GB Unified RAM",
+            "256K context"
+        ],
+        "arena_elo": 1393,
+        "arena_rank": 66
+    },
+    {
+        "id": "kimi-k2.5-1t",
+        "name": "Kimi-K2.5 (1T MoE)",
+        "short_name": "Kimi-K2.5 1T",
+        "family": "Kimi",
+        "params_b": 1040.0,
+        "active_params_b": 32.0,
+        "architecture": "DeepSeek-V3 MLA MoE (32B active)",
+        "num_layers": 61,
+        "num_kv_heads": 1,
+        "head_dim": 288,
+        "max_context": 262144,
+        "ollama_tag": "hf.co/unsloth/Kimi-K2.5-GGUF",
+        "hf_repo": "moonshotai/Kimi-K2.5",
+        "gguf_file_q4": "Kimi-K2.5-Q4_K_M.gguf",
+        "release_year": 2026,
+        "releaseDate": "2026-01",
+        "use_cases": [
+            "1T multimodal agentic frontier",
+            "Multi-node 8x B200/H200",
+            "512GB+ cluster"
+        ]
+    },
+    {
+        "id": "qwen3-next-80b-a3b",
+        "name": "Qwen3-Next-80B-A3B-Instruct",
+        "short_name": "Qwen3-Next 80B MoE",
+        "family": "Qwen3-Next",
+        "params_b": 80.0,
+        "active_params_b": 3.0,
+        "architecture": "Hybrid MoE (36 DeltaNet + 12 Gated Attn)",
+        "num_layers": 48,
+        "kv_layers": 12,
+        "num_kv_heads": 2,
+        "head_dim": 256,
+        "max_context": 262144,
+        "ollama_tag": "qwen3-next:80b",
+        "hf_repo": "Qwen/Qwen3-Next-80B-A3B-Instruct",
+        "gguf_file_q4": "Qwen3-Next-80B-A3B-Instruct-Q4_K_M.gguf",
+        "awq_repo": "Qwen/Qwen3-Next-80B-A3B-Instruct-AWQ",
+        "mlx_repo": "mlx-community/Qwen3-Next-80B-A3B-Instruct-4bit",
+        "release_year": 2025,
+        "releaseDate": "2025-09",
+        "use_cases": [
+            "3B-active ultra-fast 80B MoE",
+            "Mac 64GB–128GB sweet spot",
+            "256K long context"
+        ],
+        "arena_elo": 1399,
+        "arena_rank": 61
+    },
+    {
+        "id": "magistral-small-24b",
+        "name": "Magistral-Small-2509 (24B)",
+        "short_name": "Magistral Small 24B",
+        "family": "Mistral",
+        "params_b": 24.0,
+        "architecture": "Mistral3 Dense Reasoning + Vision",
+        "num_layers": 40,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "max_context": 131072,
+        "ollama_tag": "magistral:24b",
+        "hf_repo": "mistralai/Magistral-Small-2509",
+        "gguf_file_q4": "Magistral-Small-2509-Q4_K_M.gguf",
+        "mlx_repo": "mlx-community/Magistral-Small-2509-4bit",
+        "release_year": 2025,
+        "releaseDate": "2025-09",
+        "use_cases": [
+            "24GB GPU reasoning + vision",
+            "Structured chain-of-thought",
+            "128K local research"
+        ]
+    },
+    {
+        "id": "seed-oss-36b",
+        "name": "Seed-OSS-36B-Instruct",
+        "short_name": "Seed-OSS 36B",
+        "family": "Seed-OSS",
+        "params_b": 36.0,
+        "architecture": "SeedOSS Dense (GQA, 512K)",
+        "num_layers": 64,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "max_context": 524288,
+        "ollama_tag": "hf.co/unsloth/Seed-OSS-36B-Instruct-GGUF",
+        "hf_repo": "ByteDance-Seed/Seed-OSS-36B-Instruct",
+        "gguf_file_q4": "Seed-OSS-36B-Instruct-Q4_K_M.gguf",
+        "mlx_repo": "mlx-community/Seed-OSS-36B-Instruct-4bit",
+        "release_year": 2025,
+        "releaseDate": "2025-08",
+        "use_cases": [
+            "Native 512K long context",
+            "32GB RTX 5090 / 48GB+ Mac",
+            "Adjustable thinking budget"
+        ]
+    },
+    {
+        "id": "smollm3-3b",
+        "name": "SmolLM3-3B",
+        "short_name": "SmolLM3 3B",
+        "family": "SmolLM3",
+        "params_b": 3.0,
+        "architecture": "SmolLM3 Dense Dual-Mode (GQA)",
+        "num_layers": 36,
+        "num_kv_heads": 4,
+        "head_dim": 128,
+        "max_context": 131072,
+        "ollama_tag": "hf.co/ggml-org/SmolLM3-3B-GGUF",
+        "hf_repo": "HuggingFaceTB/SmolLM3-3B",
+        "gguf_file_q4": "SmolLM3-3B-Q4_K_M.gguf",
+        "mlx_repo": "mlx-community/SmolLM3-3B-4bit",
+        "release_year": 2025,
+        "releaseDate": "2025-07",
+        "use_cases": [
+            "4GB-8GB GPU & Raspberry Pi 5",
+            "128K edge agent",
+            "Thinking / non-thinking dual mode"
+        ]
+    },
+    {
+        "id": "deepseek-r1-0528-qwen3-8b",
+        "name": "DeepSeek-R1-0528-Qwen3-8B",
+        "short_name": "R1-0528 Qwen3 8B",
+        "family": "DeepSeek-R1",
+        "params_b": 8.2,
+        "architecture": "Qwen3-8B Dense Reasoning",
+        "num_layers": 36,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "max_context": 131072,
+        "ollama_tag": "deepseek-r1:8b-0528-qwen3-q4_K_M",
+        "hf_repo": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+        "gguf_file_q4": "DeepSeek-R1-0528-Qwen3-8B-Q4_K_M.gguf",
+        "awq_repo": "Qwen/Qwen3-8B-AWQ",
+        "mlx_repo": "mlx-community/DeepSeek-R1-0528-Qwen3-8B-4bit",
+        "release_year": 2025,
+        "releaseDate": "2025-05",
+        "use_cases": [
+            "8GB GPU / 16GB Mac math & reasoning",
+            "R1-0528 distilled Qwen3 base",
+            "Local AIME / code"
+        ]
+    },
+    {
+        "id": "phi-4-reasoning-plus-14b",
+        "name": "Phi-4-reasoning-plus (14B)",
+        "short_name": "Phi-4 Reasoning+ 14B",
+        "family": "Phi-4",
+        "params_b": 14.7,
+        "architecture": "Phi-4 Dense Reasoning (GQA)",
+        "num_layers": 40,
+        "num_kv_heads": 10,
+        "head_dim": 128,
+        "max_context": 32768,
+        "ollama_tag": "phi4-reasoning:14b-plus",
+        "hf_repo": "microsoft/Phi-4-reasoning-plus",
+        "gguf_file_q4": "Phi-4-reasoning-plus-Q4_K_M.gguf",
+        "mlx_repo": "mlx-community/Phi-4-reasoning-plus-4bit",
+        "release_year": 2025,
+        "releaseDate": "2025-04",
+        "use_cases": [
+            "12GB-16GB VRAM STEM reasoning",
+            "24GB Mac Pro desktop",
+            "RL-enhanced math & code"
+        ]
+    },
+    {
+        "id": "phi-4-mini-3.8b",
+        "name": "Phi-4-mini-instruct",
+        "short_name": "Phi-4 Mini 3.8B",
+        "family": "Phi-4",
+        "params_b": 3.8,
+        "architecture": "Phi-4 Dense (GQA)",
+        "num_layers": 32,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "max_context": 131072,
+        "ollama_tag": "phi4-mini:3.8b",
+        "hf_repo": "microsoft/Phi-4-mini-instruct",
+        "gguf_file_q4": "Phi-4-mini-instruct-Q4_K_M.gguf",
+        "mlx_repo": "mlx-community/Phi-4-mini-instruct-4bit",
+        "release_year": 2025,
+        "releaseDate": "2025-02",
+        "use_cases": [
+            "4GB-8GB laptops & Jetson Orin Nano",
+            "128K fast edge reasoning",
+            "Function calling"
+        ]
+    }
 ]
 
 

@@ -3,13 +3,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import rawPagesData from '../../data/pages_data.json';
 import rawCatalog from '../../data/catalog_data.json';
 import type { CatalogData, VramPageEntry } from '../../types/vram';
-import { buildModelHubs, getCatalogUpdatedAt } from '../../utils/hubs';
+import { buildModelHubs, getBuildDateIso } from '../../utils/hubs';
 import { formatContextLabel } from '../../utils/physics';
 import { aiCapabilitySortScore } from '../../utils/pricing';
 
 const allEntries = rawPagesData as VramPageEntry[];
 const catalog = rawCatalog as CatalogData;
-const updatedAt = getCatalogUpdatedAt();
+const updatedAt = getBuildDateIso();
 const hubs = buildModelHubs(allEntries);
 
 const totalHubs = hubs.length;
@@ -100,8 +100,8 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
         <span class="badge-neutral font-mono text-xs">
           GGUF · AWQ · MLX
         </span>
-        <span class="badge-fits font-mono text-xs" data-i18n="common.updated" data-i18n-args={updatedArgs}>
-          Updated {updatedAt}
+        <span class="badge-fits font-mono text-xs" data-i18n="common.lastUpdated" data-i18n-args={updatedArgs}>
+          Last updated: {updatedAt}
         </span>
       </div>
 
@@ -139,8 +139,8 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
 
     <section class="mt-2" aria-label="Filter model hubs">
       <div class="surface-card p-4 sm:p-5">
-        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by model family">
+        <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div class="flex min-w-0 flex-1 flex-wrap items-center gap-1.5" role="group" aria-label="Filter by model family">
             <button
               type="button"
               data-dir-family-btn="all"
@@ -163,7 +163,7 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
             ))}
           </div>
 
-          <div class="w-full md:w-72">
+          <div class="w-full shrink-0 md:w-72">
             <label for="dir-model-search" class="sr-only">Search model</label>
             <input
               id="dir-model-search"
@@ -192,21 +192,12 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
           <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Sort models">
             <button
               type="button"
-              data-dir-model-sort="default"
+              data-dir-model-sort="newest"
               data-active="true"
               class="pill-filter text-[11px]"
-              data-i18n="home.sortRecommended"
+              data-i18n="model.sortNewest"
             >
-              Recommended
-            </button>
-            <button
-              type="button"
-              data-dir-model-sort="ai-score"
-              data-active="false"
-              class="pill-filter text-[11px]"
-              data-i18n="model.sortAiScore"
-            >
-              AI Score ↓
+              Newest First
             </button>
             <button
               type="button"
@@ -216,6 +207,24 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
               data-i18n="model.sortParamsAsc"
             >
               Params ↑
+            </button>
+            <button
+              type="button"
+              data-dir-model-sort="params-desc"
+              data-active="false"
+              class="pill-filter text-[11px]"
+              data-i18n="model.sortParamsDesc"
+            >
+              Params ↓
+            </button>
+            <button
+              type="button"
+              data-dir-model-sort="ai-score"
+              data-active="false"
+              class="pill-filter text-[11px]"
+              data-i18n="model.sortAiScore"
+            >
+              AI Score ↓
             </button>
           </div>
         </div>
@@ -242,7 +251,7 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
           const topHwText = topHwRow
             ? `${topHwRow.hardware.short_name} (${hub.fastestTpsText})`
             : 'See leaderboard';
-          const searchBlob = [m.id, m.name, m.short_name, m.family, m.architecture, m.ollama_tag]
+          const searchBlob = [m.id, m.name, m.short_name, m.family, m.architecture, m.ollama_tag, m.releaseDate]
             .join(' ')
             .toLowerCase();
           const gpusEvalArgs = JSON.stringify({ count: hub.rows.length });
@@ -251,6 +260,7 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
             <article
               data-dir-model-card
               data-index={idx}
+              data-release-date={m.releaseDate}
               data-ai-score={aiScore}
               data-params={m.params_b}
               data-family={m.family}
@@ -259,9 +269,14 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
             >
               <div>
                 <div class="flex items-center justify-between gap-2">
-                  <span class="badge-accent font-mono text-[11px]">
-                    {m.family}
-                  </span>
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="badge-accent font-mono text-[11px]">
+                      {m.family}
+                    </span>
+                    <span class="rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--ink-tertiary)] tabular-nums">
+                      {m.releaseDate}
+                    </span>
+                  </div>
                   <span class="font-mono text-[11px] font-semibold text-[var(--ink-tertiary)] tabular-nums">
                     {m.params_b}B · {formatContextLabel(m.max_context)} max
                   </span>
@@ -415,7 +430,7 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
     const grid = document.getElementById('dir-model-grid');
 
     let selectedFamily = 'all';
-    let selectedSort = 'default';
+    let selectedSort = 'newest';
     const total = cards.length;
 
     function updateButtons() {
@@ -424,7 +439,7 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
         b.setAttribute('data-active', active ? 'true' : 'false');
       });
       sortBtns.forEach((b) => {
-        const active = (b.getAttribute('data-dir-model-sort') || 'default') === selectedSort;
+        const active = (b.getAttribute('data-dir-model-sort') || 'newest') === selectedSort;
         b.setAttribute('data-active', active ? 'true' : 'false');
       });
     }
@@ -432,6 +447,15 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
     function applySort() {
       if (!grid) return;
       const sorted = [...cards].sort((a, b) => {
+        if (selectedSort === 'newest') {
+          const dd = (b.getAttribute('data-release-date') || '').localeCompare(
+            a.getAttribute('data-release-date') || '',
+          );
+          if (dd !== 0) return dd;
+          const pd = Number(b.getAttribute('data-params') || 0) - Number(a.getAttribute('data-params') || 0);
+          if (pd !== 0) return pd;
+          return Number(a.getAttribute('data-index') || 0) - Number(b.getAttribute('data-index') || 0);
+        }
         if (selectedSort === 'ai-score') {
           const sd = Number(b.getAttribute('data-ai-score') || 0) - Number(a.getAttribute('data-ai-score') || 0);
           if (sd !== 0) return sd;
@@ -440,7 +464,16 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
         if (selectedSort === 'params-asc') {
           const pd = Number(a.getAttribute('data-params') || 0) - Number(b.getAttribute('data-params') || 0);
           if (pd !== 0) return pd;
-          return Number(b.getAttribute('data-ai-score') || 0) - Number(a.getAttribute('data-ai-score') || 0);
+          return (b.getAttribute('data-release-date') || '').localeCompare(
+            a.getAttribute('data-release-date') || '',
+          );
+        }
+        if (selectedSort === 'params-desc') {
+          const pd = Number(b.getAttribute('data-params') || 0) - Number(a.getAttribute('data-params') || 0);
+          if (pd !== 0) return pd;
+          return (b.getAttribute('data-release-date') || '').localeCompare(
+            a.getAttribute('data-release-date') || '',
+          );
         }
         return Number(a.getAttribute('data-index') || 0) - Number(b.getAttribute('data-index') || 0);
       });
@@ -471,7 +504,7 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
 
     function resetAll() {
       selectedFamily = 'all';
-      selectedSort = 'default';
+      selectedSort = 'newest';
       if (searchInput) searchInput.value = '';
       updateButtons();
       applySort();
