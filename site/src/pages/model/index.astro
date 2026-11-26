@@ -21,7 +21,7 @@ const maxParams = hubs.reduce((acc, h) => Math.max(acc, h.model.params_b), 0);
 
 const canonicalPath = '/model/';
 const pageTitle = `All ${totalHubs} Open-Weight LLM VRAM & GPU Hubs — VRAMCalc.me`;
-const pageDescription = `Compare AA v5 intelligence, Arena Elo, @8K & Max Fit VRAM, AWQ/MLX sizes, and ${totalHwCount}-GPU leaderboards across ${totalHubs} open-weight LLMs (${minParams}B–${maxParams}B): Qwen3.5/3.6/3.8, DeepSeek-V4.1/R1, Gemma 4, GPT-OSS, Llama 4 & GLM.`;
+const pageDescription = `Compare AA Score intelligence, Arena Elo, @8K & Max Fit VRAM, AWQ/MLX sizes, and ${totalHwCount}-GPU leaderboards across ${totalHubs} open-weight LLMs (${minParams}B–${maxParams}B): Qwen3.5/3.6/3.8, DeepSeek-V4.1/R1, Gemma 4, GPT-OSS, Llama 4 & GLM.`;
 
 const breadcrumbSchema = {
   '@context': 'https://schema.org',
@@ -53,7 +53,7 @@ const itemListSchema = {
   })),
 };
 
-const ogTitle = `All ${totalHubs} Open-Weight LLM VRAM Hubs (AA v5 + Arena Elo) | VRAMCalc.me`;
+const ogTitle = `All ${totalHubs} Open-Weight LLM VRAM Hubs (AA Score + Arena Elo) | VRAMCalc.me`;
 const ogDescription = `Exact Q4_K_M / AWQ 4-bit / Q8_0 / FP16 requirements and ${totalHwCount}-GPU speed rankings across ${totalHubs} open models.`;
 
 const hubHeadingArgs = JSON.stringify({ count: totalHubs });
@@ -223,7 +223,7 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
 
       <p class="mt-3 text-xs leading-relaxed text-[var(--ink-tertiary)]">
         <span data-i18n="score.methodologyNote">
-          Open-weight capability scores cross-reference Artificial Analysis Intelligence Index v5.0.2 (AA v5) and LMArena Text Arena Elo (2026-11-22). Models showing “—” have no published entry in that benchmark version.
+          Open-weight capability scores cross-reference Artificial Analysis Intelligence Index v5.0.2 (AA Score) and LMArena Text Arena Elo (2026-11-22). Models showing “—” have no published entry in that benchmark version.
         </span>{' '}
         <a href="https://artificialanalysis.ai/models" target="_blank" rel="noopener noreferrer" class="underline hover:text-[var(--ink-primary)]">Artificial Analysis</a>
         {' · '}
@@ -282,7 +282,7 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
                       class="badge-accent rounded px-1.5 py-0.5 font-semibold"
                       title={m.aa_label ?? 'Artificial Analysis Intelligence Index v5.0.2'}
                     >
-                      AA v5 · {m.aa_index}
+                      AA Score · {m.aa_index}
                     </span>
                   ) : null}
                   {m.arena_elo ? (
@@ -295,7 +295,7 @@ const updatedArgs = JSON.stringify({ date: updatedAt });
                   ) : null}
                   {!m.aa_index && !m.arena_elo && (
                     <span class="rounded border border-[var(--border-hairline)] bg-[var(--bg-subtle)] px-1.5 py-0.5 text-[var(--ink-tertiary)]" data-i18n="score.unscored">
-                      Unscored in AA v5
+                      Unscored in AA Score
                     </span>
                   )}
                 </div>

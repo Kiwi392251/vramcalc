@@ -194,7 +194,7 @@ const ogImage = `/og/model-${model.id}.png`;
               class="badge-accent font-mono text-xs font-semibold"
               title={model.aa_label ?? 'Artificial Analysis Intelligence Index v5.0.2'}
             >
-              AA v5 · {model.aa_index}
+              AA Score · {model.aa_index}
             </span>
           )}
           {model.arena_elo && (
@@ -245,7 +245,7 @@ const ogImage = `/og/model-${model.id}.png`;
         <p class="mt-3 text-xs leading-relaxed text-[var(--ink-tertiary)]">
           {model.aa_label ? `${model.aa_label} · ` : ''}
           <span data-i18n="score.methodologyNote">
-            Open-weight capability scores cross-reference Artificial Analysis Intelligence Index v5.0.2 (AA v5) and LMArena Text Arena Elo (2026-11-22).
+            Open-weight capability scores cross-reference Artificial Analysis Intelligence Index v5.0.2 (AA Score) and LMArena Text Arena Elo (2026-11-22).
           </span>
         </p>
       )}

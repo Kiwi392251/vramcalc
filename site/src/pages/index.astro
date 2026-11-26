@@ -929,7 +929,7 @@ const staticIndexSubArgs = JSON.stringify({
                       class="badge-accent rounded px-1.5 py-px font-semibold"
                       title={entry.model.aa_label ?? 'Artificial Analysis Intelligence Index v5.0.2'}
                     >
-                      AA v5 · {entry.model.aa_index}
+                      AA Score · {entry.model.aa_index}
                     </span>
                   )}
                   {entry.model.arena_elo && (
@@ -1372,7 +1372,7 @@ const staticIndexSubArgs = JSON.stringify({
                               class="badge-accent rounded px-1.5 py-px font-semibold"
                               title={hub.model.aa_label ?? 'Artificial Analysis Intelligence Index v5.0.2'}
                             >
-                              AA {hub.model.aa_index}
+                              AA Score {hub.model.aa_index}
                             </span>
                           )}
                           {hub.model.arena_elo && (
@@ -1405,7 +1405,7 @@ const staticIndexSubArgs = JSON.stringify({
         </div>
         <p class="mt-2.5 text-[11px] leading-relaxed text-[var(--ink-tertiary)]">
           <span data-i18n="score.methodologyNote">
-            Open-weight capability scores cross-reference Artificial Analysis Intelligence Index v5.0.2 (AA v5) and LMArena Text Arena Elo (2026-11-22). Models showing “—” have no published entry in that benchmark version.
+            Open-weight capability scores cross-reference Artificial Analysis Intelligence Index v5.0.2 (AA Score) and LMArena Text Arena Elo (2026-11-22). Models showing “—” have no published entry in that benchmark version.
           </span>{' '}
           <a href="https://artificialanalysis.ai/models" target="_blank" rel="noopener noreferrer" class="underline hover:text-[var(--ink-primary)]">Artificial Analysis</a>
           {' · '}
@@ -2789,7 +2789,7 @@ const staticIndexSubArgs = JSON.stringify({
           const scorePillsHtml = (model.aa_index || model.arena_elo)
             ? `<div class="mt-2 flex flex-wrap items-center gap-1.5 font-mono text-[10px]">${
                 model.aa_index
-                  ? `<span class="badge-accent rounded px-1.5 py-px font-semibold" title="${escapeHtml(model.aa_label || 'Artificial Analysis Intelligence Index v5.0.2')}">AA v5 · ${model.aa_index}</span>`
+                  ? `<span class="badge-accent rounded px-1.5 py-px font-semibold" title="${escapeHtml(model.aa_label || 'Artificial Analysis Intelligence Index v5.0.2')}">AA Score · ${model.aa_index}</span>`
                   : ''
               }${
                 model.arena_elo

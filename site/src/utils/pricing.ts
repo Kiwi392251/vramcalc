@@ -43,7 +43,7 @@ export function formatModelScoreInline(
 ): string {
   const parts: string[] = [];
   if (typeof m.aa_index === 'number' && m.aa_index > 0) {
-    parts.push(`AA ${m.aa_index}`);
+    parts.push(`AA Score ${m.aa_index}`);
   }
   if (typeof m.arena_elo === 'number' && m.arena_elo > 0) {
     parts.push(`Arena ${m.arena_elo}`);

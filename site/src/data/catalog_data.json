@@ -961,7 +961,7 @@
       "mlx_repo": "mlx-community/DeepSeek-V4.1-Flash-4bit",
       "release_year": 2026,
       "use_cases": [
-        "Top-tier AA v5 open-weight frontier",
+        "Top-tier AA Score open-weight frontier",
         "16B-decode fast cluster MoE",
         "512GB Mac Ultra / 8x H100"
       ],
