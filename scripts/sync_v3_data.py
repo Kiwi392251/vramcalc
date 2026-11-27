@@ -93,6 +93,28 @@ NEW_GUIDE_PAIRS: list[tuple[str, str]] = [
     ("step-3.5-flash-196b", "apple-m4-max-128gb"),
     ("seed-oss-36b", "rtx-5090-32gb"),
     ("magistral-small-24b", "rtx-4090-24gb"),
+    # Late-2026 (Aug-Nov 2026) Open-Weight Frontier & Local Leaders (+21 -> 227 guides)
+    ("inkling-2-mini", "rtx-4090-24gb"),
+    ("inkling-2-mini", "apple-m4-pro-48gb"),
+    ("nanbeige4.3-33b", "rtx-5090-32gb"),
+    ("nanbeige4.3-33b", "apple-m4-pro-48gb"),
+    ("k2-horizon-7b", "apple-m4-16gb"),
+    ("k2-horizon-7b", "rtx-4060-8gb"),
+    ("k2-horizon-mova-36b", "rtx-5090-32gb"),
+    ("k2-horizon-32b", "apple-m4-pro-48gb"),
+    ("lfm3-1.7b", "raspberry-pi-5-8gb"),
+    ("lfm3-1.7b", "jetson-orin-nano-super-8gb"),
+    ("ling-3.2-air", "apple-m4-max-128gb"),
+    ("nemotron-3.5-super-vl-120b", "apple-m4-max-128gb"),
+    ("mimo-v2.6-flash", "apple-m3-ultra-256gb"),
+    ("minimax-m3.1-flash", "apple-m3-ultra-512gb"),
+    ("beam-1.0-501b", "apple-m3-ultra-512gb"),
+    ("ling-3.1-flash", "apple-m3-ultra-512gb"),
+    ("inkling-2-small", "apple-m3-ultra-512gb"),
+    ("glm-5.3-753b", "octa-h100-80gb-sxm"),
+    ("mimo-v2.6-pro", "octa-h100-80gb-sxm"),
+    ("mistral-large-4-1t", "octa-h100-80gb-sxm"),
+    ("kimi-k3.1-pro", "octa-h200-141gb-sxm"),
 ]
 
 

@@ -291,6 +291,27 @@ function resolveModelBrand(family: string): { brand: string; brandOrder: number;
   if (family === 'SmolLM3') {
     return { brand: 'HuggingFace SmolLM', brandOrder: 14, seriesOrder: 1 };
   }
+  if (family === 'MiMo') {
+    return { brand: 'Xiaomi MiMo', brandOrder: 15, seriesOrder: 1 };
+  }
+  if (family === 'Ling') {
+    return { brand: 'inclusionAI Ling', brandOrder: 16, seriesOrder: 1 };
+  }
+  if (family === 'Inkling') {
+    return { brand: 'Thinking Machines Inkling', brandOrder: 17, seriesOrder: 1 };
+  }
+  if (family === 'Nanbeige') {
+    return { brand: 'Nanbeige', brandOrder: 18, seriesOrder: 1 };
+  }
+  if (family === 'K2-Horizon') {
+    return { brand: 'MBZUAI K2-Horizon', brandOrder: 19, seriesOrder: 1 };
+  }
+  if (family === 'Beam') {
+    return { brand: 'Reflection Beam', brandOrder: 20, seriesOrder: 1 };
+  }
+  if (family === 'LFM') {
+    return { brand: 'Liquid AI LFM', brandOrder: 21, seriesOrder: 1 };
+  }
   return { brand: family, brandOrder: 50, seriesOrder: 50 };
 }
 
@@ -313,7 +334,7 @@ export function buildModelCascaderOptions(params: {
       series: allLabel,
       seriesOrder: 0,
       badge: `${models.length} LLMs`,
-      sublabel: 'DeepSeek-V4.1 · Qwen3.8 · Gemma 4 · GLM-5.3 · MiniMax-M2.5',
+      sublabel: 'Kimi-K3.1 · MiniMax-M3.1 · Inkling-2 · DeepSeek-V4.1 · Mistral-Large-4 · Qwen3.8',
       searchBlob: `all models every llm 全部模型 所有模型 ${allLabel}`.toLowerCase(),
     });
   }

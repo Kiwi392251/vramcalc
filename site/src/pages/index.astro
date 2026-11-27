@@ -44,8 +44,16 @@ const updatedAt = getBuildDateIso();
 const engineVersion = catalog.engine_version ?? 'v3.3';
 
 const FEATURED_TOP_SLUGS = [
-  'qwen3.8-27b-on-nvidia-a10-24gb',
+  'inkling-2-mini-on-rtx-4090-24gb',
+  'nanbeige4.3-33b-on-rtx-5090-32gb',
+  'k2-horizon-7b-on-apple-m4-16gb',
+  'ling-3.2-air-on-apple-m4-max-128gb',
+  'nemotron-3.5-super-vl-120b-on-apple-m4-max-128gb',
+  'k2-horizon-mova-36b-on-rtx-5090-32gb',
+  'lfm3-1.7b-on-raspberry-pi-5-8gb',
   'qwen3.8-27b-on-rtx-4090-24gb',
+  'gemma-4-31b-on-rtx-5090-32gb',
+  'qwen3.8-27b-on-nvidia-a10-24gb',
   'qwen3.8-27b-on-apple-m4-pro-48gb',
   'qwen3.8-27b-on-apple-m4-16gb',
   'qwen3-8b-on-apple-m4-16gb',
@@ -60,14 +68,6 @@ const FEATURED_TOP_SLUGS = [
   'qwen3.8-27b-on-apple-m4-max-128gb',
   'qwen3-32b-on-rtx-4090-24gb',
   'qwen3-32b-on-rtx-5090-32gb',
-  'qwen3-8b-on-nvidia-t4-16gb',
-  'qwen3-14b-on-nvidia-a10-24gb',
-  'gemma-3-27b-on-rtx-4090-24gb',
-  'qwen3-32b-on-apple-m4-max-128gb',
-  'qwen3-30b-a3b-on-nvidia-a10-24gb',
-  'deepseek-r1-7b-on-apple-m4-16gb',
-  'llama-3.1-8b-on-apple-m4-16gb',
-  'gemma-3-27b-on-nvidia-l4-24gb',
 ];
 const featuredRank = new Map(FEATURED_TOP_SLUGS.map((slug, idx) => [slug, idx]));
 
