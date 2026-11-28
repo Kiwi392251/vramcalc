@@ -41,7 +41,7 @@ const HOME_QUANT_OPTIONS: ReadonlyArray<{
 const catalog = catalogRaw as CatalogData;
 const rawEntries = rawPagesData as PageEntry[];
 const updatedAt = getBuildDateIso();
-const engineVersion = catalog.engine_version ?? 'v3.3';
+const engineVersion = catalog.engine_version ?? 'v3.4';
 
 const FEATURED_TOP_SLUGS = [
   'inkling-2-mini-on-rtx-4090-24gb',
@@ -178,20 +178,26 @@ const homeOgDescription = `Check GGUF, AWQ & MLX VRAM fit, max safe context, Tig
 const curatedSlugMap = new Map(Object.entries(curatedSlugs));
 const modelCatalogMap = new Map(catalog.models.map((m) => [m.id, m]));
 const hwCatalogMap = new Map(catalog.hardware.map((h) => [h.id, h]));
+const cpuCatalogMap = new Map(catalog.cpus.map((c) => [c.id, c]));
 
 const measuredRows = measuredAnchors
   .map((anc) => {
     const m = modelCatalogMap.get(anc.model_id);
     const h = hwCatalogMap.get(anc.hardware_id);
     if (!m || !h) return null;
+    const ancCpu = anc.cpu_id ? (cpuCatalogMap.get(anc.cpu_id) ?? null) : null;
     const est = estimateRigRun({
       model: m,
       hardware: h,
       gpuCount: h.gpu_count || 1,
+      cpu: ancCpu,
+      systemRamGb: anc.system_ram_gb ?? 64.0,
+      gpuLayersOverride: anc.ngl ?? null,
+      pcieLink: anc.pcie_link ?? 'pcie4_x16',
       quant: anc.quant,
       format: anc.format,
       contextTokens: anc.context_tokens,
-      kvQuant: 'fp16',
+      kvQuant: anc.kv_quant ?? 'fp16',
       reserveProfile: 'desktop',
     });
     const slug = curatedSlugMap.get(`${m.id}::${h.id}`);
@@ -1212,7 +1218,7 @@ const staticIndexSubArgs = JSON.stringify({
             />
           </div>
           <a
-            href="https://github.com/Kiwi392251/vramcalc/issues/new?title=Benchmark+Submission&labels=benchmark"
+            href="https://github.com/Kiwi392251/vramcalc/issues/new?title=Benchmark+Submission&labels=benchmark&body=Hardware+(GPU)%3A%0ACPU%3A%0ASystem+RAM+(GB+%26+freq%2C+e.g.+32GB+DDR4-3200)%3A%0APCIe+Link%3A%0AModel+%26+Quant%3A%0A-ngl+(GPU+layers)%3A%0AContext+%2F+KV+Type%3A%0APrompt+Spec+(e.g.+pp512%2Ftg128)%3A%0AMeasured+tok%2Fs%3A%0ACommand%3A"
             target="_blank"
             rel="noopener noreferrer"
             class="btn-secondary shrink-0 px-3.5 py-2 text-xs"
@@ -2890,7 +2896,12 @@ const staticIndexSubArgs = JSON.stringify({
         .map(({ model, hw, res, simHref, guideSlug, chipLabel, hwSubtitle, layersText, maxFitLabel }) => {
           const isCpuOnly = res.gpu_count === 0;
           const budget = isCpuOnly ? res.available_ram_gb : res.usable_vram_gb;
-          const pct = Math.min(100, Math.round((res.total_vram_gb / Math.max(1, budget)) * 100));
+          const usedForCard = isCpuOnly
+            ? res.ram_used_gb
+            : res.status === 'Partial Offload'
+              ? res.gpu_vram_used_gb
+              : res.total_vram_gb;
+          const pct = Math.min(100, Math.round((usedForCard / Math.max(1, budget)) * 100));
           const barColor =
             res.status === 'Fits'
               ? 'bg-emerald-500'
@@ -2922,8 +2933,15 @@ const staticIndexSubArgs = JSON.stringify({
             (anc.quant === 'MLX_4BIT' || anc.quant === 'AWQ_4BIT')
           ) {
             provenanceTag = `<span class="badge-fits mt-1 inline-flex items-center rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-semibold" title="${escapeHtml(QUANT_SHORT_LABELS[anc.quant] || anc.quant)}">${escapeHtml(t('speed.measuredUnit', { low: anc.low, high: anc.high }))} · ${escapeHtml(anc.format)}</span>`;
+          } else if (res.status === 'Partial Offload') {
+            const offloadRamNote = !isCpuOnly && res.ram_used_gb > 0
+              ? ` · ${t('card.partialRamNote', { ram: res.ram_used_gb.toFixed(1) })}`
+              : '';
+            provenanceTag = `<span class="mt-0.5 block text-[11px] text-[var(--ink-tertiary)]">${escapeHtml(t('speed.formulaOffloadShort') + offloadRamNote)}</span>`;
           } else if (res.status !== 'OOM') {
             provenanceTag = `<span class="mt-0.5 block text-[11px] text-[var(--ink-tertiary)]">${escapeHtml(t('speed.formulaOnly'))}</span>`;
+          } else if (res.oom_reason === 'ram') {
+            provenanceTag = `<span class="mt-0.5 block font-mono text-[11px] text-rose-600 dark:text-rose-400">${escapeHtml(t('sim.oomRam', { used: res.ram_used_gb.toFixed(1), max: res.available_ram_gb.toFixed(1) }))}</span>`;
           }
           const moeLine = model.active_params_b
             ? t('common.moeLine', {
@@ -2982,7 +3000,7 @@ const staticIndexSubArgs = JSON.stringify({
                     <span class="whitespace-nowrap">${escapeHtml(budgetLabel)}</span>
                     <span class="rounded border px-1.5 py-px font-mono text-[10px] font-semibold whitespace-nowrap ${quantBadgeCls}" title="${escapeHtml(QUANT_LABELS[res.quant] || res.quant)}">${escapeHtml(quantLabel)}</span>
                   </span>
-                  <span class="shrink-0 font-mono font-semibold text-[var(--ink-primary)] tabular-nums">${res.total_vram_gb.toFixed(1)} / ${budget.toFixed(1)} GB</span>
+                  <span class="shrink-0 font-mono font-semibold text-[var(--ink-primary)] tabular-nums">${usedForCard.toFixed(1)} / ${budget.toFixed(1)} GB</span>
                 </div>
                 <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-subtle)]">
                   <div class="h-full rounded-full ${barColor}" style="width: ${pct}%"></div>

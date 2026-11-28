@@ -57,7 +57,7 @@ const benchRepo =
 const submitBenchIssueUrl = `https://github.com/Kiwi392251/vramcalc/issues/new?title=${encodeURIComponent(
   `Benchmark: ${model.short_name} on ${hardware.short_name}`,
 )}&labels=benchmark&body=${encodeURIComponent(
-  `Hardware: ${hardware.name}\nModel: ${model.name}\nCommand: ${benchRepo}\nMeasured tok/s:\nDate:`,
+  `Hardware: ${hardware.name}\nCPU:\nSystem RAM (GB & speed, e.g. 32GB DDR4-3200):\nPCIe Link (e.g. Gen4 x16):\nModel: ${model.name}\nQuant / Format:\n-ngl (GPU layers):\nContext / KV Type (e.g. 8192 / fp16):\nPrompt Spec (e.g. pp512 / tg128):\nCommand: ${benchRepo}\nMeasured tok/s:\nDate:`,
 )}`;
 
 const entryBySlug = new Map(allEntries.map((e) => [e.slug, e]));

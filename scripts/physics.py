@@ -1,4 +1,4 @@
-"""Deterministic LLM VRAM, Context, Offload, and Throughput Physics Engine (v3.2).
+"""Deterministic LLM VRAM, Context, Offload, and Throughput Physics Engine (v3.4).
 
 Keep constants and formulas strictly synchronized with `site/src/utils/physics.ts`.
 All token/s outputs are calibrated formula estimate ranges (~low-high tok/s), never raw measured telemetry.
@@ -31,8 +31,33 @@ RuntimeFormat = Literal["GGUF", "AWQ", "MLX"]
 ReserveProfile = Literal["desktop", "clean", "custom"]
 CompatStatus = Literal["Fits", "Tight Fit", "Partial Offload", "OOM"]
 SpeedTier = Literal["Fast", "Interactive", "Readable", "Slow", "OOM"]
+PcieLinkKey = Literal[
+    "pcie5_x16",
+    "pcie4_x16",
+    "pcie4_x8",
+    "pcie3_x16",
+    "pcie3_x8",
+    "pcie3_x4",
+]
+ThermalProfile = Literal["desktop", "laptop_sustained", "throttled"]
+OomReason = Literal["vram", "ram", "both", "unsupported_offload"]
 
-ENGINE_VERSION = "v3.3"
+ENGINE_VERSION = "v3.4"
+
+PCIE_LINKS: dict[PcieLinkKey, dict[str, object]] = {
+    "pcie5_x16": {"bwGbps": 50.0, "syncMs": 0.08, "label": "PCIe 5.0 x16"},
+    "pcie4_x16": {"bwGbps": 25.0, "syncMs": 0.11, "label": "PCIe 4.0 x16"},
+    "pcie4_x8": {"bwGbps": 12.5, "syncMs": 0.13, "label": "PCIe 4.0 x8"},
+    "pcie3_x16": {"bwGbps": 12.5, "syncMs": 0.15, "label": "PCIe 3.0 x16"},
+    "pcie3_x8": {"bwGbps": 6.3, "syncMs": 0.18, "label": "PCIe 3.0 x8"},
+    "pcie3_x4": {"bwGbps": 3.2, "syncMs": 0.24, "label": "PCIe 3.0 x4"},
+}
+
+THERMAL_FACTORS: dict[ThermalProfile, float] = {
+    "desktop": 1.0,
+    "laptop_sustained": 0.88,
+    "throttled": 0.78,
+}
 
 QUANT_SPECS: dict[QuantKey, dict[str, object]] = {
     "Q4_K_M": {"bpw": 4.85, "format": "GGUF", "label": "4.85 bpw · Balanced 4-bit GGUF"},
@@ -88,12 +113,37 @@ class RunEstimate(TypedDict):
     comm_warning: bool
 
 
-class RigRunEstimate(RunEstimate):
+class LatencyBreakdownMs(TypedDict):
+    gpu_weights_ms: float
+    cpu_weights_ms: float
+    kv_read_ms: float
+    pcie_transfer_ms: float
+    fixed_overhead_ms: float
+    total_ms: float
+
+
+class RigRunEstimate(RunEstimate, total=False):
     raw_vram_gb: float
     usable_vram_gb: float
     system_ram_gb: float
     available_ram_gb: float
     spill_ram_gb: float
+    gpu_weights_gb: float
+    gpu_kv_gb: float
+    gpu_vram_used_gb: float
+    cpu_weights_gb: float
+    cpu_kv_gb: float
+    cpu_overhead_gb: float
+    ram_used_gb: float
+    ngl_mode: Literal["auto", "manual"]
+    kv_offload_to_cpu: bool
+    pcie_link: PcieLinkKey
+    thermal_profile: ThermalProfile
+    thermal_factor: float
+    effective_ram_bw_gbps: float
+    spread_pct: int
+    oom_reason: OomReason | None
+    latency_ms: LatencyBreakdownMs
     fits_vram: bool
     fits_rig: bool
     bottleneck: str
@@ -304,12 +354,27 @@ def format_context_label(tokens: int) -> str:
     return str(tokens)
 
 
+def _spread_pct_for_status(status: CompatStatus) -> int:
+    if status == "OOM":
+        return 0
+    if status == "Fits":
+        return 17
+    if status == "Tight Fit":
+        return 20
+    return 35
+
+
 def estimate_rig_run(
     model: ModelSpec,
     hardware: HardwareSpec | None,
     gpu_count: int | None = None,
     cpu: CpuSpec | None = None,
     system_ram_gb: float = 64.0,
+    ram_bw_override_gbps: float | None = None,
+    pcie_link: PcieLinkKey = "pcie4_x16",
+    gpu_layers_override: int | None = None,
+    kv_offload_to_cpu: bool = False,
+    thermal_profile: ThermalProfile = "desktop",
     quant: QuantKey | None = "Q4_K_M",
     format: RuntimeFormat | None = None,
     context_tokens: int = 8192,
@@ -346,19 +411,63 @@ def estimate_rig_run(
     total_vram_gb = _r2(weights_gb + kv_gb + overhead_gb)
 
     total_layers = int(model["num_layers"])
+    kv_layers = int(model.get("kv_layers") or total_layers)
+    is_moe = active_params_b < model["params_b"] * 0.9
+    is_hybrid = kv_layers < total_layers
     sys_ram = float(system_ram_gb)
     os_reserve = os_ram_reserve_gb(sys_ram)
     available_ram_gb = _r2(max(1.0, sys_ram - os_reserve))
 
+    ram_bw = (
+        float(ram_bw_override_gbps)
+        if ram_bw_override_gbps is not None and ram_bw_override_gbps > 0
+        else (float(cpu["effective_bw_gbps"]) if cpu is not None else 55.0)
+    )
+    pcie_spec = PCIE_LINKS.get(pcie_link, PCIE_LINKS["pcie4_x16"])
+    pcie_bw_gbps = float(pcie_spec["bwGbps"])  # type: ignore[arg-type]
+    pcie_sync_ms = float(pcie_spec["syncMs"])  # type: ignore[arg-type]
+    thermal_factor = float(THERMAL_FACTORS.get(thermal_profile, 1.0))
+    cpu_eff = 0.50 if is_moe else 0.62
+    cpu_eff_bw = max(1.0, ram_bw * cpu_eff * thermal_factor)
+
     # Pure CPU fallback (0 GPUs selected in Rig Simulator)
     if hardware is None or eff_gpu_count == 0:
-        cpu_bw = float(cpu["effective_bw_gbps"]) if cpu is not None else 55.0
-        fits_rig = total_vram_gb <= available_ram_gb
+        gpu_weights_gb = 0.0
+        gpu_kv_gb = 0.0
+        gpu_vram_used_gb = 0.0
+        cpu_weights_gb = weights_gb
+        cpu_kv_gb = kv_gb
+        cpu_overhead_gb = _r2(0.35 + 0.01 * cpu_weights_gb)
+        ram_used_gb = _r2(cpu_weights_gb + cpu_kv_gb + cpu_overhead_gb)
+        fits_rig = ram_used_gb <= available_ram_gb
         status: CompatStatus = "Partial Offload" if fits_rig else "OOM"
-        if not fits_rig:
-            raw_tps = 0.0
+        oom_reason: OomReason | None = None if fits_rig else "ram"
+
+        if fmt == "AWQ":
+            layer_ms = 0.040
+        elif fmt == "MLX":
+            layer_ms = 0.030
         else:
-            raw_tps = (cpu_bw * 0.58) / max(0.35, active_weights_gb + kv_gb * 0.4)
+            layer_ms = 0.022
+        if is_moe:
+            layer_ms += 0.055
+        hybrid_ms = (total_layers - kv_layers) * (0.145 if fmt == "MLX" else 0.002) if is_hybrid else 0.0
+        ctx_k = context_tokens / 1024.0
+        attn_ms = (0.00018 * kv_layers * (ctx_k ** 1.35)) if context_tokens >= 8192 else 0.0
+
+        cpu_weights_ms = (active_weights_gb / cpu_eff_bw) * 1000.0
+        kv_read_ms = ((cpu_kv_gb * 0.85) / cpu_eff_bw) * 1000.0
+        fixed_overhead_ms = (total_layers * layer_ms + hybrid_ms + attn_ms) / thermal_factor
+        total_ms = cpu_weights_ms + kv_read_ms + fixed_overhead_ms
+        raw_tps = (1000.0 / max(2.0, total_ms)) if fits_rig else 0.0
+        latency_ms: LatencyBreakdownMs = {
+            "gpu_weights_ms": 0.0,
+            "cpu_weights_ms": _r2(cpu_weights_ms),
+            "kv_read_ms": _r2(kv_read_ms),
+            "pcie_transfer_ms": 0.0,
+            "fixed_overhead_ms": _r2(fixed_overhead_ms),
+            "total_ms": _r2(total_ms),
+        }
 
         est_tps, tps_low, tps_high = _compute_tps_bounds(raw_tps, status)
         return {
@@ -370,7 +479,7 @@ def estimate_rig_run(
             "overhead_gb": overhead_gb,
             "total_vram_gb": total_vram_gb,
             "effective_usable_vram_gb": 0.0,
-            "headroom_gb": _r2(available_ram_gb - total_vram_gb),
+            "headroom_gb": _r2(available_ram_gb - ram_used_gb),
             "status": status,
             "speed_tier": classify_speed_tier(est_tps, status),
             "est_tps": est_tps,
@@ -385,7 +494,23 @@ def estimate_rig_run(
             "usable_vram_gb": 0.0,
             "system_ram_gb": sys_ram,
             "available_ram_gb": available_ram_gb,
-            "spill_ram_gb": _r2(total_vram_gb),
+            "spill_ram_gb": ram_used_gb,
+            "gpu_weights_gb": gpu_weights_gb,
+            "gpu_kv_gb": gpu_kv_gb,
+            "gpu_vram_used_gb": gpu_vram_used_gb,
+            "cpu_weights_gb": cpu_weights_gb,
+            "cpu_kv_gb": cpu_kv_gb,
+            "cpu_overhead_gb": cpu_overhead_gb,
+            "ram_used_gb": ram_used_gb,
+            "ngl_mode": "auto",
+            "kv_offload_to_cpu": fmt == "GGUF" and bool(kv_offload_to_cpu),
+            "pcie_link": pcie_link,
+            "thermal_profile": thermal_profile,
+            "thermal_factor": thermal_factor,
+            "effective_ram_bw_gbps": _r1(ram_bw),
+            "spread_pct": _spread_pct_for_status(status),
+            "oom_reason": oom_reason,
+            "latency_ms": latency_ms,
             "fits_vram": False,
             "fits_rig": fits_rig,
             "bottleneck": "System RAM" if fits_rig else "Insufficient Memory",
@@ -394,7 +519,7 @@ def estimate_rig_run(
             "kv_quant": kv_quant,
             "reserve_profile": reserve_profile,
             "os_ram_reserve_gb": os_reserve,
-            "effective_bw_gbps": cpu_bw,
+            "effective_bw_gbps": _r1(ram_bw),
             "active_params_b": active_params_b,
         }
 
@@ -409,39 +534,97 @@ def estimate_rig_run(
         hardware, eff_gpu_count, reserve_profile=reserve_profile, custom_usable_gb=custom_usable_gb
     )
 
-    headroom_gb = _r2(usable_vram - total_vram_gb)
     tight_threshold = max(1.0, usable_vram * 0.05)
-    fits_vram = total_vram_gb <= usable_vram
+    supports_cpu_offload = (fmt == "GGUF") and (not hardware["is_unified"])
+    eff_kv_offload = supports_cpu_offload and bool(kv_offload_to_cpu)
+    ngl_mode: Literal["auto", "manual"] = (
+        "manual" if supports_cpu_offload and gpu_layers_override is not None else "auto"
+    )
 
-    if fits_vram:
-        gpu_layers_fit = total_layers
-        gpu_fraction = 1.0
-        spill_ram_gb = 0.0
-        fits_rig = True
-        status = "Tight Fit" if headroom_gb < tight_threshold else "Fits"
-    else:
-        per_layer_weight_gb = weights_gb / total_layers
-        usable_for_weights = max(0.0, usable_vram - overhead_gb - kv_gb)
-        gpu_layers_fit = max(0, min(total_layers - 1, math.floor(usable_for_weights / max(0.02, per_layer_weight_gb))))
-        gpu_fraction = _r3(gpu_layers_fit / total_layers)
-        spill_ram_gb = _r2(max(0.0, total_vram_gb - usable_vram))
-
-        if hardware["is_unified"]:
-            # Unified memory Macs/APUs cannot offload "to host RAM" — it IS host RAM.
+    oom_reason = None
+    if not supports_cpu_offload:
+        fits_vram = total_vram_gb <= usable_vram
+        if fits_vram:
+            gpu_layers_fit = total_layers
+            gpu_fraction = 1.0
+            gpu_weights_gb = weights_gb
+            gpu_kv_gb = kv_gb
+            gpu_vram_used_gb = total_vram_gb
+            cpu_weights_gb = 0.0
+            cpu_kv_gb = 0.0
+            cpu_overhead_gb = 0.0
+            ram_used_gb = 0.0
+            spill_ram_gb = 0.0
+            fits_rig = True
+            status = "Tight Fit" if (usable_vram - total_vram_gb) < tight_threshold else "Fits"
+        else:
+            per_layer_total = weights_gb / total_layers + kv_gb / total_layers
+            usable_for_model = max(0.0, usable_vram - overhead_gb)
+            gpu_layers_fit = max(
+                0, min(total_layers - 1, math.floor(usable_for_model / max(0.02, per_layer_total)))
+            )
+            gpu_fraction = _r3(gpu_layers_fit / total_layers)
+            gpu_weights_gb = _r2(weights_gb * gpu_fraction)
+            gpu_kv_gb = 0.0 if gpu_layers_fit == 0 else _r2(kv_gb * gpu_fraction)
+            gpu_vram_used_gb = 0.0 if gpu_layers_fit == 0 else _r2(gpu_weights_gb + gpu_kv_gb + overhead_gb)
+            cpu_weights_gb = _r2(max(0.0, weights_gb - gpu_weights_gb))
+            cpu_kv_gb = _r2(max(0.0, kv_gb - gpu_kv_gb))
+            cpu_overhead_gb = 0.0
+            ram_used_gb = 0.0
+            spill_ram_gb = _r2(max(0.0, total_vram_gb - usable_vram))
             fits_rig = False
             status = "OOM"
+            oom_reason = "vram" if hardware["is_unified"] else "unsupported_offload"
+    else:
+        per_layer_w = weights_gb / total_layers
+        per_layer_kv = 0.0 if eff_kv_offload else kv_gb / total_layers
+        if ngl_mode == "manual":
+            gpu_layers_fit = max(0, min(total_layers, int(gpu_layers_override)))  # type: ignore[arg-type]
+        elif (not eff_kv_offload) and total_vram_gb <= usable_vram:
+            gpu_layers_fit = total_layers
         else:
-            fits_rig = gpu_fraction >= 0.15 and spill_ram_gb <= available_ram_gb
-            status = "Partial Offload" if fits_rig else "OOM"
+            usable_for_layers = max(0.0, usable_vram - overhead_gb)
+            gpu_layers_fit = max(
+                0, min(total_layers, math.floor(usable_for_layers / max(0.02, per_layer_w + per_layer_kv)))
+            )
 
-    # Throughput / Bandwidth calculation (Physics v3.3 calibrated model)
+        gpu_fraction = _r3(gpu_layers_fit / total_layers)
+        gpu_weights_gb = weights_gb if gpu_layers_fit == total_layers else _r2(weights_gb * gpu_fraction)
+        if gpu_layers_fit == 0 or eff_kv_offload:
+            gpu_kv_gb = 0.0
+        elif gpu_layers_fit == total_layers:
+            gpu_kv_gb = kv_gb
+        else:
+            gpu_kv_gb = _r2(kv_gb * gpu_fraction)
+        gpu_vram_used_gb = 0.0 if gpu_layers_fit == 0 else _r2(gpu_weights_gb + gpu_kv_gb + overhead_gb)
+
+        cpu_layers = total_layers - gpu_layers_fit
+        cpu_weights_gb = _r2(max(0.0, weights_gb - gpu_weights_gb))
+        cpu_kv_gb = _r2(max(0.0, kv_gb - gpu_kv_gb))
+        cpu_overhead_gb = _r2(0.35 + 0.01 * cpu_weights_gb) if (cpu_layers > 0 or eff_kv_offload) else 0.0
+        ram_used_gb = _r2(cpu_weights_gb + cpu_kv_gb + cpu_overhead_gb)
+        spill_ram_gb = ram_used_gb
+
+        fits_vram = gpu_vram_used_gb <= usable_vram
+        fits_ram = ram_used_gb <= available_ram_gb
+        if fits_vram and gpu_layers_fit == total_layers and (not eff_kv_offload):
+            fits_rig = True
+            status = "Tight Fit" if (usable_vram - gpu_vram_used_gb) < tight_threshold else "Fits"
+        elif fits_vram and fits_ram:
+            fits_rig = True
+            status = "Partial Offload"
+        else:
+            fits_rig = False
+            status = "OOM"
+            oom_reason = "both" if ((not fits_vram) and (not fits_ram)) else ("vram" if not fits_vram else "ram")
+
+    headroom_gb = _r2(usable_vram - (gpu_vram_used_gb if supports_cpu_offload else total_vram_gb))
+
+    # Throughput / Bandwidth calculation (Physics v3.4 calibrated model)
     single_bw = float(hardware["bandwidth_gbps"])
     backend = hardware["backend"]
     hid = hardware["id"]
     has_nvlink = bool(hardware.get("has_nvlink", False))
-    kv_layers = int(model.get("kv_layers") or total_layers)
-    is_moe = active_params_b < model["params_b"] * 0.9
-    is_hybrid = kv_layers < total_layers
     is_legacy_gpu = "ada" not in hid and any(
         tag in hid for tag in ("t4", "p40", "p100", "gtx-10", "gtx-16", "rtx-20", "titan-rtx", "v100")
     )
@@ -488,48 +671,78 @@ def estimate_rig_run(
     if eff_gpu_count == 1 or hardware["is_unified"]:
         effective_bw = single_bw
     elif split_mode == "tensor":
-        # Tensor Parallel aggregates memory bandwidth across GPUs, but suffers 2 * num_layers All-Reduce ops/tok
         bw_scaling = 1.0 + (eff_gpu_count - 1) * (0.90 if has_nvlink else 0.82)
         effective_bw = single_bw * bw_scaling
         per_op_ms = 0.014 if has_nvlink else 0.165
         comm_latency_sec = (2.0 * total_layers * per_op_ms * (1.0 + 0.15 * max(0, eff_gpu_count - 2))) / 1000.0
         comm_warning = not has_nvlink
     else:
-        # Layer Split: sequential pipeline across PCIe stages, avoids All-Reduce syncs
         pipeline_factor = 0.985 if has_nvlink else max(0.84, 1.0 - 0.045 * (eff_gpu_count - 1))
         effective_bw = single_bw * pipeline_factor
 
-    cpu_bw = float(cpu["effective_bw_gbps"]) if cpu is not None else 55.0
-    active_kv_gb = kv_gb * 0.85
     ctx_k = context_tokens / 1024.0
     attn_ms = (0.00018 * kv_layers * (ctx_k ** 1.35)) if context_tokens >= 8192 else 0.0
-    overhead_sec = (total_layers * layer_ms + hybrid_ms + attn_ms) / 1000.0
+
+    gpu_eff_bw = max(1.0, effective_bw * backend_eff * thermal_factor)
+    gpu_weights_ms = (active_weights_gb * gpu_fraction / gpu_eff_bw) * 1000.0
+    cpu_weights_ms = (
+        (active_weights_gb * (1.0 - gpu_fraction) / cpu_eff_bw) * 1000.0
+        if gpu_fraction < 1.0
+        else 0.0
+    )
+    kv_read_ms = (((gpu_kv_gb * 0.85) / gpu_eff_bw) + ((cpu_kv_gb * 0.85) / cpu_eff_bw)) * 1000.0
+
+    cpu_layers = max(0, total_layers - gpu_layers_fit)
+    has_offload_traffic = supports_cpu_offload and (
+        (0 < gpu_layers_fit < total_layers) or (eff_kv_offload and gpu_layers_fit > 0)
+    )
+    tp_comm_ms = comm_latency_sec * gpu_fraction * 1000.0
+    offload_pcie_ms = 0.0
+    if has_offload_traffic:
+        est_hidden_dim = max(
+            2048,
+            min(
+                8192,
+                _round_int(math.sqrt((active_params_b * 1e9) / (12.0 * max(1, total_layers)))),
+            ),
+        )
+        hidden_transfer_gb = (2.0 * est_hidden_dim * 2.0) / (1024 ** 3)
+        offload_pcie_ms = (
+            (hidden_transfer_gb / pcie_bw_gbps) * 1000.0
+            + 2.0 * pcie_sync_ms
+            + 0.035 * cpu_layers
+            + (0.04 * gpu_layers_fit if eff_kv_offload else 0.0)
+        )
+    pcie_transfer_ms = tp_comm_ms + offload_pcie_ms
+    fixed_overhead_ms = (total_layers * layer_ms + hybrid_ms + attn_ms) / thermal_factor
+    total_ms = gpu_weights_ms + cpu_weights_ms + kv_read_ms + pcie_transfer_ms + fixed_overhead_ms
 
     if status == "OOM":
         raw_tps = 0.0
         bottleneck = "Insufficient Memory"
     else:
-        gpu_time = (active_weights_gb * gpu_fraction + active_kv_gb * gpu_fraction) / max(
-            1.0, effective_bw * backend_eff
-        )
-        cpu_time = (
-            (active_weights_gb * (1.0 - gpu_fraction) + active_kv_gb * (1.0 - gpu_fraction))
-            / max(1.0, cpu_bw * 0.60)
-            if gpu_fraction < 1.0
-            else 0.0
-        )
-        total_tok_sec = gpu_time + cpu_time + comm_latency_sec + overhead_sec
-        raw_tps = 1.0 / max(0.002, total_tok_sec)
+        raw_tps = 1000.0 / max(2.0, total_ms)
 
-        if comm_latency_sec > 0 and total_tok_sec > 0:
-            comm_overhead_pct = _r1((comm_latency_sec / total_tok_sec) * 100.0)
+        if pcie_transfer_ms > 0 and total_ms > 0:
+            comm_overhead_pct = _r1((pcie_transfer_ms / total_ms) * 100.0)
 
-        if gpu_fraction < 1.0:
+        if gpu_layers_fit == 0:
+            bottleneck = "System RAM"
+        elif gpu_fraction < 1.0 or eff_kv_offload:
             bottleneck = "PCIe / System RAM"
         elif comm_warning and comm_overhead_pct >= 20.0:
             bottleneck = "PCIe All-Reduce"
         else:
             bottleneck = "VRAM"
+
+    latency_ms = {
+        "gpu_weights_ms": _r2(gpu_weights_ms),
+        "cpu_weights_ms": _r2(cpu_weights_ms),
+        "kv_read_ms": _r2(kv_read_ms),
+        "pcie_transfer_ms": _r2(pcie_transfer_ms),
+        "fixed_overhead_ms": _r2(fixed_overhead_ms),
+        "total_ms": _r2(total_ms),
+    }
 
     est_tps, tps_low, tps_high = _compute_tps_bounds(raw_tps, status)
 
@@ -558,6 +771,22 @@ def estimate_rig_run(
         "system_ram_gb": sys_ram,
         "available_ram_gb": available_ram_gb,
         "spill_ram_gb": spill_ram_gb,
+        "gpu_weights_gb": gpu_weights_gb,
+        "gpu_kv_gb": gpu_kv_gb,
+        "gpu_vram_used_gb": gpu_vram_used_gb,
+        "cpu_weights_gb": cpu_weights_gb,
+        "cpu_kv_gb": cpu_kv_gb,
+        "cpu_overhead_gb": cpu_overhead_gb,
+        "ram_used_gb": ram_used_gb,
+        "ngl_mode": ngl_mode,
+        "kv_offload_to_cpu": eff_kv_offload,
+        "pcie_link": pcie_link,
+        "thermal_profile": thermal_profile,
+        "thermal_factor": thermal_factor,
+        "effective_ram_bw_gbps": _r1(ram_bw),
+        "spread_pct": _spread_pct_for_status(status),
+        "oom_reason": oom_reason,
+        "latency_ms": latency_ms,  # type: ignore[typeddict-item]
         "fits_vram": fits_vram,
         "fits_rig": fits_rig,
         "bottleneck": bottleneck,
@@ -575,7 +804,7 @@ def _compute_tps_bounds(raw_tps: float, status: CompatStatus) -> tuple[float, in
     if status == "OOM" or raw_tps <= 0.0:
         return 0.0, 0, 0
 
-    spread = 0.17 if status == "Fits" else (0.20 if status == "Tight Fit" else 0.25)
+    spread = _spread_pct_for_status(status) / 100.0
     if raw_tps < 1.0:
         return _r1(raw_tps), 0, 1
 
@@ -774,23 +1003,25 @@ def build_commands(
     eff_gpu_count = gpu_count if gpu_count is not None else int(hardware["gpu_count"])
     max_ctx, _, _ = max_fit_context_details(model, hardware, quant="Q4_K_M", kv_quant=kv_quant)
     rec_ctx = min(32768, max_ctx) if max_ctx > 0 else 8192
-    if est["status"] in ("Fits", "Tight Fit"):
+    if est["status"] in ("Fits", "Tight Fit") and not est.get("kv_offload_to_cpu"):
         rec_ngl = 99
     else:
         rec_ngl = est["gpu_layers_fit"]
 
     fa_flag = "-fa on" if hardware["backend"] in ("CUDA", "Metal") else "-fa off"
     kv_flags = f" --cache-type-k {kv_quant} --cache-type-v {kv_quant}" if kv_quant != "fp16" else " --cache-type-k q8_0 --cache-type-v q8_0"
+    nkvo_flag = " -nkvo" if est.get("kv_offload_to_cpu") else ""
+    thread_flag = " -t 8" if (est["gpu_layers_fit"] < est["total_layers"] or est.get("kv_offload_to_cpu")) else ""
     split_flag = " -sm row" if eff_gpu_count > 1 and split_mode == "tensor" else ""
     hf_spec = f"{model['hf_repo']}:{est['quant'] if est['format'] == 'GGUF' else 'Q4_K_M'}"
 
     llama_cli = (
         f"llama-cli -hf {hf_spec} \\\n"
-        f"  -ngl {rec_ngl} -c {rec_ctx} {fa_flag}{kv_flags}{split_flag}"
+        f"  -ngl {rec_ngl} -c {rec_ctx} {fa_flag}{kv_flags}{nkvo_flag}{thread_flag}{split_flag}"
     )
     llama_server = (
         f"llama-server -hf {hf_spec} \\\n"
-        f"  -ngl {rec_ngl} -c {rec_ctx} {fa_flag}{split_flag} --host 127.0.0.1 --port 8080"
+        f"  -ngl {rec_ngl} -c {rec_ctx} {fa_flag}{nkvo_flag}{thread_flag}{split_flag} --host 127.0.0.1 --port 8080"
     )
     ollama_env_cmd = (
         f"OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 "

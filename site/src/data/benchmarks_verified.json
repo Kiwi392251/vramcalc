@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-11-26",
-  "methodology_note": "17 reproducible community & framework decode benchmarks (17 / 227 curated guides measured, 210 formula-only; single-stream batch=1, specified prompt/decode lengths and dates) displayed side-by-side against Physics v3.3 calibrated formula ranges. Older 2024–2025 snapshots remain clearly date-stamped until superseded by newer user submissions.",
+  "updated_at": "2026-11-27",
+  "methodology_note": "17 reproducible community & framework decode benchmarks (17 / 227 curated guides measured, 210 formula-only; single-stream batch=1, specified prompt/decode lengths and dates) displayed side-by-side against Physics v3.4 calibrated formula ranges (±17% Fits, ±20% Tight Fit; unverified Partial Offload uses ±35% formula bands). Offload calibration schema supports CPU, system RAM frequency, -ngl, context, KV quant, and PCIe link metadata without fabricating unverified runs.",
   "anchors": [
     {
       "hardware_id": "apple-m4-16gb",

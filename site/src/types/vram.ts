@@ -13,6 +13,24 @@ export type RuntimeFormat = 'GGUF' | 'AWQ' | 'MLX';
 export type KvQuantKey = 'fp16' | 'q8_0' | 'q4_0';
 export type SplitMode = 'layer' | 'tensor';
 export type ReserveProfile = 'desktop' | 'clean' | 'custom';
+export type PcieLinkKey =
+  | 'pcie5_x16'
+  | 'pcie4_x16'
+  | 'pcie4_x8'
+  | 'pcie3_x16'
+  | 'pcie3_x8'
+  | 'pcie3_x4';
+export type ThermalProfile = 'desktop' | 'laptop_sustained' | 'throttled';
+export type OomReason = 'vram' | 'ram' | 'both' | 'unsupported_offload';
+
+export interface LatencyBreakdownMs {
+  gpu_weights_ms: number;
+  cpu_weights_ms: number;
+  kv_read_ms: number;
+  pcie_transfer_ms: number;
+  fixed_overhead_ms: number;
+  total_ms: number;
+}
 
 export type CompatStatus = 'Fits' | 'Tight Fit' | 'Partial Offload' | 'OOM';
 export type SpeedTier = 'Fast' | 'Interactive' | 'Readable' | 'Slow' | 'OOM';
@@ -194,6 +212,14 @@ export interface BenchmarkAnchor {
   source_label: string;
   source_url: string;
   notes: string;
+  cpu_id?: string;
+  cpu_label?: string;
+  system_ram_gb?: number;
+  ram_speed_label?: string;
+  ngl?: number;
+  kv_quant?: KvQuantKey;
+  pcie_link?: PcieLinkKey;
+  is_offload?: boolean;
 }
 
 export interface BenchmarksData {
@@ -253,6 +279,11 @@ export interface RigRunOptions {
   gpuCount?: number;
   cpu?: CpuSpec | null;
   systemRamGb?: number;
+  ramBwOverrideGbps?: number | null;
+  pcieLink?: PcieLinkKey;
+  gpuLayersOverride?: number | null;
+  kvOffloadToCpu?: boolean;
+  thermalProfile?: ThermalProfile;
   quant?: QuantKey;
   format?: RuntimeFormat;
   contextTokens?: number;
@@ -269,6 +300,22 @@ export interface RigRunEstimate extends RunEstimate {
   system_ram_gb: number;
   available_ram_gb: number;
   spill_ram_gb: number;
+  gpu_weights_gb: number;
+  gpu_kv_gb: number;
+  gpu_vram_used_gb: number;
+  cpu_weights_gb: number;
+  cpu_kv_gb: number;
+  cpu_overhead_gb: number;
+  ram_used_gb: number;
+  ngl_mode: 'auto' | 'manual';
+  kv_offload_to_cpu: boolean;
+  pcie_link: PcieLinkKey;
+  thermal_profile: ThermalProfile;
+  thermal_factor: number;
+  effective_ram_bw_gbps: number;
+  spread_pct: number;
+  oom_reason?: OomReason;
+  latency_ms?: LatencyBreakdownMs;
   fits_vram: boolean;
   fits_rig: boolean;
   bottleneck: 'VRAM' | 'PCIe / System RAM' | 'System RAM' | 'Insufficient Memory' | 'PCIe All-Reduce';

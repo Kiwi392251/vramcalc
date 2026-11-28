@@ -53,10 +53,33 @@ interface ReleaseEntry {
 
 const releases: ReleaseEntry[] = [
   {
-    version: 'v3.3',
-    date: '2026-11-24',
+    version: 'v3.4',
+    date: '2026-11-27',
     badge: 'Current',
     badgeClass: 'badge-fits',
+    headline: 'Two-Pool Partial Offload Engine, Manual -ngl & -nkvo, 5-Part Latency Breakdown & ±35% Offload Band',
+    summary:
+      'Upgraded Partial Offload from a coarse overflow tag into a full dual-pool memory (GPU VRAM + System RAM) and decomposed per-token decode latency model across Python, TypeScript, /calculator/, and detail calculators.',
+    formulaChanges: [
+      'Dual-pool memory solver splits layer weights and KV cache cleanly across GPU VRAM and System RAM (supporting automatic or manual -ngl and optional -nkvo KV-to-CPU), checking BOTH VRAM and System RAM capacity and reporting explicit oom_reason (vram / ram / both / unsupported_offload).',
+      'Decomposed per-token decode time into 5 explicit terms: GPU Weights + CPU Weights + KV Read + PCIe Boundary Activation/Sync + Fixed Layer/Attention Overhead, while separating MoE total weights (memory) from active parameters (bandwidth throughput).',
+      'Added optional PCIe host link (Gen3/4/5 × x4/x8/x16), RAM bandwidth override, and Sustained Clocks / Thermal factor (Desktop 1.00×, Laptop Sustained 0.88×, Throttled 0.78×) without noisy OS/undervolt overfitting.',
+      'Preserved 17/17 full-VRAM benchmark containment (±17% Fits / ±20% Tight Fit) while widening unverified Partial Offload formula bands to ±35%.',
+    ],
+    uiAndDataChanges: [
+      'Added GPU VRAM + System RAM dual progress bars, -ngl slider, RAM BW / PCIe / Thermal / -nkvo controls, and 5-part ms/tok breakdown strip to /calculator/ (plus RTX 4060 8GB + 32GB RAM 14B Offload preset) and VramCalculator.',
+      'Extended benchmarks_verified.json and GitHub Submit Real Run templates with offload calibration fields (CPU, RAM GB & frequency, PCIe link, -ngl, KV type, pp/tg) without fabricating unverified measurements.',
+    ],
+    links: [
+      { label: 'Try Partial Offload in Simulator ->', href: '/calculator/' },
+      { label: 'View Measured Benchmarks ->', href: '/#measured-benchmarks' },
+    ],
+  },
+  {
+    version: 'v3.3',
+    date: '2026-11-24',
+    badge: 'Calibration',
+    badgeClass: 'badge-accent',
     headline: '17/17 Full Range Containment, Homepage Reserve / Custom GB Override & Nearest Anchors',
     summary:
       'Refined CUDA AWQ, CUDA MoE, Apple Metal GGUF, and Hybrid DeltaNet decode efficiency coefficients so all 17 verified community anchors fall completely within predicted ranges (<= 8.7% max midpoint error, 0 misses). Made 17/173 coverage and benchmark dates transparent rather than fabricating unverified runs.',

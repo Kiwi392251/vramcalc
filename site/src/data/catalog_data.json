@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-11-26",
-  "engine_version": "v3.3",
+  "updated_at": "2026-11-27",
+  "engine_version": "v3.4",
   "models": [
     {
       "id": "deepseek-r1-1.5b",

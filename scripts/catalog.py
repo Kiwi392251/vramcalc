@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Literal, TypedDict
 
-CATALOG_UPDATED_AT = "2026-11-26"
-ENGINE_VERSION = "v3.3"
+CATALOG_UPDATED_AT = "2026-11-27"
+ENGINE_VERSION = "v3.4"
 
 HardwareVendor = Literal["NVIDIA", "Apple", "AMD", "Intel", "Qualcomm", "Raspberry Pi"]
 HardwareBackend = Literal["CUDA", "Metal", "ROCm", "Vulkan", "CPU"]

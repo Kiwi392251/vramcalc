@@ -2,7 +2,10 @@ import type {
   CompatStatus,
   HardwareSpec,
   KvQuantKey,
+  LatencyBreakdownMs,
   ModelSpec,
+  OomReason,
+  PcieLinkKey,
   QuantKey,
   ReserveProfile,
   RigRunEstimate,
@@ -11,15 +14,43 @@ import type {
   RuntimeFormat,
   SpeedTier,
   SplitMode,
+  ThermalProfile,
 } from '../types/vram';
 
 /**
- * Deterministic LLM VRAM, Context, Offload, and Throughput Physics Engine (v3.3).
+ * Deterministic LLM VRAM, Context, Offload, and Throughput Physics Engine (v3.4).
  * Keep constants and formulas strictly synchronized with `scripts/physics.py`.
  * All token/s outputs are calibrated formula estimate ranges (~low–high tok/s), never raw telemetry.
  */
 
-export const ENGINE_VERSION = 'v3.3';
+export const ENGINE_VERSION = 'v3.4';
+
+export const PCIE_LINKS: Record<
+  PcieLinkKey,
+  { bwGbps: number; syncMs: number; label: string }
+> = {
+  pcie5_x16: { bwGbps: 50.0, syncMs: 0.08, label: 'PCIe 5.0 x16' },
+  pcie4_x16: { bwGbps: 25.0, syncMs: 0.11, label: 'PCIe 4.0 x16' },
+  pcie4_x8: { bwGbps: 12.5, syncMs: 0.13, label: 'PCIe 4.0 x8' },
+  pcie3_x16: { bwGbps: 12.5, syncMs: 0.15, label: 'PCIe 3.0 x16' },
+  pcie3_x8: { bwGbps: 6.3, syncMs: 0.18, label: 'PCIe 3.0 x8' },
+  pcie3_x4: { bwGbps: 3.2, syncMs: 0.24, label: 'PCIe 3.0 x4' },
+};
+
+export const THERMAL_FACTORS: Record<ThermalProfile, number> = {
+  desktop: 1.0,
+  laptop_sustained: 0.88,
+  throttled: 0.78,
+};
+
+export const RAM_BW_PRESETS: ReadonlyArray<{ value: string; bwGbps: number | null; label: string }> = [
+  { value: 'auto', bwGbps: null, label: 'Auto (CPU default)' },
+  { value: '36', bwGbps: 36, label: 'DDR4-3200 2-ch (36 GB/s)' },
+  { value: '64', bwGbps: 64, label: 'DDR5-5600 2-ch (64 GB/s)' },
+  { value: '76', bwGbps: 76, label: 'DDR5-6400 2-ch (76 GB/s)' },
+  { value: '145', bwGbps: 145, label: '4-Ch Workstation (145 GB/s)' },
+  { value: '320', bwGbps: 320, label: '8/12-Ch Server (320 GB/s)' },
+];
 
 export const QUANT_BPW: Record<QuantKey, number> = {
   Q4_K_M: 4.85,
@@ -223,9 +254,16 @@ export function formatContextLabel(tokens: number): string {
   return String(tokens);
 }
 
+function spreadPctForStatus(status: CompatStatus): number {
+  if (status === 'OOM') return 0;
+  if (status === 'Fits') return 17;
+  if (status === 'Tight Fit') return 20;
+  return 35;
+}
+
 function computeTpsBounds(rawTps: number, status: CompatStatus): [number, number, number] {
   if (status === 'OOM' || rawTps <= 0) return [0, 0, 0];
-  const spread = status === 'Fits' ? 0.17 : status === 'Tight Fit' ? 0.2 : 0.25;
+  const spread = spreadPctForStatus(status) / 100.0;
   if (rawTps < 1.0) {
     return [round1(rawTps), 0, 1];
   }
@@ -244,6 +282,11 @@ export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
     hardware,
     cpu = null,
     systemRamGb = 64.0,
+    ramBwOverrideGbps = null,
+    pcieLink = 'pcie4_x16',
+    gpuLayersOverride = null,
+    kvOffloadToCpu = false,
+    thermalProfile = 'desktop',
     kvQuant = 'fp16',
     splitMode = 'layer',
     reserveProfile = 'desktop',
@@ -285,16 +328,53 @@ export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
   let totalVramGb = round2(weightsGb + kvGb + overheadGb);
 
   const totalLayers = model.num_layers;
+  const kvLayers = model.kv_layers ?? totalLayers;
+  const isMoe = activeParamsB < model.params_b * 0.9;
+  const isHybrid = kvLayers < totalLayers;
   const osReserve = osRamReserveGb(systemRamGb);
   const availableRamGb = round2(Math.max(1.0, systemRamGb - osReserve));
+  const ramBw =
+    ramBwOverrideGbps !== null && ramBwOverrideGbps !== undefined && ramBwOverrideGbps > 0
+      ? ramBwOverrideGbps
+      : cpu
+        ? cpu.effective_bw_gbps
+        : 55.0;
+  const pcieSpec = PCIE_LINKS[pcieLink] ?? PCIE_LINKS.pcie4_x16;
+  const thermalFactor = THERMAL_FACTORS[thermalProfile] ?? 1.0;
+  const cpuEff = isMoe ? 0.5 : 0.62;
+  const cpuEffBw = Math.max(1.0, ramBw * cpuEff * thermalFactor);
 
   if (hardware === null || effGpuCount === 0) {
-    const cpuBw = cpu ? cpu.effective_bw_gbps : 55.0;
-    const fitsRig = totalVramGb <= availableRamGb;
+    const gpuWeightsGb = 0.0;
+    const gpuKvGb = 0.0;
+    const gpuVramUsedGb = 0.0;
+    const cpuWeightsGb = weightsGb;
+    const cpuKvGb = kvGb;
+    const cpuOverheadGb = round2(0.35 + 0.01 * cpuWeightsGb);
+    const ramUsedGb = round2(cpuWeightsGb + cpuKvGb + cpuOverheadGb);
+    const fitsRig = ramUsedGb <= availableRamGb;
     const status: CompatStatus = fitsRig ? 'Partial Offload' : 'OOM';
-    const rawTps = fitsRig
-      ? (cpuBw * 0.58) / Math.max(0.35, activeWeightsGb + kvGb * 0.4)
-      : 0.0;
+    const oomReason: OomReason | undefined = fitsRig ? undefined : 'ram';
+
+    let layerMs = fmt === 'AWQ' ? 0.04 : fmt === 'MLX' ? 0.03 : 0.022;
+    if (isMoe) layerMs += 0.055;
+    const hybridMs = isHybrid ? (totalLayers - kvLayers) * (fmt === 'MLX' ? 0.145 : 0.002) : 0.0;
+    const ctxK = contextTokens / 1024.0;
+    const attnMs = contextTokens >= 8192 ? 0.00018 * kvLayers * Math.pow(ctxK, 1.35) : 0.0;
+
+    const cpuWeightsMs = (activeWeightsGb / cpuEffBw) * 1000.0;
+    const kvReadMs = ((cpuKvGb * 0.85) / cpuEffBw) * 1000.0;
+    const fixedOverheadMs = (totalLayers * layerMs + hybridMs + attnMs) / thermalFactor;
+    const totalMs = cpuWeightsMs + kvReadMs + fixedOverheadMs;
+    const rawTps = fitsRig ? 1000.0 / Math.max(2.0, totalMs) : 0.0;
+    const latencyMs: LatencyBreakdownMs = {
+      gpu_weights_ms: 0.0,
+      cpu_weights_ms: round2(cpuWeightsMs),
+      kv_read_ms: round2(kvReadMs),
+      pcie_transfer_ms: 0.0,
+      fixed_overhead_ms: round2(fixedOverheadMs),
+      total_ms: round2(totalMs),
+    };
     const [estTps, tpsLow, tpsHigh] = computeTpsBounds(rawTps, status);
     return {
       quant: normQuant,
@@ -305,7 +385,7 @@ export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
       overhead_gb: overheadGb,
       total_vram_gb: totalVramGb,
       effective_usable_vram_gb: 0,
-      headroom_gb: round2(availableRamGb - totalVramGb),
+      headroom_gb: round2(availableRamGb - ramUsedGb),
       status,
       speed_tier: classifySpeedTier(estTps, status),
       est_tps: estTps,
@@ -320,7 +400,23 @@ export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
       usable_vram_gb: 0,
       system_ram_gb: systemRamGb,
       available_ram_gb: availableRamGb,
-      spill_ram_gb: round2(totalVramGb),
+      spill_ram_gb: ramUsedGb,
+      gpu_weights_gb: gpuWeightsGb,
+      gpu_kv_gb: gpuKvGb,
+      gpu_vram_used_gb: gpuVramUsedGb,
+      cpu_weights_gb: cpuWeightsGb,
+      cpu_kv_gb: cpuKvGb,
+      cpu_overhead_gb: cpuOverheadGb,
+      ram_used_gb: ramUsedGb,
+      ngl_mode: 'auto',
+      kv_offload_to_cpu: fmt === 'GGUF' && Boolean(kvOffloadToCpu),
+      pcie_link: pcieLink,
+      thermal_profile: thermalProfile,
+      thermal_factor: thermalFactor,
+      effective_ram_bw_gbps: round1(ramBw),
+      spread_pct: spreadPctForStatus(status),
+      oom_reason: oomReason,
+      latency_ms: latencyMs,
       fits_vram: false,
       fits_rig: fitsRig,
       bottleneck: fitsRig ? 'System RAM' : 'Insufficient Memory',
@@ -329,7 +425,7 @@ export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
       kv_quant: kvQuant,
       reserve_profile: reserveProfile,
       os_ram_reserve_gb: osReserve,
-      effective_bw_gbps: cpuBw,
+      effective_bw_gbps: round1(ramBw),
       active_params_b: activeParamsB,
     };
   }
@@ -347,46 +443,116 @@ export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
     reserveProfile,
     customUsableGb,
   );
-  const headroomGb = round2(usableVram - totalVramGb);
   const tightThreshold = Math.max(1.0, usableVram * 0.05);
-  const fitsVram = totalVramGb <= usableVram;
+  const supportsCpuOffload = fmt === 'GGUF' && !hardware.is_unified;
+  const effKvOffload = supportsCpuOffload && Boolean(kvOffloadToCpu);
+  const nglMode: 'auto' | 'manual' =
+    supportsCpuOffload && gpuLayersOverride !== null && gpuLayersOverride !== undefined
+      ? 'manual'
+      : 'auto';
 
   let gpuLayersFit: number;
   let gpuFraction: number;
+  let gpuWeightsGb: number;
+  let gpuKvGb: number;
+  let gpuVramUsedGb: number;
+  let cpuWeightsGb: number;
+  let cpuKvGb: number;
+  let cpuOverheadGb: number;
+  let ramUsedGb: number;
   let spillRamGb: number;
+  let fitsVram: boolean;
   let fitsRig: boolean;
   let status: CompatStatus;
+  let oomReason: OomReason | undefined;
 
-  if (fitsVram) {
-    gpuLayersFit = totalLayers;
-    gpuFraction = 1.0;
-    spillRamGb = 0.0;
-    fitsRig = true;
-    status = headroomGb < tightThreshold ? 'Tight Fit' : 'Fits';
-  } else {
-    const perLayerWeightGb = weightsGb / totalLayers;
-    const usableForWeights = Math.max(0.0, usableVram - overheadGb - kvGb);
-    gpuLayersFit = Math.max(
-      0,
-      Math.min(totalLayers - 1, Math.floor(usableForWeights / Math.max(0.02, perLayerWeightGb))),
-    );
-    gpuFraction = round3(gpuLayersFit / totalLayers);
-    spillRamGb = round2(Math.max(0.0, totalVramGb - usableVram));
-
-    if (hardware.is_unified) {
+  if (!supportsCpuOffload) {
+    fitsVram = totalVramGb <= usableVram;
+    if (fitsVram) {
+      gpuLayersFit = totalLayers;
+      gpuFraction = 1.0;
+      gpuWeightsGb = weightsGb;
+      gpuKvGb = kvGb;
+      gpuVramUsedGb = totalVramGb;
+      cpuWeightsGb = 0.0;
+      cpuKvGb = 0.0;
+      cpuOverheadGb = 0.0;
+      ramUsedGb = 0.0;
+      spillRamGb = 0.0;
+      fitsRig = true;
+      status = usableVram - totalVramGb < tightThreshold ? 'Tight Fit' : 'Fits';
+    } else {
+      const perLayerTotal = weightsGb / totalLayers + kvGb / totalLayers;
+      const usableForModel = Math.max(0.0, usableVram - overheadGb);
+      gpuLayersFit = Math.max(
+        0,
+        Math.min(totalLayers - 1, Math.floor(usableForModel / Math.max(0.02, perLayerTotal))),
+      );
+      gpuFraction = round3(gpuLayersFit / totalLayers);
+      gpuWeightsGb = round2(weightsGb * gpuFraction);
+      gpuKvGb = gpuLayersFit === 0 ? 0.0 : round2(kvGb * gpuFraction);
+      gpuVramUsedGb = gpuLayersFit === 0 ? 0.0 : round2(gpuWeightsGb + gpuKvGb + overheadGb);
+      cpuWeightsGb = round2(Math.max(0.0, weightsGb - gpuWeightsGb));
+      cpuKvGb = round2(Math.max(0.0, kvGb - gpuKvGb));
+      cpuOverheadGb = 0.0;
+      ramUsedGb = 0.0;
+      spillRamGb = round2(Math.max(0.0, totalVramGb - usableVram));
       fitsRig = false;
       status = 'OOM';
+      oomReason = hardware.is_unified ? 'vram' : 'unsupported_offload';
+    }
+  } else {
+    const perLayerW = weightsGb / totalLayers;
+    const perLayerKv = effKvOffload ? 0.0 : kvGb / totalLayers;
+    if (nglMode === 'manual') {
+      gpuLayersFit = Math.max(0, Math.min(totalLayers, Math.trunc(gpuLayersOverride as number)));
+    } else if (!effKvOffload && totalVramGb <= usableVram) {
+      gpuLayersFit = totalLayers;
     } else {
-      fitsRig = gpuFraction >= 0.15 && spillRamGb <= availableRamGb;
-      status = fitsRig ? 'Partial Offload' : 'OOM';
+      const usableForLayers = Math.max(0.0, usableVram - overheadGb);
+      gpuLayersFit = Math.max(
+        0,
+        Math.min(totalLayers, Math.floor(usableForLayers / Math.max(0.02, perLayerW + perLayerKv))),
+      );
+    }
+
+    gpuFraction = round3(gpuLayersFit / totalLayers);
+    gpuWeightsGb = gpuLayersFit === totalLayers ? weightsGb : round2(weightsGb * gpuFraction);
+    gpuKvGb =
+      gpuLayersFit === 0 || effKvOffload
+        ? 0.0
+        : gpuLayersFit === totalLayers
+          ? kvGb
+          : round2(kvGb * gpuFraction);
+    gpuVramUsedGb =
+      gpuLayersFit === 0 ? 0.0 : round2(gpuWeightsGb + gpuKvGb + overheadGb);
+
+    const cpuLayers = totalLayers - gpuLayersFit;
+    cpuWeightsGb = round2(Math.max(0.0, weightsGb - gpuWeightsGb));
+    cpuKvGb = round2(Math.max(0.0, kvGb - gpuKvGb));
+    cpuOverheadGb = cpuLayers > 0 || effKvOffload ? round2(0.35 + 0.01 * cpuWeightsGb) : 0.0;
+    ramUsedGb = round2(cpuWeightsGb + cpuKvGb + cpuOverheadGb);
+    spillRamGb = ramUsedGb;
+
+    fitsVram = gpuVramUsedGb <= usableVram;
+    const fitsRam = ramUsedGb <= availableRamGb;
+
+    if (fitsVram && gpuLayersFit === totalLayers && !effKvOffload) {
+      fitsRig = true;
+      status = usableVram - gpuVramUsedGb < tightThreshold ? 'Tight Fit' : 'Fits';
+    } else if (fitsVram && fitsRam) {
+      fitsRig = true;
+      status = 'Partial Offload';
+    } else {
+      fitsRig = false;
+      status = 'OOM';
+      oomReason = !fitsVram && !fitsRam ? 'both' : !fitsVram ? 'vram' : 'ram';
     }
   }
 
+  const headroomGb = round2(usableVram - (supportsCpuOffload ? gpuVramUsedGb : totalVramGb));
   const singleBw = hardware.bandwidth_gbps;
   const hasNvlink = Boolean(hardware.has_nvlink);
-  const kvLayers = model.kv_layers ?? totalLayers;
-  const isMoe = activeParamsB < model.params_b * 0.9;
-  const isHybrid = kvLayers < totalLayers;
   const isLegacyGpu =
     !hardware.id.includes('ada') &&
     ['t4', 'p40', 'p100', 'gtx-10', 'gtx-16', 'rtx-20', 'titan-rtx', 'v100'].some((tag) =>
@@ -443,11 +609,40 @@ export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
     effectiveBw = singleBw * pipelineFactor;
   }
 
-  const cpuBw = cpu ? cpu.effective_bw_gbps : 55.0;
-  const activeKvGb = kvGb * 0.85;
   const ctxK = contextTokens / 1024.0;
   const attnMs = contextTokens >= 8192 ? 0.00018 * kvLayers * Math.pow(ctxK, 1.35) : 0.0;
-  const overheadSec = (totalLayers * layerMs + hybridMs + attnMs) / 1000.0;
+
+  const gpuEffBw = Math.max(1.0, effectiveBw * backendEff * thermalFactor);
+  const gpuWeightsMs = ((activeWeightsGb * gpuFraction) / gpuEffBw) * 1000.0;
+  const cpuWeightsMs =
+    gpuFraction < 1.0 ? ((activeWeightsGb * (1.0 - gpuFraction)) / cpuEffBw) * 1000.0 : 0.0;
+  const kvReadMs =
+    (((gpuKvGb * 0.85) / gpuEffBw) + ((cpuKvGb * 0.85) / cpuEffBw)) * 1000.0;
+
+  const cpuLayers = Math.max(0, totalLayers - gpuLayersFit);
+  const hasOffloadTraffic =
+    supportsCpuOffload &&
+    ((gpuLayersFit > 0 && gpuLayersFit < totalLayers) || (effKvOffload && gpuLayersFit > 0));
+  const tpCommMs = commLatencySec * gpuFraction * 1000.0;
+  let offloadPcieMs = 0.0;
+  if (hasOffloadTraffic) {
+    const estHiddenDim = Math.max(
+      2048,
+      Math.min(
+        8192,
+        Math.round(Math.sqrt((activeParamsB * 1e9) / (12.0 * Math.max(1, totalLayers)))),
+      ),
+    );
+    const hiddenTransferGb = (2.0 * estHiddenDim * 2.0) / (1024 ** 3);
+    offloadPcieMs =
+      (hiddenTransferGb / pcieSpec.bwGbps) * 1000.0 +
+      2.0 * pcieSpec.syncMs +
+      0.035 * cpuLayers +
+      (effKvOffload ? 0.04 * gpuLayersFit : 0.0);
+  }
+  const pcieTransferMs = tpCommMs + offloadPcieMs;
+  const fixedOverheadMs = (totalLayers * layerMs + hybridMs + attnMs) / thermalFactor;
+  const totalMs = gpuWeightsMs + cpuWeightsMs + kvReadMs + pcieTransferMs + fixedOverheadMs;
 
   let rawTps: number;
   let bottleneck: RigRunEstimate['bottleneck'];
@@ -456,22 +651,15 @@ export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
     rawTps = 0.0;
     bottleneck = 'Insufficient Memory';
   } else {
-    const gpuTime =
-      (activeWeightsGb * gpuFraction + activeKvGb * gpuFraction) /
-      Math.max(1.0, effectiveBw * backendEff);
-    const cpuTime =
-      gpuFraction < 1.0
-        ? (activeWeightsGb * (1.0 - gpuFraction) + activeKvGb * (1.0 - gpuFraction)) /
-          Math.max(1.0, cpuBw * 0.6)
-        : 0.0;
-    const totalTokSec = gpuTime + cpuTime + commLatencySec + overheadSec;
-    rawTps = 1.0 / Math.max(0.002, totalTokSec);
+    rawTps = 1000.0 / Math.max(2.0, totalMs);
 
-    if (commLatencySec > 0 && totalTokSec > 0) {
-      commOverheadPct = round1((commLatencySec / totalTokSec) * 100.0);
+    if (pcieTransferMs > 0 && totalMs > 0) {
+      commOverheadPct = round1((pcieTransferMs / totalMs) * 100.0);
     }
 
-    if (gpuFraction < 1.0) {
+    if (gpuLayersFit === 0) {
+      bottleneck = 'System RAM';
+    } else if (gpuFraction < 1.0 || effKvOffload) {
       bottleneck = 'PCIe / System RAM';
     } else if (commWarning && commOverheadPct >= 20.0) {
       bottleneck = 'PCIe All-Reduce';
@@ -479,6 +667,15 @@ export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
       bottleneck = 'VRAM';
     }
   }
+
+  const latencyMs: LatencyBreakdownMs = {
+    gpu_weights_ms: round2(gpuWeightsMs),
+    cpu_weights_ms: round2(cpuWeightsMs),
+    kv_read_ms: round2(kvReadMs),
+    pcie_transfer_ms: round2(pcieTransferMs),
+    fixed_overhead_ms: round2(fixedOverheadMs),
+    total_ms: round2(totalMs),
+  };
 
   const [estTps, tpsLow, tpsHigh] = computeTpsBounds(rawTps, status);
 
@@ -507,6 +704,22 @@ export function estimateRigRun(opts: RigRunOptions): RigRunEstimate {
     system_ram_gb: systemRamGb,
     available_ram_gb: availableRamGb,
     spill_ram_gb: spillRamGb,
+    gpu_weights_gb: gpuWeightsGb,
+    gpu_kv_gb: gpuKvGb,
+    gpu_vram_used_gb: gpuVramUsedGb,
+    cpu_weights_gb: cpuWeightsGb,
+    cpu_kv_gb: cpuKvGb,
+    cpu_overhead_gb: cpuOverheadGb,
+    ram_used_gb: ramUsedGb,
+    ngl_mode: nglMode,
+    kv_offload_to_cpu: effKvOffload,
+    pcie_link: pcieLink,
+    thermal_profile: thermalProfile,
+    thermal_factor: thermalFactor,
+    effective_ram_bw_gbps: round1(ramBw),
+    spread_pct: spreadPctForStatus(status),
+    oom_reason: oomReason,
+    latency_ms: latencyMs,
     fits_vram: fitsVram,
     fits_rig: fitsRig,
     bottleneck,
@@ -633,6 +846,10 @@ export function buildRuntimeCommand(params: {
   splitMode: SplitMode;
   gpuLayersFit: number;
   fitsVram: boolean;
+  nglMode?: 'auto' | 'manual';
+  kvOffloadToCpu?: boolean;
+  totalLayers?: number;
+  recommendedThreads?: number;
 }): { primaryLabel: string; command: string; secondaryCommand?: string } {
   const {
     model,
@@ -645,6 +862,10 @@ export function buildRuntimeCommand(params: {
     splitMode,
     gpuLayersFit,
     fitsVram,
+    nglMode = 'auto',
+    kvOffloadToCpu = false,
+    totalLayers = model.num_layers,
+    recommendedThreads = 8,
   } = params;
 
   if (format === 'AWQ') {
@@ -666,13 +887,16 @@ export function buildRuntimeCommand(params: {
     };
   }
 
-  const ngl = fitsVram ? 99 : gpuLayersFit;
+  const fullAuto = nglMode !== 'manual' && fitsVram && gpuLayersFit >= totalLayers && !kvOffloadToCpu;
+  const ngl = gpuCount === 0 || hardware === null ? 0 : fullAuto ? 99 : gpuLayersFit;
   const faFlag = hardware && (hardware.backend === 'CUDA' || hardware.backend === 'Metal') ? '-fa on' : '-fa off';
   const kvFlag = kvQuant !== 'fp16' ? ` --cache-type-k ${kvQuant} --cache-type-v ${kvQuant}` : '';
+  const nkvoFlag = kvOffloadToCpu ? ' -nkvo' : '';
+  const threadFlag = gpuCount === 0 || hardware === null || gpuLayersFit < totalLayers || kvOffloadToCpu ? ` -t ${recommendedThreads}` : '';
   const splitFlag = gpuCount > 1 && splitMode === 'tensor' ? ' -sm row' : '';
   return {
     primaryLabel: 'llama.cpp CLI',
-    command: `llama-cli -hf ${model.hf_repo}:${quant} -ngl ${ngl} -c ${contextTokens} ${faFlag}${kvFlag}${splitFlag}`,
+    command: `llama-cli -hf ${model.hf_repo}:${quant} -ngl ${ngl} -c ${contextTokens} ${faFlag}${kvFlag}${nkvoFlag}${threadFlag}${splitFlag}`,
     secondaryCommand: `OLLAMA_NUM_CTX=${contextTokens} ollama run ${model.ollama_tag}`,
   };
 }

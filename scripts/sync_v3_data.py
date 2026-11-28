@@ -253,10 +253,11 @@ def generate_entry_copy(
             f"estimated 8K speed is {tps_range} ({tier})."
         )
     elif st == "Partial Offload":
+        rig_ram_gb = physics.estimate_rig_run(m, h, quant="Q4_K_M", context_tokens=8192).get("ram_used_gb", max(0.0, total_gb - usable))
         verdict_summary = (
             f"{m['name']} Q4_K_M ({total_gb:.2f} GB @ 8K) overflows {h['name']}'s {usable:.1f} GB usable budget, placing "
-            f"{res['gpu_layers_fit']} of {res['total_layers']} layers on GPU and spilling the rest over PCIe to system RAM "
-            f"(formula estimate: {tps_range}, {tier})."
+            f"{res['gpu_layers_fit']} of {res['total_layers']} layers on GPU (~{rig_ram_gb:.1f} GB in System RAM; "
+            f"formula estimate: {tps_range}, {tier}, ±35% offload band)."
         )
     else:
         verdict_summary = (
@@ -315,7 +316,7 @@ def generate_entry_copy(
         (
             "Tight margin (<5% usable): trim context to 4K or enable Q8_0 KV cache before loading large system prompts."
             if st == "Tight Fit"
-            else f"Remember all tok/s numbers are Physics {physics.ENGINE_VERSION} formula estimate ranges (~±17–25%); pairs without a Verified Benchmark remain Formula only (unverified)."
+            else f"Remember all tok/s numbers are Physics {physics.ENGINE_VERSION} formula estimate ranges (±17–20% resident, ±35% Partial Offload); pairs without a Verified Benchmark remain Formula only (unverified)."
         ),
     ]
 
@@ -336,8 +337,12 @@ def generate_entry_copy(
             "question": f"What token generation speed can I expect for {m['short_name']} on {h['short_name']}?",
             "answer": (
                 f"Physics {physics.ENGINE_VERSION} estimates {tps_range} ({tier}) for batch=1 decoding at 8K context"
-                + (" — note that PCIe host-RAM transfers govern offloaded layers." if st == "Partial Offload" else f" (slowing to ~{max_fit_tps_range} at full {max_ctx_str} context).")
-                + " Treat this as a ±17–20% formula range unless backed by a Measured Community Benchmark."
+                + (" — governed mainly by System RAM bandwidth for CPU-offloaded layers plus PCIe sync overhead." if st == "Partial Offload" else f" (slowing to ~{max_fit_tps_range} at full {max_ctx_str} context).")
+                + (
+                    " Treat unverified Partial Offload speeds as a ±35% formula range unless backed by a Measured Community Benchmark."
+                    if st == "Partial Offload"
+                    else " Treat this as a ±17–20% formula range unless backed by a Measured Community Benchmark."
+                )
             ),
         },
         {
@@ -399,7 +404,7 @@ def _needs_copy_refresh(
     )
     if "Smooth" in blob or "smooth" in blob:
         return True
-    if "Physics v3.2" in blob or "Physics v3.2" in " ".join(existing_entry.get("context_analysis", {}).get("optimization_tips", [])):
+    if "Physics v3.2" in blob or "Physics v3.3" in blob or "Physics v3.2" in " ".join(existing_entry.get("context_analysis", {}).get("optimization_tips", [])):
         return True
     if "Community Reference Anchors" in " ".join(existing_entry.get("context_analysis", {}).get("optimization_tips", [])):
         return True
@@ -409,7 +414,7 @@ def _needs_copy_refresh(
         return True
     if f"{new_tps_low}–{new_tps_high} tok/s" not in blob and new_status != "OOM":
         return True
-    if new_status == "Tight Fit" or new_tier == "Slow":
+    if new_status in ("Tight Fit", "Partial Offload") or new_tier == "Slow":
         return True
     if re.search(r"\b\d+\.\d+\s*(tok/s|tokens/sec|t/s)\b", blob):
         return True
